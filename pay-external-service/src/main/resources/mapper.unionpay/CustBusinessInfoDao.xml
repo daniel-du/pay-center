@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.CustBusinessInfoDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.CustBusinessInfoEntity" id="custBusinessInfoMap">
+        <result property="id" column="id"/>
+        <result property="isFixedLocation" column="is_fixed_location"/>
+        <result property="facadePhotoUrl" column="facade_photo_url"/>
+        <result property="shopPhotoUrl" column="shop_photo_url"/>
+        <result property="creator" column="creator"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updater" column="updater"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+    <select id="getBusinessAttach" resultType="com.tfjt.pay.external.unionpay.dto.CustBusinessCreateDto"
+            parameterType="java.lang.String">
+        SELECT i.*,a.img_url,type FROM tf_cust_business_info i
+                                           LEFT JOIN tf_cust_business_attach_info a  on i.id = a.cust_business_info_id WHERE i.loan_user_id = #{loanUserId }
+
+    </select>
+
+
+</mapper>

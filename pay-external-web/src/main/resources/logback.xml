@@ -1,0 +1,146 @@
+<configuration scan="true" scanPeriod="10 seconds">
+    <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
+    <springProperty scope="LOG_PATH" name="LOG_PATH" source="log.path"/>
+    <springProperty scope="LOG_CONSOLE_OUT" name="CONSOLE_OUT" source="log.console.out"/>
+    <property name="APP_NAME" value="tf-pay" />
+    <!-- 日志文件名称前缀，为服务的名称 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <property name="dateFormat" value="yyyy-MM-dd"/>
+    <property name="max.history" value="0"/>
+    <property name="never.block" value="true"/>
+    <property name="queue.size" value="1024"/>
+    <property name="discarding.threshold" value="0"/>
+    <property name="include.caller.data" value="true"/>
+    <property name="caller.depth" value="0"/>
+    <property name="total.size.cap" value="20GB"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--定义日志文件的存储名称 -->
+        <File>${LOG_PATH}/${APP_NAME}.log.info</File>
+        <!--按天存储-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.log.info.%d{${dateFormat}}</fileNamePattern>
+            <MaxHistory>${max.history}</MaxHistory>
+            <totalSizeCap>${total.size.cap}</totalSizeCap>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <layout charset="UTF-8">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log.debug</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.log.debug.%d{${dateFormat}}</fileNamePattern>
+            <MaxHistory>${max.history}</MaxHistory>
+            <totalSizeCap>${total.size.cap}</totalSizeCap>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <layout charset="UTF-8">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}]  %logger{50}:%line -%msg%n</Pattern>
+        </layout>
+    </appender>
+    <appender name="ASYNC_FILE_DEBUG" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>${discarding.threshold}</discardingThreshold>
+        <queueSize>${queue.size}</queueSize>
+        <includeCallerData>${include.caller.data}</includeCallerData>
+        <neverBlock>${never.block}</neverBlock>
+        <appender-ref ref="DEBUG_FILE"/>
+    </appender>
+
+
+    <appender name="NOTICE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log.access</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.log.access.%d{${dateFormat}}</fileNamePattern>
+            <MaxHistory>${max.history}</MaxHistory>
+            <totalSizeCap>${total.size.cap}</totalSizeCap>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] -%msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <File>${LOG_PATH}/${APP_NAME}.log.wf</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.log.wf.%d{${dateFormat}}</fileNamePattern>
+            <MaxHistory>${max.history}</MaxHistory>
+            <totalSizeCap>${total.size.cap}</totalSizeCap>
+        </rollingPolicy>
+        <layout charset="UTF-8">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <!--异步日志-->
+    <appender name="ASYNC_FILE_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>${discarding.threshold}</discardingThreshold>
+        <queueSize>${queue.size}</queueSize>
+        <includeCallerData>${include.caller.data}</includeCallerData>
+        <neverBlock>${never.block}</neverBlock>
+        <appender-ref ref="ERROR_FILE"/>
+    </appender>
+
+    <appender name="ASYNC_FILE_INFO" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>${discarding.threshold}</discardingThreshold>
+        <queueSize>${queue.size}</queueSize>
+        <includeCallerData>${include.caller.data}</includeCallerData>
+        <neverBlock>${never.block}</neverBlock>
+        <appender-ref ref="INFO_FILE"/>
+    </appender>
+
+
+
+
+    <appender name="ASYNC_FILE_NOTICE" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>${discarding.threshold}</discardingThreshold>
+        <queueSize>${queue.size}</queueSize>
+        <includeCallerData>${include.caller.data}</includeCallerData>
+        <neverBlock>${never.block}</neverBlock>
+        <appender-ref ref="NOTICE_FILE"/>
+    </appender>
+    <logger name="com.baomidou.mybatisplus.core" level="ERROR"/>
+    <logger name="com.tf.log.common.filter.dubbo.LogFilterDubbo" additivity="false">
+        <appender-ref ref="ASYNC_FILE_NOTICE"/>
+    </logger>
+    <logger name="com.tf.log.common.filter.LogFilter" additivity="false">
+        <appender-ref ref="ASYNC_FILE_NOTICE"/>
+    </logger>
+    <logger name="com.tf.log.common.filter.LogFilterSpringBoot" additivity="false">
+        <appender-ref ref="ASYNC_FILE_NOTICE"/>
+    </logger>
+
+
+    <root level="${log.level:-INFO}">
+        <appender-ref ref="ASYNC_FILE_ERROR"/>
+        <appender-ref ref="ASYNC_FILE_INFO"/>
+        <appender-ref ref="ASYNC_FILE_DEBUG"/>
+        <if condition='property("CONSOLE_OUT").contains("true")'>
+            <then>
+                <appender-ref ref="STDOUT"/>
+            </then>
+        </if>
+    </root>
+
+</configuration>

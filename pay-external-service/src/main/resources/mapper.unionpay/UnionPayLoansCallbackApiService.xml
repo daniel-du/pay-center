@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.NcomingReasonDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.NcomingReasonEntity" id="ncomingReasonMap">
+        <result property="id" column="id"/>
+        <result property="feildName" column="feild_name"/>
+        <result property="faildReason" column="faild_reason"/>
+        <result property="status" column="status"/>
+        <result property="type" column="type"/>
+        <result property="loanUserId" column="loan_user_id"/>
+        <result property="creator" column="creator"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updater" column="updater"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+    <select id="getReasonCount" resultType="com.tfjt.pay.external.unionpay.dto.resp.ReasonCountVO" parameterType="java.lang.Integer">
+        SELECT a.type,IFNULL(b.count,0) count from
+            (
+            SELECT '1' as type
+            UNION
+            SELECT '2' as type
+            UNION
+            SELECT '3' as type
+            UNION
+            SELECT '4' as type
+            UNION
+            SELECT '5' as type
+            ) a LEFT JOIN
+            (
+            SELECT type,
+            count(1) as count
+            FROM
+            tf_ncoming_reason
+            WHERE
+            loan_user_id = #{loanUserId}
+            and status=0
+            GROUP BY
+            type
+            ) b on a.type = b.type
+    </select>
+
+
+</mapper>

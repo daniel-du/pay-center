@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.CustIdcardInfoDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.CustIdcardInfoEntity" id="custIdcardInfoMap">
+        <result property="id" column="id"/>
+        <result property="merchantShortName" column="merchant_short_name"/>
+        <result property="frontIdCardUrl" column="front_id_card_url"/>
+        <result property="backIdCardUrl" column="back_id_card_url"/>
+        <result property="holdIdCardUrl" column="hold_id_card_url"/>
+        <result property="idNo" column="id_no"/>
+        <result property="effectiveDate" column="effective_date"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="isLongTerm" column="Is_long_term"/>
+        <result property="nationality" column="nationality"/>
+        <result property="creator" column="creator"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updater" column="updater"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+
+
+</mapper>
