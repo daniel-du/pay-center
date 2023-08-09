@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
 
-    @Resource(name = "unionPayLoan")
+    @Resource
     private RestTemplate restTemplate;
 
     @Value("${unionPayLoans.groupId}")

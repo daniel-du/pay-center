@@ -46,13 +46,18 @@ public class WebConfig implements WebMvcConfigurer {
     @Resource
     private UnionPayLoanRestTemplateInterceptor unionPayLoanRestTemplateInterceptor;
 
-    @Primary
-    @Bean
+
     @LoadBalanced
-    RestTemplate restTemplate() {
+    @Bean
+    public RestTemplate loadBalanced1() {
         return new RestTemplate();
     }
 
+    @Primary
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     @LoadBalanced
     @Bean("unionPayLoan")
