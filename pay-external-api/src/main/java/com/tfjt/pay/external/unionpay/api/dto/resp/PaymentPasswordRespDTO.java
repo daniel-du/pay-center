@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.unionpay.dubbo.dto.req;
+package com.tfjt.pay.external.unionpay.api.dto.resp;
 
 import java.io.Serializable;
 
@@ -10,20 +10,9 @@ import java.io.Serializable;
  * @author young
  * @since 2023-08-11
  */
-public class PaymentPasswordReqDTO implements Serializable {
+public class PaymentPasswordRespDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-
-    /**
-     * 类型1商家2供应商
-     */
-    private Integer type;
-
-    /**
-     * 业务ID
-     */
-    private String busId;
 
     /**
      * 密码
@@ -35,23 +24,6 @@ public class PaymentPasswordReqDTO implements Serializable {
      * 盐
      */
     private String salt;
-
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public String getBusId() {
-        return busId;
-    }
-
-    public void setBusId(String busId) {
-        this.busId = busId;
-    }
 
     public String getPassword() {
         return password;
@@ -69,12 +41,10 @@ public class PaymentPasswordReqDTO implements Serializable {
         this.salt = salt;
     }
 
-    public PaymentPasswordReqDTO() {
+    public PaymentPasswordRespDTO() {
     }
 
-    public PaymentPasswordReqDTO(Integer type, String busId, String password, String salt) {
-        this.type = type;
-        this.busId = busId;
+    public PaymentPasswordRespDTO(Integer type, String busId, String password, String salt) {
         this.password = password;
         this.salt = salt;
     }
@@ -82,8 +52,6 @@ public class PaymentPasswordReqDTO implements Serializable {
     @Override
     public String toString() {
         return "PaymentPasswordDTO{" +
-                "type=" + type +
-                ", busId='" + busId + '\'' +
                 ", password='" + password + '\'' +
                 ", salt='" + salt + '\'' +
                 '}';

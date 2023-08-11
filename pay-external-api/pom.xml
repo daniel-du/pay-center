@@ -24,14 +24,6 @@
             <version>4.0.8-SNAPSHOT</version>
         </dependency>
     </dependencies>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.tfjt</groupId>
-            <artifactId>tf-common-dto</artifactId>
-            <version>4.0.8-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
     <build>
         <plugins>
             <!--发布代码Jar插件 -->

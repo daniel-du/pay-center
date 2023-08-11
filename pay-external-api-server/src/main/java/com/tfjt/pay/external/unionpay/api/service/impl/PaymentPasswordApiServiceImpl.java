@@ -1,11 +1,11 @@
-package com.tfjt.pay.external.unionpay.dubbo.service.impl;
+package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.tfjt.pay.external.unionpay.dubbo.dto.req.PaymentPasswordReqDTO;
-import com.tfjt.pay.external.unionpay.dubbo.dto.resp.PaymentPasswordRespDTO;
-import com.tfjt.pay.external.unionpay.dubbo.service.PaymentPasswordDubboService;
+import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.PaymentPasswordRespDTO;
+import com.tfjt.pay.external.unionpay.api.service.PaymentPasswordApiService;
 import com.tfjt.pay.external.unionpay.entity.PaymentPasswordEntity;
 import com.tfjt.pay.external.unionpay.service.PaymentPasswordService;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -14,12 +14,11 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 
 import javax.annotation.Resource;
-import java.sql.SQLException;
 import java.util.Objects;
 
 @Slf4j
 @DubboService
-public class PaymentPasswordDubboServiceImpl implements PaymentPasswordDubboService {
+public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService {
 
     @Resource
     private PaymentPasswordService paymentPasswordService;

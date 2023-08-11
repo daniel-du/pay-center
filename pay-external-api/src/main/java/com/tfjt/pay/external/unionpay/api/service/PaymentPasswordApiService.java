@@ -1,10 +1,10 @@
-package com.tfjt.pay.external.unionpay.dubbo.service;
+package com.tfjt.pay.external.unionpay.api.service;
 
-import com.tfjt.pay.external.unionpay.dubbo.dto.req.PaymentPasswordReqDTO;
-import com.tfjt.pay.external.unionpay.dubbo.dto.resp.PaymentPasswordRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.PaymentPasswordRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
-public interface PaymentPasswordDubboService {
+public interface PaymentPasswordApiService {
     /**
      * 设置支付密码
      * @param paymentPasswordDTO
