@@ -9,6 +9,7 @@
 package com.tfjt.pay.external.unionpay.config;
 
 import com.tfjt.pay.external.unionpay.interceptor.AuthInterceptor;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -65,6 +66,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public RedisCache redisCache(){
+        return new RedisCache();
     }
 
     @LoadBalanced
