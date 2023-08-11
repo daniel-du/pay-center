@@ -71,7 +71,6 @@ public class PaymentPasswordDubboServiceImpl implements PaymentPasswordDubboServ
     @Override
     public Result<Boolean> verifyPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         boolean result = false;
-        PaymentPasswordRespDTO passwordRespDTO = null;
         try {
             PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()));
             if (ObjectUtils.isNotEmpty(paymentPassword)) {
