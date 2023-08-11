@@ -1,7 +1,8 @@
-package com.tfjt.pay.external.api;
+package com.tfjt.pay.external.unionpay.api.service;
 
-import com.tfjt.pay.external.dto.LoanTransferToTfDTO;
 import com.tfjt.tfcommon.dto.response.Result;
+
+import java.util.Map;
 
 /**
  * @author songx
@@ -11,5 +12,7 @@ import com.tfjt.tfcommon.dto.response.Result;
 public interface LoanApiService {
 
     Result<LoanTransferToTfDTO> getBalanceAcctId(String type, String bid);
+
+    Result<Map<String,Object>> incomingIsFinish(String type, String bid);
 
 }

@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.dto;
+package com.tfjt.pay.external.unionpay.api.dto.req;
 
 import java.io.Serializable;
 

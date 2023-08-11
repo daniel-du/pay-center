@@ -1,6 +1,5 @@
-package com.tfjt.pay.external.api;
+package com.tfjt.pay.external.unionpay.api.service;
 
-import com.tfjt.pay.external.dto.UnionPayTransferDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 /**
