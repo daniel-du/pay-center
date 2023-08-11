@@ -8,7 +8,6 @@
 
 package com.tfjt.pay.external.unionpay.config;
 
-import com.tfjt.pay.external.unionpay.interceptor.AuthInterceptor;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -22,7 +21,6 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -37,11 +35,11 @@ import javax.annotation.Resource;
 public class WebConfig implements WebMvcConfigurer {
 
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        // 认证拦截器，并指定拦截的路径
-        registry.addInterceptor(new AuthInterceptor()).addPathPatterns("/**");
-    }
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        // 认证拦截器，并指定拦截的路径
+//        registry.addInterceptor(new AuthInterceptor()).addPathPatterns("/**");
+//    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
