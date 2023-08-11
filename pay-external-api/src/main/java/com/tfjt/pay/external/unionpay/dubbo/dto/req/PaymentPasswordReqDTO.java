@@ -69,6 +69,9 @@ public class PaymentPasswordReqDTO implements Serializable {
         this.salt = salt;
     }
 
+    public PaymentPasswordReqDTO() {
+    }
+
     public PaymentPasswordReqDTO(Integer type, String busId, String password, String salt) {
         this.type = type;
         this.busId = busId;
