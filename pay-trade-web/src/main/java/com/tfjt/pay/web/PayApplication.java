@@ -14,15 +14,15 @@ import org.springframework.scheduling.annotation.EnableAsync;
 /**
  * @author tony
  */
-@SpringBootApplication(scanBasePackages = {"com.tfjt.pay"})
-@MapperScan({"com.tfjt.**.dao"})
-@ComponentScan(basePackages={"com.tfjt"})
+@SpringBootApplication(scanBasePackages = {"com.tfjt.pay.trade"})
+@MapperScan({"com.tfjt.pay.trade.**.dao"})
+@ComponentScan(basePackages={"com.tfjt.pay.trade"})
 @ServletComponentScan
 @EnableAsync
 @EnableFeignClients
 @EnableDiscoveryClient
 @EnableFileStorage
-@EnableDubbo(scanBasePackages = "com.tfjt")
+@EnableDubbo(scanBasePackages = "com.tfjt.pay.trade")
 public class PayApplication {
     public static void main(String[] args) {
         SpringApplication.run(PayApplication.class, args);

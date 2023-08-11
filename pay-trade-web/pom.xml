@@ -86,7 +86,7 @@
         </dependency>
         <dependency>
             <groupId>com.tfjt</groupId>
-            <artifactId>pay-external-service</artifactId>
+            <artifactId>pay-trade-service</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -126,7 +126,7 @@
         </dependency>
         <dependency>
             <groupId>com.tfjt</groupId>
-            <artifactId>pay-trade-api-server</artifactId>
+            <artifactId>pay-trade-service</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -135,6 +135,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>pay-external-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <!--指定仓库地址 -->
     <distributionManagement>
