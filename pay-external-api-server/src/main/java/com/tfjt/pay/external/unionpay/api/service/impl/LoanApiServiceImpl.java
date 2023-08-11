@@ -1,6 +1,8 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.req.LoanTransferToTfDTO;
+import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.tfcommon.dto.response.Result;

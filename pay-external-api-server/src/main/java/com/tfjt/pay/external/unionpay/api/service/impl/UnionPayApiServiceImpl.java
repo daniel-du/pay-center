@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferDTO;
+import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;

@@ -3,6 +3,8 @@ package com.tfjt.pay.external.unionpay.service;
 
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -18,12 +20,12 @@ public interface UnionPayService {
     /**
      * 合并消费担保确认
      */
-    public Result<ConsumerPoliciesRespDTO> mergeConsumerPoliciesCheck(ConsumerPoliciesCheckReqDTO consumerPoliciesReqDTO);
+    public Result<ConsumerPoliciesCheckRespDTO> mergeConsumerPoliciesCheck(ConsumerPoliciesCheckReqDTO consumerPoliciesReqDTO);
 
     /**
      * 提现创建
      */
-    public ConsumerPoliciesRespDTO withdrawalCreation(ConsumerPoliciesReqDTO consumerPoliciesReqDTO);
+    public ConsumerPoliciesRespDTO withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO);
 
     /**
      * 电子账簿流水查询

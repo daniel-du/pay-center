@@ -75,4 +75,9 @@ public class ConsumerPoliciesCheckRespDTO implements Serializable {
      * 自定义参数
      */
     private Map<String,Object> metadata;
+
+    /**
+     * 分账ID
+     */
+    private String allocationId;
 }

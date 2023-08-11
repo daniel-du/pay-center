@@ -37,8 +37,12 @@ public enum TransactionCodeEnum {
     /**
      * 合并消费担保确认订单查询(确认后查询订单状态)
      */
-    LWZ639_COMBINED_GUARANTEE_CONFIRMS_BY_OUT_ORDER_NO("LWZ639_COMBINED_GUARANTEE_CONFIRMS_BY_OUT_ORDER_NO","合并消费担保确认订单查询");
+    LWZ639_COMBINED_GUARANTEE_CONFIRMS_BY_OUT_ORDER_NO("LWZ639_COMBINED_GUARANTEE_CONFIRMS_BY_OUT_ORDER_NO","合并消费担保确认订单查询"),
 
+    /**
+     * 提现创建
+     */
+    LWZ64_WITHDRAWALS_REQ("LWZ64_WITHDRAWALS_REQ","提现创建");
     /**
      * code
      */

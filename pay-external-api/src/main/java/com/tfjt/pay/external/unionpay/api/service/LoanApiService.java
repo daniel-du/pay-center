@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.LoanTransferToTfDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.Map;

@@ -4,6 +4,7 @@ import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.req.GuaranteePaymentDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.tfcommon.core.cache.RedisCache;
@@ -82,7 +83,7 @@ public class DemoController {
      * 合并消费担保确认 例子
      */
     @RequestMapping("/listCheck")
-    public Result<ConsumerPoliciesRespDTO> listCheck(){
+    public Result<ConsumerPoliciesCheckRespDTO> listCheck(){
         //合并消费担保确认
         ConsumerPoliciesCheckReqDTO consumerPoliciesCheckReqDTO = new ConsumerPoliciesCheckReqDTO();
         consumerPoliciesCheckReqDTO.setOutOrderNo("2008349494890702347");
