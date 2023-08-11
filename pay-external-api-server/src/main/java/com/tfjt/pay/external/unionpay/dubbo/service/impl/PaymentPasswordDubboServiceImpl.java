@@ -59,7 +59,7 @@ public class PaymentPasswordDubboServiceImpl implements PaymentPasswordDubboServ
             PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()));
             if (ObjectUtils.isNotEmpty(paymentPassword)) {
                 passwordRespDTO = new PaymentPasswordRespDTO();
-                passwordRespDTO.setSalt(paymentPasswordDTO.getSalt());
+                passwordRespDTO.setSalt(paymentPassword.getSalt());
             }
         } catch (Exception ex) {
             log.error("", ex);
