@@ -1,0 +1,28 @@
+server:
+  port: 6801
+  servlet:
+    context-path: /tf-pay-trade
+spring:
+  application:
+    name: tf-cloud-pay-trade
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:tf-register}:${NACOS_PORT:8848}
+        namespace: ${spring.profiles.active}
+      config:
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        namespace: ${spring.profiles.active}
+        file-extension: yml
+        shared-configs:
+          - application.yml
+  profiles:
+    active: local
+log:
+  path: ./data/logs/tf-cloud-pay-trade
+  console.out: true
+logging:
+  level:
+    org.springframework: INFO
+    com.hospital: DEBUG
+    com.zaxxer.hikari: DEBUG

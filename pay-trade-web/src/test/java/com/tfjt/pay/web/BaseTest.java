@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.unionpay.web;
+package com.tfjt.pay.web;
 
 import com.tfjt.pay.external.unionpay.service.DemoService;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -10,18 +10,19 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-/**
- * 业务描述：
- * 应用场景：
- *
- * @author ： seeyoe@126.com
- * @date ： 2022-10-17
- */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = PayExternalApplication.class)
-@MapperScan({"com.tfjt.**.dao"})
-@ComponentScan({"com.tfjt"})
+@SpringBootTest(classes = PayApplication.class)
+@MapperScan({"com.tfjt.pay.trade.**.dao"})
+@ComponentScan({"com.tfjt.pay.trade"})
 @ActiveProfiles("local")
 public class BaseTest {
 
+    @DubboReference
+    DemoService demoService;
+
+    @Test
+    public void test1(){
+        String joy = demoService.demo("joy");
+        System.out.println(joy);
+    }
 }
