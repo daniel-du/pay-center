@@ -14,6 +14,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 
 import javax.annotation.Resource;
+import java.sql.SQLException;
 import java.util.Objects;
 
 @Slf4j
@@ -31,7 +32,7 @@ public class PaymentPasswordDubboServiceImpl implements PaymentPasswordDubboServ
             paymentPasswordService.save(paymentPassword);
         } catch (Exception ex) {
             log.error("", ex);
-            return Result.failed("保存支付密码异常！");
+            return Result.failed(ex.getMessage());
         }
         return Result.ok();
     }
@@ -46,7 +47,7 @@ public class PaymentPasswordDubboServiceImpl implements PaymentPasswordDubboServ
             paymentPasswordService.update(paymentPasswordEntity, updateWrapper);
         } catch (Exception ex) {
             log.error("", ex);
-            return Result.failed("修改失败！");
+            return Result.failed(ex.getMessage());
         }
         return Result.ok();
     }
@@ -62,14 +63,14 @@ public class PaymentPasswordDubboServiceImpl implements PaymentPasswordDubboServ
             }
         } catch (Exception ex) {
             log.error("", ex);
-            return Result.failed(passwordRespDTO);
+            return Result.failed(ex.getMessage());
         }
         return Result.ok(passwordRespDTO);
     }
 
     @Override
     public Result<Boolean> verifyPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
-        Boolean result = false;
+        boolean result = false;
         PaymentPasswordRespDTO passwordRespDTO = null;
         try {
             PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()));
@@ -80,7 +81,7 @@ public class PaymentPasswordDubboServiceImpl implements PaymentPasswordDubboServ
             }
         } catch (Exception ex) {
             log.error("", ex);
-            return Result.failed(result);
+            return Result.failed(ex.getMessage());
         }
         return Result.ok(result);
     }
