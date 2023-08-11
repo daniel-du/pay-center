@@ -22,7 +22,7 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("payment_password")
+@TableName("tf_payment_password")
 @ApiModel(value="PaymentPassword对象", description="支付密码")
 public class PaymentPasswordEntity implements Serializable {
 
