@@ -97,7 +97,7 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-common-core</artifactId>
-            <version>4.0.10-SNAPSHOT</version>
+            <version>4.0.8-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
