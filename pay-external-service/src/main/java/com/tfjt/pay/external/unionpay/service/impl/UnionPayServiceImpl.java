@@ -2,13 +2,8 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 import com.alibaba.fastjson.JSON;
 
-import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.UnionPayBaseReq;
-import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
+import com.tfjt.pay.external.unionpay.dto.req.*;
+import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.enums.TransactionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.utils.UnionPayBaseBuilderUtils;
@@ -76,36 +71,95 @@ public class UnionPayServiceImpl implements UnionPayService {
     }
 
     @Override
-    public ConsumerPoliciesRespDTO withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO) {
-        //LWZ64_WITHDRAWALS_REQ
+    public Result<WithdrawalCreateRespDTO> withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO) {
+
         UnionPayBaseReq unionPayBaseReq = null;
         try{
             unionPayBaseReq = (UnionPayBaseReq)unionPayBaseBuilderUtils.baseBuilder(TransactionCodeEnum.LWZ64_WITHDRAWALS_REQ.getCode(), JSON.toJSONString(withdrawalCreateReqDTO));
             log.info("提现创建入参{}", JSON.toJSON(unionPayBaseReq));
             //调用银联接口
             ResponseEntity<UnionPayBaseResp> responseEntity = (ResponseEntity<UnionPayBaseResp>)unionPayBaseBuilderUtils.post(unionPayBaseReq);
-            log.info("合并消费担保确认返回值{}", responseEntity);
-            ConsumerPoliciesCheckRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesCheckRespDTO)unionPayBaseBuilderUtils.getBaseReturn(responseEntity,ConsumerPoliciesRespDTO.class);
+            log.info("提现创建返回值{}", responseEntity);
+            WithdrawalCreateRespDTO withdrawalCreateRespDTO = (WithdrawalCreateRespDTO)unionPayBaseBuilderUtils.getBaseReturn(responseEntity,ConsumerPoliciesRespDTO.class);
 
-            log.info("合并消费担保确认解析返回信息{}", consumerPoliciesRespDTO);
-            return null;//Result.ok(consumerPoliciesRespDTO);
+            log.info("提现创建返回信息{}", withdrawalCreateRespDTO);
+            return Result.ok(withdrawalCreateRespDTO);
         }catch (TfException e){
-            log.error("合并消费担保确认报错{},{}", JSON.toJSON(unionPayBaseReq),e);
-            return null;//Result.ok(consumerPoliciesRespDTO);
+            log.error("提现创建报错{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
         }catch (Exception e){
-            log.error("合并消费担保确认异常{},{}", JSON.toJSON(unionPayBaseReq),e);
-            return null;//Result.ok(consumerPoliciesRespDTO);
+            log.error("提现创建异常{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
         }
     }
 
     @Override
-    public ConsumerPoliciesRespDTO electronicBook(ConsumerPoliciesReqDTO consumerPoliciesReqDTO) {
-        return null;
+    public Result<ElectronicBookRespDTO> electronicBook(ElectronicBookReqDTO electronicBookReqDTO) {
+
+        UnionPayBaseReq unionPayBaseReq = null;
+        try{
+            unionPayBaseReq = (UnionPayBaseReq)unionPayBaseBuilderUtils.baseBuilder(TransactionCodeEnum.LWZ623_BALANCE_TRANSACTIONS_REQ.getCode(), JSON.toJSONString(electronicBookReqDTO));
+            log.info("电子账簿流水查询入参{}", JSON.toJSON(unionPayBaseReq));
+            //调用银联接口
+            ResponseEntity<UnionPayBaseResp> responseEntity = (ResponseEntity<UnionPayBaseResp>)unionPayBaseBuilderUtils.post(unionPayBaseReq);
+            log.info("电子账簿流水查询返回值{}", responseEntity);
+            ElectronicBookRespDTO electronicBookRespDTO = (ElectronicBookRespDTO)unionPayBaseBuilderUtils.getBaseReturn(responseEntity,ConsumerPoliciesRespDTO.class);
+
+            log.info("电子账簿流水查询返回信息{}", electronicBookRespDTO);
+            return Result.ok(electronicBookRespDTO);
+        }catch (TfException e){
+            log.error("电子账簿流水查询报错{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            log.error("电子账簿流水查询异常{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
+        }
     }
 
     @Override
-    public ConsumerPoliciesRespDTO queryOrderStatus(ConsumerPoliciesReqDTO consumerPoliciesReqDTO) {
-        return null;
+    public Result<ConsumerPoliciesRespDTO> querySystemOrderStatus(String  combinedGuaranteePaymentId) {
+        UnionPayBaseReq unionPayBaseReq = null;
+        try{
+            unionPayBaseReq = (UnionPayBaseReq)unionPayBaseBuilderUtils.baseBuilder(null, combinedGuaranteePaymentId);
+            log.info("使用系统订单号查询合并消费担保下单订单状态入参{}", JSON.toJSON(unionPayBaseReq));
+            //调用银联接口
+            ResponseEntity<UnionPayBaseResp> responseEntity = (ResponseEntity<UnionPayBaseResp>)unionPayBaseBuilderUtils.post(unionPayBaseReq);
+            log.info("使用系统订单号查询合并消费担保下单订单状态返回值{}", responseEntity);
+            ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.getBaseReturn(responseEntity,ConsumerPoliciesRespDTO.class);
+
+            log.info("使用系统订单号查询合并消费担保下单订单状态返回信息{}", consumerPoliciesRespDTO);
+            return Result.ok(consumerPoliciesRespDTO);
+        }catch (TfException e){
+            log.error("使用系统订单号查询合并消费担保下单订单状态报错{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            log.error("使用系统订单号查询合并消费担保下单订单状态异常{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
+        }
     }
+
+    @Override
+    public Result<ConsumerPoliciesRespDTO> queryPlatformOrderStatus(String combinedOutOrderNo) {
+
+        UnionPayBaseReq unionPayBaseReq = null;
+        try{
+            unionPayBaseReq = (UnionPayBaseReq)unionPayBaseBuilderUtils.baseBuilder(TransactionCodeEnum.LWZ636_COMBINED_GUARANTEE_PAYMENTS_BY_OUT_ORDER_NO.getCode(), combinedOutOrderNo);
+            log.info("使用平台订单号查询合并消费担保下单订单状态入参{}", JSON.toJSON(unionPayBaseReq));
+            //调用银联接口
+            ResponseEntity<UnionPayBaseResp> responseEntity = (ResponseEntity<UnionPayBaseResp>)unionPayBaseBuilderUtils.post(unionPayBaseReq);
+            log.info("使用平台订单号查询合并消费担保下单订单状态返回值{}", responseEntity);
+            ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.getBaseReturn(responseEntity,ConsumerPoliciesRespDTO.class);
+
+            log.info("使用平台订单号查询合并消费担保下单订单状态返回信息{}", consumerPoliciesRespDTO);
+            return Result.ok(consumerPoliciesRespDTO);
+        }catch (TfException e){
+            log.error("使用平台订单号查询合并消费担保下单订单状态报错{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            log.error("使用平台订单号查询合并消费担保下单订单状态异常{},{}", JSON.toJSON(unionPayBaseReq),e);
+            return Result.failed(e.getMessage());
+        }
+    }
+
 
 }

@@ -14,63 +14,48 @@ import java.util.Map;
  */
 @Data
 public class WithdrawalCreateRespDTO implements Serializable {
-    /**平台订单号*/
+    /**系统订单号*/
+    private String withdrawalId;
+
+    /**平台订单号 */
     private String outOrderNo;
 
-    /**发送时间 格式:RFC3339*/
-    private String sentAt;
+    /**交易状态*/
+    private String status;
 
-    /**金额*/
+    /**原因描述*/
+    private String reason;
+
+    /**创建时间*/
+    private String createdAt;
+
+    /**
+     * 完成时间
+     */
+    private String finishedAt;
+    /**
+     * 金额
+     */
     private Integer amount;
-
-    /**平台手续费*/
+    /**
+     * 平台手续费
+     */
     private Integer serviceFee;
-
-    /**电子账簿ID*/
-    private String balanceAcctId;
 
     /**
      * 业务类型
      */
     private String businessType;
-    /**
-     * 提现目标银行账号
-     */
-    private String bankAcctNo;
-    /**
-     * 目标银行账号类型
-     */
-    private String bankAcctType;
 
     /**
-     * 开户银行联行号
+     * 电子账簿ID
      */
-    private String bankBranchCode;
-
-    /**
-     * 开户银行编号
-     */
-    private String bankCode;
-
-    /**
-     * 开户名称
-     */
-    private String name;
+    private String balanceAcctId;
 
     /**
      * 银行附言
      */
     private String bankMemo;
-
-    /**
-     * 手机号
-     */
-    private String mobileNumber;
-
-    /**
-     * 交易授权码
-     */
-    private String password;
 
     /**
      * 备注
