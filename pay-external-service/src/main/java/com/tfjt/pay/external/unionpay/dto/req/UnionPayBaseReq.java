@@ -1,6 +1,6 @@
-package com.tfjt.pay.external.unionpay.dto;
+package com.tfjt.pay.external.unionpay.dto.req;
 
-import lombok.Builder;
+import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseReq;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 @SuperBuilder
 @Data
-public class UnionPayLoansBaseReq implements Serializable {
+public class UnionPayBaseReq  extends UnionPayLoansBaseReq implements Serializable {
     private static final long serialVersionUID = 1L;
     private String transCode;//	交易码
     private String verNo;//	版本号

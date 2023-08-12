@@ -14,15 +14,15 @@ import org.springframework.scheduling.annotation.EnableAsync;
 /**
  * @author tony
  */
-@SpringBootApplication(scanBasePackages = {"com.tfjt.pay"})
-@MapperScan({"com.tfjt.**.dao"})
-@ComponentScan(basePackages={"com.tfjt"})
+@SpringBootApplication(scanBasePackages = {"com.tfjt.pay.external"})
+@MapperScan({"com.tfjt.pay.external.**.dao"})
+@ComponentScan(basePackages={"com.tfjt.pay.external","com.tfjt.tfcommon.core.util"})
 @ServletComponentScan
 @EnableAsync
 @EnableFeignClients
 @EnableDiscoveryClient
 @EnableFileStorage
-@EnableDubbo(scanBasePackages = "com.tfjt")
+@EnableDubbo(scanBasePackages = "com.tfjt.pay.external")
 public class PayExternalApplication {
     public static void main(String[] args) {
         SpringApplication.run(PayExternalApplication.class, args);

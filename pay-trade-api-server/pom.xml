@@ -21,7 +21,8 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>pay-trade-api</artifactId>
-            <version>${project.version}</version>
+            <version>${project.trade.api.version}</version>
+            <scope>compile</scope>
         </dependency>
         <!-- dubbo -->
         <dependency>

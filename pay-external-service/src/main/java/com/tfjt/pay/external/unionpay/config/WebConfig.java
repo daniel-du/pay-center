@@ -8,11 +8,11 @@
 
 package com.tfjt.pay.external.unionpay.config;
 
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +33,13 @@ import javax.annotation.Resource;
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        // 认证拦截器，并指定拦截的路径
+//        registry.addInterceptor(new AuthInterceptor()).addPathPatterns("/**");
+//    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -57,6 +64,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public RedisCache redisCache(){
+        return new RedisCache();
     }
 
     @LoadBalanced
