@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface LoanBalanceAcctService extends IService<LoanBalanceAcctEntity> {
 
-    List<LoanBalanceAcctEntity> getAccountBooksListByBus(Integer loanUserId);
+    List<LoanBalanceAcctEntity> getAccountBooksListByBus(Long loanUserId);
 
     /**
      * 根据贷款用户ID、电子账单ID、电子账单号查询

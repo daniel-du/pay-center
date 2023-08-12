@@ -3,37 +3,62 @@ package com.tfjt.pay.external.unionpay.service;
 
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ElectronicBookReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.ElectronicBookRespDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.WithdrawalCreateRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 /**
- * 商户资金自主管理相关接口
+ * @author Lzh
+ * @version 1.0
+ * @title $NAME
+ * @description 商户资金自主管理相关接口
+ * @Date 2023/8/12 17:04
  */
 public interface UnionPayService {
     /**
      * 合并消费担保下单
+     * @param consumerPoliciesReqDTO
+     * @return
      */
     public Result<ConsumerPoliciesRespDTO> mergeConsumerPolicies(ConsumerPoliciesReqDTO consumerPoliciesReqDTO);
 
     /**
      * 合并消费担保确认
+     * @param consumerPoliciesReqDTO
+     * @return
      */
     public Result<ConsumerPoliciesCheckRespDTO> mergeConsumerPoliciesCheck(ConsumerPoliciesCheckReqDTO consumerPoliciesReqDTO);
 
     /**
      * 提现创建
+     * @param withdrawalCreateReqDTO
+     * @return
      */
-    public ConsumerPoliciesRespDTO withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO);
+    public Result<WithdrawalCreateRespDTO> withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO);
 
     /**
      * 电子账簿流水查询
+     * @param electronicBookReqDTO
+     * @return
      */
-    public ConsumerPoliciesRespDTO electronicBook(ConsumerPoliciesReqDTO consumerPoliciesReqDTO);
+    public Result<ElectronicBookRespDTO> electronicBook(ElectronicBookReqDTO electronicBookReqDTO);
 
     /**
-     * 查询订单状态
+     * 本接口用于使用系统订单号查询合并消费担保下单订单状态
+     * @param combinedGuaranteePaymentId 合并消费担保下单订单系统订单号
+     * @return
      */
-    public ConsumerPoliciesRespDTO queryOrderStatus(ConsumerPoliciesReqDTO consumerPoliciesReqDTO);
+    public Result<ConsumerPoliciesRespDTO> querySystemOrderStatus(String  combinedGuaranteePaymentId);
+
+
+    /**
+     * 本接口用于使用平台订单号查询合并消费担保下单订单状态
+     * @param combinedOutOrderNo 平台订单号
+     * @return
+     */
+    public Result<ConsumerPoliciesRespDTO> queryPlatformOrderStatus(String combinedOutOrderNo);
 }
