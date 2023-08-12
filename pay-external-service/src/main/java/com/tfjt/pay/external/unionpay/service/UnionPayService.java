@@ -5,10 +5,7 @@ import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ElectronicBookReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.ElectronicBookRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.WithdrawalCreateRespDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 
 /**
@@ -61,4 +58,11 @@ public interface UnionPayService {
      * @return
      */
     public Result<ConsumerPoliciesRespDTO> queryPlatformOrderStatus(String combinedOutOrderNo);
+
+    /**
+     * 获取账户信息
+     * @param balanceAcctId
+     * @return
+     */
+    LoanAccountDTO getLoanAccount(String balanceAcctId);
 }

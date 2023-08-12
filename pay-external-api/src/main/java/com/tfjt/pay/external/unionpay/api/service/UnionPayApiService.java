@@ -20,5 +20,5 @@ public interface UnionPayApiService {
      * 获取同福母账户当前账户余额
      * @return
      */
-    Result<Long> currentBalance();
+    Result<Integer> currentBalance();
 }
