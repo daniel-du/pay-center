@@ -129,4 +129,6 @@ public class CustBankInfoEntity implements Serializable {
 
     private String verifyStatus;
 
-}
+    private boolean deleted;
+
+ }

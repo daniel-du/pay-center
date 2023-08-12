@@ -20,7 +20,7 @@ public class LoanBalanceAcctServiceImpl extends BaseServiceImpl<LoanBalanceAcctD
     private CustBankInfoService bankInfoService;
 
     @Override
-    public List<LoanBalanceAcctEntity> getAccountBooksListByBus(Integer loanUserId) {
+    public List<LoanBalanceAcctEntity> getAccountBooksListByBus(Long loanUserId) {
         LoanUserEntity loanUserEntity = this.bankInfoService.getTfLoanUserEntity(loanUserId);
 
         List<LoanBalanceAcctEntity> list = this.list(new LambdaQueryWrapper<LoanBalanceAcctEntity>()

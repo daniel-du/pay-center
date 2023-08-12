@@ -2,6 +2,9 @@ package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
+import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
+import com.tfjt.pay.external.unionpay.dto.req.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.CaptchaService;
@@ -43,6 +46,9 @@ public class CustBankInfoController {
 
     @Resource
     LoanUserService loanUserService;
+
+    @Resource
+    UnionPayLoansBizService unionPayLoansBizService;
 
 
     /**
@@ -174,6 +180,28 @@ public class CustBankInfoController {
     @DeleteMapping("/delete")
     public Result<?> delete(@RequestBody Integer[] ids) {
         custBankInfoService.removeByIds(Arrays.asList(ids));
+        return Result.ok();
+    }
+
+
+    @PostMapping("/unbindSettleAcct")
+    public Result<String> unbindSettleAcct(@RequestBody BankInfoReqDTO bankInfoReqDTO){
+        try {
+            unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
+        }catch (TfException ex){
+            return Result.failed(ex.getMessage());
+        }
+        return Result.ok();
+    }
+
+
+    @PostMapping("/bindSettleAcct")
+    public Result<String> bindSettleAcct(@RequestBody BankInfoReqDTO bankInfoReqDTO){
+        try {
+            unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
+        }catch (TfException ex){
+            return Result.failed(ex.getMessage());
+        }
         return Result.ok();
     }
 

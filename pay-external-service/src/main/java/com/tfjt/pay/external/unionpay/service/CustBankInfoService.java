@@ -23,16 +23,16 @@ public interface CustBankInfoService extends IService<CustBankInfoEntity> {
      * @param loanUserId
      * @return
      */
-    List<BankInfoDTO> getBankInfoByBus(Integer loanUserId);
+    List<BankInfoDTO> getBankInfoByBus(Long loanUserId);
 
-    LoanUserEntity getTfLoanUserEntity(Integer loanUserId);
+    LoanUserEntity getTfLoanUserEntity(Long loanUserId);
 
-    CustBankInfoEntity getByLoanUserId(Integer loanUserId);
+    CustBankInfoEntity getByLoanUserId(Long loanUserId);
 
     UnionPayLoansSettleAcctDTO updateCustBankInfo(CustBankInfoEntity custBankInfo);
 
 
-    void updateCustBankVerifyStatus(Integer loanUserId, String bankAcctno, String verifystatus);
+    void updateCustBankVerifyStatus(Long loanUserId, String bankAcctno, String verifystatus);
 
     CustBankInfoEntity getBankInfoByBankCardNoAndLoanUserId(String destAcctNo, Long loanUserId);
 }

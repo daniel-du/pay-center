@@ -36,8 +36,8 @@ public class UserLoanInfoController {
      * @param loanUserId  贷款用户id
      * @return
      */
-    @GetMapping("/bankCarList")
-    public Result<?> bankCarList(@RequestParam Integer loanUserId) {
+    @GetMapping("/bankCardList")
+    public Result<?> bankCarList(@RequestParam Long loanUserId) {
         try {
             List<BankInfoDTO> list = this.custBankInfoService.getBankInfoByBus(loanUserId);
             return Result.ok(list);
@@ -54,7 +54,7 @@ public class UserLoanInfoController {
      * @return
      */
     @GetMapping("/accountBooksList")
-    public Result<?> list(@RequestParam Integer loanUserId) {
+    public Result<?> list(@RequestParam Long loanUserId) {
         try {
             List<LoanBalanceAcctEntity> list = this.loanBalanceAcctService.getAccountBooksListByBus(loanUserId);
             return Result.ok(list);

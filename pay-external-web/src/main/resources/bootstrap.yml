@@ -27,6 +27,11 @@ logging:
     com.hospital: DEBUG
     com.zaxxer.hikari: DEBUG
 mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
   mapper-locations: classpath:/mapper/*/*Dao.xml
   configuration:
     map-underscore-to-camel-case: true

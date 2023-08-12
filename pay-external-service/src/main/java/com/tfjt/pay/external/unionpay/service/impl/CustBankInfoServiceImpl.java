@@ -39,11 +39,11 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     private BankService bankService;
 
     @Override
-    public List<BankInfoDTO> getBankInfoByBus(Integer loanUserId) {
+    public List<BankInfoDTO> getBankInfoByBus(Long loanUserId) {
         LoanUserEntity one = getTfLoanUserEntity(loanUserId);
-        List<CustBankInfoEntity> list = this.list(new LambdaQueryWrapper<CustBankInfoEntity>()
+        List<CustBankInfoEntity> list = this.list(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false)
                 .eq(CustBankInfoEntity::getLoanUserId, one.getId()));
-        if (CollUtil.isEmpty(list)){
+        if (CollUtil.isEmpty(list)) {
             return new ArrayList<>();
         }
         List<BankInfoDTO> collect = list.stream().map(custBankInfoEntity -> {
@@ -62,12 +62,12 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     private String getTfBankEntity(CustBankInfoEntity custBankInfoEntity) {
         BankInterbankNumberEntity bankInterbankNumberEntity = this.bankInterbankNumberService.getOne(new LambdaQueryWrapper<BankInterbankNumberEntity>()
                 .eq(BankInterbankNumberEntity::getBankCode, custBankInfoEntity.getBankCode()));
-        if (ObjectUtil.isEmpty(bankInterbankNumberEntity)){
+        if (ObjectUtil.isEmpty(bankInterbankNumberEntity)) {
             throw new TfException("查询支行信息异常");
         }
         BankEntity bankEntity = this.bankService.getOne(new LambdaQueryWrapper<BankEntity>()
                 .eq(BankEntity::getBankCode, bankInterbankNumberEntity.getDrecCode()));
-        if (ObjectUtil.isEmpty(bankEntity)){
+        if (ObjectUtil.isEmpty(bankEntity)) {
             throw new TfException("银行卡查询总行信息异常");
         }
         custBankInfoEntity.setBigBankName(bankEntity.getBankName());
@@ -76,22 +76,29 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     }
 
     @Override
-    public LoanUserEntity getTfLoanUserEntity(Integer loanUserId) {
+    public LoanUserEntity getTfLoanUserEntity(Long loanUserId) {
         //查询 loanID
         LoanUserEntity one = this.loanUserService.getById(loanUserId);
-        if (ObjectUtil.isEmpty(one)){
+        if (ObjectUtil.isEmpty(one)) {
             throw new TfException("未查询到用户信息");
         }
         return one;
     }
 
+    /**
+     * 获取默认卡 取创建时间最早的一条记录
+     *
+     * @param loanUserId
+     * @return
+     */
     @Override
-    public CustBankInfoEntity getByLoanUserId(Integer loanUserId) {
-        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId));
+    public CustBankInfoEntity getByLoanUserId(Long loanUserId) {
+        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId).eq(CustBankInfoEntity::isDeleted, false).last(" limit 1"));
     }
 
     /**
      * 结算信息修改
+     *
      * @param custBankInfo
      */
     @Transactional(rollbackFor = Exception.class)
@@ -100,15 +107,15 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     public UnionPayLoansSettleAcctDTO updateCustBankInfo(CustBankInfoEntity custBankInfo) {
         UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = new UnionPayLoansSettleAcctDTO();
         LoanUserEntity tfLoanUserEntity = loanUserService.getById(custBankInfo.getLoanUserId());
-        if(StringUtils.isNotBlank(tfLoanUserEntity.getCusId())){
+        if (StringUtils.isNotBlank(tfLoanUserEntity.getCusId())) {
             //当银行卡修改则调用新增绑定账号逻辑
             CustBankInfoEntity old = this.getById(custBankInfo.getId());
-            if(!Objects.equals(custBankInfo.getBankCardNo(), old.getBankCardNo())
+            if (!Objects.equals(custBankInfo.getBankCardNo(), old.getBankCardNo())
                     || !Objects.equals(custBankInfo.getAccountName(), old.getAccountName())
                     || !Objects.equals(custBankInfo.getCity(), old.getCity())
                     || !Objects.equals(custBankInfo.getBankCode(), old.getBankCode())
                     || !Objects.equals(custBankInfo.getCareer(), old.getCareer())
-            ){
+            ) {
                 //删除只能删除已绑定的
                 unionPayLoansSettleAcctDTO = unionPayLoansApiService.delAndBindAddSettleAcct(custBankInfo, old.getBankCardNo());
             }
@@ -118,14 +125,20 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     }
 
     @Override
-    public void updateCustBankVerifyStatus(Integer loanUserId, String bankAcctno, String verifystatus) {
+    public void updateCustBankVerifyStatus(Long loanUserId, String bankAcctno, String verifystatus) {
         CustBankInfoEntity custBankInfoEntity = this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getBankCardNo, bankAcctno).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
         custBankInfoEntity.setVerifyStatus(verifystatus);
         this.updateById(custBankInfoEntity);
     }
 
+    /**
+     * 通过银行卡获取信息
+     * @param bankCardNo
+     * @param loanUserId
+     * @return
+     */
     @Override
     public CustBankInfoEntity getBankInfoByBankCardNoAndLoanUserId(String bankCardNo, Long loanUserId) {
-        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getBankCardNo,bankCardNo).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
+        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getBankCardNo, bankCardNo).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
     }
 }

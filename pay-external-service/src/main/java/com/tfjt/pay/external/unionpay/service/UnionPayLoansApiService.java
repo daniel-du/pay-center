@@ -51,7 +51,7 @@ public interface UnionPayLoansApiService {
 
     SettleAcctsMxDTO querySettleAcct(Integer id);
 
-    UnionPayLoansSettleAcctDTO querySettleAcctByOutRequestNo(Integer loanUserId, String outRequestNo);
+    UnionPayLoansSettleAcctDTO querySettleAcctByOutRequestNo(Long loanUserId, String outRequestNo);
 
     void deleteSettleAcct(ReqDeleteSettleAcctParams deleteSettleAcctParams);
 
@@ -96,12 +96,12 @@ public interface UnionPayLoansApiService {
      * @param payAmount
      * @return
      */
-    UnionPayLoansSettleAcctDTO settleAcctsValidate(Integer id, Integer payAmount);
+    UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount);
 
     /**
      * 获取绑定账户编号
      * @param id
      * @return
      */
-    String getSettleAcctId(Integer id);
+    String getSettleAcctId(Long loanUserId);
 }
