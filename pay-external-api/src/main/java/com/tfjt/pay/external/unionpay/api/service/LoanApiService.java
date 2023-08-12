@@ -11,7 +11,12 @@ import java.util.Map;
  * @email 598482054@qq.com
  */
 public interface LoanApiService {
-
+    /**
+     * 获取向同福转账的账户余额与同福母账号信息
+     * @param type  用户类型
+     * @param bid  业务id
+     * @return  用户余额与同福收款账号信息
+     */
     Result<LoanTransferToTfDTO> getBalanceAcctId(String type, String bid);
 
     Result<Map<String,Object>> incomingIsFinish(String type, String bid);

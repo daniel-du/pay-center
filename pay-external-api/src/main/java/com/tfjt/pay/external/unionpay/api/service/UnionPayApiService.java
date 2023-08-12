@@ -15,4 +15,10 @@ public interface UnionPayApiService {
      * @param payTransferDTO
      */
     Result<String> transfer(UnionPayTransferDTO payTransferDTO);
+
+    /**
+     * 获取同福母账户当前账户余额
+     * @return
+     */
+    Result<Long> currentBalance();
 }

@@ -32,4 +32,10 @@ public class LoanBalanceAcctServiceImpl extends BaseServiceImpl<LoanBalanceAcctD
     public LoanBalanceAcctEntity getTfLoanBalanceAcctEntity(String relAcctNo, String balanceAcctId, Long loanUserId) {
         return this.getOne(new LambdaQueryWrapper<LoanBalanceAcctEntity>().eq(LoanBalanceAcctEntity::getRelAcctNo, relAcctNo).eq(LoanBalanceAcctEntity::getBalanceAcctId, balanceAcctId).eq(LoanBalanceAcctEntity::getLoanUserId, loanUserId));
     }
+
+    @Override
+    public LoanBalanceAcctEntity getBalanceAcctIdByBidAndType(String busId, String type) {
+
+        return this.getBaseMapper().getBalanceAcctIdByBidAndType(busId,type);
+    }
 }

@@ -4,6 +4,7 @@ package com.tfjt.pay.external.unionpay.dao;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 贷款用户电子账单
@@ -14,5 +15,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface LoanBalanceAcctDao extends BaseMapper<LoanBalanceAcctEntity> {
-	
+
+    LoanBalanceAcctEntity getBalanceAcctIdByBidAndType(@Param("busId") String busId, @Param("type") String type);
 }
