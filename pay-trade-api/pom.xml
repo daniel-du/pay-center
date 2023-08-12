@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>pay-trade-api</artifactId>
-    <version>${project.api.version}</version>
+    <version>${project.trade.api.version}</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
