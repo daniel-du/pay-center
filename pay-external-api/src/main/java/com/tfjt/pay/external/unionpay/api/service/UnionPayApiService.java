@@ -1,7 +1,11 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferDTO;
 import com.tfjt.tfcommon.dto.response.Result;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 银联dubbo接口层
@@ -21,4 +25,19 @@ public interface UnionPayApiService {
      * @return
      */
     Result<Integer> currentBalance();
+
+
+    /**
+     * 获取指定电子账簿id的账户信息
+     * @param balanceAcctId 电子账簿id
+     * @return
+     */
+    Result<BalanceAcctDTO> getBalanceByAccountId(String balanceAcctId);
+
+    /**
+     * 批量获取指定电子账簿id的账户信息
+     * @return
+     */
+    Result<Map<String,BalanceAcctDTO>> listBalanceByAccountIds(List<String> balanceAcctIds);
+
 }
