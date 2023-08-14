@@ -3,7 +3,9 @@ import com.alibaba.fastjson.JSON;
 import com.tfjt.pay.external.unionpay.constants.UnionPayConstant;
 import com.tfjt.pay.external.unionpay.dto.RespLwzMsgReturn;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayBaseReq;
+import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
+import com.tfjt.pay.external.unionpay.enums.TransactionCodeEnum;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -129,5 +131,14 @@ public class UnionPayBaseBuilderUtils<T> {
             }
         }
         return mgs;
+    }
+
+    public T combination(String lwzBussCode,String lwzData,Class clazz){
+
+        UnionPayBaseReq unionPayBaseReq = (UnionPayBaseReq)baseBuilder(lwzBussCode, lwzData);
+        log.info("合并消费担保下单入参{}", JSON.toJSON(unionPayBaseReq));
+        ResponseEntity<T> responseEntity = post(unionPayBaseReq);
+        log.info("合并消费担保下单返回值{}", responseEntity);
+        return getBaseReturn(responseEntity, clazz);
     }
 }

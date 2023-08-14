@@ -14,10 +14,10 @@ import com.tfjt.tfcommon.dto.response.Result;
 /**
  * @author Lzh
  * @version 1.0
- * @title $NAME
+ * @title UnionPayService
  * @description 商户资金自主管理相关接口
- * @Date 2023/8/12 17:04
- */
+ * @Date 2023/8/12 17:24
+ **/
 public interface UnionPayService {
     /**
      * 合并消费担保下单
