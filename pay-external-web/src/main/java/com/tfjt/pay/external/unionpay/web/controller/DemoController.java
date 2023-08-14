@@ -5,10 +5,14 @@ import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.WithdrawalCreateRespDTO;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
+import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.dto.response.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +30,7 @@ import java.util.Map;
  * @email sunlightcs@gmail.com
  * @date 2022-09-23 16:37:14
  */
+@Slf4j
 @RestController
 @RequestMapping("demo/user")
 public class DemoController {
@@ -37,6 +42,9 @@ public class DemoController {
 
     @Autowired
     private UnionPayService unionPayService;
+
+    @Value("${unionPayLoans.encodedPub}")
+    private String encodedPub;
     /**
      * 合并消费担保下单 例子
      */
@@ -47,7 +55,7 @@ public class DemoController {
 //        String s = redisCache.getCacheObject(key);
 //        return Result.ok(demoService.page(page, Wrappers.query(userEntity) ));
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = new ConsumerPoliciesReqDTO();
-        consumerPoliciesReqDTO.setCombinedOutOrderNo("sdk-example-1685093948g5Gbf");
+        consumerPoliciesReqDTO.setCombinedOutOrderNo("sdk-example-1685093949g5Gbf");
         consumerPoliciesReqDTO.setSentAt("2023-05-26T17:39:08.699+08:00");
         consumerPoliciesReqDTO.setPayBalanceAcctId("2008362494748960292"); //2008362494748960292
         consumerPoliciesReqDTO.setPassword("BJJ/EAiU2lzXyEMc6VcpfCghuyWEmH2urxgwNr7MYX3bXjV2SdSjHXFg6NJHKcFS/xl+BD9GUSJUyI1OsXcD3Syndh+XWwSLfflttlrtu0A3W18v1UiZf11oNL4ag8LqpsIEvpuFLnAO");
@@ -56,14 +64,14 @@ public class DemoController {
             GuaranteePaymentDTO guaranteePaymentDTO = new GuaranteePaymentDTO();
             guaranteePaymentDTO.setAmount(1);
             guaranteePaymentDTO.setRecvBalanceAcctId("2008349494890702347"); //2008349494890702347
-            guaranteePaymentDTO.setOutOrderNo("D202308091505111");
+            guaranteePaymentDTO.setOutOrderNo("D202308091505112");
                 //扩展字段集合
                 List<ExtraDTO>  list2 = new ArrayList<>();
                 ExtraDTO extraDTO = new ExtraDTO();
-                    extraDTO.setOrderNo("2008349494890702347");
+                    extraDTO.setOrderNo("2008349494890702348");
                     extraDTO.setOrderAmount(1);
                     extraDTO.setProductCount(1);
-                    extraDTO.setProductName("测试产品");
+                    extraDTO.setProductName("测试产品2");
                 Map<String,Object> map = new HashMap<>();
                 list2.add(extraDTO);
                 map.put("productInfos",list2);
@@ -112,24 +120,56 @@ public class DemoController {
     public Result<WithdrawalCreateRespDTO> withdrawalCreation(){
         //提现
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
-        withdrawalCreateReqDTO.setOutOrderNo("2008349494890702347");
-        withdrawalCreateReqDTO.setSentAt("2008362494748960292");
+        withdrawalCreateReqDTO.setOutOrderNo("2008349494890702348");
+        withdrawalCreateReqDTO.setSentAt("2023-08-14T11:30:08.647+08:00");
         withdrawalCreateReqDTO.setAmount(1);
         withdrawalCreateReqDTO.setServiceFee(null);
         withdrawalCreateReqDTO.setBalanceAcctId("2008362494748960292");//电子账簿ID
         withdrawalCreateReqDTO.setBusinessType("1");
-        withdrawalCreateReqDTO.setBankAcctNo("");//提现目标银行账号 提现目标银行账号需要加密处理
+        withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, "6222030402000890604"));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
         withdrawalCreateReqDTO.setBankAcctType("1"); //提现至非绑定账户时 必填 枚举值： 1-对私银行卡 2-对公银行账户
-        withdrawalCreateReqDTO.setBankCode("");// 开户银行联行号  提现至非绑定账户时必填
-        withdrawalCreateReqDTO.setName(""); //开户名称 提现至非绑定账户时必填  需要加密处理
-        withdrawalCreateReqDTO.setBankMemo(""); //银行附言
-        withdrawalCreateReqDTO.setMobileNumber(""); //手机号 需要加密处理
+//        withdrawalCreateReqDTO.setBankCode("");// 开户银行联行号  提现至非绑定账户时必填
+//        withdrawalCreateReqDTO.setName(""); //开户名称 提现至非绑定账户时必填  需要加密处理
+//        withdrawalCreateReqDTO.setBankMemo(""); //银行附言
+        withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, "18712942960")); //手机号 需要加密处理
         withdrawalCreateReqDTO.setRemark("用于 SDK 示例测试");
         Map<String,Object> map = new HashMap<>();
-        map.put("notifyUrl","http://");
+        map.put("notifyUrl","http://aexrsg.natappfree.cc/tf-pay-external/demo/user/withdrawalCallback");
         withdrawalCreateReqDTO.setExtra(map);
 
         return  unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
     }
 
+    /**
+     * 查询订单状态(暂未开通)
+     */
+    @RequestMapping("/queryOrder")
+    public Result<ConsumerPoliciesRespDTO> queryOrder(){
+        String combinedGuaranteePaymentId = "4908694296947634279";
+
+
+        return  unionPayService.querySystemOrderStatus( combinedGuaranteePaymentId);
+    }
+
+    /**
+     * 查询订单状态
+     */
+    @RequestMapping("/queryPlatformOrderStatus")
+    public Result<ConsumerPoliciesRespDTO> queryPlatformOrderStatus(){
+        String combinedGuaranteePaymentId = "sdk-example-1685093948g5Gbf";
+
+
+        return  unionPayService.queryPlatformOrderStatus( combinedGuaranteePaymentId);
+    }
+
+    /**
+     * 接收回调
+     */
+    @RequestMapping("/withdrawalCallback")
+    public Result<ConsumerPoliciesRespDTO> withdrawalCallback(@RequestBody TransactionCallBackReqDTO transactionCallBackReqDTO){
+       log.info("交易类回调参数{}",transactionCallBackReqDTO);
+
+
+        return  Result.ok();
+    }
 }
