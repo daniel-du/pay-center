@@ -25,5 +25,13 @@ public interface LoanBalanceAcctService extends IService<LoanBalanceAcctEntity> 
      * @return
      */
     LoanBalanceAcctEntity getTfLoanBalanceAcctEntity(String relAcctNo, String balanceAcctId, Long loanUserId);
+
+    /**
+     *
+     * @param bid
+     * @param type
+     * @return
+     */
+    LoanBalanceAcctEntity getBalanceAcctIdByBidAndType(String bid, String type);
 }
 
