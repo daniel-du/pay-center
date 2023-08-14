@@ -11,6 +11,8 @@ import java.io.Serializable;
  */
 @Data
 public class BalanceAcctDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     /**
      * 系统生成的唯一的电子账簿ID
      */

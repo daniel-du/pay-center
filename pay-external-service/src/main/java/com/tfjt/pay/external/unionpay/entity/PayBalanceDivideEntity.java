@@ -84,6 +84,16 @@ public class PayBalanceDivideEntity implements Serializable {
 	/**
 	 * 分账业务系统标识
 	 */
-	private String systemId;
+	private String businessSystemId;
+	/**
+	 * 业务系统订单号
+	 */
+	private String businessOrderNo;
+	/**
+	 * 业务系统子项订单号
+	 */
+	private String subBusinessOrderNo;
+
+
 
 }

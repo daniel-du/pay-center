@@ -1,10 +1,7 @@
 package com.tfjt.pay.external.unionpay.service;
 
 
-import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.ElectronicBookReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -65,4 +62,9 @@ public interface UnionPayService {
      * @return
      */
     LoanAccountDTO getLoanAccount(String balanceAcctId);
+
+    /**
+     * 银联分账
+     */
+    void balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO);
 }

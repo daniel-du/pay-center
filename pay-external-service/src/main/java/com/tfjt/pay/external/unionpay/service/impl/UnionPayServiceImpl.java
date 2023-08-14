@@ -11,8 +11,6 @@ import com.tfjt.pay.external.unionpay.utils.UnionPayBaseBuilderUtils;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -155,7 +153,6 @@ public class UnionPayServiceImpl implements UnionPayService {
                     TransactionCodeEnum.LWZ511_RECEIPT_QUERY_REQ.getCode(),
                     JSON.toJSONString(param),
                     LoanAccountDTO.class);
-
             return loanAccountDTO;
         }catch (TfException e){
             log.error("调用电子账簿查询(电子账簿ID)返回 TfException{},{}", JSON.toJSON(param),e);
@@ -163,6 +160,12 @@ public class UnionPayServiceImpl implements UnionPayService {
             log.error("调用电子账簿查询(电子账簿ID)返回 Exception{},{}", JSON.toJSON(param),e);
         }
         return null;
+    }
+
+    @Override
+    public void balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
+        //unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ69_PAYMENTS_QUERY.getCode(),JSON.toJSONString(unionPayDivideReqDTO));
+
     }
 
 

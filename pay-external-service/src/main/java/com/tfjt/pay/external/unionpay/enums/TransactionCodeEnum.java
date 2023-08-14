@@ -46,7 +46,9 @@ public enum TransactionCodeEnum {
     /**
      * 提现创建
      */
-    LWZ64_WITHDRAWALS_REQ("LWZ64_WITHDRAWALS_REQ","提现创建");
+    LWZ64_WITHDRAWALS_REQ("LWZ64_WITHDRAWALS_REQ","提现创建"),
+    /**分账创建*/
+    LWZ69_PAYMENTS_QUERY("LWZ69_PAYMENTS_QUERY","分账创建");
     /**
      * code
      */

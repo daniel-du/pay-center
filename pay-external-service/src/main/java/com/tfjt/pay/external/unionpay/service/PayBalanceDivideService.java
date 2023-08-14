@@ -12,5 +12,6 @@ import com.tfjt.pay.external.unionpay.entity.PayBalanceDivideEntity;
  */
 public interface PayBalanceDivideService extends IService<PayBalanceDivideEntity> {
 
+    boolean checkExistBusinessOrderNo(String businessOrderNo);
 }
 

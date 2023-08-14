@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferDTO;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -39,5 +40,12 @@ public interface UnionPayApiService {
      * @return
      */
     Result<Map<String,BalanceAcctDTO>> listBalanceByAccountIds(List<String> balanceAcctIds);
+
+    /**
+     * 资金分账操作
+     * @param balanceDivideReq
+     * @return
+     */
+    Result balanceDivide(BalanceDivideReqDTO balanceDivideReq);
 
 }

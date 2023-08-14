@@ -9,6 +9,9 @@ import java.io.Serializable;
  * @email 598482054@qq.com
  */
 public class LoanTransferToTfDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     /**
      * 入金电子账簿ID
      */
