@@ -147,20 +147,20 @@ public class UnionPayServiceImpl implements UnionPayService {
 
     @Override
     public LoanAccountDTO getLoanAccount(String balanceAcctId) {
-        UnionPayBaseReq unionPayBaseReq = null;
+        JSONObject param = new JSONObject();
         try {
-            JSONObject param = new JSONObject();
             param.put("balanceAcctId",balanceAcctId);
-            unionPayBaseReq = (UnionPayBaseReq)unionPayBaseBuilderUtils.baseBuilder(TransactionCodeEnum.LWZ511_RECEIPT_QUERY_REQ.getCode(), param.toJSONString());
-            //调用银联接口
-            ResponseEntity<UnionPayBaseResp> responseEntity = (ResponseEntity<UnionPayBaseResp>)unionPayBaseBuilderUtils.post(unionPayBaseReq);
-            log.debug("调用电子账簿查询(电子账簿ID)返回信息<<<<<<<<<<<<<<<<<<{}", responseEntity);
-            LoanAccountDTO loanAccountDTO = (LoanAccountDTO)unionPayBaseBuilderUtils.getBaseReturn(responseEntity,LoanAccountDTO.class);
+            log.info("调用电子账簿查询(电子账簿ID){}",JSON.toJSONString(param));
+            LoanAccountDTO loanAccountDTO = (LoanAccountDTO)unionPayBaseBuilderUtils.combination(
+                    TransactionCodeEnum.LWZ511_RECEIPT_QUERY_REQ.getCode(),
+                    JSON.toJSONString(param),
+                    LoanAccountDTO.class);
+
             return loanAccountDTO;
         }catch (TfException e){
-            log.error("调用电子账簿查询(电子账簿ID)返回 TfException{},{}", JSON.toJSON(unionPayBaseReq),e);
+            log.error("调用电子账簿查询(电子账簿ID)返回 TfException{},{}", JSON.toJSON(param),e);
         }catch (Exception e){
-            log.error("调用电子账簿查询(电子账簿ID)返回 Exception{},{}", JSON.toJSON(unionPayBaseReq),e);
+            log.error("调用电子账簿查询(电子账簿ID)返回 Exception{},{}", JSON.toJSON(param),e);
         }
         return null;
     }
