@@ -32,6 +32,7 @@ public class UnionPayServiceImpl implements UnionPayService {
     @Override
     public Result<ConsumerPoliciesRespDTO> mergeConsumerPolicies(ConsumerPoliciesReqDTO consumerPoliciesReqDTO) {
         try{
+            log.info("进入合并消费担保下单");
             ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ634_COMBINED_GUARANTEE_PAYMENTS.getCode(),
                     JSON.toJSONString(consumerPoliciesReqDTO),
@@ -49,6 +50,7 @@ public class UnionPayServiceImpl implements UnionPayService {
     @Override
     public Result<ConsumerPoliciesCheckRespDTO> mergeConsumerPoliciesCheck(ConsumerPoliciesCheckReqDTO consumerPoliciesReqDTO) {
         try{
+            log.info("进入合并消费担保确认");
             ConsumerPoliciesCheckRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesCheckRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ637_COMBINED_GUARANTEE_CONFIRMS.getCode(),
                     JSON.toJSONString(consumerPoliciesReqDTO),
@@ -62,14 +64,13 @@ public class UnionPayServiceImpl implements UnionPayService {
             log.error("合并消费担保确认异常{},{}", JSON.toJSON(consumerPoliciesReqDTO),e);
             return Result.failed(e.getMessage());
         }
-
     }
 
     @Override
     public Result<WithdrawalCreateRespDTO> withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO) {
 
         try{
-
+            log.info("进入提现创建");
             WithdrawalCreateRespDTO withdrawalCreateRespDTO = (WithdrawalCreateRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ64_WITHDRAWALS_REQ.getCode(),
                     JSON.toJSONString(withdrawalCreateReqDTO),
@@ -89,6 +90,7 @@ public class UnionPayServiceImpl implements UnionPayService {
     public Result<ElectronicBookRespDTO> electronicBook(ElectronicBookReqDTO electronicBookReqDTO) {
 
         try{
+            log.info("进入电子账簿流水查询");
             ElectronicBookRespDTO electronicBookRespDTO = (ElectronicBookRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ623_BALANCE_TRANSACTIONS_REQ.getCode(),
                     JSON.toJSONString(electronicBookReqDTO),
@@ -108,6 +110,7 @@ public class UnionPayServiceImpl implements UnionPayService {
     public Result<ConsumerPoliciesRespDTO> querySystemOrderStatus(String  combinedGuaranteePaymentId) {
         JSONObject jsonObject = new JSONObject();
         try{
+            log.info("进入使用系统订单号查询合并消费担保下单订单状态");
             jsonObject.put("combinedGuaranteePaymentId",combinedGuaranteePaymentId);
             ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
                     null,
@@ -129,6 +132,7 @@ public class UnionPayServiceImpl implements UnionPayService {
 
         JSONObject jsonObject = new JSONObject();
         try{
+            log.info("使用平台订单号查询合并消费担保下单订单状态");
             jsonObject.put("combinedOutOrderNo",combinedOutOrderNo);
             ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ636_COMBINED_GUARANTEE_PAYMENTS_BY_OUT_ORDER_NO.getCode(),

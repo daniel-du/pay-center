@@ -21,35 +21,35 @@ public interface UnionPayService {
      * @param consumerPoliciesReqDTO
      * @return
      */
-    public Result<ConsumerPoliciesRespDTO> mergeConsumerPolicies(ConsumerPoliciesReqDTO consumerPoliciesReqDTO);
+     Result<ConsumerPoliciesRespDTO> mergeConsumerPolicies(ConsumerPoliciesReqDTO consumerPoliciesReqDTO);
 
     /**
      * 合并消费担保确认
      * @param consumerPoliciesReqDTO
      * @return
      */
-    public Result<ConsumerPoliciesCheckRespDTO> mergeConsumerPoliciesCheck(ConsumerPoliciesCheckReqDTO consumerPoliciesReqDTO);
+     Result<ConsumerPoliciesCheckRespDTO> mergeConsumerPoliciesCheck(ConsumerPoliciesCheckReqDTO consumerPoliciesReqDTO);
 
     /**
      * 提现创建
      * @param withdrawalCreateReqDTO
      * @return
      */
-    public Result<WithdrawalCreateRespDTO> withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO);
+     Result<WithdrawalCreateRespDTO> withdrawalCreation(WithdrawalCreateReqDTO withdrawalCreateReqDTO);
 
     /**
      * 电子账簿流水查询
      * @param electronicBookReqDTO
      * @return
      */
-    public Result<ElectronicBookRespDTO> electronicBook(ElectronicBookReqDTO electronicBookReqDTO);
+     Result<ElectronicBookRespDTO> electronicBook(ElectronicBookReqDTO electronicBookReqDTO);
 
     /**
      * 本接口用于使用系统订单号查询合并消费担保下单订单状态
      * @param combinedGuaranteePaymentId 合并消费担保下单订单系统订单号
      * @return
      */
-    public Result<ConsumerPoliciesRespDTO> querySystemOrderStatus(String  combinedGuaranteePaymentId);
+     Result<ConsumerPoliciesRespDTO> querySystemOrderStatus(String  combinedGuaranteePaymentId);
 
 
     /**
@@ -57,7 +57,7 @@ public interface UnionPayService {
      * @param combinedOutOrderNo 平台订单号
      * @return
      */
-    public Result<ConsumerPoliciesRespDTO> queryPlatformOrderStatus(String combinedOutOrderNo);
+     Result<ConsumerPoliciesRespDTO> queryPlatformOrderStatus(String combinedOutOrderNo);
 
     /**
      * 获取账户信息
