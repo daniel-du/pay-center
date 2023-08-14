@@ -40,7 +40,7 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
     public Result<String> updatePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         try {
             UpdateWrapper<PaymentPasswordEntity> updateWrapper = Wrappers.update();
-            updateWrapper.lambda().eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType());
+            updateWrapper.lambda().eq(PaymentPasswordEntity::getLoanUserId, paymentPasswordDTO.getLoanUserId());
             PaymentPasswordEntity paymentPasswordEntity = new PaymentPasswordEntity();
             paymentPasswordEntity.setPassword(paymentPasswordDTO.getPassword());
             paymentPasswordService.update(paymentPasswordEntity, updateWrapper);
@@ -55,7 +55,7 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
     public Result<PaymentPasswordRespDTO> getSalt(PaymentPasswordReqDTO paymentPasswordDTO) {
         PaymentPasswordRespDTO passwordRespDTO = null;
         try {
-            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()));
+            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getLoanUserId,paymentPasswordDTO.getLoanUserId()));
             if (ObjectUtils.isNotEmpty(paymentPassword)) {
                 passwordRespDTO = new PaymentPasswordRespDTO();
                 passwordRespDTO.setSalt(paymentPassword.getSalt());
@@ -71,7 +71,7 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
     public Result<Boolean> verifyPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         boolean result = false;
         try {
-            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()));
+            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getLoanUserId, paymentPasswordDTO.getLoanUserId()));
             if (ObjectUtils.isNotEmpty(paymentPassword)) {
 
                 result = Objects.equals(paymentPasswordDTO.getPassword(), paymentPassword.getPassword());
