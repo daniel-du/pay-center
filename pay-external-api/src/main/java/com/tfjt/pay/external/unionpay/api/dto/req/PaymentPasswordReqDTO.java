@@ -16,14 +16,9 @@ public class PaymentPasswordReqDTO implements Serializable {
 
 
     /**
-     * 类型1商家2供应商
+     * 贷款用户id
      */
-    private Integer type;
-
-    /**
-     * 业务ID
-     */
-    private String busId;
+    private Long loanUserId;
 
     /**
      * 密码
@@ -36,21 +31,12 @@ public class PaymentPasswordReqDTO implements Serializable {
      */
     private String salt;
 
-
-    public Integer getType() {
-        return type;
+    public Long getLoanUserId() {
+        return loanUserId;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public String getBusId() {
-        return busId;
-    }
-
-    public void setBusId(String busId) {
-        this.busId = busId;
+    public void setLoanUserId(Long loanUserId) {
+        this.loanUserId = loanUserId;
     }
 
     public String getPassword() {
@@ -72,18 +58,10 @@ public class PaymentPasswordReqDTO implements Serializable {
     public PaymentPasswordReqDTO() {
     }
 
-    public PaymentPasswordReqDTO(Integer type, String busId, String password, String salt) {
-        this.type = type;
-        this.busId = busId;
-        this.password = password;
-        this.salt = salt;
-    }
-
     @Override
     public String toString() {
-        return "PaymentPasswordDTO{" +
-                "type=" + type +
-                ", busId='" + busId + '\'' +
+        return "PaymentPasswordReqDTO{" +
+                "loanUserId=" + loanUserId +
                 ", password='" + password + '\'' +
                 ", salt='" + salt + '\'' +
                 '}';

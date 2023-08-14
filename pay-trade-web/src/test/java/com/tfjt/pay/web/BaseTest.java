@@ -1,8 +1,5 @@
 package com.tfjt.pay.web;
 
-import com.tfjt.pay.external.unionpay.service.DemoService;
-import org.apache.dubbo.config.annotation.DubboReference;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,12 +14,4 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ActiveProfiles("local")
 public class BaseTest {
 
-    @DubboReference
-    DemoService demoService;
-
-    @Test
-    public void test1(){
-        String joy = demoService.demo("joy");
-        System.out.println(joy);
-    }
 }
