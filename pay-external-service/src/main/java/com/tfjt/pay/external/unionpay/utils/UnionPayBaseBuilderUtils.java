@@ -56,7 +56,7 @@ public class UnionPayBaseBuilderUtils<T> {
         String srcReqTime = DateFormatUtils.format(new Date(), "hhmmss");
         String nonce = UUID.randomUUID().toString().replace("-", "");
 
-        UnionPayBaseReq unionPayBaseReq = (UnionPayBaseReq) UnionPayBaseReq.builder()
+        UnionPayBaseReq unionPayBaseReq =  UnionPayBaseReq.builder()
                 .lwzBussCode(lwzBussCode)
                 .transCode("203000")
                 .verNo("100")
