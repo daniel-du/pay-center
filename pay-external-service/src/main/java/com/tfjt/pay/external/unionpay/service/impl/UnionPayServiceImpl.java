@@ -167,9 +167,18 @@ public class UnionPayServiceImpl implements UnionPayService {
     }
 
     @Override
-    public void balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
-        //unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ69_PAYMENTS_QUERY.getCode(),JSON.toJSONString(unionPayDivideReqDTO));
-
+    public Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
+        try{
+            UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ69_PAYMENTS_QUERY.getCode(),
+                    JSON.toJSONString(unionPayDivideReqDTO),ConsumerPoliciesRespDTO.class);
+            return Result.ok(unionPayDivideRespDTO);
+        } catch (TfException e){
+            log.error("调用分账返回 TfException{},{}", JSON.toJSON(unionPayDivideReqDTO),e);
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            log.error("调用分账返回 Exception{},{}", JSON.toJSON(unionPayDivideReqDTO),e);
+            return Result.failed(e.getMessage());
+        }
     }
 
 

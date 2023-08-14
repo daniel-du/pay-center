@@ -23,5 +23,7 @@ public class SubBalanceDivideRespDTO extends SubBalanceDivideReqDTO implements S
     private String reason;
     /**完成时间*/
     private Long finishedAt;
+    /**支付系统 id*/
+    private Long paySystemId;
 
 }

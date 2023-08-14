@@ -66,5 +66,5 @@ public interface UnionPayService {
     /**
      * 银联分账
      */
-    void balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO);
+    Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO);
 }

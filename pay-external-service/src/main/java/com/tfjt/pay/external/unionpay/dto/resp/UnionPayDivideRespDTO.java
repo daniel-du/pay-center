@@ -1,6 +1,5 @@
 package com.tfjt.pay.external.unionpay.dto.resp;
 
-import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideSubReq;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -32,7 +31,7 @@ public class UnionPayDivideRespDTO implements Serializable {
     /**
      * 分账明细
      */
-    private List<UnionPayDivideSubReq> transferResults;
+    private List<UnionPayDivideRespDetailDTO> transferResults;
     /**
      * succeeded:成功
      * processing:处理中

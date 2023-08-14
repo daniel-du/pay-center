@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.PayBalanceDivideDetailsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.PayBalanceDivideDetailsEntity" id="payBalanceDivideDetailsMap">
+        <result property="id" column="id"/>
+        <result property="divideId" column="divide_id"/>
+        <result property="recvBalanceAcctId" column="recv_balance_acct_id"/>
+        <result property="amount" column="amount"/>
+        <result property="subTradeOrderNo" column="sub_trade_order_no"/>
+        <result property="recvBalanceAcctName" column="recv_balance_acct_name"/>
+        <result property="status" column="status"/>
+        <result property="reason" column="reason"/>
+        <result property="remark" column="remark"/>
+        <result property="createRemark" column="create_remark"/>
+        <result property="finishedAt" column="finished_at"/>
+        <result property="createTime" column="create_time"/>
+        <result property="userId" column="user_id"/>
+        <result property="state" column="state"/>
+        <result property="subBusinessOrderNo" column="sub_business_order_no"/>
+    </resultMap>
+
+
+</mapper>

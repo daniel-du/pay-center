@@ -9,19 +9,19 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 分账信息表
+ * 分账记录表
  * 
  * @author songx
  * @email 598482054@163.com
- * @date 2023-08-12 16:21:00
+ * @date 2023-08-14 16:05:56
  */
 @Data
-@TableName("tf_pay_banlance_divide")
+@TableName("tf_pay_balance_divide")
 public class PayBalanceDivideEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * id
+	 * 主键
 	 */
 	@TableId(value = "id", type = IdType.AUTO)
 	private Long id;
@@ -30,70 +30,45 @@ public class PayBalanceDivideEntity implements Serializable {
 	 */
 	private String tradeOrderNo;
 	/**
-	 * 收款电子账簿ID
+	 * 付款账号id
 	 */
-	private String recvBalanceAcctId;
+	private String payBalanceAcctId;
 	/**
-	 * 分账金额
-	 */
-	private Integer amount;
-	/**
-	 * 自定义参数
-	 */
-	private String metadata;
-	/**
-	 * 子交易单号
-	 */
-	private String subTradeOrderNo;
-	/**
-	 * 收款户名
-	 */
-	private String recvBalanceAcctName;
-	/**
-	 * 交易状态
-	 */
-	private String status;
-	/**
-	 * 失败原因
-	 */
-	private String reason;
-	/**
-	 * 银联备注
+	 * 备注信息
 	 */
 	private String remark;
 	/**
-	 * 附言
+	 * 
 	 */
-	private String createRemark;
+	private String metadata;
+	/**
+	 * 分账订单系统订单号
+	 */
+	private String allocationId;
+	/**
+	 * succeeded:成功
+processing:处理中
+failed:失败
+partially_succeeded:部分成功
+
+	 */
+	private String status;
+	/**
+	 * 创建时间
+	 */
+	private Date createAt;
 	/**
 	 * 处理完成时间
 	 */
 	private Date finishedAt;
 	/**
-	 * 创建时间
-	 */
-	private Date createTime;
-	/**
-	 * 创建人id
-	 */
-	private Long userId;
-	/**
-	 * 1  银联交易中 2 交易成功 3 交易失败 4 结果未知
-	 */
-	private Integer state;
-	/**
 	 * 分账业务系统标识
+
 	 */
 	private String businessSystemId;
 	/**
-	 * 业务系统订单号
+	 * 分账订单号不能为空
 	 */
 	private String businessOrderNo;
-	/**
-	 * 业务系统子项订单号
-	 */
-	private String subBusinessOrderNo;
-
-
 
 }
