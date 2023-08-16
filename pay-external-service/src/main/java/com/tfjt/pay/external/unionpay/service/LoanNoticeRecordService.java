@@ -1,7 +1,6 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.tfjt.pay.external.unionpay.common.utils.PageUtils;
 import com.tfjt.pay.external.unionpay.entity.LoanNoticeRecordEntity;
 
 import java.util.Map;
@@ -15,6 +14,5 @@ import java.util.Map;
  */
 public interface LoanNoticeRecordService extends IService<LoanNoticeRecordEntity> {
 
-    PageUtils queryPage(Map<String, Object> params);
 }
 
