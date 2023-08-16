@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.dao.LoanBalanceAcctDao;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
@@ -37,5 +38,10 @@ public class LoanBalanceAcctServiceImpl extends BaseServiceImpl<LoanBalanceAcctD
     public LoanBalanceAcctEntity getBalanceAcctIdByBidAndType(String busId, String type) {
 
         return this.getBaseMapper().getBalanceAcctIdByBidAndType(busId,type);
+    }
+
+    @Override
+    public LoanBalanceAcctEntity getAccountBookByLoanUserId(Long loanUserId) {
+        return this.getOne(Wrappers.lambdaQuery(LoanBalanceAcctEntity.class).eq(LoanBalanceAcctEntity::getLoanUserId,loanUserId));
     }
 }

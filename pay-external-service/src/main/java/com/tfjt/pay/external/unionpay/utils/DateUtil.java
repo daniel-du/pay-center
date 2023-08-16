@@ -10,10 +10,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -281,16 +278,30 @@ public final class DateUtil extends DateUtils {
         }
         return null;
     }
+
+    /**
+     * 获取RFC3339格式时间
+     * @return
+     */
+    public static String getNowByRFC3339(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        return dateTime.atOffset(ZoneOffset.ofHours(8)).format(formatter);
+    }
+
     public static void main(String[] args) {
-        DateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
-        try{
-            Date star = dft.parse("2023-06-08");//开始时间
-            Date endDay=dft.parse("2023-06-08");//结束时间
-            differDay(null,endDay);
-            System.out.println(differDay(null,endDay));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+//        DateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
+//        try{
+//            Date star = dft.parse("2023-06-08");//开始时间
+//            Date endDay=dft.parse("2023-06-08");//结束时间
+//            differDay(null,endDay);
+//            System.out.println(differDay(null,endDay));
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+        System.out.println(getNowByRFC3339());
 
     }
+
+
 }

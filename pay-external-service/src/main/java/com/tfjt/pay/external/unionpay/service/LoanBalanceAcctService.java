@@ -33,5 +33,7 @@ public interface LoanBalanceAcctService extends IService<LoanBalanceAcctEntity> 
      * @return
      */
     LoanBalanceAcctEntity getBalanceAcctIdByBidAndType(String bid, String type);
+
+    LoanBalanceAcctEntity getAccountBookByLoanUserId(Long loanUserId);
 }
 
