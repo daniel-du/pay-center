@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.SubBalanceDivideReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferDTO;
@@ -18,6 +19,7 @@ import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
 import com.tfjt.pay.external.unionpay.dto.UnionPayProduct;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideSubReq;
+import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDetailDTO;
@@ -26,15 +28,24 @@ import com.tfjt.pay.external.unionpay.entity.LoadBalanceDivideEntity;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
+import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
+import com.tfjt.pay.external.unionpay.entity.PayBalanceDivideDetailsEntity;
+import com.tfjt.pay.external.unionpay.entity.PayBalanceDivideEntity;
+import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
+import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -61,6 +72,18 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Autowired
     private OrderNumberUtil orderNumberUtil;
+
+    @Resource
+    LoanBalanceAcctService loanBalanceAcctService;
+
+    @Resource
+    CustBankInfoService custBankInfoService;
+
+    @Value("${unionPayLoans.encodedPub}")
+    private String encodedPub;
+
+    @Value("backcall")
+    private String notifyUrl;
 
     @Override
     public Result<String> transfer(UnionPayTransferDTO payTransferDTO) {
@@ -161,6 +184,33 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         //7.解析返回数据响应给业务系统
         //TODO  异步处理返回信息?业务系统处理失败后重试?
         return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
+    }
+
+    /**
+     * 提现
+     *
+     * @param withdrawalReqDTO
+     * @return
+     */
+    @Override
+    public Result withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
+        LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(withdrawalReqDTO.getLoanUserId());
+        CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
+
+        WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
+        withdrawalCreateReqDTO.setOutOrderNo("2008349494890702348");
+        withdrawalCreateReqDTO.setSentAt(DateUtil.getNowByRFC3339());
+        withdrawalCreateReqDTO.setAmount(withdrawalReqDTO.getAmount());
+        withdrawalCreateReqDTO.setServiceFee(null);
+        withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
+        withdrawalCreateReqDTO.setBusinessType("1");
+        withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
+        withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
+        withdrawalCreateReqDTO.setRemark("");
+        Map<String, Object> map = new HashMap<>();
+        map.put("notifyUrl", notifyUrl);
+        withdrawalCreateReqDTO.setExtra(map);
+        return null;
     }
 
     @Override

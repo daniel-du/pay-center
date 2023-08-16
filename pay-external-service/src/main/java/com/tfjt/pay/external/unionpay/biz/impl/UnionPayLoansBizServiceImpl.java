@@ -5,6 +5,7 @@ import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
+import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.req.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
@@ -73,10 +74,10 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
         BeanUtils.copyProperties(bankInfoReqDTO, custBankInfoEntity);
-        //默认一个职业
-        custBankInfoEntity.setCareer("10200");
         try {
-            unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
+            UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
+            //银行账号类型
+            custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }

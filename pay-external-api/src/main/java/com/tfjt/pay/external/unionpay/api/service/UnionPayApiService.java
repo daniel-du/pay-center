@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferDTO;
@@ -65,5 +66,12 @@ public interface UnionPayApiService {
      * @return
      */
     Result downloadCheckBill(String date,Long userId);
+
+    /**
+     *
+     * @param withdrawalReqDTO
+     * @return
+     */
+    Result withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO);
 
 }

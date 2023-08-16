@@ -10,10 +10,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -34,6 +31,8 @@ public final class DateUtil extends DateUtils {
 
     public static final DateTimeFormatter FMT_DEFAULT = ofPattern(DatePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern());
 
+    public static final String YYYY_MM_DD_T_HH_MM_SS_SSSXXX = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+
     /**
      * 格式化日期(如2022-9-29 00:00:00)
      *
@@ -47,11 +46,11 @@ public final class DateUtil extends DateUtils {
     /**
      * 指定格式对时间进行格式化
      *
-     * @param date        待处理的时间
+     * @param date    待处理的时间
      * @param pattern 格式枚举
      * @return 处理完成的时间字符串
      */
-    public static String format(Date date, String  pattern) {
+    public static String format(Date date, String pattern) {
         DateTimeFormatter dateTimeFormatter = ofPattern(pattern);
         return dateTimeFormatter.format(DateUtil.date2LocalDateTime(date));
     }
@@ -220,28 +219,29 @@ public final class DateUtil extends DateUtils {
 
     /**
      * 比较当前时间
+     *
+     * @return 是否
      * @Param startDate 开始时间
      * @Param endDate 结束时间
-     * @return 是否
      */
-    public static boolean timeComparison(Date startDate,Date endDate) {
+    public static boolean timeComparison(Date startDate, Date endDate) {
         Date nowDate = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
 
         String date = sdf2.format(nowDate);
-        try{
-            if(startDate == null){
-                startDate = sdf.parse(date+" 00:00:00");
+        try {
+            if (startDate == null) {
+                startDate = sdf.parse(date + " 00:00:00");
             }
-            if(endDate == null){
-                endDate = sdf.parse(date+" 04:00:00");
+            if (endDate == null) {
+                endDate = sdf.parse(date + " 04:00:00");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if(nowDate.compareTo(startDate)<=0){
+        if (nowDate.compareTo(startDate) <= 0) {
             return false;
         }
         return nowDate.compareTo(endDate) > 0;
@@ -249,22 +249,23 @@ public final class DateUtil extends DateUtils {
 
     /**
      * 计算日期相差天数
+     *
+     * @return 是否
      * @Param startDate 开始时间
      * @Param endDate 结束时间
-     * @return 是否
      */
-    public static long differDay(Date startDate,Date endDate) {
+    public static long differDay(Date startDate, Date endDate) {
         DateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
         long result = 0;
-        try{
-            if(startDate == null){
+        try {
+            if (startDate == null) {
                 startDate = dft.parse(dft.format(new Date()));
             }
-            Long starTime=startDate.getTime();
-            Long endTime=endDate.getTime();
-            Long num=endTime-starTime;//时间戳相差的毫秒数
-            result = num/24/60/60/1000;
-        }catch (Exception e){
+            Long starTime = startDate.getTime();
+            Long endTime = endDate.getTime();
+            Long num = endTime - starTime;//时间戳相差的毫秒数
+            result = num / 24 / 60 / 60 / 1000;
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -274,23 +275,23 @@ public final class DateUtil extends DateUtils {
     public static Date dealDateFormat(String oldDateStr) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         try {
-            Date  date = df.parse(oldDateStr);
+            Date date = df.parse(oldDateStr);
             return date;
         } catch (ParseException e) {
             e.printStackTrace();
         }
         return null;
     }
-    public static void main(String[] args) {
-        DateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
-        try{
-            Date star = dft.parse("2023-06-08");//开始时间
-            Date endDay=dft.parse("2023-06-08");//结束时间
-            differDay(null,endDay);
-            System.out.println(differDay(null,endDay));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
 
+    /**
+     * 获取RFC3339格式时间
+     *
+     * @return
+     */
+    public static String getNowByRFC3339() {
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_T_HH_MM_SS_SSSXXX);
+        return dateTime.atOffset(ZoneOffset.ofHours(8)).format(formatter);
     }
+
 }
