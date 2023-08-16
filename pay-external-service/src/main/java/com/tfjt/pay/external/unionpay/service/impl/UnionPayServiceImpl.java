@@ -181,5 +181,22 @@ public class UnionPayServiceImpl implements UnionPayService {
         }
     }
 
+    @Override
+    public Result<WithdrawalCreateRespDTO> getWithdrawal(String outOrderNo) {
+        JSONObject param = new JSONObject();
+        try{
+            param.put("outOrderNo",outOrderNo);
+            WithdrawalCreateRespDTO withdrawalCreateRespDTO = (WithdrawalCreateRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO.getCode(),
+                    JSON.toJSONString(param),WithdrawalCreateRespDTO.class);
+            return Result.ok(withdrawalCreateRespDTO);
+        } catch (TfException e){
+            log.error("调用提现查询返回 TfException{},{}", JSON.toJSON(param),e);
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            log.error("调用提现查询返回 Exception{},{}", JSON.toJSON(param),e);
+            return Result.failed(e.getMessage());
+        }
+    }
+
 
 }
