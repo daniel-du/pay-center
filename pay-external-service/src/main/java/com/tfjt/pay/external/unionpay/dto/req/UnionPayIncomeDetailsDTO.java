@@ -12,14 +12,27 @@ import java.io.Serializable;
 @Data
 public class UnionPayIncomeDetailsDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-
+    /**
+     * 交易订单号
+     */
     private String tradeId;
-
+    /**
+     * 收款账号id
+     */
     private String balanceAcctId;
+    /**
+     *
+     */
     private String balanceAcctNo;
+    /**
+     * 收款金额
+     */
     private Integer amount;
-
+    /***
+     * 付款账号
+     */
     private String payBankAcctNo;
+
     private String payBankAcctName;
     private String payBankCode;
     private String payBankBranchCode;

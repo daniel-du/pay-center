@@ -10,6 +10,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
 import com.tfjt.pay.external.unionpay.entity.PayBalanceNoticeEntity;
 import com.tfjt.pay.external.unionpay.service.PayBalanceNoticeService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
+import com.tfjt.pay.external.unionpay.utils.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,8 @@ public class UnionPayNoticeBizImpl implements UnionPayNoticeBiz {
 
     @Autowired
     private PayBalanceNoticeService payBalanceNoticeService;
+
+
     @Override
     public void balanceIncomeNotice(UnionPayBaseResp unionPayBaseResp, HttpServletResponse response) {
         //
@@ -49,8 +52,10 @@ public class UnionPayNoticeBizImpl implements UnionPayNoticeBiz {
         }
         if(this.payBalanceNoticeService.saveBatch(list)){
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
         //
-
+        payBalanceNoticeService.noticeFms(list);
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 }

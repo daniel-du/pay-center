@@ -169,14 +169,31 @@ public class UnionPayServiceImpl implements UnionPayService {
     @Override
     public Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
         try{
-            UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ69_PAYMENTS_QUERY.getCode(),
-                    JSON.toJSONString(unionPayDivideReqDTO),ConsumerPoliciesRespDTO.class);
+            UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ616_ALLOCATIONS.getCode(),
+                    JSON.toJSONString(unionPayDivideReqDTO),UnionPayDivideRespDTO.class);
             return Result.ok(unionPayDivideRespDTO);
         } catch (TfException e){
             log.error("调用分账返回 TfException{},{}", JSON.toJSON(unionPayDivideReqDTO),e);
             return Result.failed(e.getMessage());
         }catch (Exception e){
             log.error("调用分账返回 Exception{},{}", JSON.toJSON(unionPayDivideReqDTO),e);
+            return Result.failed(e.getMessage());
+        }
+    }
+
+    @Override
+    public Result<WithdrawalCreateRespDTO> getWithdrawal(String outOrderNo) {
+        JSONObject param = new JSONObject();
+        try{
+            param.put("outOrderNo",outOrderNo);
+            WithdrawalCreateRespDTO withdrawalCreateRespDTO = (WithdrawalCreateRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO.getCode(),
+                    JSON.toJSONString(param),WithdrawalCreateRespDTO.class);
+            return Result.ok(withdrawalCreateRespDTO);
+        } catch (TfException e){
+            log.error("调用提现查询返回 TfException{},{}", JSON.toJSON(param),e);
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            log.error("调用提现查询返回 Exception{},{}", JSON.toJSON(param),e);
             return Result.failed(e.getMessage());
         }
     }

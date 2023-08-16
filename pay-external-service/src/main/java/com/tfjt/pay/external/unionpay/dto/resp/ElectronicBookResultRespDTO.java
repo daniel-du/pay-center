@@ -21,7 +21,7 @@ public class ElectronicBookResultRespDTO implements Serializable {
     private String balanceAcctId;
 
     /**系统订单号 */
-    private Integer tradeId;
+    private String tradeId;
 
     /**请求单号*/
     private String outOrderNo;

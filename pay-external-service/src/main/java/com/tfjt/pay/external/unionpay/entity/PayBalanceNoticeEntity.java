@@ -110,4 +110,7 @@ public class PayBalanceNoticeEntity implements Serializable {
 	 */
 	private Date createTime;
 
+
+	private Integer noticeFlag;
+
 }

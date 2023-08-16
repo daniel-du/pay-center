@@ -41,14 +41,17 @@ public enum TransactionCodeEnum {
     /**
      *
      */
-    LWZ511_RECEIPT_QUERY_REQ("LWZ639_COMBINED_GUARANTEE_CONFIRMS_BY_OUT_ORDER_NO","电子账簿查询(电子账簿ID"),
+    LWZ511_RECEIPT_QUERY_REQ("LWZ511_RECEIPT_QUERY_REQ","电子账簿查询(电子账簿ID"),
 
     /**
      * 提现创建
      */
     LWZ64_WITHDRAWALS_REQ("LWZ64_WITHDRAWALS_REQ","提现创建"),
     /**分账创建*/
-    LWZ69_PAYMENTS_QUERY("LWZ69_PAYMENTS_QUERY","分账创建");
+    LWZ616_ALLOCATIONS("LWZ616_ALLOCATIONS","分账创建"),
+
+    /**使用“平台订单号”查询提现订单状态*/
+    LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO("LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO","使用“平台订单号”查询提现订单状态");
     /**
      * code
      */

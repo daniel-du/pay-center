@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,16 +15,16 @@ import java.io.Serializable;
 @Data
 public class TransactionCallBackReqDTO implements Serializable {
     /**事件ID*/
-    private String eventId;
+    private String event_id;
 
     /**事件类型*/
-    private String eventType;
+    private String event_type;
 
     /**事件内容*/
-    private EventDataDTO eventData;
+    private EventDataDTO event_data;
 
     /**事件创建时间*/
-    private String createdAt;
+    private String created_at;
 
 
 }

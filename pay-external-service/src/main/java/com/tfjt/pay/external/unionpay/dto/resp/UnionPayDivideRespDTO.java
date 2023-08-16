@@ -13,7 +13,7 @@ import java.util.List;
  * @email 598482054@qq.com
  */
 @Data
-public class UnionPayDivideRespDTO implements Serializable {
+public class UnionPayDivideRespDTO extends ConsumerPoliciesRespDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
     /**
@@ -51,12 +51,4 @@ public class UnionPayDivideRespDTO implements Serializable {
      * 交易附言
      */
     private String remark;
-    /**
-     * 扩展字段
-     */
-    private String extra;
-    /**
-     * 自定义参数
-     */
-    private String metadata;
 }
