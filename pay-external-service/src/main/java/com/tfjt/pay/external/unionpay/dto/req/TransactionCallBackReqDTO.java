@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import lombok.Data;
 
 import java.io.Serializable;
