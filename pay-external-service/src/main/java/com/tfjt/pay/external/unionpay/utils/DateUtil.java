@@ -31,6 +31,7 @@ public final class DateUtil extends DateUtils {
 
     public static final DateTimeFormatter FMT_DEFAULT = ofPattern(DatePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern());
 
+    public static final String YYYY_MM_DD_T_HH_MM_SS_SSSXXX="yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
     /**
      * 格式化日期(如2022-9-29 00:00:00)
      *
@@ -285,23 +286,8 @@ public final class DateUtil extends DateUtils {
      */
     public static String getNowByRFC3339(){
         LocalDateTime dateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_T_HH_MM_SS_SSSXXX);
         return dateTime.atOffset(ZoneOffset.ofHours(8)).format(formatter);
     }
-
-    public static void main(String[] args) {
-//        DateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
-//        try{
-//            Date star = dft.parse("2023-06-08");//开始时间
-//            Date endDay=dft.parse("2023-06-08");//结束时间
-//            differDay(null,endDay);
-//            System.out.println(differDay(null,endDay));
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-        System.out.println(getNowByRFC3339());
-
-    }
-
 
 }
