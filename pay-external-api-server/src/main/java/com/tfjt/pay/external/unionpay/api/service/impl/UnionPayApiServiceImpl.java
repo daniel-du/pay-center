@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.BalanceDivideReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.SubBalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
@@ -108,7 +109,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Lock4j(keys = {"#balanceDivideReq.businessOrderNo"}, expire = 10000, acquireTimeout = 3000)
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Result balanceDivide(BalanceDivideReqDTO balanceDivideReq) {
+    public Result<Map<String, SubBalanceDivideRespDTO>> balanceDivide(BalanceDivideReqDTO balanceDivideReq) {
         log.debug("请求分账参数<<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(balanceDivideReq));
         //1.检验订单号是否存在
         String businessOrderNo = balanceDivideReq.getBusinessOrderNo();
@@ -160,6 +161,11 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         //7.解析返回数据响应给业务系统
         //TODO  异步处理返回信息?业务系统处理失败后重试?
         return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
+    }
+
+    @Override
+    public Result unifiedorder(LoanOrderUnifiedorderDTO loanOrderUnifiedorderDTO) {
+        return null;
     }
 
     /**
