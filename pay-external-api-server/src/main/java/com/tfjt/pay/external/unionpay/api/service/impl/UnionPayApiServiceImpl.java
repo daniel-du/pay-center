@@ -30,8 +30,6 @@ import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
-import com.tfjt.pay.external.unionpay.entity.PayBalanceDivideDetailsEntity;
-import com.tfjt.pay.external.unionpay.entity.PayBalanceDivideEntity;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;

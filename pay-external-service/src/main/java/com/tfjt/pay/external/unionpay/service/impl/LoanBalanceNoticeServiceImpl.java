@@ -4,7 +4,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.dao.PayLoanBalanceNoticeDao;
+import com.tfjt.pay.external.unionpay.dao.LoanBalanceNoticeDao;
 import com.tfjt.pay.external.unionpay.entity.LoadBalanceNoticeEntity;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceNoticeService;
 import org.springframework.scheduling.annotation.Async;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 
 @Service("payBanlanceNoticeService")
-public class LoanBalanceNoticeServiceImpl extends ServiceImpl<PayLoanBalanceNoticeDao, LoadBalanceNoticeEntity> implements LoanBalanceNoticeService {
+public class LoanBalanceNoticeServiceImpl extends ServiceImpl<LoanBalanceNoticeDao, LoadBalanceNoticeEntity> implements LoanBalanceNoticeService {
 
     @Async
     @Override
