@@ -67,4 +67,12 @@ public interface UnionPayService {
      * 银联分账
      */
     Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO);
+
+
+    /**
+     * 提现查询
+     * @param outOrderNo
+     * @return
+     */
+    Result<WithdrawalCreateRespDTO> getWithdrawal(String outOrderNo);
 }

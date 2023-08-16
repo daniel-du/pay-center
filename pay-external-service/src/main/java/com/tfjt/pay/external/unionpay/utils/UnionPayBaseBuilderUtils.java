@@ -136,9 +136,9 @@ public class UnionPayBaseBuilderUtils<T> {
     public T combination(String lwzBussCode,String lwzData,Class clazz){
 
         UnionPayBaseReq unionPayBaseReq = (UnionPayBaseReq)baseBuilder(lwzBussCode, lwzData);
-        log.info("合并消费担保下单入参{}", JSON.toJSON(unionPayBaseReq));
+        log.info("入参{}", JSON.toJSON(unionPayBaseReq));
         ResponseEntity<T> responseEntity = post(unionPayBaseReq);
-        log.info("合并消费担保下单返回值{}", responseEntity);
+        log.info("返回值{}", responseEntity);
         return getBaseReturn(responseEntity, clazz);
     }
 }

@@ -18,12 +18,12 @@ public class ExtraDTO implements Serializable {
         private String orderNo;
 
         /** 订单金额 */
-        private Integer orderAmount;
+        private String orderAmount;
 
         /** 商品名称 */
         private String productName;
 
         /** 商品数量 */
-        private Integer productCount;
+        private String productCount;
 
 }
