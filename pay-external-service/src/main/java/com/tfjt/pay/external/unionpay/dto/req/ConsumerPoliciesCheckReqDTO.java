@@ -1,10 +1,10 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @ClassName ConsumerPoliciesReqDTO

@@ -1,6 +1,8 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
+import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
@@ -11,7 +13,6 @@ import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,11 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.tfjt.pay.external.unionpay.dto.resp;
 
-import com.tfjt.pay.external.unionpay.dto.req.ExtraDTO;
-import com.tfjt.pay.external.unionpay.dto.req.GuaranteePaymentDTO;
+import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import lombok.Data;
 
 import java.io.Serializable;
