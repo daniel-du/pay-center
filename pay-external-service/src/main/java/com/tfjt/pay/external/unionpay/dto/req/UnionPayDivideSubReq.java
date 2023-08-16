@@ -1,8 +1,11 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.pay.external.unionpay.dto.UnionPayProduct;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 银联分账明细
@@ -22,6 +25,10 @@ public class UnionPayDivideSubReq implements Serializable {
 
     /**备注*/
     private String remark;
+    /**
+     * 扩展字段商品信息
+     */
+    private Map<String,List<UnionPayProduct>> extra;
 
 
 }

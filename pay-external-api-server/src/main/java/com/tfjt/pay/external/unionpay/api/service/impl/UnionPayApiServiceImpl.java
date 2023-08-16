@@ -17,6 +17,7 @@ import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
+import com.tfjt.pay.external.unionpay.dto.UnionPayProduct;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideSubReq;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
@@ -140,21 +141,17 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         for (SubBalanceDivideReqDTO subBalanceDivideReqDTO : list) {
             saveList.add(buildPayBalanceDivideDetailsEntity(subBalanceDivideReqDTO, date, payBalanceDivideEntity.getId()));
         }
-        try {
-            if (!this.payBalanceDivideDetailsService.saveBatch(saveList)) {
-                log.error("保存分账信息失败:{}", JSONObject.toJSONString(saveList));
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                return Result.failed("分账失败,保存分账信息失败");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!this.payBalanceDivideDetailsService.saveBatch(saveList)) {
+            log.error("保存分账信息失败:{}", JSONObject.toJSONString(saveList));
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return Result.failed("分账失败,保存分账信息失败");
         }
         //4.生成银联分账参数
         UnionPayDivideReqDTO unionPayDivideReqDTO = builderBalanceDivideUnionPayParam(saveList, tradeOrderNo);
         //5.调用银联接口
-        log.debug("调用银联分账信息发送信息>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(unionPayDivideReqDTO));
+        log.info("调用银联分账信息发送信息>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(unionPayDivideReqDTO));
         Result<UnionPayDivideRespDTO> result = unionPayService.balanceDivide(unionPayDivideReqDTO);
-        log.debug("调用银联分账信息返回信息<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(result));
+        log.info("调用银联分账信息返回信息<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(result));
         if (result.getCode() != NumberConstant.ZERO) {
             log.error("调用银联分账接口失败");
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -237,6 +234,16 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         for (PayBalanceDivideDetailsEntity payBalanceDivideEntity : saveList) {
             UnionPayDivideSubReq unionPayDivideSubReq = new UnionPayDivideSubReq();
             BeanUtil.copyProperties(payBalanceDivideEntity, unionPayDivideSubReq);
+            UnionPayProduct unionPayProduct = new UnionPayProduct();
+            unionPayProduct.setOrderAmount(payBalanceDivideEntity.getAmount());
+            unionPayProduct.setProductName(payBalanceDivideEntity.getRecvBalanceAcctName()+"分账");
+            unionPayProduct.setOrderNo(payBalanceDivideEntity.getSubBusinessOrderNo());
+            unionPayProduct.setProductCount(NumberConstant.ONE);
+            List<UnionPayProduct> list = new ArrayList<>(NumberConstant.ONE);
+            list.add(unionPayProduct);
+            HashMap<String, List<UnionPayProduct>> extra = new HashMap<>();
+            extra.put("productInfos",list);
+            unionPayDivideSubReq.setExtra(extra);
             transferParams.add(unionPayDivideSubReq);
         }
         unionPayDivideReqDTO.setTransferParams(transferParams);
