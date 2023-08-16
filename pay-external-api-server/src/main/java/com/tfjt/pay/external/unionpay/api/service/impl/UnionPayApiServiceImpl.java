@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.xuyanwu.spring.file.storage.platform.QiniuKodoFileStorage;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -139,18 +140,22 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         for (SubBalanceDivideReqDTO subBalanceDivideReqDTO : list) {
             saveList.add(buildPayBalanceDivideDetailsEntity(subBalanceDivideReqDTO, date, payBalanceDivideEntity.getId()));
         }
-        if (!this.payBalanceDivideDetailsService.saveBatch(saveList)) {
-            log.error("保存分账信息失败:{}", JSONObject.toJSONString(saveList));
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return Result.failed("分账失败,保存分账信息失败");
+        try {
+            if (!this.payBalanceDivideDetailsService.saveBatch(saveList)) {
+                log.error("保存分账信息失败:{}", JSONObject.toJSONString(saveList));
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return Result.failed("分账失败,保存分账信息失败");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         //4.生成银联分账参数
         UnionPayDivideReqDTO unionPayDivideReqDTO = builderBalanceDivideUnionPayParam(saveList, tradeOrderNo);
         //5.调用银联接口
-        log.debug("调用银联分账信息发送信息>>>>>>>>>>>>>>>:{}",JSONObject.toJSONString(unionPayDivideReqDTO));
+        log.debug("调用银联分账信息发送信息>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(unionPayDivideReqDTO));
         Result<UnionPayDivideRespDTO> result = unionPayService.balanceDivide(unionPayDivideReqDTO);
-        log.debug("调用银联分账信息返回信息<<<<<<<<<<<<<<<:{}",JSONObject.toJSONString(result));
-        if (result.getCode()!= NumberConstant.ZERO){
+        log.debug("调用银联分账信息返回信息<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(result));
+        if (result.getCode() != NumberConstant.ZERO) {
             log.error("调用银联分账接口失败");
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return Result.failed(result.getMsg());
@@ -168,43 +173,51 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         return null;
     }
 
+    @Override
+    public Result downloadCheckBill(String date, Long userId) {
+
+        return null;
+    }
+
     /**
      * 解析银联返回数据给业务系统
+     *
      * @param data 解析银联返回数据给业务系统
      * @return
      */
     private Map<String, SubBalanceDivideRespDTO> parseUnionPayDivideReqDTOToMap(UnionPayDivideRespDTO data) {
-        Map<String, SubBalanceDivideRespDTO>  map = new HashMap<>();
+        Map<String, SubBalanceDivideRespDTO> map = new HashMap<>();
         for (UnionPayDivideRespDetailDTO transferResult : data.getTransferResults()) {
             SubBalanceDivideRespDTO subBalanceDivideReqDTO = new SubBalanceDivideRespDTO();
-            BeanUtil.copyProperties(transferResult,subBalanceDivideReqDTO);
-            map.put(transferResult.getRecvBalanceAcctId(),subBalanceDivideReqDTO);
+            BeanUtil.copyProperties(transferResult, subBalanceDivideReqDTO);
+            map.put(transferResult.getRecvBalanceAcctId(), subBalanceDivideReqDTO);
         }
         return map;
     }
 
     /**
      * 修改银联信息
+     *
      * @param unionPayDivideRespDTO
      */
     private void updateByUnionPayDivideReqDTO(UnionPayDivideRespDTO unionPayDivideRespDTO) {
         PayBalanceDivideEntity update = new PayBalanceDivideEntity();
-        BeanUtil.copyProperties(unionPayDivideRespDTO,update);
+        BeanUtil.copyProperties(unionPayDivideRespDTO, update);
         LambdaUpdateWrapper<PayBalanceDivideEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(PayBalanceDivideEntity::getTradeOrderNo,unionPayDivideRespDTO.getOutOrderNo());
-        if(!this.payBalanceDivideService.updateById(update)){
-            log.error("更新分账主单据信息失败:{}",JSONObject.toJSONString(update));
+        updateWrapper.eq(PayBalanceDivideEntity::getTradeOrderNo, unionPayDivideRespDTO.getOutOrderNo());
+        if (!this.payBalanceDivideService.updateById(update)) {
+            log.error("更新分账主单据信息失败:{}", JSONObject.toJSONString(update));
         }
         List<UnionPayDivideRespDetailDTO> transferResults = unionPayDivideRespDTO.getTransferResults();
         for (UnionPayDivideRespDetailDTO transferResult : transferResults) {
             PayBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new PayBalanceDivideDetailsEntity();
-            BeanUtil.copyProperties(transferResult,payBalanceDivideDetailsEntity);
+            BeanUtil.copyProperties(transferResult, payBalanceDivideDetailsEntity);
             LambdaUpdateWrapper<PayBalanceDivideDetailsEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.eq(PayBalanceDivideDetailsEntity::getRecvBalanceAcctId,transferResult.getRecvBalanceAcctId())
-                    .eq(PayBalanceDivideDetailsEntity::getAmount,transferResult.getAmount());
-            if(this.payBalanceDivideDetailsService.update(payBalanceDivideDetailsEntity,lambdaUpdateWrapper)){
+            lambdaUpdateWrapper.eq(PayBalanceDivideDetailsEntity::getRecvBalanceAcctId, transferResult.getRecvBalanceAcctId())
+                    .eq(PayBalanceDivideDetailsEntity::getAmount, transferResult.getAmount());
+            if (this.payBalanceDivideDetailsService.update(payBalanceDivideDetailsEntity, lambdaUpdateWrapper)) {
                 log.error("更新子交易记录失败:{},该记录银联返回信息",
-                        JSONObject.toJSONString(payBalanceDivideDetailsEntity),JSONObject.toJSONString(transferResult));
+                        JSONObject.toJSONString(payBalanceDivideDetailsEntity), JSONObject.toJSONString(transferResult));
             }
         }
 

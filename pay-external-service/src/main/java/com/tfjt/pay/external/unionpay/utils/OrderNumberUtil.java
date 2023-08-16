@@ -33,7 +33,7 @@ public class OrderNumberUtil {
      * @param type 交易类型 com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants
      * @return
      */
-    @Lock4j(keys = {"generateOrderNumber"}, expire = 1000)
+    //@Lock4j(keys = {"generateOrderNumber"}, expire = 1000)
     public String generateOrderNumber(String type) {
         // 获取当前日期
         String currentDate = dateFormat.format(new Date());

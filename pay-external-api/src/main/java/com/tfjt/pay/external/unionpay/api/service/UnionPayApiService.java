@@ -57,4 +57,13 @@ public interface UnionPayApiService {
      */
     Result unifiedorder(LoanOrderUnifiedorderDTO loanOrderUnifiedorderDTO);
 
+
+    /**
+     * 下载对账单
+     * @param date
+     * @param userId
+     * @return
+     */
+    Result downloadCheckBill(String date,Long userId);
+
 }

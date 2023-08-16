@@ -41,7 +41,7 @@ public enum TransactionCodeEnum {
     /**
      *
      */
-    LWZ511_RECEIPT_QUERY_REQ("LWZ639_COMBINED_GUARANTEE_CONFIRMS_BY_OUT_ORDER_NO","电子账簿查询(电子账簿ID"),
+    LWZ511_RECEIPT_QUERY_REQ("LWZ511_RECEIPT_QUERY_REQ","电子账簿查询(电子账簿ID"),
 
     /**
      * 提现创建
