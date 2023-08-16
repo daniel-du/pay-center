@@ -4,7 +4,7 @@
 <mapper namespace="com.tfjt.pay.external.unionpay.dao.PayBalanceDivideDetailsDao">
 
 	<!-- 可根据自己的需求，是否要使用 -->
-    <resultMap type="com.tfjt.pay.external.unionpay.entity.PayBalanceDivideDetailsEntity" id="payBalanceDivideDetailsMap">
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity" id="payBalanceDivideDetailsMap">
         <result property="id" column="id"/>
         <result property="divideId" column="divide_id"/>
         <result property="recvBalanceAcctId" column="recv_balance_acct_id"/>

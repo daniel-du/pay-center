@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.PayLoanOrderDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.LoanOrderEntity" id="payLoanOrderMap">
+        <result property="id" column="id"/>
+        <result property="tradeOrderNo" column="trade_order_no"/>
+        <result property="businessOrderNo" column="business_order_no"/>
+        <result property="payBalanceAcctId" column="pay_balance_acct_id"/>
+        <result property="remark" column="remark"/>
+        <result property="metadata" column="metadata"/>
+        <result property="combinedGuaranteePaymentId" column="combined_guarantee_payment_id"/>
+        <result property="createAt" column="create_at"/>
+        <result property="finishedAt" column="finished_at"/>
+        <result property="status" column="status"/>
+        <result property="appid" column="appid"/>
+        <result property="businessType" column="business_type"/>
+    </resultMap>
+
+
+</mapper>

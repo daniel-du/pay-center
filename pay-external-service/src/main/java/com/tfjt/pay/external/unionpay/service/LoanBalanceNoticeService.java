@@ -1,7 +1,7 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.tfjt.pay.external.unionpay.entity.PayBalanceNoticeEntity;
+import com.tfjt.pay.external.unionpay.entity.LoadBalanceNoticeEntity;
 
 import java.util.List;
 
@@ -12,8 +12,8 @@ import java.util.List;
  * @email 598482054@163.com
  * @date 2023-08-12 16:21:00
  */
-public interface PayBalanceNoticeService extends IService<PayBalanceNoticeEntity> {
+public interface LoanBalanceNoticeService extends IService<LoadBalanceNoticeEntity> {
 
-    void noticeFms(List<PayBalanceNoticeEntity> list);
+    void noticeFms(List<LoadBalanceNoticeEntity> list);
 }
 

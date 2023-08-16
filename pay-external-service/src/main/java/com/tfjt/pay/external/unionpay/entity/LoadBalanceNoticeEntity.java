@@ -16,8 +16,8 @@ import lombok.Data;
  * @date 2023-08-12 16:21:00
  */
 @Data
-@TableName("tf_pay_banlance_notice")
-public class PayBalanceNoticeEntity implements Serializable {
+@TableName("tf_loan_balance_notice")
+public class LoadBalanceNoticeEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**

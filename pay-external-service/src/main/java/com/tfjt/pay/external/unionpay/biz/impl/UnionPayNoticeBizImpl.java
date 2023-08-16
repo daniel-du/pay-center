@@ -7,10 +7,9 @@ import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
 
-import com.tfjt.pay.external.unionpay.entity.PayBalanceNoticeEntity;
-import com.tfjt.pay.external.unionpay.service.PayBalanceNoticeService;
+import com.tfjt.pay.external.unionpay.entity.LoadBalanceNoticeEntity;
+import com.tfjt.pay.external.unionpay.service.LoanBalanceNoticeService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
-import com.tfjt.pay.external.unionpay.utils.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +29,7 @@ import java.util.List;
 public class UnionPayNoticeBizImpl implements UnionPayNoticeBiz {
 
     @Autowired
-    private PayBalanceNoticeService payBalanceNoticeService;
+    private LoanBalanceNoticeService payBalanceNoticeService;
 
 
     @Override
@@ -40,9 +39,9 @@ public class UnionPayNoticeBizImpl implements UnionPayNoticeBiz {
         String lwzRespData = unionPayBaseResp.getLwzRespData();
         UnionPayIncomeDTO unionPayIncomeDTO = JSONObject.parseObject(lwzRespData, UnionPayIncomeDTO.class);
         List<UnionPayIncomeDetailsDTO> eventData = unionPayIncomeDTO.getEventData();
-        List<PayBalanceNoticeEntity> list = new ArrayList<>(eventData.size());
+        List<LoadBalanceNoticeEntity> list = new ArrayList<>(eventData.size());
         for (UnionPayIncomeDetailsDTO eventDatum : eventData) {
-            PayBalanceNoticeEntity payBalanceNoticeEntity = new PayBalanceNoticeEntity();
+            LoadBalanceNoticeEntity payBalanceNoticeEntity = new LoadBalanceNoticeEntity();
             BeanUtil.copyProperties(eventDatum,payBalanceNoticeEntity);
             payBalanceNoticeEntity.setEventId(unionPayIncomeDTO.getEventId());
             payBalanceNoticeEntity.setEventType(unionPayIncomeDTO.getEventType());

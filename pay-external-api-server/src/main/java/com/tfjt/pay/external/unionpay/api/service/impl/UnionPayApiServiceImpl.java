@@ -2,8 +2,6 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateUtil;
-import cn.xuyanwu.spring.file.storage.platform.QiniuKodoFileStorage;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -23,10 +21,10 @@ import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideSubReq;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDetailDTO;
-import com.tfjt.pay.external.unionpay.entity.PayBalanceDivideDetailsEntity;
-import com.tfjt.pay.external.unionpay.entity.PayBalanceDivideEntity;
-import com.tfjt.pay.external.unionpay.service.PayBalanceDivideDetailsService;
-import com.tfjt.pay.external.unionpay.service.PayBalanceDivideService;
+import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
+import com.tfjt.pay.external.unionpay.entity.LoadBalanceDivideEntity;
+import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
+import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
@@ -56,10 +54,10 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     private UnionPayService unionPayService;
 
     @Autowired
-    private PayBalanceDivideService payBalanceDivideService;
+    private LoanBalanceDivideService payBalanceDivideService;
 
     @Autowired
-    private PayBalanceDivideDetailsService payBalanceDivideDetailsService;
+    private LoanBalanceDivideDetailsService payBalanceDivideDetailsService;
 
     @Autowired
     private OrderNumberUtil orderNumberUtil;
@@ -124,7 +122,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         //2.保存分账主信息信息
         //主交易单号,银联交互使用
         String tradeOrderNo = orderNumberUtil.generateOrderNumber(TransactionTypeConstants.TRANSACTION_TYPE_DB);
-        PayBalanceDivideEntity payBalanceDivideEntity = new PayBalanceDivideEntity();
+        LoadBalanceDivideEntity payBalanceDivideEntity = new LoadBalanceDivideEntity();
         payBalanceDivideEntity.setPayBalanceAcctId(accountConfig.getBalanceAcctId());
         payBalanceDivideEntity.setTradeOrderNo(tradeOrderNo);
         payBalanceDivideEntity.setBusinessOrderNo(balanceDivideReq.getBusinessOrderNo());
@@ -136,7 +134,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         }
         //3.保存子分账信息
         List<SubBalanceDivideReqDTO> list = balanceDivideReq.getList();
-        List<PayBalanceDivideDetailsEntity> saveList = new ArrayList<>(list.size());
+        List<LoanBalanceDivideDetailsEntity> saveList = new ArrayList<>(list.size());
 
         for (SubBalanceDivideReqDTO subBalanceDivideReqDTO : list) {
             saveList.add(buildPayBalanceDivideDetailsEntity(subBalanceDivideReqDTO, date, payBalanceDivideEntity.getId()));
@@ -198,20 +196,20 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @param unionPayDivideRespDTO
      */
     private void updateByUnionPayDivideReqDTO(UnionPayDivideRespDTO unionPayDivideRespDTO) {
-        PayBalanceDivideEntity update = new PayBalanceDivideEntity();
+        LoadBalanceDivideEntity update = new LoadBalanceDivideEntity();
         BeanUtil.copyProperties(unionPayDivideRespDTO, update);
-        LambdaUpdateWrapper<PayBalanceDivideEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(PayBalanceDivideEntity::getTradeOrderNo, unionPayDivideRespDTO.getOutOrderNo());
+        LambdaUpdateWrapper<LoadBalanceDivideEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(LoadBalanceDivideEntity::getTradeOrderNo, unionPayDivideRespDTO.getOutOrderNo());
         if (!this.payBalanceDivideService.updateById(update)) {
             log.error("更新分账主单据信息失败:{}", JSONObject.toJSONString(update));
         }
         List<UnionPayDivideRespDetailDTO> transferResults = unionPayDivideRespDTO.getTransferResults();
         for (UnionPayDivideRespDetailDTO transferResult : transferResults) {
-            PayBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new PayBalanceDivideDetailsEntity();
+            LoanBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new LoanBalanceDivideDetailsEntity();
             BeanUtil.copyProperties(transferResult, payBalanceDivideDetailsEntity);
-            LambdaUpdateWrapper<PayBalanceDivideDetailsEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.eq(PayBalanceDivideDetailsEntity::getRecvBalanceAcctId, transferResult.getRecvBalanceAcctId())
-                    .eq(PayBalanceDivideDetailsEntity::getAmount, transferResult.getAmount());
+            LambdaUpdateWrapper<LoanBalanceDivideDetailsEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.eq(LoanBalanceDivideDetailsEntity::getRecvBalanceAcctId, transferResult.getRecvBalanceAcctId())
+                    .eq(LoanBalanceDivideDetailsEntity::getAmount, transferResult.getAmount());
             if (this.payBalanceDivideDetailsService.update(payBalanceDivideDetailsEntity, lambdaUpdateWrapper)) {
                 log.error("更新子交易记录失败:{},该记录银联返回信息",
                         JSONObject.toJSONString(payBalanceDivideDetailsEntity), JSONObject.toJSONString(transferResult));
@@ -226,12 +224,12 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @param saveList
      * @param tradeOrderNo
      */
-    private UnionPayDivideReqDTO builderBalanceDivideUnionPayParam(List<PayBalanceDivideDetailsEntity> saveList, String tradeOrderNo) {
+    private UnionPayDivideReqDTO builderBalanceDivideUnionPayParam(List<LoanBalanceDivideDetailsEntity> saveList, String tradeOrderNo) {
         UnionPayDivideReqDTO unionPayDivideReqDTO = new UnionPayDivideReqDTO();
         unionPayDivideReqDTO.setPayBalanceAcctId(accountConfig.getBalanceAcctId());
         unionPayDivideReqDTO.setOutOrderNo(tradeOrderNo);
         List<UnionPayDivideSubReq> transferParams = new ArrayList<>(saveList.size());
-        for (PayBalanceDivideDetailsEntity payBalanceDivideEntity : saveList) {
+        for (LoanBalanceDivideDetailsEntity payBalanceDivideEntity : saveList) {
             UnionPayDivideSubReq unionPayDivideSubReq = new UnionPayDivideSubReq();
             BeanUtil.copyProperties(payBalanceDivideEntity, unionPayDivideSubReq);
             UnionPayProduct unionPayProduct = new UnionPayProduct();
@@ -256,8 +254,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @param subBalanceDivideReqDTO 分账信息
      * @param date                   创建时间
      */
-    private PayBalanceDivideDetailsEntity buildPayBalanceDivideDetailsEntity(SubBalanceDivideReqDTO subBalanceDivideReqDTO, Date date, Long divideId) {
-        PayBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new PayBalanceDivideDetailsEntity();
+    private LoanBalanceDivideDetailsEntity buildPayBalanceDivideDetailsEntity(SubBalanceDivideReqDTO subBalanceDivideReqDTO, Date date, Long divideId) {
+        LoanBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new LoanBalanceDivideDetailsEntity();
         BeanUtil.copyProperties(subBalanceDivideReqDTO, payBalanceDivideDetailsEntity);
         payBalanceDivideDetailsEntity.setDivideId(divideId);
         payBalanceDivideDetailsEntity.setSubTradeOrderNo(orderNumberUtil.generateOrderNumber(TransactionTypeConstants.TRANSACTION_TYPE_DB_SUB));
