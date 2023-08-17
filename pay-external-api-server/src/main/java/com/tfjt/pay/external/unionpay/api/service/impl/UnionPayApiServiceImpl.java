@@ -12,6 +12,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.WithdrawalRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -23,13 +24,9 @@ import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDetailDTO;
-import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
-import com.tfjt.pay.external.unionpay.entity.LoadBalanceDivideEntity;
-import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
-import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
-import com.tfjt.pay.external.unionpay.service.UnionPayService;
-import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
+import com.tfjt.pay.external.unionpay.dto.resp.WithdrawalCreateRespDTO;
+import com.tfjt.pay.external.unionpay.entity.*;
+import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
@@ -76,6 +73,9 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Resource
     CustBankInfoService custBankInfoService;
+
+    @Resource
+    LoanWithdrawalOrderService withdrawalOrderService;
 
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
@@ -187,24 +187,35 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @return
      */
     @Override
-    public Result withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
+    @Transactional(rollbackFor = Exception.class)
+    public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(withdrawalReqDTO.getLoanUserId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
-
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
+        //todo 统一生成NO
         withdrawalCreateReqDTO.setOutOrderNo("2008349494890702348");
         withdrawalCreateReqDTO.setSentAt(DateUtil.getNowByRFC3339());
         withdrawalCreateReqDTO.setAmount(withdrawalReqDTO.getAmount());
         withdrawalCreateReqDTO.setServiceFee(null);
         withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
-        withdrawalCreateReqDTO.setBusinessType("1");
+        withdrawalCreateReqDTO.setBusinessType(UnionPayBusinessTypeEnum.WITHDRAWAL.getCode());
         withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
         withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
         withdrawalCreateReqDTO.setRemark("");
         Map<String, Object> map = new HashMap<>();
         map.put("notifyUrl", notifyUrl);
         withdrawalCreateReqDTO.setExtra(map);
-        return null;
+        //插入业务表
+        LoanWithdrawalOrderEntity loanWithdrawalOrderEntity = BeanUtil.copyProperties(withdrawalCreateReqDTO, LoanWithdrawalOrderEntity.class);
+        loanWithdrawalOrderEntity.setAppId(withdrawalReqDTO.getAppId());
+        withdrawalOrderService.save(loanWithdrawalOrderEntity);
+
+        Result<WithdrawalCreateRespDTO> withdrawalCreateResp= unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
+        WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
+        //更新状态
+        loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
+        withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
+        return Result.ok(withdrawalRespDTO);
     }
 
     @Override
