@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceAcctService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
+import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
         loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
         LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-        if (Objects.isNull(balanceAcc)){
+        if (Objects.isNull(balanceAcc)) {
             return Result.failed("电子账簿信息不存在");
         }
         loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
@@ -70,13 +71,13 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         if (ObjectUtils.isNotEmpty(loanUser)) {
             //进件完成，查询余额信息
             LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-            if (Objects.isNull(balanceAcc)){
+            if (Objects.isNull(balanceAcc)) {
                 return Result.failed("电子账簿信息不存在");
             }
 
-            LoanAccountDTO loanAccountDTO =unionPayService.getLoanAccount(balanceAcc.getBalanceAcctId());
-            if(ObjectUtils.isNotEmpty(loanAccountDTO)){
-               Integer settledAmount = loanAccountDTO.getSettledAmount()==null?0:loanAccountDTO.getSettledAmount();
+            LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcc.getBalanceAcctId());
+            if (ObjectUtils.isNotEmpty(loanAccountDTO)) {
+                Integer settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
                 BigDecimal bigDecimal = new BigDecimal(100);
                 balance = new BigDecimal(settledAmount).divide(bigDecimal);
             }
@@ -91,18 +92,23 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     /**
      * 获取银行卡
+     *
      * @param loanUserId
      * @return
      */
     @Override
     public Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Long loanUserId) {
-        List<BankInfoDTO> bankInfoByBus = custBankInfoService.getBankInfoByBus(loanUserId);
-        List<CustBankInfoRespDTO> custBankInfoResp = new ArrayList<>();
-        bankInfoByBus.forEach(bankInfoDTO -> {
-            CustBankInfoRespDTO custBankInfoRespDTO =new CustBankInfoRespDTO();
-            BeanUtil.copyProperties(bankInfoDTO,custBankInfoRespDTO);
-            custBankInfoResp.add(custBankInfoRespDTO);
-        });
-        return Result.ok(custBankInfoResp);
+        try {
+            List<BankInfoDTO> bankInfoByBus = custBankInfoService.getBankInfoByBus(loanUserId);
+            List<CustBankInfoRespDTO> custBankInfoResp = new ArrayList<>();
+            bankInfoByBus.forEach(bankInfoDTO -> {
+                CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
+                BeanUtil.copyProperties(bankInfoDTO, custBankInfoRespDTO);
+                custBankInfoResp.add(custBankInfoRespDTO);
+            });
+            return Result.ok(custBankInfoResp);
+        } catch (Exception ex) {
+            return Result.failed(ex.getMessage());
+        }
     }
 }
