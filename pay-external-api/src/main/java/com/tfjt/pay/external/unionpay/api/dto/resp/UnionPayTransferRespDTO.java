@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @date 2023-08-10 17:08
  * @email 598482054@qq.com
  */
-public class UnionPayTransferDTO implements Serializable {
+public class UnionPayTransferRespDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 收款账户电子账簿id

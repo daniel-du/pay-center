@@ -6,12 +6,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.BalanceDivideReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.SubBalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -84,24 +84,24 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     private String notifyUrl;
 
     @Override
-    public Result<String> transfer(UnionPayTransferDTO payTransferDTO) {
+    public Result<String> transfer(UnionPayTransferRespDTO payTransferDTO) {
         return null;
     }
 
     @Override
     public Result<Integer> currentBalance() {
-        BalanceAcctDTO balanceAcctDTOByAccountId = getBalanceAcctDTOByAccountId(accountConfig.getBalanceAcctId());
+        BalanceAcctRespDTO balanceAcctDTOByAccountId = getBalanceAcctDTOByAccountId(accountConfig.getBalanceAcctId());
         log.debug("查询母账户交易余额返回:{}", balanceAcctDTOByAccountId.getSettledAmount());
         return Result.ok(balanceAcctDTOByAccountId.getSettledAmount());
     }
 
     @Override
-    public Result<BalanceAcctDTO> getBalanceByAccountId(String balanceAcctId) {
+    public Result<BalanceAcctRespDTO> getBalanceByAccountId(String balanceAcctId) {
         log.debug("查询电子账簿id:{}", balanceAcctId);
         if (StringUtil.isBlank(balanceAcctId)) {
             return Result.failed("电子账簿id不能为空");
         }
-        BalanceAcctDTO balanceAcctDTO = getBalanceAcctDTOByAccountId(balanceAcctId);
+        BalanceAcctRespDTO balanceAcctDTO = getBalanceAcctDTOByAccountId(balanceAcctId);
         if (Objects.isNull(balanceAcctDTO)) {
             String message = String.format("[%s]电子账簿信息不存在", balanceAcctId);
             log.error(String.format(message));
@@ -111,14 +111,14 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
     @Override
-    public Result<Map<String, BalanceAcctDTO>> listBalanceByAccountIds(List<String> balanceAcctIds) {
+    public Result<Map<String, BalanceAcctRespDTO>> listBalanceByAccountIds(List<String> balanceAcctIds) {
         log.debug("批量查询电子账户参数信息:{}", JSONObject.toJSONString(balanceAcctIds));
         if (CollectionUtil.isEmpty(balanceAcctIds)) {
             return Result.failed("电子账簿id不能为空");
         }
-        Map<String, BalanceAcctDTO> result = new HashMap<>(balanceAcctIds.size());
+        Map<String, BalanceAcctRespDTO> result = new HashMap<>(balanceAcctIds.size());
         for (String balanceAcctId : balanceAcctIds) {
-            BalanceAcctDTO balanceAcctDTOByAccountId = getBalanceAcctDTOByAccountId(balanceAcctId);
+            BalanceAcctRespDTO balanceAcctDTOByAccountId = getBalanceAcctDTOByAccountId(balanceAcctId);
             if (!Objects.isNull(balanceAcctDTOByAccountId)) {
                 result.put(balanceAcctId, balanceAcctDTOByAccountId);
             }
@@ -208,7 +208,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
     @Override
-    public Result unifiedorder(LoanOrderUnifiedorderDTO loanOrderUnifiedorderDTO) {
+    public Result unifiedorder(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
         return null;
     }
 
@@ -313,12 +313,12 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @param balanceAcctId 账户账户id
      * @return 电子账户信息
      */
-    private BalanceAcctDTO getBalanceAcctDTOByAccountId(String balanceAcctId) {
+    private BalanceAcctRespDTO getBalanceAcctDTOByAccountId(String balanceAcctId) {
         LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
         if (Objects.isNull(loanAccountDTO)) {
             return null;
         }
-        BalanceAcctDTO balanceAcctDTO = new BalanceAcctDTO();
+        BalanceAcctRespDTO balanceAcctDTO = new BalanceAcctRespDTO();
         BeanUtil.copyProperties(loanAccountDTO, balanceAcctDTO);
         return balanceAcctDTO;
     }

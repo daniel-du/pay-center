@@ -1,11 +1,11 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.BalanceDivideReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public interface UnionPayApiService {
      * 转账接口
      * @param payTransferDTO
      */
-    Result<String> transfer(UnionPayTransferDTO payTransferDTO);
+    Result<String> transfer(UnionPayTransferRespDTO payTransferDTO);
 
     /**
      * 获取同福母账户当前账户余额
@@ -36,13 +36,13 @@ public interface UnionPayApiService {
      * @param balanceAcctId 电子账簿id
      * @return
      */
-    Result<BalanceAcctDTO> getBalanceByAccountId(String balanceAcctId);
+    Result<BalanceAcctRespDTO> getBalanceByAccountId(String balanceAcctId);
 
     /**
      * 批量获取指定电子账簿id的账户信息
      * @return
      */
-    Result<Map<String,BalanceAcctDTO>> listBalanceByAccountIds(List<String> balanceAcctIds);
+    Result<Map<String, BalanceAcctRespDTO>> listBalanceByAccountIds(List<String> balanceAcctIds);
 
     /**
      * 资金分账操作
@@ -56,7 +56,7 @@ public interface UnionPayApiService {
      * @param loanOrderUnifiedorderDTO
      * @return
      */
-    Result unifiedorder(LoanOrderUnifiedorderDTO loanOrderUnifiedorderDTO);
+    Result unifiedorder(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO);
 
 
     /**

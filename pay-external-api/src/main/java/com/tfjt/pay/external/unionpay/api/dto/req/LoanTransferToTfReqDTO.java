@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @date 2023-08-11 10:54
  * @email 598482054@qq.com
  */
-public class LoanTransferToTfDTO implements Serializable {
+public class LoanTransferToTfReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

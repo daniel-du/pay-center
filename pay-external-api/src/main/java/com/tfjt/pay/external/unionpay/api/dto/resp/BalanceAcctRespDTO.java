@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @email 598482054@qq.com
  */
 @Data
-public class BalanceAcctDTO implements Serializable {
+public class BalanceAcctRespDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
     /**

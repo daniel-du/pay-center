@@ -12,7 +12,7 @@ import java.util.List;
  * @email 598482054@qq.com
  */
 @Data
-public class LoanOrderUnifiedorderDTO implements Serializable {
+public class LoanOrderUnifiedorderReqDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**唯一标识*/
@@ -28,6 +28,6 @@ public class LoanOrderUnifiedorderDTO implements Serializable {
     private String metadata;
 
     /**收款电子账簿信息*/
-    private List<LoanOrderDetailsDTO> detailsDTOList;
+    private List<LoanOrderDetailsReqDTO> detailsDTOList;
 
 }

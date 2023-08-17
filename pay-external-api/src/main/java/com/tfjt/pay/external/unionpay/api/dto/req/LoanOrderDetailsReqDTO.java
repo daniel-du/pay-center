@@ -11,7 +11,7 @@ import java.util.List;
  * @email 598482054@qq.com
  */
 @Data
-public class LoanOrderDetailsDTO {
+public class LoanOrderDetailsReqDTO {
 
     private static final long serialVersionUID = 1L;
 
@@ -34,5 +34,5 @@ public class LoanOrderDetailsDTO {
     /**
      * 商品信息
      */
-    private List<LoanOrderGoodsDTO> goodsDTOList;
+    private List<LoanOrderGoodsReqDTO> goodsDTOList;
 }
