@@ -103,7 +103,6 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             BeanUtil.copyProperties(bankInfoDTO,custBankInfoRespDTO);
             custBankInfoResp.add(custBankInfoRespDTO);
         });
-
         return Result.ok(custBankInfoResp);
     }
 }

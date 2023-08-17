@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -207,15 +208,23 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         withdrawalCreateReqDTO.setExtra(map);
         //插入业务表
         LoanWithdrawalOrderEntity loanWithdrawalOrderEntity = BeanUtil.copyProperties(withdrawalCreateReqDTO, LoanWithdrawalOrderEntity.class);
+        loanWithdrawalOrderEntity.setBankAcctNo(bankInfo.getBankCardNo());
+        loanWithdrawalOrderEntity.setMobileNumber(bankInfo.getPhone());
         loanWithdrawalOrderEntity.setAppId(withdrawalReqDTO.getAppId());
+        log.info("银联提现参数插入业务表:{}", JSON.toJSONString(loanWithdrawalOrderEntity));
         withdrawalOrderService.save(loanWithdrawalOrderEntity);
-
+        log.info("银联提现参数:{}", JSON.toJSONString(withdrawalCreateReqDTO));
         Result<WithdrawalCreateRespDTO> withdrawalCreateResp= unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
         WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
-        //更新状态
-        loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
-        withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
-        return Result.ok(withdrawalRespDTO);
+        if (withdrawalCreateResp.getCode() != NumberConstant.ZERO) {
+            return Result.failed(withdrawalCreateResp.getMsg());
+        }else{
+            //更新状态
+            loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
+            withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
+            return Result.ok(withdrawalRespDTO);
+        }
+
     }
 
     @Override
