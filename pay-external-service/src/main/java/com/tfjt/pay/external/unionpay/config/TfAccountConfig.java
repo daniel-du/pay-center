@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Data
 @Component
-@ConfigurationProperties(prefix = "unionpay.tf-account")
+@ConfigurationProperties(prefix = "unionpay.loan.tf-account")
 public class TfAccountConfig {
     /**
      * 同福电子账簿id
@@ -21,4 +21,8 @@ public class TfAccountConfig {
      * 同福电子账簿名称
      */
     private String balanceAcctName;
+    /**
+     * 退款通知
+     */
+    private String notifyUrl;
 }

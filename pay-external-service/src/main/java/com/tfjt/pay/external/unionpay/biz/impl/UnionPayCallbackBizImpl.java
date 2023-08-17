@@ -2,13 +2,17 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.tfjt.pay.external.unionpay.biz.UnionPayNoticeBiz;
+import com.baomidou.lock.annotation.Lock4j;
+import com.tfjt.pay.external.unionpay.biz.UnionPayCallbackBiz;
+import com.tfjt.pay.external.unionpay.dto.req.TransactionCallBackReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
 
 import com.tfjt.pay.external.unionpay.entity.LoadBalanceNoticeEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanNoticeRecordEntity;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceNoticeService;
+import com.tfjt.pay.external.unionpay.service.LoanNoticeRecordService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +30,20 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class UnionPayNoticeBizImpl implements UnionPayNoticeBiz {
+public class UnionPayCallbackBizImpl implements UnionPayCallbackBiz {
 
     @Autowired
     private LoanBalanceNoticeService payBalanceNoticeService;
 
+    @Autowired
+    private LoanNoticeRecordService loanNoticeRecordService;
+
+    @Autowired
+    private LoanNoticeRecordService recordService;
+
 
     @Override
     public void balanceIncomeNotice(UnionPayBaseResp unionPayBaseResp, HttpServletResponse response) {
-        //
-        // checkSign()
         String lwzRespData = unionPayBaseResp.getLwzRespData();
         UnionPayIncomeDTO unionPayIncomeDTO = JSONObject.parseObject(lwzRespData, UnionPayIncomeDTO.class);
         List<UnionPayIncomeDetailsDTO> eventData = unionPayIncomeDTO.getEventData();
@@ -53,8 +61,21 @@ public class UnionPayNoticeBizImpl implements UnionPayNoticeBiz {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
-        //
         payBalanceNoticeService.noticeFms(list);
-        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    @Lock4j(keys = "#transactionCallBackReqDTO.eventId",expire = 3000,acquireTimeout = 3000)
+    @Override
+    public void commonCallback(TransactionCallBackReqDTO transactionCallBackReqDTO, HttpServletResponse response) {
+        String eventId = transactionCallBackReqDTO.getEventId();
+        if(recordService.existEventId(eventId)){
+            return ;
+        }
+        LoanNoticeRecordEntity loanNoticeRecordEntity = new LoanNoticeRecordEntity();
+        BeanUtil.copyProperties(transactionCallBackReqDTO,loanNoticeRecordEntity);
+        if(!this.loanNoticeRecordService.save(loanNoticeRecordEntity)){
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+        //TODO 处理各自的业务逻辑
     }
 }

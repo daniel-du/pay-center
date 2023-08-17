@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import lombok.Data;
 
@@ -15,16 +16,20 @@ import java.io.Serializable;
 @Data
 public class TransactionCallBackReqDTO implements Serializable {
     /**事件ID*/
-    private String event_id;
+    @JSONField(name = "event_id")
+    private String eventId;
 
     /**事件类型*/
-    private String event_type;
+    @JSONField(name = "event_type")
+    private String eventType;
 
     /**事件内容*/
-    private EventDataDTO event_data;
+    @JSONField(name = "event_data")
+    private EventDataDTO eventData;
 
     /**事件创建时间*/
-    private String created_at;
+    @JSONField(name = "created_at")
+    private String createdAt;
 
 
 }

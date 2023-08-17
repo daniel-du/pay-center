@@ -176,11 +176,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return Result.failed(result.getMsg());
         }
-        //6.更新单据数据
-        //TODO  异步处理?加定时任务失败后记录失败日志,定时任务补偿?
-        updateByUnionPayDivideReqDTO(result.getData());
-        //7.解析返回数据响应给业务系统
-        //TODO  异步处理返回信息?业务系统处理失败后重试?
+        //6.解析返回数据响应给业务系统
         return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
     }
 
