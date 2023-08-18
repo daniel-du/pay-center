@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -29,5 +30,20 @@ public interface LoanApiService {
      * @return
      */
     Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Long loanUserId);
+
+
+    /**
+     * 业务id获取电子账户信息
+     * @param busId 业务id
+     * @return
+     */
+    Result<BalanceAcctRespDTO> getAccountInfoByBusId(String type,String busId);
+
+    /**
+     * 业务id获取电子账户信息
+     * @param busIds 业务ids
+     * @return
+     */
+    Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type,List<String> busIds);
 
 }

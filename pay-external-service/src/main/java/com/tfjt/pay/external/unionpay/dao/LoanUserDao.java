@@ -20,5 +20,5 @@ public interface LoanUserDao extends BaseMapper<LoanUserEntity> {
 
     List<LoanUserEntity> applicationStatusNotSucceededData();
 
-    List<UnionPayLoanUserRespDTO> listLoanUserByBusId(@Param("list") List<String> busIds);
+    List<UnionPayLoanUserRespDTO> listLoanUserByBusId(@Param("type") String type, @Param("list") List<String> busIds);
 }

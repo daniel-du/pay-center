@@ -16,19 +16,6 @@ import java.util.Map;
  * @email 598482054@qq.com
  */
 public interface UnionPayApiService {
-    /**
-     * 业务id获取电子账户信息
-     * @param busId 业务id
-     * @return
-     */
-    Result<BalanceAcctRespDTO> getBalanceByBusId(String busId);
-
-    /**
-     * 业务id获取电子账户信息
-     * @param busIds 业务ids
-     * @return
-     */
-    Result<List<BalanceAcctRespDTO>> listBalanceByBusId(List<String> busIds);
 
     /**
      * 转账接口

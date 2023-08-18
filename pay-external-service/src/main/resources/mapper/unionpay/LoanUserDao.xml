@@ -19,7 +19,7 @@
         where a.id in
         <foreach collection="list" separator="," open="(" close=")" item="item">
             #{item}
-        </foreach>
+        </foreach> and a.type = #{type}
 
     </select>
 

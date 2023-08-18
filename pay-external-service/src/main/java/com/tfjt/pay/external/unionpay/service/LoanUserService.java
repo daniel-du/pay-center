@@ -37,6 +37,6 @@ public interface LoanUserService extends IService<LoanUserEntity> {
      */
     void asynNotice(LoanUserEntity tfLoanUserEntity);
 
-    List<UnionPayLoanUserRespDTO> listLoanUserByBusId(List<String> busIds);
+    List<UnionPayLoanUserRespDTO> listLoanUserByBusId(String type, List<String> busIds);
 }
 

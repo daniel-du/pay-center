@@ -96,8 +96,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
     LoanWithdrawalOrderService withdrawalOrderService;
 
-    @Autowired
-    private LoanUserService loanUserService;
 
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
@@ -105,31 +103,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     //@Value("backcall")
     private String notifyUrl = "http://60.204.170.215:9001/tf-pay-external/unionPay/notice/commonCallback";
 
-
-    @Override
-    public Result<BalanceAcctRespDTO> getBalanceByBusId(String busId) {
-        Result<List<BalanceAcctRespDTO>> listResult = this.listBalanceByBusId(Arrays.asList(busId));
-        List<BalanceAcctRespDTO> data = listResult.getData();
-        if(CollectionUtil.isEmpty(data)){
-            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
-        }
-        return Result.ok(data.get(0));
-    }
-
-    @Override
-    public Result<List<BalanceAcctRespDTO>> listBalanceByBusId(List<String> busIds) {
-        List<UnionPayLoanUserRespDTO> unionPayLoanUserRespDTOS = loanUserService.listLoanUserByBusId(busIds);
-        if(CollectionUtil.isEmpty(loanUserService.listLoanUserByBusId(busIds))){
-            return Result.ok(new ArrayList<>());
-        }
-        List<BalanceAcctRespDTO> list = new ArrayList<>(unionPayLoanUserRespDTOS.size());
-        for (UnionPayLoanUserRespDTO unionPayLoanUserRespDTO : unionPayLoanUserRespDTOS) {
-            BalanceAcctRespDTO balanceAcctRespDTO = new BalanceAcctRespDTO();
-            BeanUtil.copyProperties(unionPayLoanUserRespDTO,balanceAcctRespDTO);
-            list.add(balanceAcctRespDTO);
-        }
-        return Result.ok(list);
-    }
 
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Transactional(rollbackFor = {TfException.class, Exception.class})

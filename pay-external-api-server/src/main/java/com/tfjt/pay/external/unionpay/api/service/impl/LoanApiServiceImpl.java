@@ -1,7 +1,9 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
@@ -9,11 +11,15 @@ import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceAcctService;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
+import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +52,9 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Resource
     CustBankInfoService custBankInfoService;
+
+    @Autowired
+    private LoanUserService loanUserService;
 
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
@@ -109,5 +118,31 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         } catch (Exception ex) {
             return Result.failed(ex.getMessage());
         }
+    }
+
+
+    @Override
+    public Result<BalanceAcctRespDTO> getAccountInfoByBusId(String type,String busId) {
+        Result<List<BalanceAcctRespDTO>> listResult = this.listAccountInfoByBusId(type,Arrays.asList(busId));
+        List<BalanceAcctRespDTO> data = listResult.getData();
+        if(CollectionUtil.isEmpty(data)){
+            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+        }
+        return Result.ok(data.get(0));
+    }
+
+    @Override
+    public Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type,List<String> busIds) {
+        List<UnionPayLoanUserRespDTO> unionPayLoanUserRespDTOS = loanUserService.listLoanUserByBusId(type,busIds);
+        if(CollectionUtil.isEmpty(loanUserService.listLoanUserByBusId(type, busIds))){
+            return Result.ok(new ArrayList<>());
+        }
+        List<BalanceAcctRespDTO> list = new ArrayList<>(unionPayLoanUserRespDTOS.size());
+        for (UnionPayLoanUserRespDTO unionPayLoanUserRespDTO : unionPayLoanUserRespDTOS) {
+            BalanceAcctRespDTO balanceAcctRespDTO = new BalanceAcctRespDTO();
+            BeanUtil.copyProperties(unionPayLoanUserRespDTO,balanceAcctRespDTO);
+            list.add(balanceAcctRespDTO);
+        }
+        return Result.ok(list);
     }
 }

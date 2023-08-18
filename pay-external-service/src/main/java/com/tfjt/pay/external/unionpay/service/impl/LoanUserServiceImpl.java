@@ -236,8 +236,8 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
     }
 
     @Override
-    public List<UnionPayLoanUserRespDTO> listLoanUserByBusId(List<String> busIds) {
-        return this.getBaseMapper().listLoanUserByBusId(busIds);
+    public List<UnionPayLoanUserRespDTO> listLoanUserByBusId(String type, List<String> busIds) {
+        return this.getBaseMapper().listLoanUserByBusId(type,busIds);
     }
 
     /**
