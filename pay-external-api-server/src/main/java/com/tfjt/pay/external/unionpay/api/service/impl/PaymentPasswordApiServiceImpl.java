@@ -52,10 +52,10 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
     }
 
     @Override
-    public Result<PaymentPasswordRespDTO> getSalt(PaymentPasswordReqDTO paymentPasswordDTO) {
+    public Result<PaymentPasswordRespDTO> getSalt(Long loanUserId) {
         PaymentPasswordRespDTO passwordRespDTO = null;
         try {
-            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getLoanUserId,paymentPasswordDTO.getLoanUserId()));
+            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getLoanUserId,loanUserId));
             if (ObjectUtils.isNotEmpty(paymentPassword)) {
                 passwordRespDTO = new PaymentPasswordRespDTO();
                 passwordRespDTO.setSalt(paymentPassword.getSalt());

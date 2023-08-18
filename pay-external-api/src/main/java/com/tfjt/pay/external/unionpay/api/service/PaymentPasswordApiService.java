@@ -24,7 +24,7 @@ public interface PaymentPasswordApiService {
      * @param paymentPasswordDTO
      * @return
      */
-    public Result<PaymentPasswordRespDTO> getSalt(PaymentPasswordReqDTO paymentPasswordDTO);
+    public Result<PaymentPasswordRespDTO> getSalt(Long loanUserId);
 
     /**
      * 验证支付密码
