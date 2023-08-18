@@ -64,7 +64,7 @@ public interface UnionPayApiService {
      * @param userId
      * @return
      */
-    Result downloadCheckBill(String date,Long userId);
+    Result<String> downloadCheckBill(String date,Long userId);
 
     /**
      *

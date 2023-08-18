@@ -94,10 +94,11 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
      */
     private Runnable detailsNotice(LoanCallbackEntity loanCallbackEntity) {
         return () -> {
-            //处理母账户入金
             if (UnionPayEventTypeConstant.ROOT_TRANSFER_DEPOSIT.equals(loanCallbackEntity.getEventType())) {
+                //处理母账户入金
                 balanceIncomeNotice(loanCallbackEntity.getEventData(),loanCallbackEntity.getId());
             }else if(UnionPayEventTypeConstant.TRADE_RESULT.equals(loanCallbackEntity.getEventType())){
+                //处理交易结果
                 treadResult(loanCallbackEntity);
             }
         };

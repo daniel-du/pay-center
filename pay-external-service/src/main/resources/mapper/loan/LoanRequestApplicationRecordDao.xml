@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.LoanRequestApplicationRecordDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity" id="loanRequestApplicationRecordMap">
+        <result property="id" column="id"/>
+        <result property="appId" column="app_id"/>
+        <result property="requestUrl" column="request_url"/>
+        <result property="requestParam" column="request_param"/>
+        <result property="responseParam" column="response_param"/>
+        <result property="responseTime" column="response_time"/>
+        <result property="tradeOrderNo" column="trade_order_no"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+
+</mapper>

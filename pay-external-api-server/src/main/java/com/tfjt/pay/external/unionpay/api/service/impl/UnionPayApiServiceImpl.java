@@ -25,7 +25,6 @@ import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
-import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
@@ -36,10 +35,8 @@ import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Propagation;
@@ -47,10 +44,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 银联接口服务实现类
@@ -378,7 +373,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         return Result.ok(result.getData().getStatus());
     }
     @Override
-    public Result downloadCheckBill(String date, Long userId) {
+    public Result<String> downloadCheckBill(String date, Long userId) {
 
         return null;
     }
