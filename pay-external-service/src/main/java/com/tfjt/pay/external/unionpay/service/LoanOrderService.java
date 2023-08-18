@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 
 import java.util.Map;
@@ -20,5 +21,12 @@ public interface LoanOrderService extends IService<LoanOrderEntity> {
      * @return  true 已存在 false 不存在
      */
     boolean checkExistBusinessOrderNo(String businessOrderNo, String appId);
+
+    /**
+     * 处理交易结果
+     * @param eventDataDTO
+     */
+    LoanOrderEntity treadResult(EventDataDTO eventDataDTO);
+
 }
 

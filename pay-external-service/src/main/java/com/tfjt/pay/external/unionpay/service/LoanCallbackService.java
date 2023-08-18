@@ -12,6 +12,6 @@ import com.tfjt.pay.external.unionpay.entity.LoanCallbackEntity;
  */
 public interface LoanCallbackService extends IService<LoanCallbackEntity> {
 
-    void saveLog(Long loanUserId, String eventId, String eventType, String toJSONString, String createdAt, Integer type, String destAcctNo);
+    LoanCallbackEntity saveLog(Long loanUserId, String eventId, String eventType, String toJSONString, String createdAt, Integer type, String destAcctNo);
 }
 

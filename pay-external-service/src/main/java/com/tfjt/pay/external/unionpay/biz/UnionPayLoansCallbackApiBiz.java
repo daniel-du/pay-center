@@ -13,12 +13,6 @@ import java.text.ParseException;
  * @email 598482054@qq.com
  */
 public interface UnionPayLoansCallbackApiBiz {
-    /**
-     * 处理银联入金通知
-     * @param unionPayBaseResp
-     * @param response
-     */
-    void balanceIncomeNotice(UnionPayBaseResp unionPayBaseResp, HttpServletResponse response);
 
     /**
      * 银联回调通知

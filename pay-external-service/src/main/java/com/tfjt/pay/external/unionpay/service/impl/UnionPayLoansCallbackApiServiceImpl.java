@@ -84,11 +84,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Boolean unionPayLoansBaseCallBack(UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
-        LoanCallbackEntity tfLoanCallbackEntity = tfLoanCallbackService.getOne(new LambdaQueryWrapper<LoanCallbackEntity>().eq(LoanCallbackEntity::getEventId, unionPayLoansBaseCallBackDTO.getEventId()));
-        if(tfLoanCallbackEntity!=null){
-            log.info("事件回调已添加{}",unionPayLoansBaseCallBackDTO.getEventId());
-            return true;
-        }
+
 
         //1二级进件回调
         if(Objects.equals("mch_application_finished", unionPayLoansBaseCallBackDTO.getEventType())){

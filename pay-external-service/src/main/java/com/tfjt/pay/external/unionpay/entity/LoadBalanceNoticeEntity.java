@@ -110,7 +110,4 @@ public class LoadBalanceNoticeEntity implements Serializable {
 	 */
 	private Date createTime;
 
-
-	private Integer noticeFlag;
-
 }

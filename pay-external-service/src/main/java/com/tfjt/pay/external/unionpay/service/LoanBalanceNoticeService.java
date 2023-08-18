@@ -15,5 +15,7 @@ import java.util.List;
 public interface LoanBalanceNoticeService extends IService<LoadBalanceNoticeEntity> {
 
     void noticeFms(List<LoadBalanceNoticeEntity> list);
+
+    List<LoadBalanceNoticeEntity> saveByEventDate(String eventDataString);
 }
 

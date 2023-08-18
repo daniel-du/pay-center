@@ -76,4 +76,6 @@ public class LoanOrderEntity implements Serializable {
 	 */
 	private String payBalanceAcctName;
 
+	private Integer amount;
+
 }

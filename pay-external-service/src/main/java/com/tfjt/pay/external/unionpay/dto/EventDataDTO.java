@@ -16,7 +16,7 @@ import java.io.Serializable;
 public class EventDataDTO implements Serializable {
     /**系统订单号*/
     @JSONField(name = "trade_id")
-    private String trade_id;
+    private String tradeId;
 
     /**平台订单号*/
     @JSONField(name = "out_order_no")
