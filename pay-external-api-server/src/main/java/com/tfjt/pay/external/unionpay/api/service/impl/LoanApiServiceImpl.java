@@ -67,7 +67,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         Map<String, Object> result = new HashMap<>();
         BigDecimal balance = new BigDecimal("0");
         LoanUserEntity loanUser = this.baseMapper.selectOne(new QueryWrapper<LoanUserEntity>()
-                .eq("loan_user_type", type).eq("bus_id", bid));
+                .eq("type", type).eq("bus_id", bid));
         if (ObjectUtils.isNotEmpty(loanUser)) {
             //进件完成，查询余额信息
             LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
