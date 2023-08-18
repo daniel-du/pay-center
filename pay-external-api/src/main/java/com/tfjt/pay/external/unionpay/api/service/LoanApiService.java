@@ -1,6 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
-import com.tfjt.pay.external.unionpay.api.dto.req.LoanTransferToTfReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -19,7 +19,7 @@ public interface LoanApiService {
      * @param bid  业务id
      * @return  用户余额与同福收款账号信息
      */
-    Result<LoanTransferToTfReqDTO> getBalanceAcctId(String type, String bid);
+    Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid);
 
     Result<Map<String,Object>> incomingIsFinish(String type, String bid);
 

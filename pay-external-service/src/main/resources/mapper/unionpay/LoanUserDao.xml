@@ -13,5 +13,14 @@
         ORDER BY
             create_date DESC
     </select>
+    <select id="listLoanUserByBusId"
+            resultType="com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO">
+        select  a.balance_acct_id, u.bus_id,u.name as balanceAcctName   from tf_loan_user u JOIN tf_loan_balance_acct a on u.id = a.loan_user_id
+        where a.id in
+        <foreach collection="list" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+
+    </select>
 
 </mapper>

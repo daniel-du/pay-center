@@ -10,6 +10,7 @@ import com.tfjt.pay.external.unionpay.config.ExecutorConfig;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.IncomingReturn;
 import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.CustIdcardInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
@@ -232,6 +233,11 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         List<TfLoanUserEntityDTO> tfLoanUserEntityDTOList = new ArrayList<>();
         tfLoanUserEntityDTOList.add(tfLoanUserEntityDTO);
         tfLoanUserRpcService.updateBatch(tfLoanUserEntityDTOList);
+    }
+
+    @Override
+    public List<UnionPayLoanUserRespDTO> listLoanUserByBusId(List<String> busIds) {
+        return this.getBaseMapper().listLoanUserByBusId(busIds);
     }
 
     /**

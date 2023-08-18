@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.dto.resp;
 
 import lombok.Data;
 
+import java.io.PipedReader;
 import java.io.Serializable;
 
 /**
@@ -17,6 +18,14 @@ public class BalanceAcctRespDTO implements Serializable {
      * 系统生成的唯一的电子账簿ID
      */
     private String balanceAcctId;
+    /**
+     * 账户名称
+     */
+    private String balanceAcctName;
+    /**
+     *
+     */
+    private String busId;
     /**
      * 电子账簿账簿号
      */

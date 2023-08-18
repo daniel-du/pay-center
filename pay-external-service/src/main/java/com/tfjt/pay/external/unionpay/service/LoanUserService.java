@@ -3,9 +3,12 @@ package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.tfcloud.business.dto.TfLoanUserEntityDTO;
 import com.tfjt.tfcommon.dto.response.Result;
+
+import java.util.List;
 
 /**
  * 贷款-用户
@@ -33,5 +36,7 @@ public interface LoanUserService extends IService<LoanUserEntity> {
      * @param tfLoanUserEntity
      */
     void asynNotice(LoanUserEntity tfLoanUserEntity);
+
+    List<UnionPayLoanUserRespDTO> listLoanUserByBusId(List<String> busIds);
 }
 

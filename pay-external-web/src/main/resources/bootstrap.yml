@@ -26,6 +26,7 @@ logging:
     org.springframework: INFO
     com.hospital: DEBUG
     com.zaxxer.hikari: DEBUG
+    com.tfjt: DEBUG
 mybatis-plus:
   global-config:
     db-config:

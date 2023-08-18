@@ -5,6 +5,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 银联分账支付参数
@@ -30,4 +31,6 @@ public class UnionPayDivideReqDTO implements Serializable {
     private String remark;
     /**自定义参数*/
     private String metadata;
+
+    private Map<String,Object> extra;
 }

@@ -3,10 +3,7 @@ package com.tfjt.pay.external.unionpay.api.service;
 import com.tfjt.pay.external.unionpay.api.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.LoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.WithdrawalRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -19,6 +16,20 @@ import java.util.Map;
  * @email 598482054@qq.com
  */
 public interface UnionPayApiService {
+    /**
+     * 业务id获取电子账户信息
+     * @param busId 业务id
+     * @return
+     */
+    Result<BalanceAcctRespDTO> getBalanceByBusId(String busId);
+
+    /**
+     * 业务id获取电子账户信息
+     * @param busIds 业务ids
+     * @return
+     */
+    Result<List<BalanceAcctRespDTO>> listBalanceByBusId(List<String> busIds);
+
     /**
      * 转账接口
      * @param payTransferDTO
@@ -57,7 +68,7 @@ public interface UnionPayApiService {
      * @param loanOrderUnifiedorderDTO
      * @return
      */
-    Result unifiedorder(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO);
+    Result<String> unifiedorder(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO);
 
 
     /**

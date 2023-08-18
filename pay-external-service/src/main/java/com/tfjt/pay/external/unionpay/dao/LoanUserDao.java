@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,4 +19,6 @@ import java.util.List;
 public interface LoanUserDao extends BaseMapper<LoanUserEntity> {
 
     List<LoanUserEntity> applicationStatusNotSucceededData();
+
+    List<UnionPayLoanUserRespDTO> listLoanUserByBusId(@Param("list") List<String> busIds);
 }

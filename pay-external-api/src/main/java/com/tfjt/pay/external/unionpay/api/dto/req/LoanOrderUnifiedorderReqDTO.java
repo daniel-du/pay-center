@@ -21,8 +21,11 @@ public class LoanOrderUnifiedorderReqDTO implements Serializable {
     /**付款账户信息*/
     private String payBalanceAcctId;
 
+    /**付款账户名称*/
+    private String payBalanceAcctName;
+
     /**appid*/
-    private String appid;
+    private String appId;
 
     /**自定义参数 JSON */
     private String metadata;

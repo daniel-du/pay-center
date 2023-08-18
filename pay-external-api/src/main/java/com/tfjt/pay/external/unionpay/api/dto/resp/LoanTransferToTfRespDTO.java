@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.unionpay.api.dto.req;
+package com.tfjt.pay.external.unionpay.api.dto.resp;
 
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @email 598482054@qq.com
  */
 @Data
-public class LoanTransferToTfReqDTO implements Serializable {
+public class LoanTransferToTfRespDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

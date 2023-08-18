@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.utils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.constants.UnionPayConstant;
 import com.tfjt.pay.external.unionpay.dto.RespLwzMsgReturn;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayBaseReq;
@@ -138,7 +139,7 @@ public class UnionPayBaseBuilderUtils<T> {
         UnionPayBaseReq unionPayBaseReq = (UnionPayBaseReq)baseBuilder(lwzBussCode, lwzData);
         log.info("入参{}", JSON.toJSON(unionPayBaseReq));
         ResponseEntity<T> responseEntity = post(unionPayBaseReq);
-        log.info("返回值{}", responseEntity);
+        log.info("返回值{}", JSONObject.toJSONString(responseEntity));
         return getBaseReturn(responseEntity, clazz);
     }
 }

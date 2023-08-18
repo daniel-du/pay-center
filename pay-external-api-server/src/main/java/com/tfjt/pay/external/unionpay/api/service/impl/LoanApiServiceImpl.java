@@ -2,7 +2,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tfjt.pay.external.unionpay.api.dto.req.LoanTransferToTfReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
@@ -14,7 +14,6 @@ import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceAcctService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
-import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -49,8 +48,8 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
     CustBankInfoService custBankInfoService;
 
     @Override
-    public Result<LoanTransferToTfReqDTO> getBalanceAcctId(String type, String bid) {
-        LoanTransferToTfReqDTO loanTransferToTfDTO = new LoanTransferToTfReqDTO();
+    public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
+        LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
         loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
         loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
         LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
