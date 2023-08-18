@@ -28,7 +28,7 @@ public class UnionPayDivideSubReq implements Serializable {
     /**
      * 扩展字段商品信息
      */
-    private Map<String,List<UnionPayProduct>> extra;
+    private Map<String,Object> extra;
 
 
 }

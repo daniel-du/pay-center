@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.io.PipedReader;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
@@ -52,6 +53,16 @@ public class LoanOrderGoodsEntity implements Serializable {
 	/**
 	 * Appid
 	 */
-	private String appid;
+	private String appId;
+
+	/**
+	 * 付款电子账簿id
+	 */
+	private String payBalanceAcctId;
+
+	/**
+	 * 收款用户的电子账簿ID
+	 */
+	private String recvBalanceAcctId;
 
 }

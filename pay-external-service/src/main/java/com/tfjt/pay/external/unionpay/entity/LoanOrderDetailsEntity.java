@@ -37,6 +37,16 @@ public class LoanOrderDetailsEntity implements Serializable {
 	 * 收款用户的电子账簿ID
 	 */
 	private String recvBalanceAcctId;
+
+	/**
+	 * 收款用户的电子账簿
+	 */
+	private String recvBalanceAcctName;
+
+	/**
+	 * 付款电子账簿id
+	 */
+	private String payBalanceAcctId;
 	/**
 	 * 备注信息
 	 */
@@ -85,6 +95,6 @@ public class LoanOrderDetailsEntity implements Serializable {
 	/**
 	 * 子业务系统id
 	 */
-	private String appid;
+	private String appId;
 
 }

@@ -15,35 +15,42 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.constants.TransactionTypeCodeConstants;
 import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
+import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
+import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.UnionPayProduct;
+import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideSubReq;
 import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDetailDTO;
-import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
-import com.tfjt.pay.external.unionpay.entity.LoadBalanceDivideEntity;
+import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
-import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
+import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.validator.ValidatorUtils;
+import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 /**
@@ -77,15 +84,85 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
     CustBankInfoService custBankInfoService;
 
+
+    @Autowired
+    private LoanOrderService orderService;
+
+    @Autowired
+    private LoanOrderGoodsService loanOrderGoodsService;
+
+    @Autowired
+    private LoanOrderDetailsService loanOrderDetailsService;
+
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
 
-    @Value("backcall")
-    private String notifyUrl;
+    //@Value("backcall")
+    private String notifyUrl = "http://60.204.170.215:9001/tf-pay-external/unionPay/notice/commonCallback";
 
+    @Lock4j(keys = "#payTransferDTO.businessOrderNo",expire = 5000)
+    @Transactional(rollbackFor = {TfException.class, Exception.class})
     @Override
     public Result<String> transfer(UnionPayTransferRespDTO payTransferDTO) {
-        return null;
+        log.info("转账接收参数:{}",JSONObject.toJSONString(payTransferDTO));
+        ValidatorUtils.validateEntity(payTransferDTO);
+        //1.判断单号是否存在
+        if(orderService.checkExistBusinessOrderNo(payTransferDTO.getBusinessOrderNo(),payTransferDTO.getAppId())){
+            log.error("业务单号已存在:{},appId:{}",payTransferDTO.getBusinessOrderNo(),payTransferDTO.getAppId());
+            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+        }
+        checkLoanAccount(payTransferDTO.getOutBalanceAcctId(),payTransferDTO.getOutBalanceAcctName(),payTransferDTO.getAmount());
+        //2.保存订单信息
+        String tradeOrderNo = orderNumberUtil.generateOrderNumber(TransactionTypeConstants.TRANSACTION_TYPE_TB);
+        transferSaveOrder(payTransferDTO,tradeOrderNo);
+
+        //3.调用银联信息
+        try{
+            ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
+            Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
+            if(result.getCode()==ExceptionCodeEnum.FAIL.getCode()){
+                log.error("调用银联接口失败");
+                return Result.failed(result.getMsg());
+            }
+            return Result.failed(result.getData().getStatus());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return Result.ok();
+    }
+
+    /**
+     * 构建转账交易参数
+     * @param payTransferDTO
+     */
+    private ConsumerPoliciesReqDTO buildTransferUnionPayParam(UnionPayTransferRespDTO payTransferDTO,String tradeOrderNo) {
+        ConsumerPoliciesReqDTO consumerPoliciesReqDTO = new ConsumerPoliciesReqDTO();
+        consumerPoliciesReqDTO.setCombinedOutOrderNo(tradeOrderNo);
+        consumerPoliciesReqDTO.setPayBalanceAcctId(payTransferDTO.getOutBalanceAcctId()); //2008362494748960292
+        //担保消费参数
+        List<GuaranteePaymentDTO> list = new ArrayList<>();
+        GuaranteePaymentDTO guaranteePaymentDTO = new GuaranteePaymentDTO();
+        guaranteePaymentDTO.setAmount(payTransferDTO.getAmount());
+        guaranteePaymentDTO.setRecvBalanceAcctId(payTransferDTO.getInBalanceAcctId()); //2008349494890702347
+        guaranteePaymentDTO.setOutOrderNo(tradeOrderNo);
+        //扩展字段集合
+        List<ExtraDTO>  list2 = new ArrayList<>();
+        ExtraDTO extraDTO = new ExtraDTO();
+        extraDTO.setOrderNo(tradeOrderNo);
+        extraDTO.setOrderAmount(payTransferDTO.getAmount().toString());
+        extraDTO.setProductCount(NumberConstant.ONE.toString());
+        extraDTO.setProductName("转账");
+        Map<String,Object> map = new HashMap<>();
+        list2.add(extraDTO);
+        map.put("productInfos",list2);
+        guaranteePaymentDTO.setExtra(map);
+        list.add(guaranteePaymentDTO);
+        consumerPoliciesReqDTO.setRemark("转账");
+        consumerPoliciesReqDTO.setGuaranteePaymentParams(list);
+        Map<String,Object> extra = new HashMap<>();
+        extra.put("notifyUrl",notifyUrl);  //回调地址
+        consumerPoliciesReqDTO.setExtra(extra);
+        return consumerPoliciesReqDTO;
     }
 
     @Override
@@ -147,7 +224,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         payBalanceDivideEntity.setPayBalanceAcctId(accountConfig.getBalanceAcctId());
         payBalanceDivideEntity.setTradeOrderNo(tradeOrderNo);
         payBalanceDivideEntity.setBusinessOrderNo(balanceDivideReq.getBusinessOrderNo());
-        payBalanceDivideEntity.setBusinessSystemId(balanceDivideReq.getBusinessSystemId());
+        payBalanceDivideEntity.setAppId(balanceDivideReq.getAppId());
         payBalanceDivideEntity.setCreateAt(date);
         if (!payBalanceDivideService.save(payBalanceDivideEntity)) {
             log.error("保存分账主信息失败:{}", JSONObject.toJSONString(payBalanceDivideEntity));
@@ -156,7 +233,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         //3.保存子分账信息
         List<SubBalanceDivideReqDTO> list = balanceDivideReq.getList();
         List<LoanBalanceDivideDetailsEntity> saveList = new ArrayList<>(list.size());
-
         for (SubBalanceDivideReqDTO subBalanceDivideReqDTO : list) {
             saveList.add(buildPayBalanceDivideDetailsEntity(subBalanceDivideReqDTO, date, payBalanceDivideEntity.getId()));
         }
@@ -166,18 +242,24 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             return Result.failed("分账失败,保存分账信息失败");
         }
         //4.生成银联分账参数
-        UnionPayDivideReqDTO unionPayDivideReqDTO = builderBalanceDivideUnionPayParam(saveList, tradeOrderNo);
-        //5.调用银联接口
-        log.info("调用银联分账信息发送信息>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(unionPayDivideReqDTO));
-        Result<UnionPayDivideRespDTO> result = unionPayService.balanceDivide(unionPayDivideReqDTO);
-        log.info("调用银联分账信息返回信息<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(result));
-        if (result.getCode() != NumberConstant.ZERO) {
-            log.error("调用银联分账接口失败");
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return Result.failed(result.getMsg());
+        UnionPayDivideReqDTO unionPayDivideReqDTO = buildBalanceDivideUnionPayParam(saveList, tradeOrderNo);
+        try{
+            //5.调用银联接口
+            log.info("调用银联分账信息发送信息>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(unionPayDivideReqDTO));
+            Result<UnionPayDivideRespDTO> result = unionPayService.balanceDivide(unionPayDivideReqDTO);
+            log.info("调用银联分账信息返回信息<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(result));
+            if (result.getCode() != NumberConstant.ZERO) {
+                log.error("调用银联分账接口失败");
+                return Result.failed(result.getMsg());
+            }
+            //6.解析返回数据响应给业务系统
+            return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
+        }catch (Exception e){
+            log.error("调用银联异常分账接口异常:{}",e);
+            //7.查询交易结果信息,防止请求发出未收到响应重复支付
+            //payResult();
         }
-        //6.解析返回数据响应给业务系统
-        return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
+        return Result.ok();
     }
 
     /**
@@ -268,7 +350,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @param saveList
      * @param tradeOrderNo
      */
-    private UnionPayDivideReqDTO builderBalanceDivideUnionPayParam(List<LoanBalanceDivideDetailsEntity> saveList, String tradeOrderNo) {
+    private UnionPayDivideReqDTO buildBalanceDivideUnionPayParam(List<LoanBalanceDivideDetailsEntity> saveList, String tradeOrderNo) {
         UnionPayDivideReqDTO unionPayDivideReqDTO = new UnionPayDivideReqDTO();
         unionPayDivideReqDTO.setPayBalanceAcctId(accountConfig.getBalanceAcctId());
         unionPayDivideReqDTO.setOutOrderNo(tradeOrderNo);
@@ -283,8 +365,9 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             unionPayProduct.setProductCount(NumberConstant.ONE);
             List<UnionPayProduct> list = new ArrayList<>(NumberConstant.ONE);
             list.add(unionPayProduct);
-            HashMap<String, List<UnionPayProduct>> extra = new HashMap<>();
+            HashMap<String, Object> extra = new HashMap<>();
             extra.put("productInfos",list);
+            extra.put("notifyUrl",notifyUrl);
             unionPayDivideSubReq.setExtra(extra);
             transferParams.add(unionPayDivideSubReq);
         }
@@ -321,6 +404,84 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         BalanceAcctRespDTO balanceAcctDTO = new BalanceAcctRespDTO();
         BeanUtil.copyProperties(loanAccountDTO, balanceAcctDTO);
         return balanceAcctDTO;
+    }
+
+    /**
+     * 检查用户状态是否正常
+     *
+     * @param balanceAcctId
+     * @param balanceAcctName
+     * @param amount
+     * @return
+     */
+    private void checkLoanAccount(String balanceAcctId, String balanceAcctName,Integer amount) {
+        LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
+        if (Objects.isNull(loanAccountDTO)) {
+            log.error("电子账簿信息不存在:{}",balanceAcctId);
+            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+        }
+        if(loanAccountDTO.isFrozen()){
+            throw new TfException(String.format("电子账簿[%s]已冻结",balanceAcctId));
+        }
+        if(amount != null && loanAccountDTO.getSettledAmount() < amount){
+            log.error("收款账户余额不足");
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+    }
+
+    /**
+     * 保存转账订单信息
+     * @param payTransferDTO 转账参数
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void transferSaveOrder(UnionPayTransferRespDTO payTransferDTO,String tradeOrderNo) {
+        Date date = new Date();
+
+        //保存订单 order
+        LoanOrderEntity orderEntity = new LoanOrderEntity();
+        orderEntity.setTradeOrderNo(tradeOrderNo);
+        orderEntity.setBusinessOrderNo(payTransferDTO.getBusinessOrderNo());
+        orderEntity.setPayBalanceAcctId(payTransferDTO.getOutBalanceAcctId());
+        orderEntity.setPayBalanceAcctName(payTransferDTO.getOutBalanceAcctName());
+        orderEntity.setCreateAt(date);
+        orderEntity.setAppId(payTransferDTO.getAppId());
+        orderEntity.setBusinessType(TransactionTypeCodeConstants.TRANSFER_CODE);
+        if(!this.orderService.save(orderEntity)){
+            log.error("保存转账订单信息失败:{}",JSONObject.toJSONString(orderEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        //保存订单详情 order_details
+        LoanOrderDetailsEntity orderDetailsEntity = new LoanOrderDetailsEntity();
+        orderDetailsEntity.setAmount(payTransferDTO.getAmount());
+        orderDetailsEntity.setRecvBalanceAcctId(payTransferDTO.getInBalanceAcctId());
+        orderDetailsEntity.setRecvBalanceAcctName(payTransferDTO.getInBalanceAcctName());
+        orderDetailsEntity.setRemark("转账");
+        orderDetailsEntity.setOrderId(orderEntity.getId());
+        orderDetailsEntity.setSubBusinessOrderNo(payTransferDTO.getBusinessOrderNo());
+        orderDetailsEntity.setCreatedAt(date);
+        orderDetailsEntity.setAppId(payTransferDTO.getAppId());
+        orderDetailsEntity.setPayBalanceAcctId(payTransferDTO.getOutBalanceAcctId());
+        orderDetailsEntity.setTradeOrderNo(tradeOrderNo);
+
+        if(!this.loanOrderDetailsService.save(orderDetailsEntity)){
+            log.error("保存转账订单收款详情失败:{}",JSONObject.toJSONString(orderEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        //保存订单详情商品信息 order_goods
+        LoanOrderGoodsEntity orderGoodsEntity = new LoanOrderGoodsEntity();
+        orderGoodsEntity.setAppId(payTransferDTO.getAppId());
+        orderGoodsEntity.setPayBalanceAcctId(payTransferDTO.getOutBalanceAcctId());
+        orderGoodsEntity.setRecvBalanceAcctId(payTransferDTO.getInBalanceAcctId());
+        orderGoodsEntity.setCreateAt(date);
+        orderGoodsEntity.setProductName("转账");
+        orderGoodsEntity.setOrderBusinessOrderNo(payTransferDTO.getBusinessOrderNo());
+        orderGoodsEntity.setProductCount(NumberConstant.ONE);
+        orderGoodsEntity.setProductAmount(payTransferDTO.getAmount());
+        orderGoodsEntity.setDetailsId(orderDetailsEntity.getId());
+        if(!this.loanOrderGoodsService.save(orderGoodsEntity)){
+            log.error("保存转账商品详情失败:{}",JSONObject.toJSONString(orderEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
     }
 
 

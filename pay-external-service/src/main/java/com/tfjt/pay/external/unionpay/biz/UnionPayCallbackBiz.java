@@ -4,6 +4,7 @@ import com.tfjt.pay.external.unionpay.dto.req.TransactionCallBackReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
 
 import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
 
 /**
  * 银联入金通知接口
@@ -25,5 +26,5 @@ public interface UnionPayCallbackBiz {
      * @param transactionCallBackReqDTO
      * @param response
      */
-    void commonCallback(TransactionCallBackReqDTO transactionCallBackReqDTO, HttpServletResponse response);
+    void commonCallback(TransactionCallBackReqDTO transactionCallBackReqDTO, HttpServletResponse response) throws ParseException;
 }

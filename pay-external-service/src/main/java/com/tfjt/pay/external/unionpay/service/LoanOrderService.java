@@ -13,6 +13,12 @@ import java.util.Map;
  * @date 2023-08-16 16:42:20
  */
 public interface LoanOrderService extends IService<LoanOrderEntity> {
-
+    /**
+     * 检验业务单据是否已经存在
+     * @param businessOrderNo 业务号
+     * @param appId  业务系统id
+     * @return  true 已存在 false 不存在
+     */
+    boolean checkExistBusinessOrderNo(String businessOrderNo, String appId);
 }
 

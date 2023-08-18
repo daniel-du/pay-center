@@ -22,7 +22,7 @@ public class BalanceDivideReqDTO implements Serializable {
      * 分账系统标识  fms
      */
     @NotBlank(message = "分账业务系统标识不能为空")
-    private String businessSystemId;
+    private String appId;
     /**
      * 业务系统唯一标识
      */

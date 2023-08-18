@@ -65,7 +65,7 @@ partially_succeeded:部分成功
 	 * 分账业务系统标识
 
 	 */
-	private String businessSystemId;
+	private String appId;
 	/**
 	 * 分账订单号不能为空
 	 */

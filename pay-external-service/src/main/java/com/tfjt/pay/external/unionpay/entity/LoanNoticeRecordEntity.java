@@ -30,6 +30,10 @@ public class LoanNoticeRecordEntity implements Serializable {
 	 */
 	private String eventId;
 	/**
+	 * 事件类型
+	 */
+	private String eventType;
+	/**
 	 * 系统订单号
 	 */
 	private String tradeId;

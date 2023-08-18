@@ -9,6 +9,7 @@ public class TransactionTypeConstants {
 
     /**分账 divideBalance */
     public static final String TRANSACTION_TYPE_DB = "DB";
+
     /**分账子交易*/
     public static final String TRANSACTION_TYPE_DB_SUB = "DB_SUB";
 

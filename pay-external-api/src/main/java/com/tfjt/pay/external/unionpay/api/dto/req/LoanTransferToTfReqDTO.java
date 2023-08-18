@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.api.dto.req;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -8,6 +10,7 @@ import java.io.Serializable;
  * @date 2023-08-11 10:54
  * @email 598482054@qq.com
  */
+@Data
 public class LoanTransferToTfReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -28,36 +31,4 @@ public class LoanTransferToTfReqDTO implements Serializable {
      * 同福电子账簿id
      */
     private String tfBalanceAcctName;
-
-    public String getBalanceAcctId() {
-        return balanceAcctId;
-    }
-
-    public void setBalanceAcctId(String balanceAcctId) {
-        this.balanceAcctId = balanceAcctId;
-    }
-
-    public String getBalanceAcctName() {
-        return balanceAcctName;
-    }
-
-    public void setBalanceAcctName(String balanceAcctName) {
-        this.balanceAcctName = balanceAcctName;
-    }
-
-    public String getTfBalanceAcctId() {
-        return tfBalanceAcctId;
-    }
-
-    public void setTfBalanceAcctId(String tfBalanceAcctId) {
-        this.tfBalanceAcctId = tfBalanceAcctId;
-    }
-
-    public String getTfBalanceAcctName() {
-        return tfBalanceAcctName;
-    }
-
-    public void setTfBalanceAcctName(String tfBalanceAcctName) {
-        this.tfBalanceAcctName = tfBalanceAcctName;
-    }
 }

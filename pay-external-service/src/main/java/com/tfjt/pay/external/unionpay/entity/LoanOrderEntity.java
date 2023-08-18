@@ -65,10 +65,15 @@ public class LoanOrderEntity implements Serializable {
 	/**
 	 * 调用系统appid
 	 */
-	private String appid;
+	private String appId;
 	/**
 	 * 1提现 2 转账 3 下单
 	 */
 	private Integer businessType;
+
+	/**
+	 * 付款账户名称
+	 */
+	private String payBalanceAcctName;
 
 }

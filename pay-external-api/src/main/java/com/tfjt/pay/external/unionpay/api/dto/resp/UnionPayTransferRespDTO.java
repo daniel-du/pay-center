@@ -1,5 +1,9 @@
 package com.tfjt.pay.external.unionpay.api.dto.resp;
 
+import lombok.Data;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -7,82 +11,48 @@ import java.io.Serializable;
  * @date 2023-08-10 17:08
  * @email 598482054@qq.com
  */
+@Data
 public class UnionPayTransferRespDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 收款账户电子账簿id
      */
+    @NotBlank(message = "收款电子账簿不能为空")
     private String inBalanceAcctId;
 
     /**
      * 收款账户电子账簿name
      */
+    @NotBlank(message = "收款账户电子账簿名称不能为空")
     private String inBalanceAcctName;
 
     /**
      * 付款账户电子账簿id
      */
+    @NotBlank(message = "付款电子账簿不能为空")
     private String outBalanceAcctId;
 
     /**
      * 付款账户电子账簿name
      */
+    @NotBlank(message = "付款账户电子账簿名称不能为空")
     private String outBalanceAcctName;
 
     /**
      * amount
      */
+    @NotNull(message = "交易金额不能为空")
     private Integer amount;
     /**
      * 交易订单号
      */
-    private String tradeId;
+    @NotBlank(message = "交易订单号不能为空")
+    private String businessOrderNo;
 
-    public String getInBalanceAcctId() {
-        return inBalanceAcctId;
-    }
+    /**
+     * 业务系统id
+     */
+    @NotBlank(message = "appid不能为空")
+    private String appId;
 
-    public void setInBalanceAcctId(String inBalanceAcctId) {
-        this.inBalanceAcctId = inBalanceAcctId;
-    }
-
-    public String getInBalanceAcctName() {
-        return inBalanceAcctName;
-    }
-
-    public void setInBalanceAcctName(String inBalanceAcctName) {
-        this.inBalanceAcctName = inBalanceAcctName;
-    }
-
-    public String getOutBalanceAcctId() {
-        return outBalanceAcctId;
-    }
-
-    public void setOutBalanceAcctId(String outBalanceAcctId) {
-        this.outBalanceAcctId = outBalanceAcctId;
-    }
-
-    public String getOutBalanceAcctName() {
-        return outBalanceAcctName;
-    }
-
-    public void setOutBalanceAcctName(String outBalanceAcctName) {
-        this.outBalanceAcctName = outBalanceAcctName;
-    }
-
-    public Integer getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Integer amount) {
-        this.amount = amount;
-    }
-
-    public String getTradeId() {
-        return tradeId;
-    }
-
-    public void setTradeId(String tradeId) {
-        this.tradeId = tradeId;
-    }
 }
