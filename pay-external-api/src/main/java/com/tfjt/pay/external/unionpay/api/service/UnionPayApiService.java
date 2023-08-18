@@ -6,6 +6,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.WithdrawalRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -72,6 +73,6 @@ public interface UnionPayApiService {
      * @param withdrawalReqDTO
      * @return
      */
-    Result withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO);
+    Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO);
 
 }

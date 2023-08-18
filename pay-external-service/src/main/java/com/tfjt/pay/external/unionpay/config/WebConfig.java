@@ -1,24 +1,17 @@
 /**
  * Copyright (c) 2016-2019 人人开源 All rights reserved.
- *
+ * <p>
  * https://www.renren.io
- *
+ * <p>
  * 版权所有，侵权必究！
  */
 
 package com.tfjt.pay.external.unionpay.config;
 
 import com.tfjt.tfcommon.core.cache.RedisCache;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -54,44 +47,17 @@ public class WebConfig implements WebMvcConfigurer {
     private UnionPayLoanRestTemplateInterceptor unionPayLoanRestTemplateInterceptor;
 
 
-    @LoadBalanced
-    @Bean
-    public RestTemplate loadBalanced1() {
-        return new RestTemplate();
-    }
-
     @Primary
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
+        System.out.println("主："+restTemplate);
+        return restTemplate;
     }
 
     @Bean
-    public RedisCache redisCache(){
+    public RedisCache redisCache() {
         return new RedisCache();
-    }
-
-    @LoadBalanced
-    @Bean("unionPayLoan")
-    public RestTemplate initUnionPayLoanRestTemplate(){
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(max);
-        connectionManager.setDefaultMaxPerRoute(defaultMax);
-        RequestConfig requestConfig = RequestConfig
-                .custom()
-                .setConnectionRequestTimeout(timeOut) // timeout to get connection from pool
-                .setSocketTimeout(timeOut) // standard connection timeout
-                .setConnectTimeout(timeOut) // standard connection timeout
-                .build();
-
-        HttpClient httpClient = HttpClientBuilder.create()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(requestConfig).build();
-
-        ClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        RestTemplate restTemplate= new RestTemplate(requestFactory);
-        restTemplate.getInterceptors().add(unionPayLoanRestTemplateInterceptor);
-        return restTemplate;
     }
 
     /**

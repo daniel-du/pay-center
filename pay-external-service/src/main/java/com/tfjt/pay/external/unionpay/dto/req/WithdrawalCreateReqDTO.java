@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -32,6 +33,7 @@ public class WithdrawalCreateReqDTO implements Serializable {
 
     /**
      * 业务类型
+     * {@link com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum}
      */
     private String businessType;
     /**

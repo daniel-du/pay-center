@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.LoanTransferToTfReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,5 +22,12 @@ public interface LoanApiService {
     Result<LoanTransferToTfReqDTO> getBalanceAcctId(String type, String bid);
 
     Result<Map<String,Object>> incomingIsFinish(String type, String bid);
+
+    /**
+     * 通过贷款用户ID获取银行卡
+     * @param loanUserId
+     * @return
+     */
+    Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Long loanUserId);
 
 }
