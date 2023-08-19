@@ -2,10 +2,16 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.dao.LoanOrderDetailsDao;
+import com.tfjt.pay.external.unionpay.dao.LoanOrderGoodsDao;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
+import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
+import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanOrderGoodsEntity;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -22,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("payLoanOrderService")
@@ -33,6 +39,9 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
 
     @Resource
     private LoanOrderDetailsDao loanOrderDetailsDao;
+
+    @Resource
+    private LoanOrderGoodsDao loanOrderGoodsDao;
 
     @Override
     public boolean checkExistBusinessOrderNo(String businessOrderNo, String appId) {
@@ -77,4 +86,5 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
     }
+
 }

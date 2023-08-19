@@ -27,6 +27,5 @@ public interface LoanOrderService extends IService<LoanOrderEntity> {
      * @param eventDataDTO
      */
     LoanOrderEntity treadResult(EventDataDTO eventDataDTO);
-
 }
 

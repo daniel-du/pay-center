@@ -21,4 +21,10 @@ public interface UnionPayLoansCallbackApiBiz {
      * @param response
      */
     void commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO, HttpServletResponse response) throws ParseException;
+
+
+    /**
+     * 订单确认
+     */
+    void confirmOrder();
 }

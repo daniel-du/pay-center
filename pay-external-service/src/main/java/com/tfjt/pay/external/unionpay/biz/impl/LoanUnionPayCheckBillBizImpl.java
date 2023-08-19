@@ -69,8 +69,6 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
             loanUnionpayCheckBillEntity.setCeateTime(new Date());
             this.loanUnionpayCheckBillService.save(loanUnionpayCheckBillEntity);
         }
-
-
     }
 
 }
