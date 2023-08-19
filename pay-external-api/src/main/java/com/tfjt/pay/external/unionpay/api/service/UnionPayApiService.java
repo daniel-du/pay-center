@@ -66,10 +66,14 @@ public interface UnionPayApiService {
     Result<String> downloadCheckBill(String date);
 
     /**
-     *
+     * 提现
      * @param withdrawalReqDTO
      * @return
      */
     Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO);
+
+
+    Result<WithdrawalRespDTO> ororderquery();
+
 
 }

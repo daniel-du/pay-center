@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.biz.PayApplicationCallbackBiz;
 import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
+import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanOrderDetailsRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanOrderUnifiedorderResqDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
@@ -59,6 +60,8 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
 
         LoanOrderUnifiedorderResqDTO loanOrderUnifiedorderResqDTO = new LoanOrderUnifiedorderResqDTO();
         BeanUtil.copyProperties(orderEntity, loanOrderUnifiedorderResqDTO);
+        loanOrderUnifiedorderResqDTO.setStatus(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(orderEntity.getStatus())?TradeResultConstant.PAY_SUCCESS:TradeResultConstant.PAY_FAILED);
+        loanOrderUnifiedorderResqDTO.setTransactionId(orderEntity.getCombinedGuaranteePaymentId());
         LambdaQueryWrapper<LoanOrderDetailsEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(LoanOrderDetailsEntity::getOrderId, orderEntity.getId());
         List<LoanOrderDetailsEntity> list = loanOrderDetailsService.list(queryWrapper);

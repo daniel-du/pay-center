@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.dto.resp;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 /**
@@ -14,14 +15,17 @@ public class LoanOrderDetailsRespDTO {
     private static final long serialVersionUID = 1L;
 
     /**收款电子账簿id*/
+    @JSONField(name = "recv_balance_acct_id")
     private String recvBalanceAcctId;
     /***
      * 业务子交易单号
      */
+    @JSONField(name = "sub_business_order_no")
     private String subBusinessOrderNo;
     /***
      * 自定义参数 JSON
      */
+
     private String metadata;
 
     /**

@@ -30,14 +30,14 @@ public class TradeResultConstant {
 
 
 
-    // shop 交易结果
+    // pay 交易结果
     /**
      * 交易成功
      */
-    public static final String SHOP_SUCCESS = "TRADE_SUCCESS";
+    public static final String PAY_SUCCESS = "TRADE_SUCCESS";
 
     /**
      * 交易失败
      */
-    public static final String SHOP_FAILED = "TRADE_ERROR";
+    public static final String PAY_FAILED = "TRADE_ERROR";
 }
