@@ -49,6 +49,8 @@ public enum TransactionCodeEnum {
     LWZ64_WITHDRAWALS_REQ("LWZ64_WITHDRAWALS_REQ","提现创建"),
     /**分账创建*/
     LWZ616_ALLOCATIONS("LWZ616_ALLOCATIONS","分账创建"),
+    /**下载电子对账单*/
+    LWZ91_RECEIPT_QUERY_REQ("LWZ91_RECEIPT_QUERY_REQ","现在电子对账单"),
 
     /**使用“平台订单号”查询提现订单状态*/
     LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO("LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO","使用“平台订单号”查询提现订单状态");

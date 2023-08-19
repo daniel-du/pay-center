@@ -61,10 +61,9 @@ public interface UnionPayApiService {
     /**
      * 下载对账单
      * @param date
-     * @param userId
      * @return
      */
-    Result<String> downloadCheckBill(String date,Long userId);
+    Result<String> downloadCheckBill(String date);
 
     /**
      *

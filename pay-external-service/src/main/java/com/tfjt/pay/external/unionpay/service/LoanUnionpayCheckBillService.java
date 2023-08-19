@@ -12,6 +12,12 @@ import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillEntity;
  * @date 2023-08-18 20:59:10
  */
 public interface LoanUnionpayCheckBillService extends IService<LoanUnionpayCheckBillEntity> {
-
+    /**
+     * 获取指定日期的对账单信息
+     * @param date 指定日
+     * @param balanceAcctId 指定账户
+     * @return 对账单保存信息
+     */
+    LoanUnionpayCheckBillEntity getByDateAndAccountId(String date, String balanceAcctId);
 }
 

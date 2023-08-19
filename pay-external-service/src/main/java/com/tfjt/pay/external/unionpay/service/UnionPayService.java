@@ -75,4 +75,10 @@ public interface UnionPayService {
      * @return
      */
     Result<WithdrawalCreateRespDTO> getWithdrawal(String outOrderNo);
+
+    /**
+     * 下载对账单
+     * @param format
+     */
+    Result<String> downloadCheckBill(String format);
 }

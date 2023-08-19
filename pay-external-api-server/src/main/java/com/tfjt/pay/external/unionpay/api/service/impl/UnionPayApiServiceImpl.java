@@ -91,6 +91,9 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
     LoanWithdrawalOrderService withdrawalOrderService;
 
+    @Resource
+    private LoanUnionpayCheckBillService loanUnionpayCheckBillService;
+
 
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
@@ -373,9 +376,12 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         return Result.ok(result.getData().getStatus());
     }
     @Override
-    public Result<String> downloadCheckBill(String date, Long userId) {
-
-        return null;
+    public Result<String> downloadCheckBill(String date) {
+        LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(date, accountConfig.getBalanceAcctId());
+        if(byDateAndAccountId.getBalanceAcctId()!=null){
+            return Result.ok(byDateAndAccountId.getUrl());
+        }
+        return Result.failed("下载对账单失败");
     }
 
     /**
