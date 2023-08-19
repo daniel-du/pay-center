@@ -90,25 +90,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         LoanCallbackEntity loanCallbackEntity = loanCallbackService.saveLog(null, transactionCallBackReqDTO.getEventId(), eventType, eventDataString
                 , transactionCallBackReqDTO.getCreatedAt(), null, null);
         log.info("保存回调日志信息:{}", JSONObject.toJSONString(loanCallbackEntity));
-        executorConfig.asyncServiceExecutor().execute(detailsNotice(loanCallbackEntity));
-    }
-
-    /**
-     * 处理交易通知
-     *
-     * @param loanCallbackEntity 日志记录信息
-     * @return 线程
-     */
-    private Runnable detailsNotice(LoanCallbackEntity loanCallbackEntity) {
-        return () -> {
-            if (UnionPayEventTypeConstant.ROOT_TRANSFER_DEPOSIT.equals(loanCallbackEntity.getEventType())) {
-                //处理母账户入金
-                balanceIncomeNotice(loanCallbackEntity.getEventData(), loanCallbackEntity.getId());
-            } else if (UnionPayEventTypeConstant.TRADE_RESULT.equals(loanCallbackEntity.getEventType())) {
-                //处理交易结果
-                treadResult(loanCallbackEntity);
-            }
-        };
+        executorConfig.asyncServiceExecutor().execute(()->detailsNotice(loanCallbackEntity));
     }
 
     /**
@@ -140,6 +122,10 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 //订单确认
                 this.confirmOrder(orderEntity);
             }
+        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30.equals(tradeId)){
+            //TODO 提现 申请处理
+        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74.equals(tradeId)){
+            //TODO 提现入账
         }
     }
 
@@ -190,6 +176,33 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         List<LoanOrderEntity> list = this.loanOrderService.list(queryWrapper);
         for (LoanOrderEntity orderEntity : list) {
             confirmOrder(orderEntity);
+        }
+    }
+
+    @Override
+    public void applicationCallback() {
+        LambdaQueryWrapper<LoanCallbackEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(LoanCallbackEntity::getNoticeStatus,NumberConstant.ONE)
+                .lt(LoanCallbackEntity::getNoticeErrorNumber,NumberConstant.SEVEN);
+        List<LoanCallbackEntity> list = this.loanCallbackService.list(queryWrapper);
+        for (LoanCallbackEntity loanCallbackEntity : list) {
+            detailsNotice(loanCallbackEntity);
+        }
+    }
+
+
+    /**
+     * 处理交易通知
+     *
+     * @param loanCallbackEntity 日志记录信息
+     */
+    private void detailsNotice(LoanCallbackEntity loanCallbackEntity) {
+        if (UnionPayEventTypeConstant.ROOT_TRANSFER_DEPOSIT.equals(loanCallbackEntity.getEventType())) {
+            //处理母账户入金
+            balanceIncomeNotice(loanCallbackEntity.getEventData(), loanCallbackEntity.getId());
+        } else if (UnionPayEventTypeConstant.TRADE_RESULT.equals(loanCallbackEntity.getEventType())) {
+            //处理交易结果
+            treadResult(loanCallbackEntity);
         }
     }
 

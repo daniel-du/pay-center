@@ -27,4 +27,9 @@ public interface UnionPayLoansCallbackApiBiz {
      * 订单确认
      */
     void confirmOrder();
+
+    /**
+     * 失败通知定时补偿
+     */
+    void applicationCallback();
 }

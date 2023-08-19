@@ -44,4 +44,11 @@ public class LoanBusinessJob {
     public void confirmOrder(){
         unionPayLoansCallbackApiBiz.confirmOrder();
     }
+    /**
+     * 定时扫描未确认的订单信息
+     */
+    @XxlJob("applicationCallback")
+    public void applicationCallback(){
+        unionPayLoansCallbackApiBiz.applicationCallback();
+    }
 }
