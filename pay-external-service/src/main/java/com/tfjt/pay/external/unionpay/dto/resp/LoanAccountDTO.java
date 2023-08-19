@@ -11,6 +11,7 @@ import java.io.Serializable;
  */
 @Data
 public class LoanAccountDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     /**系统生成的唯一的电子账簿ID*/
     private String balanceAcctId;
     /**电子账簿账簿号*/

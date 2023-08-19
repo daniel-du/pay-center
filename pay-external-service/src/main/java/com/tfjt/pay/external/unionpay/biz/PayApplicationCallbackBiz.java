@@ -8,5 +8,12 @@ import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
  * @email 598482054@qq.com
  */
 public interface PayApplicationCallbackBiz {
-    boolean noticeShop(LoanOrderEntity orderEntity);
+    /**
+     * 回调通知shop服务交易结果
+     * @param orderEntity 订单吓你
+     * @param tradeResultCode60 回调地址获取type
+     * @param noticeUrl 回调地址
+     * @return 通知是否成功
+     */
+    boolean noticeShop(LoanOrderEntity orderEntity, String tradeResultCode60, String noticeUrl);
 }

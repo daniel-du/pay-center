@@ -12,6 +12,10 @@ import com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity;
  * @date 2023-08-18 20:59:10
  */
 public interface LoanRequestApplicationRecordService extends IService<LoanRequestApplicationRecordEntity> {
-
+    /**
+     *
+     * @param record
+     */
+    void asyncSave(LoanRequestApplicationRecordEntity record);
 }
 

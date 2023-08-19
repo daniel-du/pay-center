@@ -50,7 +50,6 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
     @Transactional(rollbackFor = {TfException.class,Exception.class})
     @Override
     public LoanOrderEntity treadResult(EventDataDTO eventDataDTO) {
-
         LambdaQueryWrapper<LoanOrderEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(LoanOrderEntity::getTradeOrderNo,eventDataDTO.getOutOrderNo());
         LoanOrderEntity orderEntity = this.getOne(queryWrapper);

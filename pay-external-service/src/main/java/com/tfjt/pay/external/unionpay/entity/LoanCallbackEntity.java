@@ -96,4 +96,9 @@ public class LoanCallbackEntity implements Serializable {
 	 */
 	private String appid;
 
+	/**
+	 * 银联交易单号
+	 */
+	private String treadOrderNo;
+
 }

@@ -1,39 +1,27 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.biz.PayApplicationCallbackBiz;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
 import com.tfjt.pay.external.unionpay.config.ExecutorConfig;
-import com.tfjt.pay.external.unionpay.config.ThreadPoolCollector;
 import com.tfjt.pay.external.unionpay.constants.UnionPayEventTypeConstant;
-import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultConstant;
+import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
-import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDTO;
-import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
 
 import com.tfjt.pay.external.unionpay.entity.LoadBalanceNoticeEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanCallbackEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanNoticeRecordEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 import com.tfjt.pay.external.unionpay.service.*;
-import com.tfjt.pay.external.unionpay.utils.DateUtil;
-import com.tfjt.tfcommon.core.exception.TfException;
-import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -115,9 +103,10 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
         LoanCallbackEntity byId = loanCallbackService.getById(loanCallbackEntity.getId());
         // 下单回调
-        if ("60".equals(tradeId) && UnionPayTradeResultConstant.SUCCEEDED.equals(eventDataDTO.getStatus())){
+        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60.equals(tradeId)){
             LoanOrderEntity orderEntity = loanOrderService.treadResult(eventDataDTO);
-            if(payApplicationCallbackBiz.noticeShop(orderEntity)){
+            byId.setTreadOrderNo(orderEntity.getTradeOrderNo());
+            if(payApplicationCallbackBiz.noticeShop(orderEntity,UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,byId.getNoticeUrl())){
                 byId.setNoticeStatus(2);
             }else{
                 byId.setNoticeStatus(1);
