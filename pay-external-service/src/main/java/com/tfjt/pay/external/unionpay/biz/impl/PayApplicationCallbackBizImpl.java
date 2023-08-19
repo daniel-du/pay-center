@@ -60,7 +60,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
 
         LoanOrderUnifiedorderResqDTO loanOrderUnifiedorderResqDTO = new LoanOrderUnifiedorderResqDTO();
         BeanUtil.copyProperties(orderEntity, loanOrderUnifiedorderResqDTO);
-        loanOrderUnifiedorderResqDTO.setStatus(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(orderEntity.getStatus())?TradeResultConstant.PAY_SUCCESS:TradeResultConstant.PAY_FAILED);
+        loanOrderUnifiedorderResqDTO.setResultCode(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(orderEntity.getStatus())?TradeResultConstant.PAY_SUCCESS:TradeResultConstant.PAY_FAILED);
         loanOrderUnifiedorderResqDTO.setTransactionId(orderEntity.getCombinedGuaranteePaymentId());
         LambdaQueryWrapper<LoanOrderDetailsEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(LoanOrderDetailsEntity::getOrderId, orderEntity.getId());
@@ -72,6 +72,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
             detailsRespDTOS.add(loanOrderDetailsRespDTO);
         }
         loanOrderUnifiedorderResqDTO.setDetailsDTOList(detailsRespDTOS);
+        loanOrderUnifiedorderResqDTO.setTotalFee(orderEntity.getAmount());
         LoanRequestApplicationRecordEntity record = new LoanRequestApplicationRecordEntity();
         record.setAppId(orderEntity.getAppId());
         String parameter = JSONObject.toJSONString(loanOrderUnifiedorderResqDTO);

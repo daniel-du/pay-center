@@ -72,8 +72,12 @@ public interface UnionPayApiService {
      */
     Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO);
 
+    /**
+     * 查询
+     * @return
+     */
 
-    Result<WithdrawalRespDTO> ororderquery();
+    Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo,String appId);
 
 
 }

@@ -17,6 +17,9 @@ public class LoanOrderDetailsReqDTO {
 
     /**收款电子账簿id*/
     private String recvBalanceAcctId;
+
+    /**收款方名称*/
+    private String recvBalanceAcctName;
     /***
      * 业务子交易单号
      */

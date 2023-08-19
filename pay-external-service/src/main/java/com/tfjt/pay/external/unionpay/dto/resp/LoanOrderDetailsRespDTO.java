@@ -5,6 +5,7 @@ import lombok.Data;
 
 /**
  * 下单收款商户信息
+ *
  * @author songx
  * @date 2023-08-15 14:47
  * @email 598482054@qq.com
@@ -14,9 +15,17 @@ public class LoanOrderDetailsRespDTO {
 
     private static final long serialVersionUID = 1L;
 
-    /**收款电子账簿id*/
+    /**
+     * 收款电子账簿id
+     */
     @JSONField(name = "recv_balance_acct_id")
     private String recvBalanceAcctId;
+
+    /**
+     * 收款方名称
+     */
+    @JSONField(name = "recv_balance_acct_name")
+    private String recvBalanceAcctName;
     /***
      * 业务子交易单号
      */

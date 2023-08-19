@@ -5,6 +5,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
@@ -12,6 +14,7 @@ import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 
+import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
 import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
@@ -352,6 +355,41 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             return Result.ok(withdrawalRespDTO);
         }
 
+    }
+
+    @Override
+    public Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo,String appId) {
+        log.info("查询交易结果信息:{}",businessOrderNo);
+        LambdaQueryWrapper<LoanOrderEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(LoanOrderEntity::getBusinessOrderNo,businessOrderNo)
+                .eq(LoanOrderEntity::getAppId,appId);
+        LoanOrderEntity one = this.orderService.getOne(queryWrapper);
+        LoanQueryOrderRespDTO loanQueryOrderRespDTO = new LoanQueryOrderRespDTO();
+        if (one == null) {
+
+            loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_FAILED);
+            return Result.ok(loanQueryOrderRespDTO);
+        }
+        loanQueryOrderRespDTO.setBusiness_type(one.getBusinessType());
+        loanQueryOrderRespDTO.setOut_trade_no(businessOrderNo);
+        loanQueryOrderRespDTO.setTransaction_id(one.getCombinedGuaranteePaymentId());
+        loanQueryOrderRespDTO.setPay_balanceAcct_id(one.getPayBalanceAcctId());
+        loanQueryOrderRespDTO.setMetadata(one.getMetadata());
+        loanQueryOrderRespDTO.setPay_balance_acct_name(one.getPayBalanceAcctName());
+        loanQueryOrderRespDTO.setTotal_fee(one.getAmount());
+        if(TradeResultConstant.UNIONPAY_UNKNOWN.equals(one.getStatus())){
+            Result<ConsumerPoliciesRespDTO> consumerPoliciesRespDTOResult = unionPayService.queryPlatformOrderStatus(one.getTradeOrderNo());
+            int code = consumerPoliciesRespDTOResult.getCode();
+            if(code==NumberConstant.ONE){
+                ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
+                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus())?TradeResultConstant.PAY_SUCCESS:TradeResultConstant.PAY_FAILED);
+            }else{
+                return Result.failed();
+            }
+        }else{
+            loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus())?TradeResultConstant.PAY_SUCCESS:TradeResultConstant.PAY_FAILED);
+        }
+        return Result.ok(loanQueryOrderRespDTO);
     }
 
     @Lock4j(keys = "#loanOrderUnifiedorderDTO.businessOrderNo",expire = 10000)
