@@ -13,7 +13,7 @@ import com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity;
  */
 public interface LoanRequestApplicationRecordService extends IService<LoanRequestApplicationRecordEntity> {
     /**
-     *
+     * 回调日志记录
      * @param record
      */
     void asyncSave(LoanRequestApplicationRecordEntity record);

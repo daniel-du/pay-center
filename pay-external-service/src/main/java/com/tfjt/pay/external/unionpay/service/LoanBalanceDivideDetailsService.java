@@ -3,6 +3,8 @@ package com.tfjt.pay.external.unionpay.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
 
+import java.util.List;
+
 /**
  * 分账详情表
  *
@@ -12,5 +14,6 @@ import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
  */
 public interface LoanBalanceDivideDetailsService extends IService<LoanBalanceDivideDetailsEntity> {
 
+    List<LoanBalanceDivideDetailsEntity> listByDivideId(Long id);
 }
 

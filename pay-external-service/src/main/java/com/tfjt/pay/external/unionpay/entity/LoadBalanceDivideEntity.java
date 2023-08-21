@@ -33,6 +33,8 @@ public class LoadBalanceDivideEntity implements Serializable {
 	 * 付款账号id
 	 */
 	private String payBalanceAcctId;
+
+	private String payBalanceAcctName;
 	/**
 	 * 备注信息
 	 */

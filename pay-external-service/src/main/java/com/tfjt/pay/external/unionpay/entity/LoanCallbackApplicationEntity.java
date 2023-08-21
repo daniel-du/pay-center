@@ -9,15 +9,15 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 贷款-调用回调业务日志表
+ * payt服务通知记录表
  * 
  * @author songx
  * @email 598482054@163.com
- * @date 2023-08-18 20:59:10
+ * @date 2023-08-20 21:47:02
  */
 @Data
-@TableName("tf_loan_request_application_record")
-public class LoanRequestApplicationRecordEntity implements Serializable {
+@TableName("tf_loan_callback_application")
+public class LoanCallbackApplicationEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -26,38 +26,36 @@ public class LoanRequestApplicationRecordEntity implements Serializable {
 	@TableId(value = "id", type = IdType.AUTO)
 	private Long id;
 	/**
-	 * appid
+	 * 通知应用id
 	 */
 	private String appId;
 	/**
-	 * 请求接口地址
+	 * 银联通知记录id
 	 */
-	private String requestUrl;
+	private Long callbackId;
 	/**
-	 * 请求参数
+	 * 1 未通知  2 通知成功
 	 */
-	private String requestParam;
+	private Integer noticeStatus;
 	/**
-	 * 响应地址
+	 * 通知地址
 	 */
-	private String responseParam;
+	private String noticeUrl;
 	/**
-	 * 接口响应时间
+	 * 通知失败次数
 	 */
-	private Integer responseTime;
+	private Integer noticeErrorNumber;
 	/**
-	 * 交易单号
+	 * 发送参数
 	 */
-	private String tradeOrderNo;
+	private String requestParameter;
 	/**
-	 * 请求时间
+	 * 首次通知时间
 	 */
 	private Date createTime;
-
-
-	private Long callbackId;
-
-
-	private Integer callbackStatus;
+	/**
+	 * 最后一次通知时间
+	 */
+	private Date updateTime;
 
 }

@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.entity.LoadBalanceDivideEntity;
 
 
@@ -18,5 +19,12 @@ public interface LoanBalanceDivideService extends IService<LoadBalanceDivideEnti
      * @return  true 已存在 false  不存在
      */
     boolean checkExistBusinessOrderNo(String businessOrderNo);
+
+    /**
+     * 处理分账信息
+     * @param eventDataDTO 银联返回状态
+     * @return 分账信息
+     */
+    LoadBalanceDivideEntity divideNotice(EventDataDTO eventDataDTO);
 }
 
