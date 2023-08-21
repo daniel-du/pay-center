@@ -240,6 +240,11 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         return this.getBaseMapper().listLoanUserByBusId(type,busIds);
     }
 
+    @Override
+    public LoanUserEntity getByBalanceAcctId(String balanceAcctId) {
+        return this.getBaseMapper().getByBalanceAcctId(balanceAcctId);
+    }
+
     /**
      * 查询并更新贷款用户-状态
      *

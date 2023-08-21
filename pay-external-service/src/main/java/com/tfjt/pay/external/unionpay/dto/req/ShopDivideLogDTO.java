@@ -18,7 +18,7 @@ public class ShopDivideLogDTO implements Serializable {
     /**
      * 店铺id
      */
-    private Integer shopId;
+    private String shopId;
     /**
      * 交易金额
      */

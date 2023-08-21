@@ -38,5 +38,11 @@ public interface LoanUserService extends IService<LoanUserEntity> {
     void asynNotice(LoanUserEntity tfLoanUserEntity);
 
     List<UnionPayLoanUserRespDTO> listLoanUserByBusId(String type, List<String> busIds);
+
+    /**
+     * 根据电子账簿id获取企业信息
+     * @param balanceAcctId 电子账簿id
+     */
+    LoanUserEntity getByBalanceAcctId(String balanceAcctId);
 }
 

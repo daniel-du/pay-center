@@ -128,8 +128,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeType)){
             //分账通知
             LoadBalanceDivideEntity divideEntity = loanBalanceDivideService.divideNotice(eventDataDTO);
-            boolean result = payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, loanCallbackEntity.getEventType(), loanCallbackEntity.getId());
-            payApplicationCallbackBiz.noticeShopDivideNotice(divideEntity,loanCallbackEntity.getEventType(),loanCallbackEntity.getId());
+            boolean fmsResult = payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, loanCallbackEntity.getEventType(), loanCallbackEntity.getId());
+            boolean shopResult = payApplicationCallbackBiz.noticeShopDivideNotice(divideEntity, loanCallbackEntity.getEventType(), loanCallbackEntity.getId());
+            this.loanCallbackService.updateNoticeStatus(loanCallbackEntity.getId(),fmsResult && shopResult,divideEntity.getTradeOrderNo());
         }
     }
 
