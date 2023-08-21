@@ -116,7 +116,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         // 下单回调
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60.equals(tradeType)) {
             LoanOrderEntity orderEntity = loanOrderService.treadResult(eventDataDTO);
-            boolean result = payApplicationCallbackBiz.noticeShop(orderEntity, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,loanCallbackEntity.getId());
+            boolean result = payApplicationCallbackBiz.noticeShop(orderEntity, tradeType,loanCallbackEntity.getId());
             //记录通知状态
             this.loanCallbackService.updateNoticeStatus(loanCallbackEntity.getId(),result,orderEntity.getTradeOrderNo());
             //交易成功的进行银联订单确认操作
@@ -136,8 +136,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeType)){
             //分账通知
             LoadBalanceDivideEntity divideEntity = loanBalanceDivideService.divideNotice(eventDataDTO);
-            boolean result = payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, loanCallbackEntity.getEventType(), loanCallbackEntity.getId());
-            payApplicationCallbackBiz.noticeShopDivideNotice(divideEntity,loanCallbackEntity.getEventType(),loanCallbackEntity.getId());
+            boolean fmsResult = payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
+            boolean shopResult = payApplicationCallbackBiz.noticeShopDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
+            this.loanCallbackService.updateNoticeStatus(loanCallbackEntity.getId(),fmsResult && shopResult,divideEntity.getTradeOrderNo());
         }
     }
 

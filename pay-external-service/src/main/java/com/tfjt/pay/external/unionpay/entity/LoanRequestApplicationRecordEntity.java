@@ -59,5 +59,9 @@ public class LoanRequestApplicationRecordEntity implements Serializable {
 
 
 	private Integer callbackStatus;
+	/**
+	 * 响应码
+	 */
+	private Integer responseCode;
 
 }

@@ -76,7 +76,6 @@ public interface UnionPayApiService {
      * 查询
      * @return
      */
-
     Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo,String appId);
 
 

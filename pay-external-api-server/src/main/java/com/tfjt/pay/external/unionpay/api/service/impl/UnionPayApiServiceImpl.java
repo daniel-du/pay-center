@@ -101,9 +101,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
 
-    //@Value("backcall")
-    private String notifyUrl = "http://60.204.170.215:9001/tf-pay-external/unionPay/notice/commonCallback";
-
 
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Transactional(rollbackFor = {TfException.class, Exception.class})
@@ -201,9 +198,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         list.add(guaranteePaymentDTO);
         consumerPoliciesReqDTO.setRemark("转账");
         consumerPoliciesReqDTO.setGuaranteePaymentParams(list);
-        Map<String, Object> extra = new HashMap<>();
-        extra.put("notifyUrl", notifyUrl);  //回调地址
-        consumerPoliciesReqDTO.setExtra(extra);
         return consumerPoliciesReqDTO;
     }
 
@@ -333,9 +327,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
         withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
         withdrawalCreateReqDTO.setRemark("");
-        Map<String, Object> map = new HashMap<>();
-        map.put("notifyUrl", notifyUrl);
-        withdrawalCreateReqDTO.setExtra(map);
         //插入业务表
         LoanWithdrawalOrderEntity loanWithdrawalOrderEntity = BeanUtil.copyProperties(withdrawalCreateReqDTO, LoanWithdrawalOrderEntity.class);
         loanWithdrawalOrderEntity.setBankAcctNo(bankInfo.getBankCardNo());
@@ -493,9 +484,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             transferParams.add(unionPayDivideSubReq);
         }
         unionPayDivideReqDTO.setTransferParams(transferParams);
-        HashMap<String, Object> extra = new HashMap<>();
-        extra.put("notifyUrl", notifyUrl);
-        unionPayDivideReqDTO.setExtra(extra);
         return unionPayDivideReqDTO;
     }
 

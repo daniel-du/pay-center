@@ -22,5 +22,14 @@
         </foreach> and a.type = #{type}
 
     </select>
+    <select id="getByBalanceAcctId" resultType="com.tfjt.pay.external.unionpay.entity.LoanUserEntity">
+        SELECT
+            id,
+            type,
+            bus_id
+        FROM
+            tf_loan_user
+        WHERE id = (select loan_user_id from tf_loan_balance_acct where balance_acct_id=#{parameter})
+    </select>
 
 </mapper>
