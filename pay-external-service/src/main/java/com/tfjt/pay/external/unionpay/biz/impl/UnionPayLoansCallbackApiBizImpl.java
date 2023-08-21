@@ -71,6 +71,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     @Resource
     private LoanBalanceDivideService loanBalanceDivideService;
 
+    @Resource
+    private LoanWithdrawalOrderService withdrawalOrderService;
+
 
     @Resource
     private ExecutorConfig executorConfig;
@@ -118,10 +121,15 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 //订单确认
                 this.confirmOrder(orderEntity);
             }
-        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30.equals(tradeId)){
-            //TODO 提现 申请处理
         }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74.equals(tradeId)){
             //TODO 提现入账
+            LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
+            if(withdrawalOrder!=null){
+                withdrawalOrder.setStatus(eventDataDTO.getStatus());
+                withdrawalOrderService.updateById(withdrawalOrder);
+                payApplicationCallbackBiz.noticeWithdrawalNotice(withdrawalOrder,loanCallbackEntity.getEventType(),loanCallbackEntity.getId());
+            }
+
         }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeId)){
             //分账通知
             LoadBalanceDivideEntity divideEntity = loanBalanceDivideService.divideNotice(eventDataDTO);

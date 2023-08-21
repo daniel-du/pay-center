@@ -15,14 +15,14 @@ import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanOrderDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanRequestApplicationRecordService;
 import com.tfjt.pay.external.unionpay.service.PayApplicationCallbackUrlService;
+import com.tfjt.pay.external.unionpay.utils.StringUtil;
+import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author songx
@@ -66,19 +66,20 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         loanOrderUnifiedorderResqDTO.setDetailsDTOList(detailsRespDTOS);
         loanOrderUnifiedorderResqDTO.setTotalFee(orderEntity.getAmount());
         String parameter = JSONObject.toJSONString(loanOrderUnifiedorderResqDTO);
-        return sendRequest(orderEntity.getAppId(),parameter,orderEntity.getTradeOrderNo(),callbackUrl,callbackId);
+        return sendRequest(orderEntity.getAppId(), parameter, orderEntity.getTradeOrderNo(), callbackUrl, callbackId);
     }
 
     /**
      * fms系统发送
+     *
      * @param list 入账信息
      * @return
      */
     @Override
-    public boolean noticeFmsIncomeNotice(List<LoadBalanceNoticeEntity> list, String eventId,String tradeResultCode,Long callbackId) {
-        String fmsAppId= "";
+    public boolean noticeFmsIncomeNotice(List<LoadBalanceNoticeEntity> list, String eventId, String tradeResultCode, Long callbackId) {
+        String fmsAppId = "";
         String callbackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(tradeResultCode, fmsAppId);
-        return sendRequest(fmsAppId,JSONObject.toJSONString(list),eventId,callbackUrl,callbackId);
+        return sendRequest(fmsAppId, JSONObject.toJSONString(list), eventId, callbackUrl, callbackId);
     }
 
     @Override
@@ -94,9 +95,9 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         List<LoanBalanceDivideDetailsEntity> listDetails = loanBalanceDivideDetailsService.listByDivideId(divideEntity.getId());
         List<ShopDivideLogDTO> list = new ArrayList<>(listDetails.size());
         for (LoanBalanceDivideDetailsEntity listDetail : listDetails) {
-            ShopDivideLogDTO  dto = new ShopDivideLogDTO();
-            dto.setMoney(new BigDecimal(listDetail.getAmount().toString()).divide(new BigDecimal("100"),NumberConstant.TWO,BigDecimal.ROUND_HALF_UP));
-            dto.setStatus(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(listDetail.getStatus())?NumberConstant.ONE:NumberConstant.ZERO);
+            ShopDivideLogDTO dto = new ShopDivideLogDTO();
+            dto.setMoney(new BigDecimal(listDetail.getAmount().toString()).divide(new BigDecimal("100"), NumberConstant.TWO, BigDecimal.ROUND_HALF_UP));
+            dto.setStatus(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(listDetail.getStatus()) ? NumberConstant.ONE : NumberConstant.ZERO);
             //dto.setLogType();
             dto.setType(NumberConstant.THREE);
             dto.setPayAccountName(divideEntity.getPayBalanceAcctName());
@@ -104,7 +105,27 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
             list.add(dto);
 
         }
-        return sendRequest(divideEntity.getAppId(),JSONObject.toJSONString(list),divideEntity.getBusinessOrderNo(),callbackUrl,id);
+        return sendRequest(divideEntity.getAppId(), JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), callbackUrl, id);
+    }
+
+    /**
+     * 提现回掉通知业务
+     *
+     * @param withdrawalOrderEntity
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean noticeWithdrawalNotice(LoanWithdrawalOrderEntity withdrawalOrderEntity, String eventType, Long id) {
+        String callbackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(eventType, withdrawalOrderEntity.getAppId());
+        if (StringUtil.isNotBlank(callbackUrl)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("withdrawalOrderNo", withdrawalOrderEntity.getWithdrawalOrderNo());
+            params.put("status", withdrawalOrderEntity.getStatus());
+            return sendRequest(withdrawalOrderEntity.getAppId(), JSONObject.toJSONString(params), withdrawalOrderEntity.getWithdrawalOrderNo(), callbackUrl, id);
+        } else {
+            throw new TfException("未配置回调地址");
+        }
     }
 
 
@@ -117,24 +138,24 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
      * @param callBackUrl  通知地址
      * @param callbackId   关联银联回调记录表id
      */
-    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String callBackUrl,Long callbackId) {
-        LoanRequestApplicationRecordEntity record = builderRecord(appId,parameter,tradeOrderNo,callbackId);
+    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String callBackUrl, Long callbackId) {
+        LoanRequestApplicationRecordEntity record = builderRecord(appId, parameter, tradeOrderNo, callbackId);
         long start = System.currentTimeMillis();
         String result = "";
         try {
-            log.info("应用服务发送交易通知>>>>>>>>>>>>>:{},请求参数:{},appId:{}", callBackUrl, parameter,appId);
+            log.info("应用服务发送交易通知>>>>>>>>>>>>>:{},请求参数:{},appId:{}", callBackUrl, parameter, appId);
             result = HttpUtil.post(callBackUrl, parameter);
             log.info("接受应用服务发送交易通知<<<<<<<<<<:{}", result);
             record.setResponseParam(result);
         } catch (Exception e) {
-            log.error("应用服务发送交易异常<<<<<<<<<<<<<<<:{},请求参数:{},appId:{},e:{}", callBackUrl, parameter,appId,e.getMessage());
+            log.error("应用服务发送交易异常<<<<<<<<<<<<<<<:{},请求参数:{},appId:{},e:{}", callBackUrl, parameter, appId, e.getMessage());
             record.setResponseParam(e.getMessage());
         }
         long end = System.currentTimeMillis();
         record.setResponseTime((int) (end - start));
         //异步记录请求日志
         boolean b = "success".equalsIgnoreCase(result);
-        record.setCallbackStatus(b? NumberConstant.ONE:NumberConstant.ZERO);
+        record.setCallbackStatus(b ? NumberConstant.ONE : NumberConstant.ZERO);
         recordService.asyncSave(record);
         return b;
     }
