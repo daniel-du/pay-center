@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -14,7 +15,6 @@ import com.tfjt.pay.external.unionpay.dto.resp.LoanOrderUnifiedorderResqDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.cms.PasswordRecipient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -53,6 +53,9 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
 
     @Value("${unionPay.loan.fms.app-id}")
     private String fmsAppId;
+
+    @Value("${unionPay.loan.shop.app-id}")
+    private String shopAppId;
 
     @Override
     public boolean noticeShop(LoanOrderEntity orderEntity, String eventType, Long callbackId) {
@@ -118,7 +121,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
             dto.setPayBalanceAcctId(divideEntity.getPayBalanceAcctId());
             list.add(dto);
         }
-        return sendRequest(divideEntity.getAppId(), JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
+        return sendRequest(shopAppId, JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
     }
 
 
@@ -133,7 +136,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
      */
     private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId) {
         String callBackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(eventType, appId);
-        LoanRequestApplicationRecordEntity record = builderRecord(appId, parameter, tradeOrderNo, callbackId);
+        LoanRequestApplicationRecordEntity record = builderRecord(appId, parameter, tradeOrderNo, callbackId,callBackUrl);
         long start = System.currentTimeMillis();
         String result = "";
         try {
@@ -141,9 +144,11 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
             result = HttpUtil.post(callBackUrl, parameter);
             log.info("接受应用服务发送交易通知<<<<<<<<<<:{}", result);
             record.setResponseParam(result);
+            record.setResponseCode(HttpStatus.HTTP_OK);
         } catch (Exception e) {
             log.error("应用服务发送交易异常<<<<<<<<<<<<<<<:{},请求参数:{},appId:{},e:{}", callBackUrl, parameter, appId, e.getMessage());
             record.setResponseParam(e.getMessage());
+            record.setResponseCode(HttpStatus.HTTP_INTERNAL_ERROR);
         }
         long end = System.currentTimeMillis();
         record.setResponseTime((int) (end - start));
@@ -161,15 +166,17 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
      * @param parameter    发送参数
      * @param tradeOrderNo 业务id
      * @param callbackId   银联通知表id
+     * @param callBackUrl  请求地址
      * @return 通知记录信息
      */
-    private LoanRequestApplicationRecordEntity builderRecord(String appId, String parameter, String tradeOrderNo, Long callbackId) {
+    private LoanRequestApplicationRecordEntity builderRecord(String appId, String parameter, String tradeOrderNo, Long callbackId, String callBackUrl) {
         LoanRequestApplicationRecordEntity record = new LoanRequestApplicationRecordEntity();
         record.setAppId(appId);
         record.setRequestParam(parameter);
         record.setTradeOrderNo(tradeOrderNo);
         record.setCreateTime(new Date());
         record.setCallbackId(callbackId);
+        record.setRequestUrl(callBackUrl);
         return record;
     }
 }

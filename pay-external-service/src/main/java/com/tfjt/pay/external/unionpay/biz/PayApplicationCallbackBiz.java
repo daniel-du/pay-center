@@ -16,11 +16,11 @@ public interface PayApplicationCallbackBiz {
      * 回调通知shop服务交易结果
      *
      * @param orderEntity     订单吓你
-     * @param tradeResultCode 回调地址获取type
+     * @param treadType       回调地址获取type
      * @param callbackId      银联通知记录表id
      * @return 通知是否成功
      */
-    boolean noticeShop(LoanOrderEntity orderEntity, String tradeResultCode, Long callbackId);
+    boolean noticeShop(LoanOrderEntity orderEntity, String treadType, Long callbackId);
 
     /**
      * 回调通知FMS入账通知
