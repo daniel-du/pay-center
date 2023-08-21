@@ -97,7 +97,8 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         LoanCallbackEntity loanCallbackEntity = loanCallbackService.saveLog(null, transactionCallBackReqDTO.getEventId(), eventType, eventDataString
                 , transactionCallBackReqDTO.getCreatedAt(), null, null);
         log.info("保存回调日志信息:{}", JSONObject.toJSONString(loanCallbackEntity));
-        executorConfig.asyncServiceExecutor().execute(()->detailsNotice(loanCallbackEntity));
+        // executorConfig.asyncServiceExecutor().execute(()->detailsNotice(loanCallbackEntity));
+        detailsNotice(loanCallbackEntity);
     }
 
     /**
@@ -106,12 +107,14 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
      * @param loanCallbackEntity
      */
     public void treadResult(LoanCallbackEntity loanCallbackEntity) {
+        Thread thread = Thread.currentThread();
+        log.info("开始处理..:{}",thread.getName());
         String eventData = loanCallbackEntity.getEventData();
         EventDataDTO eventDataDTO = JSONObject.parseObject(eventData, EventDataDTO.class);
-        String tradeId = eventDataDTO.getTradeId();
+        String tradeType = eventDataDTO.getTradeType().toString();
 
         // 下单回调
-        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60.equals(tradeId)) {
+        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60.equals(tradeType)) {
             LoanOrderEntity orderEntity = loanOrderService.treadResult(eventDataDTO);
             boolean result = payApplicationCallbackBiz.noticeShop(orderEntity, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,loanCallbackEntity.getId());
             //记录通知状态
@@ -121,7 +124,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 //订单确认
                 this.confirmOrder(orderEntity);
             }
-        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74.equals(tradeId)){
+        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74.equals(tradeType)){
             //TODO 提现入账
             LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
             if(withdrawalOrder!=null){
@@ -130,7 +133,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 payApplicationCallbackBiz.noticeWithdrawalNotice(withdrawalOrder,loanCallbackEntity.getEventType(),loanCallbackEntity.getId());
             }
 
-        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeId)){
+        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeType)){
             //分账通知
             LoadBalanceDivideEntity divideEntity = loanBalanceDivideService.divideNotice(eventDataDTO);
             boolean result = payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, loanCallbackEntity.getEventType(), loanCallbackEntity.getId());
