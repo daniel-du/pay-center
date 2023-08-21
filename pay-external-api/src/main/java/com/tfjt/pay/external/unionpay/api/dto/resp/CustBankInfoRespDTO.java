@@ -21,7 +21,7 @@ public class CustBankInfoRespDTO implements Serializable {
     /**
      * 卡号
      */
-    private String bankCarNo;
+    private String bankCardNo;
 
     /**
      * 总行
@@ -49,12 +49,12 @@ public class CustBankInfoRespDTO implements Serializable {
         this.bankName = bankName;
     }
 
-    public String getBankCarNo() {
-        return bankCarNo;
+    public String getBankCardNo() {
+        return bankCardNo;
     }
 
-    public void setBankCarNo(String bankCarNo) {
-        this.bankCarNo = bankCarNo;
+    public void setBankCardNo(String bankCardNo) {
+        this.bankCardNo = bankCardNo;
     }
 
     public String getBigBankName() {
