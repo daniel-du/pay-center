@@ -313,6 +313,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Lock4j(keys = {"#withdrawalReqDTO.version"}, expire = 10000, acquireTimeout = 3000)
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(withdrawalReqDTO.getLoanUserId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
