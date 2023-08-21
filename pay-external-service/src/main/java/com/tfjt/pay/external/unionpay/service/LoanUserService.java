@@ -24,6 +24,14 @@ public interface LoanUserService extends IService<LoanUserEntity> {
 
     LoanUserInfoDTO getLoanUerInfo(Long loanUserId);
 
+    /**
+     *
+     * @param busId 业务id
+     * @param type 类型1商家2供应商
+     * @return
+     */
+    LoanUserEntity getLoanUserByBusIdAndType(String busId, Integer type);
+
 
     void applicationStatusUpdateJob(String jobParam);
 

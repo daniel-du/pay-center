@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.config.ExecutorConfig;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.IncomingReturn;
@@ -161,6 +162,11 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         }
 
         return dto;
+    }
+
+    @Override
+    public LoanUserEntity getLoanUserByBusIdAndType(String busId, Integer type) {
+        return this.getOne(Wrappers.lambdaQuery(LoanUserEntity.class).eq(LoanUserEntity::getBusId, busId).eq(LoanUserEntity::getType, type));
     }
 
     /**

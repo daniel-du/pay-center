@@ -26,10 +26,11 @@ public interface LoanApiService {
 
     /**
      * 通过贷款用户ID获取银行卡
-     * @param loanUserId
+     * @param type
+     * @param bid 类型1商家2供应商
      * @return
      */
-    Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Long loanUserId);
+    Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Integer type, String bid);
 
 
     /**
