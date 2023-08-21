@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
+import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -24,6 +25,7 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
     private PaymentPasswordService paymentPasswordService;
 
     @Override
+    @Lock4j(keys = {"#paymentPasswordDTO.loanUserId"}, expire = 10000, acquireTimeout = 3000)
     public Result<String> savePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         try {
             PaymentPasswordEntity paymentPassword = new PaymentPasswordEntity();
