@@ -31,8 +31,8 @@ public class LoanWithdrawalOrderEntity implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "订单号")
-    private String orderNo;
+    @ApiModelProperty(value = "提现订单号")
+    private String withdrawalOrderNo;
 
     @ApiModelProperty(value = "发送时间")
     private LocalDateTime sendAt;

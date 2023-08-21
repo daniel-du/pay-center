@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface LoanWithdrawalOrderService extends IService<LoanWithdrawalOrderEntity> {
 
+    LoanWithdrawalOrderEntity getWithdrawalOrderByNo(String outOrderNo);
 }

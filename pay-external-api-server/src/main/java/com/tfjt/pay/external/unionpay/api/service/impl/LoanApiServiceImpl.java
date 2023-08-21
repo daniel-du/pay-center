@@ -101,13 +101,18 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
     /**
      * 获取银行卡
      *
-     * @param loanUserId
+     * @param type
+     * @param bid 类型1商家2供应商
      * @return
      */
     @Override
-    public Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Long loanUserId) {
+    public Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Integer type, String bid) {
         try {
-            List<BankInfoDTO> bankInfoByBus = custBankInfoService.getBankInfoByBus(loanUserId);
+            LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bid, type);
+            if(ObjectUtils.isEmpty(loanUser)){
+                return Result.failed("未查询到相关用户");
+            }
+            List<BankInfoDTO> bankInfoByBus = custBankInfoService.getBankInfoByBus(loanUser.getId());
             List<CustBankInfoRespDTO> custBankInfoResp = new ArrayList<>();
             bankInfoByBus.forEach(bankInfoDTO -> {
                 CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();

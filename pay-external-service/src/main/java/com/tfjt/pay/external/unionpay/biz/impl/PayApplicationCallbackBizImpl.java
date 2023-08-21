@@ -14,6 +14,12 @@ import com.tfjt.pay.external.unionpay.dto.resp.LoanOrderDetailsRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanOrderUnifiedorderResqDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
+import com.tfjt.pay.external.unionpay.service.LoanOrderDetailsService;
+import com.tfjt.pay.external.unionpay.service.LoanRequestApplicationRecordService;
+import com.tfjt.pay.external.unionpay.service.PayApplicationCallbackUrlService;
+import com.tfjt.pay.external.unionpay.utils.StringUtil;
+import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.*;
 
 /**
  * @author songx
@@ -81,7 +88,6 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
 
     /**
      * fms系统发送
-     *
      * @param list 入账信息
      * @return
      */
@@ -124,6 +130,26 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         return sendRequest(shopAppId, JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
     }
 
+    /**
+     * 提现回掉通知业务
+     *
+     * @param withdrawalOrderEntity
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean noticeWithdrawalNotice(LoanWithdrawalOrderEntity withdrawalOrderEntity, String eventType, Long id) {
+        String callbackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(eventType, withdrawalOrderEntity.getAppId());
+        if (StringUtil.isNotBlank(callbackUrl)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("withdrawalOrderNo", withdrawalOrderEntity.getWithdrawalOrderNo());
+            params.put("status", withdrawalOrderEntity.getStatus());
+            return sendRequest(withdrawalOrderEntity.getAppId(), JSONObject.toJSONString(params), withdrawalOrderEntity.getWithdrawalOrderNo(), callbackUrl, id);
+        } else {
+            throw new TfException("未配置回调地址");
+        }
+    }
+
 
     /**
      * 发送请求并记录请求日志信息
@@ -154,7 +180,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         record.setResponseTime((int) (end - start));
         //异步记录请求日志
         boolean b = "success".equalsIgnoreCase(result);
-        record.setCallbackStatus(b ? NumberConstant.ONE : NumberConstant.ZERO);
+        record.setCallbackStatus(b? NumberConstant.ONE:NumberConstant.ZERO);
         recordService.asyncSave(record);
         return b;
     }

@@ -14,6 +14,8 @@ import java.io.Serializable;
 @Data
 public class WithdrawalRespDTO implements Serializable {
 
+    /**提现订单号*/
+    private String withdrawalOrderNo;
     /**交易状态*/
     private String status;
 
