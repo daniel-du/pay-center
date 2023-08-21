@@ -120,7 +120,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
                 custBankInfoResp.add(custBankInfoRespDTO);
             });
             return Result.ok(custBankInfoResp);
-        } catch (Exception ex) {
+        } catch (TfException ex) {
             return Result.failed(ex.getMessage());
         }
     }
