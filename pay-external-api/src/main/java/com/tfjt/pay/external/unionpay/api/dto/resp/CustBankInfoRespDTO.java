@@ -12,9 +12,26 @@ import java.io.Serializable;
 public class CustBankInfoRespDTO implements Serializable {
     private Integer id;
 
+    /**
+     * 支行
+     */
     private String bankName;
 
+
+    /**
+     * 卡号
+     */
     private String bankCarNo;
+
+    /**
+     * 总行
+     */
+    private String  bigBankName;
+
+    /**
+     * 开户名称
+     */
+    private String accountName;
 
     public Integer getId() {
         return id;
@@ -38,5 +55,21 @@ public class CustBankInfoRespDTO implements Serializable {
 
     public void setBankCarNo(String bankCarNo) {
         this.bankCarNo = bankCarNo;
+    }
+
+    public String getBigBankName() {
+        return bigBankName;
+    }
+
+    public void setBigBankName(String bigBankName) {
+        this.bigBankName = bigBankName;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
     }
 }

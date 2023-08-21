@@ -8,5 +8,17 @@ public class BankInfoDTO {
 
     private String bankName;
 
-    private String bankCarNo;
+    private String bankCardNo;
+
+    /**
+     * 总行
+     */
+    private String  bigBankName;
+
+    /**
+     * 开户名称
+     */
+    private String accountName;
+
+
 }

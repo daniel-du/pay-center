@@ -46,22 +46,18 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
         if (CollUtil.isEmpty(list)) {
             return new ArrayList<>();
         }
-            List<BankInfoDTO> collect = list.stream().map(custBankInfoEntity -> {
-                //查询总行信息
-                String bankName;
-                try {
-                    bankName = getTfBankEntity(custBankInfoEntity);
-                }catch (Exception ex){
-                    throw new TfException(ex.getMessage());
-                }
-                BankInfoDTO bankInfoDTO = new BankInfoDTO();
-                String concat = StringUtils.left(custBankInfoEntity.getBankCardNo(), 4).concat(StringUtils.removeStart(StringUtils.leftPad(StringUtils.right(custBankInfoEntity.getBankCardNo(), 4), StringUtils.length(custBankInfoEntity.getBankCardNo()), "*"), "******"));
-                bankInfoDTO.setId(custBankInfoEntity.getId());
-                bankInfoDTO.setBankCarNo(concat);
-                bankInfoDTO.setBankName(bankName);
-                return bankInfoDTO;
-            }).collect(Collectors.toList());
-            return collect;
+        List<BankInfoDTO> collect = list.stream().map(custBankInfoEntity -> {
+            //查询总行信息
+            BankInfoDTO bankInfoDTO = new BankInfoDTO();
+//            String concat = StringUtils.left(custBankInfoEntity.getBankCardNo(), 4).concat(StringUtils.removeStart(StringUtils.leftPad(StringUtils.right(custBankInfoEntity.getBankCardNo(), 4), StringUtils.length(custBankInfoEntity.getBankCardNo()), "*"), "******"));
+            bankInfoDTO.setBankName(custBankInfoEntity.getBankName());
+            bankInfoDTO.setBigBankName(custBankInfoEntity.getBigBankName());
+            bankInfoDTO.setAccountName(custBankInfoEntity.getAccountName());
+            bankInfoDTO.setId(custBankInfoEntity.getId());
+            bankInfoDTO.setBankCardNo(custBankInfoEntity.getBankCardNo());
+            return bankInfoDTO;
+        }).collect(Collectors.toList());
+        return collect;
 
     }
 
@@ -139,6 +135,7 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
 
     /**
      * 通过银行卡获取信息
+     *
      * @param bankCardNo
      * @param loanUserId
      * @return
