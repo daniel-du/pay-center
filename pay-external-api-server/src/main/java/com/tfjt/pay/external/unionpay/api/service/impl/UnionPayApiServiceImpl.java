@@ -2,21 +2,20 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
-import com.tfjt.pay.external.unionpay.config.ExecutorConfig;
+import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 
 import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
 import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
+import com.tfjt.pay.external.unionpay.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.UnionPayProduct;
@@ -24,8 +23,6 @@ import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
-import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
@@ -41,10 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -62,10 +57,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
     private UnionPayService unionPayService;
     @Resource
-    private LoanBalanceDivideService payBalanceDivideService;
-    @Resource
-    private LoanBalanceDivideDetailsService payBalanceDivideDetailsService;
-    @Resource
     private OrderNumberUtil orderNumberUtil;
     @Resource
     LoanBalanceAcctService loanBalanceAcctService;
@@ -79,11 +70,12 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
-    @Resource
-    private ExecutorConfig executorConfig;
 
     @Resource
     private LoanOrderBiz loanOrderBiz;
+
+    @Resource
+    private PayBalanceDivideBiz payBalanceDivideBiz;
 
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Override
@@ -108,7 +100,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             log.error("调用银联接口失败");
             throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }
-        this.loanOrderBiz.saveMergeConsumerResult(result);
+        this.loanOrderBiz.saveMergeConsumerResult(result,payTransferDTO.getAppId());
         return Result.ok(result.getData().getStatus());
     }
 
@@ -157,27 +149,19 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Lock4j(keys = {"#balanceDivideReq.businessOrderNo"}, expire = 10000, acquireTimeout = 3000)
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Result<Map<String, SubBalanceDivideRespDTO>> balanceDivide(BalanceDivideReqDTO balanceDivideReq) {
+    public Result<Map<String, SubBalanceDivideRespDTO>> balanceDivide(UnionPayBalanceDivideReqDTO balanceDivideReq) {
         log.info("请求分账参数<<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(balanceDivideReq));
         String tradeOrderNo = orderNumberUtil.generateOrderNumber(TransactionTypeConstants.TRANSACTION_TYPE_DB);
 
         String businessOrderNo = balanceDivideReq.getBusinessOrderNo();
         //1.检验单号是否存在
-        if (this.payBalanceDivideService.checkExistBusinessOrderNo(businessOrderNo)) {
-            String message = String.format("业务订单号[%s]已经存在", businessOrderNo);
-            log.error(message);
-            throw new TfException(PayExceptionCodeEnum.TREAD_ORDER_NO_REPEAT);
-        }
+        this.payBalanceDivideBiz.checkExistBusinessOrderNo(businessOrderNo);
+
 
         List<LoanBalanceDivideDetailsEntity> saveList = new ArrayList<>();
-        try{
-            UnionPayApiServiceImpl bean = SpringUtil.getBean(this.getClass());
-            bean.saveDivide(businessOrderNo,saveList,balanceDivideReq);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
+        BalanceDivideReqDTO balanceDivideReqDTO = new BalanceDivideReqDTO();
+        BeanUtil.copyProperties(balanceDivideReq,balanceDivideReqDTO);
+        payBalanceDivideBiz.saveDivide(tradeOrderNo,saveList,balanceDivideReqDTO);
         //4.生成银联分账参数
         UnionPayDivideReqDTO unionPayDivideReqDTO = buildBalanceDivideUnionPayParam(saveList, tradeOrderNo);
         try {
@@ -189,9 +173,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
                 log.error("调用银联分账接口失败");
                 return Result.failed(result.getMsg());
             }
-            executorConfig.asyncServiceExecutor().execute(()->{
-                updateByUnionPayDivideReqDTO(result.getData());
-            });
+            this.payBalanceDivideBiz.updateByUnionPayDivideReqDTO(result.getData(),balanceDivideReq.getAppId());
             //6.解析返回数据响应给业务系统
             return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
         } catch (Exception e) {
@@ -203,40 +185,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         return Result.ok();
     }
 
-    /**
-     * 保存分账信息
-     * @param tradeOrderNo 交易单号
-     * @param saveList 分支详情
-     * @param balanceDivideReq 分账请求
-     */
-    @Transactional(rollbackFor = {TfException.class,Exception.class})
-    public void saveDivide(String tradeOrderNo, List<LoanBalanceDivideDetailsEntity> saveList, BalanceDivideReqDTO balanceDivideReq) {
 
-        Date date = new Date();
-        //1.保存分账主信息信息
-        //主交易单号,银联交互使用
-        LoadBalanceDivideEntity payBalanceDivideEntity = new LoadBalanceDivideEntity();
-        payBalanceDivideEntity.setPayBalanceAcctId(accountConfig.getBalanceAcctId());
-        payBalanceDivideEntity.setTradeOrderNo(tradeOrderNo);
-        payBalanceDivideEntity.setBusinessOrderNo(balanceDivideReq.getBusinessOrderNo());
-        payBalanceDivideEntity.setAppId(balanceDivideReq.getAppId());
-        payBalanceDivideEntity.setCreateAt(date);
-        if (!payBalanceDivideService.save(payBalanceDivideEntity)) {
-            log.error("保存分账主信息失败:{}", JSONObject.toJSONString(payBalanceDivideEntity));
-            throw new TfException(PayExceptionCodeEnum.DATABASE_SAVE_FAIL);
-        }
-        //3.保存子分账信息
-        List<SubBalanceDivideReqDTO> list = balanceDivideReq.getList();
-
-        for (SubBalanceDivideReqDTO subBalanceDivideReqDTO : list) {
-            saveList.add(buildPayBalanceDivideDetailsEntity(subBalanceDivideReqDTO, date, payBalanceDivideEntity.getId()));
-        }
-        if (!this.payBalanceDivideDetailsService.saveBatch(saveList)) {
-            log.error("保存分账信息失败:{}", JSONObject.toJSONString(saveList));
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            throw new TfException(PayExceptionCodeEnum.DATABASE_SAVE_FAIL);
-        }
-    }
 
     /**
      * 提现
@@ -335,7 +284,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             log.error("调用银联接口失败");
             return Result.failed(result.getMsg());
         }
-        this.loanOrderBiz.saveMergeConsumerResult(result);
+        this.loanOrderBiz.saveMergeConsumerResult(result, loanOrderUnifiedorderDTO.getAppId());
         return Result.ok(result.getData().getStatus());
     }
 
@@ -364,32 +313,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         return map;
     }
 
-    /**
-     * 修改银联信息
-     * @param unionPayDivideRespDTO 分支银联返回数据
-     */
-    private void updateByUnionPayDivideReqDTO(UnionPayDivideRespDTO unionPayDivideRespDTO) {
-        LoadBalanceDivideEntity update = new LoadBalanceDivideEntity();
-        BeanUtil.copyProperties(unionPayDivideRespDTO, update);
-        LambdaUpdateWrapper<LoadBalanceDivideEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(LoadBalanceDivideEntity::getTradeOrderNo, unionPayDivideRespDTO.getOutOrderNo());
-        if (!this.payBalanceDivideService.updateById(update)) {
-            log.error("更新分账主单据信息失败:{}", JSONObject.toJSONString(update));
-        }
-        List<UnionPayDivideRespDetailDTO> transferResults = unionPayDivideRespDTO.getTransferResults();
-        for (UnionPayDivideRespDetailDTO transferResult : transferResults) {
-            LoanBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new LoanBalanceDivideDetailsEntity();
-            BeanUtil.copyProperties(transferResult, payBalanceDivideDetailsEntity);
-            LambdaUpdateWrapper<LoanBalanceDivideDetailsEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.eq(LoanBalanceDivideDetailsEntity::getRecvBalanceAcctId, transferResult.getRecvBalanceAcctId())
-                    .eq(LoanBalanceDivideDetailsEntity::getAmount, transferResult.getAmount());
-            if (this.payBalanceDivideDetailsService.update(payBalanceDivideDetailsEntity, lambdaUpdateWrapper)) {
-                log.error("更新子交易记录失败:{},该记录银联返回信息:{}",
-                        JSONObject.toJSONString(payBalanceDivideDetailsEntity), JSONObject.toJSONString(transferResult));
-            }
-        }
 
-    }
 
     /**
      * 生成银联分账参数
@@ -420,20 +344,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         return unionPayDivideReqDTO;
     }
 
-    /**
-     * 创建分账信息
-     *
-     * @param subBalanceDivideReqDTO 分账信息
-     * @param date                   创建时间
-     */
-    private LoanBalanceDivideDetailsEntity buildPayBalanceDivideDetailsEntity(SubBalanceDivideReqDTO subBalanceDivideReqDTO, Date date, Long divideId) {
-        LoanBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new LoanBalanceDivideDetailsEntity();
-        BeanUtil.copyProperties(subBalanceDivideReqDTO, payBalanceDivideDetailsEntity);
-        payBalanceDivideDetailsEntity.setDivideId(divideId);
-        payBalanceDivideDetailsEntity.setSubTradeOrderNo(orderNumberUtil.generateOrderNumber(TransactionTypeConstants.TRANSACTION_TYPE_DB_SUB));
-        payBalanceDivideDetailsEntity.setCreateTime(date);
-        return payBalanceDivideDetailsEntity;
-    }
+
 
     /**
      * 获取指定电子账簿的账户信息

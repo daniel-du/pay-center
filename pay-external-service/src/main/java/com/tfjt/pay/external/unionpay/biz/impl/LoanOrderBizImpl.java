@@ -13,6 +13,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderGoodsEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanOrderDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanOrderGoodsService;
@@ -195,11 +196,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         return consumerPoliciesReqDTO;
     }
 
-
-
-
-    @Async
-    public void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result) {
+    @Transactional(rollbackFor = {TfException.class, Exception.class})
+    public void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result,String appId) {
         log.debug("执行修改订的线程信息:{}", Thread.currentThread().getName());
         ConsumerPoliciesRespDTO data = result.getData();
         String status = data.getStatus();
@@ -211,14 +209,21 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
                 log.error("解析完成时间异常:{}", data.getFinishedAt());
             }
         }
+        LambdaQueryWrapper<LoanOrderEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(LoanOrderEntity::getTradeOrderNo, data.getCombinedOutOrderNo())
+                .eq(LoanOrderEntity::getAppId,appId);
+        LoanOrderEntity one = this.orderService.getOne(wrapper);
+
+
+
         //修改订单状态
         LoanOrderEntity loanOrderEntity = new LoanOrderEntity();
         loanOrderEntity.setCombinedGuaranteePaymentId(data.getCombinedGuaranteePaymentId());
         loanOrderEntity.setStatus(status);
         loanOrderEntity.setFinishedAt(finshDate);
-        LambdaUpdateWrapper<LoanOrderEntity> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(LoanOrderEntity::getTradeOrderNo, data.getCombinedOutOrderNo());
-        if (this.orderService.update(loanOrderEntity, updateWrapper)) {
+        loanOrderEntity.setId(one.getId());
+
+        if (!this.orderService.updateById(loanOrderEntity)) {
             log.error("更新订单状态失败:{},交易订单号:{}", JSONObject.toJSONString(loanOrderEntity), data.getCombinedOutOrderNo());
             return;
         }
@@ -228,10 +233,11 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             BeanUtil.copyProperties(guaranteePaymentResult, orderDetailsEntity);
             orderDetailsEntity.setFinishedAt(finshDate);
             LambdaUpdateWrapper<LoanOrderDetailsEntity> detailsUpdateWrapper = new LambdaUpdateWrapper<>();
-            detailsUpdateWrapper.eq(LoanOrderDetailsEntity::getSubBusinessOrderNo, guaranteePaymentResult.getOutOrderNo());
-            if (this.loanOrderDetailsService.update(orderDetailsEntity, detailsUpdateWrapper)) {
+            detailsUpdateWrapper.eq(LoanOrderDetailsEntity::getTradeOrderNo, guaranteePaymentResult.getOutOrderNo())
+                    .eq(LoanOrderDetailsEntity::getOrderId,one.getId());
+            if (!this.loanOrderDetailsService.update(orderDetailsEntity, detailsUpdateWrapper)) {
                 log.error("更新订单详细信息失败:{},交易订单号:{}", JSONObject.toJSONString(orderDetailsEntity), guaranteePaymentResult.getOutOrderNo());
-                throw new TfException(ExceptionCodeEnum.FAIL);
+                throw new TfException(PayExceptionCodeEnum.DATABASE_UPDATE_FAIL);
             }
         }
     }

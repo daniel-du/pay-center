@@ -48,7 +48,9 @@ public interface LoanOrderBiz {
      ConsumerPoliciesReqDTO unifiedorderSaveOrderAndBuildUnionPayParam(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO);
     /**
      * 修改订单状态
+     *
      * @param result 银联合并下单返回数据
+     * @param appId appId
      */
-    void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result);
+    void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result, String appId);
 }
