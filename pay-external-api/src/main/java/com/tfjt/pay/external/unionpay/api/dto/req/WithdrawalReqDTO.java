@@ -18,8 +18,6 @@ public class WithdrawalReqDTO implements Serializable {
 
     private String appId;
 
-    private String version;
-
     public Long getLoanUserId() {
         return loanUserId;
     }
@@ -53,11 +51,4 @@ public class WithdrawalReqDTO implements Serializable {
         this.bankInfoId = bankInfoId;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
 }

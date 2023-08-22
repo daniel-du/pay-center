@@ -6,14 +6,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-
 import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
 import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
@@ -25,20 +23,16 @@ import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideSubReq;
 import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
-import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
-import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
-import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
-import com.tfjt.pay.external.unionpay.utils.DateUtil;
-import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
-import com.tfjt.pay.external.unionpay.utils.StringUtil;
-import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
+import com.tfjt.pay.external.unionpay.utils.*;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +43,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 银联接口服务实现类
@@ -101,6 +96,10 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
 
+    @Resource
+    RedisCache redisCache;
+
+    private final static String WITHDRAWAL_IDEMPOTENT_KEY = "idempotent:withdrawal";
 
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Transactional(rollbackFor = {TfException.class, Exception.class})
@@ -313,8 +312,15 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Lock4j(keys = {"#withdrawalReqDTO.version"}, expire = 10000, acquireTimeout = 3000)
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
+        String idempotentMd5 = MD5Util.getMD5String(JSON.toJSONString(withdrawalReqDTO));
+        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
+        log.info("放重复提交加密后的M5d值为：{}", idempotentMd5);
+        if (StringUtils.isEmpty(isIdempotent)) {
+            redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY,idempotentMd5, 60, TimeUnit.MINUTES);
+        }else{
+            return Result.failed("请勿重复提现");
+        }
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(withdrawalReqDTO.getLoanUserId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
