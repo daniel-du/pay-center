@@ -476,7 +476,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
 
 
-    /**
+    /**x
      * 构建转账交易参数
      *
      * @param payTransferDTO 转账参数
