@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @email 598482054@qq.com
  */
 @Data
-public class LoanOrderGoodsReqDTO implements Serializable {
+public class UnionPayLoanOrderGoodsReqDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 订单编号

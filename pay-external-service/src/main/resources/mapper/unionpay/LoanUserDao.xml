@@ -26,7 +26,8 @@
         SELECT
             id,
             type,
-            bus_id
+            bus_id,
+            creator
         FROM
             tf_loan_user
         WHERE id = (select loan_user_id from tf_loan_balance_acct where balance_acct_id=#{parameter})

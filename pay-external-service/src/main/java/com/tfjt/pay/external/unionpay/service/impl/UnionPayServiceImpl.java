@@ -34,7 +34,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ634_COMBINED_GUARANTEE_PAYMENTS.getCode(),
                     JSON.toJSONString(consumerPoliciesReqDTO),
-                    ConsumerPoliciesRespDTO.class);
+                    ConsumerPoliciesRespDTO.class,consumerPoliciesReqDTO.getCombinedOutOrderNo());
             
             log.info("合并消费担保下单解析返回信息{}", consumerPoliciesRespDTO);
             return Result.ok(consumerPoliciesRespDTO);
@@ -52,7 +52,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             ConsumerPoliciesCheckRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesCheckRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ637_COMBINED_GUARANTEE_CONFIRMS.getCode(),
                     JSON.toJSONString(consumerPoliciesReqDTO),
-                    ConsumerPoliciesCheckRespDTO.class);
+                    ConsumerPoliciesCheckRespDTO.class,consumerPoliciesReqDTO.getOutOrderNo());
             log.info("合并消费担保确认解析返回信息{}", consumerPoliciesRespDTO);
             return Result.ok(consumerPoliciesRespDTO);
         }catch (TfException e){
@@ -72,7 +72,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             WithdrawalCreateRespDTO withdrawalCreateRespDTO = (WithdrawalCreateRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ64_WITHDRAWALS_REQ.getCode(),
                     JSON.toJSONString(withdrawalCreateReqDTO),
-                    WithdrawalCreateRespDTO.class);
+                    WithdrawalCreateRespDTO.class,withdrawalCreateReqDTO.getOutOrderNo());
             log.info("提现创建返回信息{}", withdrawalCreateRespDTO);
             return Result.ok(withdrawalCreateRespDTO);
         }catch (TfException e){
@@ -92,7 +92,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             ElectronicBookRespDTO electronicBookRespDTO = (ElectronicBookRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ623_BALANCE_TRANSACTIONS_REQ.getCode(),
                     JSON.toJSONString(electronicBookReqDTO),
-                    ElectronicBookRespDTO.class);
+                    ElectronicBookRespDTO.class,electronicBookReqDTO.getTradeId());
             log.info("电子账簿流水查询返回信息{}", electronicBookRespDTO);
             return Result.ok(electronicBookRespDTO);
         }catch (TfException e){
@@ -113,7 +113,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
                     null,
                     JSON.toJSONString(jsonObject),
-                    ConsumerPoliciesRespDTO.class);
+                    ConsumerPoliciesRespDTO.class,combinedGuaranteePaymentId);
             log.info("使用系统订单号查询合并消费担保下单订单状态返回信息{}", consumerPoliciesRespDTO);
             return Result.ok(consumerPoliciesRespDTO);
         }catch (TfException e){
@@ -135,7 +135,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ636_COMBINED_GUARANTEE_PAYMENTS_BY_OUT_ORDER_NO.getCode(),
                     JSON.toJSONString(jsonObject),
-                    ConsumerPoliciesRespDTO.class);
+                    ConsumerPoliciesRespDTO.class,combinedOutOrderNo);
             log.info("使用平台订单号查询合并消费担保下单订单状态返回信息{}", jsonObject);
             return Result.ok(consumerPoliciesRespDTO);
         }catch (TfException e){
@@ -156,7 +156,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             LoanAccountDTO loanAccountDTO = (LoanAccountDTO)unionPayBaseBuilderUtils.combination(
                     TransactionCodeEnum.LWZ511_RECEIPT_QUERY_REQ.getCode(),
                     JSON.toJSONString(param),
-                    LoanAccountDTO.class);
+                    LoanAccountDTO.class,balanceAcctId);
             return loanAccountDTO;
         }catch (TfException e){
             log.error("调用电子账簿查询(电子账簿ID)返回 TfException{},{}", JSON.toJSON(param),e);
@@ -170,7 +170,7 @@ public class UnionPayServiceImpl implements UnionPayService {
     public Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
         try{
             UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ616_ALLOCATIONS.getCode(),
-                    JSON.toJSONString(unionPayDivideReqDTO),UnionPayDivideRespDTO.class);
+                    JSON.toJSONString(unionPayDivideReqDTO),UnionPayDivideRespDTO.class,unionPayDivideReqDTO.getOutOrderNo());
             return Result.ok(unionPayDivideRespDTO);
         } catch (TfException e){
             log.error("调用分账返回 TfException{},{}", JSON.toJSON(unionPayDivideReqDTO),e);
@@ -187,7 +187,7 @@ public class UnionPayServiceImpl implements UnionPayService {
         try{
             param.put("outOrderNo",outOrderNo);
             WithdrawalCreateRespDTO withdrawalCreateRespDTO = (WithdrawalCreateRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO.getCode(),
-                    JSON.toJSONString(param),WithdrawalCreateRespDTO.class);
+                    JSON.toJSONString(param),WithdrawalCreateRespDTO.class,outOrderNo);
             return Result.ok(withdrawalCreateRespDTO);
         } catch (TfException e){
             log.error("调用提现查询返回 TfException{},{}", JSON.toJSON(param),e);
@@ -203,7 +203,7 @@ public class UnionPayServiceImpl implements UnionPayService {
         JSONObject param = new JSONObject();
         try {
             param.put("billDate",format);
-            JSONObject combination = (JSONObject)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ91_RECEIPT_QUERY_REQ.getCode(), param.toJSONString(), JSONObject.class);
+            JSONObject combination = (JSONObject)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ91_RECEIPT_QUERY_REQ.getCode(), param.toJSONString(), JSONObject.class,format);
             return Result.ok(combination.getString("downloadUrl"));
         }catch (TfException e){
             log.error("调用下载对账单查询返回 TfException{},{}", JSON.toJSON(param),e);

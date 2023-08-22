@@ -1,6 +1,5 @@
 package com.tfjt.pay.external.unionpay.api.dto.resp;
 
-import com.tfjt.pay.external.unionpay.api.dto.req.SubBalanceDivideReqDTO;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,7 +10,7 @@ import java.io.Serializable;
  * @email 598482054@qq.com
  */
 @Data
-public class SubBalanceDivideRespDTO extends SubBalanceDivideReqDTO implements Serializable {
+public class SubBalanceDivideRespDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -98,7 +98,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 , transactionCallBackReqDTO.getCreatedAt(), null, null);
         log.info("保存回调日志信息:{}", JSONObject.toJSONString(loanCallbackEntity));
         // executorConfig.asyncServiceExecutor().execute(()->detailsNotice(loanCallbackEntity));
-        detailsNotice(loanCallbackEntity);
+       // detailsNotice(loanCallbackEntity);
     }
 
     /**

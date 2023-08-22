@@ -1,4 +1,5 @@
 package com.tfjt.pay.external.unionpay.utils;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.constants.UnionPayConstant;
@@ -6,7 +7,9 @@ import com.tfjt.pay.external.unionpay.dto.RespLwzMsgReturn;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayBaseReq;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
+import com.tfjt.pay.external.unionpay.entity.LoanRequestUnionpayRecordEntity;
 import com.tfjt.pay.external.unionpay.enums.TransactionCodeEnum;
+import com.tfjt.pay.external.unionpay.service.LoanRequestUnionpayRecordService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -26,9 +29,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
+ * @author Lzh
  * @ClassName UnionPayBaseBuilderUtils
  * @description: 银联公共参数赋值
- * @author Lzh
  * @date 2023年08月09日
  * @version: 1.0
  */
@@ -45,6 +48,10 @@ public class UnionPayBaseBuilderUtils<T> {
 
     @Value("${unionPayLoans.groupId}")
     private String groupId;
+
+    @Resource
+    private LoanRequestUnionpayRecordService loanRequestUnionpayRecordService;
+
     /**
      * 公共参数赋值
      *
@@ -52,12 +59,12 @@ public class UnionPayBaseBuilderUtils<T> {
      * @param lwzData
      * @return
      */
-    public  T baseBuilder(String lwzBussCode, String lwzData) {
+    public T baseBuilder(String lwzBussCode, String lwzData) {
         String srcReqDate = DateFormatUtils.format(new Date(), "yyyyMMdd");
         String srcReqTime = DateFormatUtils.format(new Date(), "hhmmss");
         String nonce = UUID.randomUUID().toString().replace("-", "");
 
-        UnionPayBaseReq unionPayBaseReq =  UnionPayBaseReq.builder()
+        UnionPayBaseReq unionPayBaseReq = UnionPayBaseReq.builder()
                 .lwzBussCode(lwzBussCode)
                 .transCode("203000")
                 .verNo("100")
@@ -72,11 +79,10 @@ public class UnionPayBaseBuilderUtils<T> {
                 .lwzChannelType("19")
                 .build();
         unionPayBaseReq.setSignature(UnionPaySignUtil.sign(unionPayBaseReq));
-        return (T)unionPayBaseReq;
+        return (T) unionPayBaseReq;
     }
 
     /**
-     *
      * @param unionPayBaseReq
      * @return
      */
@@ -85,10 +91,10 @@ public class UnionPayBaseBuilderUtils<T> {
         httpHeaders.set(UnionPayConstant.CONTENT_TYPE, UnionPayConstant.CONTENT_TYPE_VAL);
         HttpEntity<String> stringHttpEntity = new HttpEntity<>(JSON.toJSONString(unionPayBaseReq), httpHeaders);
         //调用银联接口
-        log.info("调取结果:{}",stringHttpEntity.getBody());
+        log.info("调取结果:{}", stringHttpEntity.getBody());
 
         ResponseEntity<UnionPayBaseResp> responseEntity = restTemplate.postForEntity(url, stringHttpEntity, UnionPayBaseResp.class);
-        return (ResponseEntity<T>)responseEntity;
+        return (ResponseEntity<T>) responseEntity;
     }
 
     /**
@@ -97,20 +103,20 @@ public class UnionPayBaseBuilderUtils<T> {
      * @param responseEntity
      * @return
      */
-    public T getBaseReturn(ResponseEntity<T> responseEntity,Class clazz) {
+    public T getBaseReturn(ResponseEntity<T> responseEntity, Class clazz) {
         UnionPayBaseResp unionPayBaseResp = (UnionPayBaseResp) responseEntity.getBody();
         if (!ObjectUtils.isNotEmpty(unionPayBaseResp)) {
             log.error("银联调用失败{}", responseEntity.getBody());
             throw new TfException(500, unionPayBaseResp.getRespMsg());
         }
-        if ( !Objects.equals("LWZ99999", unionPayBaseResp.getRespCode())) {
+        if (!Objects.equals("LWZ99999", unionPayBaseResp.getRespCode())) {
             log.error("银联调用失败{}", responseEntity.getBody().toString());
             throw new TfException(500, unionPayBaseResp.getRespMsg());
         }
 
         if (Objects.equals("200", unionPayBaseResp.getRespLwzCode())) {
             log.error("银联调用成功{}", unionPayBaseResp.getLwzRespData());
-            return (T)JSON.parseObject(unionPayBaseResp.getLwzRespData(), clazz);
+            return (T) JSON.parseObject(unionPayBaseResp.getLwzRespData(), clazz);
         } else {
             log.error("银联-银行调用失败{}", responseEntity.getBody().toString());
             throw new TfException(500, getRespLwzMsgReturnMsg(unionPayBaseResp.getRespLwzMsg()));
@@ -120,13 +126,13 @@ public class UnionPayBaseBuilderUtils<T> {
     private String getRespLwzMsgReturnMsg(String respLwzMsg) {
         log.info("错误信息{}", respLwzMsg);
         String mgs = "";
-        if(StringUtils.isNotBlank(respLwzMsg)){
+        if (StringUtils.isNotBlank(respLwzMsg)) {
             RespLwzMsgReturn respLwzMsgReturn = JSON.parseObject(respLwzMsg, RespLwzMsgReturn.class);
-            if(respLwzMsgReturn!=null){
-                if(StringUtils.isNotBlank(respLwzMsgReturn.getIssue())){
+            if (respLwzMsgReturn != null) {
+                if (StringUtils.isNotBlank(respLwzMsgReturn.getIssue())) {
                     return respLwzMsgReturn.getIssue();
                 }
-                if(StringUtils.isNotBlank(respLwzMsgReturn.getMessage())){
+                if (StringUtils.isNotBlank(respLwzMsgReturn.getMessage())) {
                     return respLwzMsgReturn.getMessage();
                 }
             }
@@ -134,12 +140,22 @@ public class UnionPayBaseBuilderUtils<T> {
         return mgs;
     }
 
-    public T combination(String lwzBussCode,String lwzData,Class clazz){
+    public T combination(String lwzBussCode, String lwzData, Class clazz,String tradeOrderNo) {
 
-        UnionPayBaseReq unionPayBaseReq = (UnionPayBaseReq)baseBuilder(lwzBussCode, lwzData);
+        UnionPayBaseReq unionPayBaseReq = (UnionPayBaseReq) baseBuilder(lwzBussCode, lwzData);
+        LoanRequestUnionpayRecordEntity loanRequestUnionpayRecordEntity = new LoanRequestUnionpayRecordEntity();
+        loanRequestUnionpayRecordEntity.setBussinessCode(lwzBussCode);
+        loanRequestUnionpayRecordEntity.setRequestParam(JSONObject.toJSONString(unionPayBaseReq));
+        long start = System.currentTimeMillis();
         log.info("入参{}", JSON.toJSON(unionPayBaseReq));
         ResponseEntity<T> responseEntity = post(unionPayBaseReq);
         log.info("返回值{}", JSONObject.toJSONString(responseEntity));
+        long end = System.currentTimeMillis();
+        loanRequestUnionpayRecordEntity.setResponseParam(JSONObject.toJSONString(responseEntity));
+        loanRequestUnionpayRecordEntity.setResponseTime((int) (end - start));
+        loanRequestUnionpayRecordEntity.setCreateTime(new Date());
+        loanRequestUnionpayRecordEntity.setTradeOrderNo(tradeOrderNo);
+        loanRequestUnionpayRecordService.asyncSave(loanRequestUnionpayRecordEntity);
         return getBaseReturn(responseEntity, clazz);
     }
 }
