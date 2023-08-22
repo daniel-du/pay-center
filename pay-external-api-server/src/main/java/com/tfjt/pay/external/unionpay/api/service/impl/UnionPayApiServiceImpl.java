@@ -36,6 +36,7 @@ import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +77,9 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Resource
     private PayBalanceDivideBiz payBalanceDivideBiz;
+
+    @Autowired
+    private LoanUserService loanUserService;
 
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Override
@@ -131,18 +135,16 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Override
     public Result<Map<String, BalanceAcctRespDTO>> listBalanceByAccountIds(List<String> balanceAcctIds) {
-        log.debug("批量查询电子账户参数信息:{}", JSONObject.toJSONString(balanceAcctIds));
+        log.info("批量查询电子账户参数信息:{}", JSONObject.toJSONString(balanceAcctIds));
         if (CollectionUtil.isEmpty(balanceAcctIds)) {
             return Result.failed("电子账簿id不能为空");
         }
         Map<String, BalanceAcctRespDTO> result = new HashMap<>(balanceAcctIds.size());
         for (String balanceAcctId : balanceAcctIds) {
             BalanceAcctRespDTO balanceAcctDTOByAccountId = getBalanceAcctDTOByAccountId(balanceAcctId);
-            if (!Objects.isNull(balanceAcctDTOByAccountId)) {
-                result.put(balanceAcctId, balanceAcctDTOByAccountId);
-            }
+            result.put(balanceAcctId, balanceAcctDTOByAccountId);
         }
-        log.debug("批量查询电子账户返回信息:{}", JSONObject.toJSONString(result));
+        log.info("批量查询电子账户返回信息:{}", JSONObject.toJSONString(result));
         return Result.ok(result);
     }
 
@@ -353,12 +355,19 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @return 电子账户信息
      */
     private BalanceAcctRespDTO getBalanceAcctDTOByAccountId(String balanceAcctId) {
+
         LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
         if (Objects.isNull(loanAccountDTO)) {
             return null;
         }
         BalanceAcctRespDTO balanceAcctDTO = new BalanceAcctRespDTO();
         BeanUtil.copyProperties(loanAccountDTO, balanceAcctDTO);
+        if(balanceAcctId.equals(accountConfig.getBalanceAcctId())){
+            LoanUserEntity user = loanUserService.getByBalanceAcctId(balanceAcctId);
+            if(!Objects.isNull(user)){
+                balanceAcctDTO.setBalanceAcctId(user.getCreator());
+            }
+        }
         return balanceAcctDTO;
     }
 

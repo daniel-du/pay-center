@@ -42,6 +42,6 @@ public class UnionPayLoansCallbackApiController {
         String param = HttpUtil.getString(request.getInputStream(), null, false);
         log.info("交易类回调参数:{}", param);
         UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO = JSONObject.parseObject(param, UnionPayLoansBaseCallBackDTO.class);
-        unionPayNoticeBiz.commonCallback(transactionCallBackReqDTO,response);
+        //unionPayNoticeBiz.commonCallback(transactionCallBackReqDTO,response);
     }
 }

@@ -128,7 +128,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<BalanceAcctRespDTO> getAccountInfoByBusId(String type,String busId) {
-        Result<List<BalanceAcctRespDTO>> listResult = this.listAccountInfoByBusId(type,Arrays.asList(busId));
+        Result<List<BalanceAcctRespDTO>> listResult = this.listAccountInfoByBusId(type, Collections.singletonList(busId));
         List<BalanceAcctRespDTO> data = listResult.getData();
         if(CollectionUtil.isEmpty(data)){
             throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
@@ -139,7 +139,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
     @Override
     public Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type,List<String> busIds) {
         List<UnionPayLoanUserRespDTO> unionPayLoanUserRespDTOS = loanUserService.listLoanUserByBusId(type,busIds);
-        if(CollectionUtil.isEmpty(loanUserService.listLoanUserByBusId(type, busIds))){
+        if(CollectionUtil.isEmpty(unionPayLoanUserRespDTOS)){
             return Result.ok(new ArrayList<>());
         }
         List<BalanceAcctRespDTO> list = new ArrayList<>(unionPayLoanUserRespDTOS.size());
