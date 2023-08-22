@@ -144,4 +144,9 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     public CustBankInfoEntity getBankInfoByBankCardNoAndLoanUserId(String bankCardNo, Long loanUserId) {
         return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getBankCardNo, bankCardNo).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
     }
+
+    @Override
+    public List<CustBankInfoEntity> getBankInfoByLoanUserId(Long loanUserId) {
+        return this.list(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
+    }
 }
