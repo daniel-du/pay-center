@@ -362,10 +362,10 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         }
         BalanceAcctRespDTO balanceAcctDTO = new BalanceAcctRespDTO();
         BeanUtil.copyProperties(loanAccountDTO, balanceAcctDTO);
-        if(balanceAcctId.equals(accountConfig.getBalanceAcctId())){
+        if(!balanceAcctId.equals(accountConfig.getBalanceAcctId())){
             LoanUserEntity user = loanUserService.getByBalanceAcctId(balanceAcctId);
             if(!Objects.isNull(user)){
-                balanceAcctDTO.setBalanceAcctId(user.getCreator());
+                balanceAcctDTO.setBalanceAcctName(user.getCreator());
             }
         }
         return balanceAcctDTO;
