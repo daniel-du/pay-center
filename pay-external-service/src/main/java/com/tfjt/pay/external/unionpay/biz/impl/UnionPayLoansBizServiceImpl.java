@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 贷款用户业务层
@@ -39,33 +40,38 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     /**
      * 解绑银行卡
      *
-     * @param deleteSettleAcctParams
+     * @param bankInfoReqDTO
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public void unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
-        CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), bankInfoReqDTO.getLoanUserId());
-        log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
-        LoanUserEntity loanUser = loanUserService.getById(bankInfoReqDTO.getLoanUserId());
-        if(ObjectUtils.isNotEmpty(loanUser)){
-            ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
-            deleteSettleAcctParams.setBankAcctNo(bankInfoReqDTO.getBankCardNo());
-            deleteSettleAcctParams.setCusId(loanUser.getCusId());
-            deleteSettleAcctParams.setMchId(loanUser.getBusId());
-            unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
+        List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(bankInfoReqDTO.getLoanUserId());
+        if (custBankInfos.size()==1) {
+            throw new TfException("解绑银行卡失败，至少保留一张银行卡");
         }else{
-            throw new TfException("贷款用户不存在");
+            CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), bankInfoReqDTO.getLoanUserId());
+            log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
+            LoanUserEntity loanUser = loanUserService.getById(bankInfoReqDTO.getLoanUserId());
+            if(ObjectUtils.isNotEmpty(loanUser)){
+                ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
+                deleteSettleAcctParams.setBankAcctNo(bankInfoReqDTO.getBankCardNo());
+                deleteSettleAcctParams.setCusId(loanUser.getCusId());
+                deleteSettleAcctParams.setMchId(loanUser.getBusId());
+                unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
+            }else{
+                throw new TfException("贷款用户不存在");
+            }
+            //标记删除银行卡
+            custBankInfo.setDeleted(true);
+            custBankInfoService.updateCustBankInfo(custBankInfo);
         }
-        //标记删除银行卡
-        custBankInfo.setDeleted(true);
-        custBankInfoService.updateCustBankInfo(custBankInfo);
-    }
 
+    }
     /**
      * 绑定银行卡
-     * @param bankInfoDTO
+     * @param bankInfoReqDTO
      * @return
      */
     @Override
