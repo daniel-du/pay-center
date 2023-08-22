@@ -12,7 +12,7 @@ import java.util.List;
  * @email 598482054@qq.com
  */
 @Data
-public class LoanOrderUnifiedorderReqDTO implements Serializable {
+public class UnionPayLoanOrderUnifiedorderReqDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**唯一标识*/
