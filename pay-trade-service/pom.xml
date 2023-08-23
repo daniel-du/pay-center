@@ -164,6 +164,12 @@
             <version>0.7.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.qiniu</groupId>
+            <artifactId>qiniu-java-sdk</artifactId>
+            <version>7.12.1</version>
+        </dependency>
+
         <!--阿里云短信验证码-->
         <dependency>
             <groupId>com.aliyun</groupId>
