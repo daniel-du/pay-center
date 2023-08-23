@@ -13,9 +13,7 @@ import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
 import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
-import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
+import com.tfjt.pay.external.unionpay.constants.*;
 import com.tfjt.pay.external.unionpay.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
@@ -33,6 +31,8 @@ import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
+import com.tfjt.tfcommon.core.util.InstructIdUtil;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -43,6 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static com.tfjt.pay.external.unionpay.constants.CommonConstants.LOAN_REQ_NO_PREFIX;
 
 /**
  * 银联接口服务实现类
@@ -202,7 +204,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
-        String md5Str = withdrawalReqDTO.getLoanUserId() +":" +withdrawalReqDTO.getAmount();
+        String outOrderNo = InstructIdUtil.getInstructId(LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74, redisCache);
+        String md5Str = withdrawalReqDTO.getLoanUserId() + ":" + withdrawalReqDTO.getAmount();
         String idempotentMd5 = MD5Util.getMD5String(md5Str);
         String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
         log.info("放重复提交加密后的M5d值为：{}", idempotentMd5);
@@ -214,8 +217,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(withdrawalReqDTO.getLoanUserId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
-        //todo 统一生成NO
-        withdrawalCreateReqDTO.setOutOrderNo("2008349494890702348");
+        withdrawalCreateReqDTO.setOutOrderNo(outOrderNo);
         withdrawalCreateReqDTO.setSentAt(DateUtil.getNowByRFC3339());
         withdrawalCreateReqDTO.setAmount(withdrawalReqDTO.getAmount());
         withdrawalCreateReqDTO.setServiceFee(null);
@@ -436,6 +438,4 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         consumerPoliciesReqDTO.setGuaranteePaymentParams(list);
         return consumerPoliciesReqDTO;
     }
-
-
 }

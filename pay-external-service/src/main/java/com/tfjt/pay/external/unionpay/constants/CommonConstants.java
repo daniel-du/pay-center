@@ -112,4 +112,9 @@ public interface CommonConstants {
 	 */
 	String ENC_FLAG = "enc_flag";
 
+	/**
+	 * 贷款业务单号
+	 */
+	String LOAN_REQ_NO_PREFIX="LORQ";
+
 }
