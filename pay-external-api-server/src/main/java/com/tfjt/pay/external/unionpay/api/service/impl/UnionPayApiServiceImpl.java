@@ -304,8 +304,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
     @Override
-    public Result<String> downloadCheckBill(String date) {
-        LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(date, accountConfig.getBalanceAcctId());
+    public Result<String> downloadCheckBill(UnionPayCheckBillReqDTO date) {
+        LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(date.getDate(), accountConfig.getBalanceAcctId());
         if (byDateAndAccountId.getBalanceAcctId() != null) {
             return Result.ok(byDateAndAccountId.getUrl());
         }
