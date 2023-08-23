@@ -25,6 +25,10 @@ public interface PaymentPasswordApiService {
      * @return
      */
     public Result<PaymentPasswordRespDTO> getSalt(Long loanUserId);
+    /**
+     * 判断密码是否存在
+     */
+    public Result<Boolean> isExist(Long loanUserId);
 
     /**
      * 验证支付密码

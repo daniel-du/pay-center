@@ -5,6 +5,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
@@ -12,7 +14,6 @@ import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
 import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-
 import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
 import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
 import com.tfjt.pay.external.unionpay.dto.req.BalanceDivideReqDTO;
@@ -26,15 +27,14 @@ import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
-import com.tfjt.pay.external.unionpay.utils.DateUtil;
-import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
-import com.tfjt.pay.external.unionpay.utils.StringUtil;
-import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
+import com.tfjt.pay.external.unionpay.utils.*;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 银联接口服务实现类
@@ -80,6 +81,10 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Autowired
     private LoanUserService loanUserService;
+    @Resource
+    RedisCache redisCache;
+
+    private final static String WITHDRAWAL_IDEMPOTENT_KEY = "idempotent:withdrawal";
 
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Override
@@ -95,7 +100,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         //2.保存订单信息
         String tradeOrderNo = orderNumberUtil.generateOrderNumber(TransactionTypeConstants.TRANSACTION_TYPE_TB);
         LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();
-        BeanUtil.copyProperties(payTransferDTO,loanTransferRespDTO);
+        BeanUtil.copyProperties(payTransferDTO, loanTransferRespDTO);
         loanOrderBiz.transferSaveOrder(loanTransferRespDTO, tradeOrderNo);
         //3.调用银联信息
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
@@ -104,14 +109,14 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             log.error("调用银联接口失败");
             throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }
-        this.loanOrderBiz.saveMergeConsumerResult(result,payTransferDTO.getAppId());
+        this.loanOrderBiz.saveMergeConsumerResult(result, payTransferDTO.getAppId());
         return Result.ok(result.getData().getStatus());
     }
 
     @Override
     public Result<Integer> currentBalance() {
         BalanceAcctRespDTO balanceAcctDTOByAccountId = getBalanceAcctDTOByAccountId(accountConfig.getBalanceAcctId());
-        if(Objects.isNull(balanceAcctDTOByAccountId)){
+        if (Objects.isNull(balanceAcctDTOByAccountId)) {
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }
         log.debug("查询母账户交易余额返回:{}", balanceAcctDTOByAccountId.getSettledAmount());
@@ -162,8 +167,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
         List<LoanBalanceDivideDetailsEntity> saveList = new ArrayList<>();
         BalanceDivideReqDTO balanceDivideReqDTO = new BalanceDivideReqDTO();
-        BeanUtil.copyProperties(balanceDivideReq,balanceDivideReqDTO);
-        payBalanceDivideBiz.saveDivide(tradeOrderNo,saveList,balanceDivideReqDTO);
+        BeanUtil.copyProperties(balanceDivideReq, balanceDivideReqDTO);
+        payBalanceDivideBiz.saveDivide(tradeOrderNo, saveList, balanceDivideReqDTO);
         //4.生成银联分账参数
         UnionPayDivideReqDTO unionPayDivideReqDTO = buildBalanceDivideUnionPayParam(saveList, tradeOrderNo);
         try {
@@ -175,7 +180,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
                 log.error("调用银联分账接口失败");
                 return Result.failed(result.getMsg());
             }
-            this.payBalanceDivideBiz.updateByUnionPayDivideReqDTO(result.getData(),balanceDivideReq.getAppId());
+            this.payBalanceDivideBiz.updateByUnionPayDivideReqDTO(result.getData(), balanceDivideReq.getAppId());
             //6.解析返回数据响应给业务系统
             return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
         } catch (Exception e) {
@@ -188,7 +193,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
 
-
     /**
      * 提现
      *
@@ -197,8 +201,16 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Lock4j(keys = {"#withdrawalReqDTO.version"}, expire = 10000, acquireTimeout = 3000)
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
+        String md5Str = withdrawalReqDTO.getLoanUserId() +":" +withdrawalReqDTO.getAmount();
+        String idempotentMd5 = MD5Util.getMD5String(md5Str);
+        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
+        log.info("放重复提交加密后的M5d值为：{}", idempotentMd5);
+        if (StringUtils.isEmpty(isIdempotent)) {
+            redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY, idempotentMd5, 60, TimeUnit.MINUTES);
+        } else {
+            return Result.failed("请勿重复提现");
+        }
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(withdrawalReqDTO.getLoanUserId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
@@ -237,7 +249,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     public Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo, String appId) {
         log.info("查询交易结果信息:{}", businessOrderNo);
 
-        LoanOrderEntity one = this.loanOrderBiz.getByBusinessAndAppId(businessOrderNo,appId);
+        LoanOrderEntity one = this.loanOrderBiz.getByBusinessAndAppId(businessOrderNo, appId);
         LoanQueryOrderRespDTO loanQueryOrderRespDTO = new LoanQueryOrderRespDTO();
         if (one == null) {
 
@@ -276,10 +288,10 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         }
         List<UnionPayLoanOrderDetailsReqDTO> detailsDTOList = loanOrderUnifiedorderDTO.getDetailsDTOList();
         int totalAmount = detailsDTOList.stream().mapToInt(UnionPayLoanOrderDetailsReqDTO::getAmount).sum();
-        checkLoanAccount(loanOrderUnifiedorderDTO.getPayBalanceAcctId(),  totalAmount);
+        checkLoanAccount(loanOrderUnifiedorderDTO.getPayBalanceAcctId(), totalAmount);
         //2.保存订单信息
         LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
-        BeanUtil.copyProperties(loanOrderUnifiedorderReqDTO,loanOrderUnifiedorderReqDTO);
+        BeanUtil.copyProperties(loanOrderUnifiedorderReqDTO, loanOrderUnifiedorderReqDTO);
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = this.loanOrderBiz.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO);
         Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
         if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
@@ -316,9 +328,9 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
 
-
     /**
      * 生成银联分账参数
+     *
      * @param saveList     分账详情
      * @param tradeOrderNo 分账交易订单号
      */
@@ -347,7 +359,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
 
-
     /**
      * 获取指定电子账簿的账户信息
      *
@@ -362,9 +373,9 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         }
         BalanceAcctRespDTO balanceAcctDTO = new BalanceAcctRespDTO();
         BeanUtil.copyProperties(loanAccountDTO, balanceAcctDTO);
-        if(!balanceAcctId.equals(accountConfig.getBalanceAcctId())){
+        if (!balanceAcctId.equals(accountConfig.getBalanceAcctId())) {
             LoanUserEntity user = loanUserService.getByBalanceAcctId(balanceAcctId);
-            if(!Objects.isNull(user)){
+            if (!Objects.isNull(user)) {
                 balanceAcctDTO.setBalanceAcctName(user.getCreator());
             }
         }
@@ -374,8 +385,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     /**
      * 检查用户状态是否正常
      *
-     * @param balanceAcctId   电子账簿信息
-     * @param amount          转账金额
+     * @param balanceAcctId 电子账簿信息
+     * @param amount        转账金额
      */
     private void checkLoanAccount(String balanceAcctId, Integer amount) {
         LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
@@ -393,10 +404,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
 
-
-
-
-    /**x
+    /**
+     * x
      * 构建转账交易参数
      *
      * @param payTransferDTO 转账参数
@@ -427,7 +436,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         consumerPoliciesReqDTO.setGuaranteePaymentParams(list);
         return consumerPoliciesReqDTO;
     }
-
 
 
 }

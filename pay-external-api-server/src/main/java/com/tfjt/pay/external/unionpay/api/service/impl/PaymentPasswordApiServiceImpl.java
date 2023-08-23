@@ -69,6 +69,29 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
         return Result.ok(passwordRespDTO);
     }
 
+    /**
+     * 查询密码是否存在
+     * @param loanUserId
+     * @return
+     */
+    @Override
+    public Result<Boolean> isExist(Long loanUserId) {
+        boolean result;
+        try {
+            result = paymentPasswordService.count(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getLoanUserId,loanUserId)) > 0;
+        } catch (Exception ex) {
+            log.error("", ex);
+            return Result.failed(ex.getMessage());
+        }
+        return Result.ok(result);
+    }
+
+
+    /**
+     * 验证密码
+     * @param paymentPasswordDTO
+     * @return
+     */
     @Override
     public Result<Boolean> verifyPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         boolean result = false;
