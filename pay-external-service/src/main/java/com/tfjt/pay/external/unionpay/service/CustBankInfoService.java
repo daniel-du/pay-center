@@ -37,5 +37,6 @@ public interface CustBankInfoService extends IService<CustBankInfoEntity> {
     CustBankInfoEntity getBankInfoByBankCardNoAndLoanUserId(String destAcctNo, Long loanUserId);
 
     List<CustBankInfoEntity> getBankInfoByLoanUserId(Long loanUserId);
+
 }
 
