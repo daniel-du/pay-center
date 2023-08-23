@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Result;
 import java.io.IOException;
 import java.text.ParseException;
 
@@ -31,15 +32,26 @@ import java.text.ParseException;
 public class UnionPayLoansCallbackApiController {
 
     @Autowired
-    private UnionPayLoansCallbackApiBiz unionPayNoticeBiz;
+    private UnionPayLoansCallbackApiBiz yinLianLoansCallbackApiService;
+
 
 
     /**
-     * 通用的回调通知
+     * 二级商户进件回调结果通知OR打款验证通知
+     * @param yinLianLoansBaseCallBackDTO
+     * @return
      */
     @PostMapping("/twoIncomingCallBack")
-    public void commonCallback(@RequestBody UnionPayLoansBaseCallBackDTO yinLianLoansBaseCallBackDTO) throws IOException, ParseException {
-        log.info("交易类回调参数:{}", JSONObject.toJSONString(yinLianLoansBaseCallBackDTO));
-        unionPayNoticeBiz.commonCallback(yinLianLoansBaseCallBackDTO);
+    public ApiResult<?> twoIncomingCallBack(@RequestBody UnionPayLoansBaseCallBackDTO yinLianLoansBaseCallBackDTO){
+        try {
+            log.info("二级商户回调结果通知入参{}", JSONObject.toJSONString(yinLianLoansBaseCallBackDTO));
+            return ApiResult.ok(yinLianLoansCallbackApiService.commonCallback(yinLianLoansBaseCallBackDTO));
+        } catch (TfException e) {
+            log.error("YinLianLoansApiController.twoIncomingCallBack.err:{}" , e);
+            return ApiResult.failed(e.getCode(),e.getMessage());
+        } catch (Exception e) {
+            log.error("二级商户回调结果通知入参：param={}", JSON.toJSONString(yinLianLoansBaseCallBackDTO), e);
+            return  ApiResult.failed(e.getMessage());
+        }
     }
 }

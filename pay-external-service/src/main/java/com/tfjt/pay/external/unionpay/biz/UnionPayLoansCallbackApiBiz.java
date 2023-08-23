@@ -18,9 +18,8 @@ public interface UnionPayLoansCallbackApiBiz {
      * 银联回调通知
      *
      * @param transactionCallBackReqDTO
-     * @param response
      */
-    void commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO) throws ParseException;
+    String commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO) throws ParseException;
 
 
     /**

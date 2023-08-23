@@ -80,25 +80,25 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
     @Lock4j(keys = "#transactionCallBackReqDTO.eventId", expire = 3000, acquireTimeout = 3000)
     @Override
-    public void commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO) throws ParseException {
+    public String commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO) throws ParseException {
         LoanCallbackEntity tfLoanCallbackEntity = loanCallbackService.getOne(new LambdaQueryWrapper<LoanCallbackEntity>().eq(LoanCallbackEntity::getEventId, transactionCallBackReqDTO.getEventId()));
         if (tfLoanCallbackEntity != null) {
             log.info("事件回调已添加{}", transactionCallBackReqDTO.getEventId());
-            return;
+            return "";
         }
         String eventType = transactionCallBackReqDTO.getEventType();
         //进件验证
         if (UnionPayEventTypeConstant.MCH_APPLICATION_FINISHED.equals(eventType) || UnionPayEventTypeConstant.SETTLE_ACCT_PAY_AMOUNT_VALIDATION.equals(eventType)) {
             yinLianLoansCallbackApiService.unionPayLoansBaseCallBack(transactionCallBackReqDTO);
-            return;
+            return "";
         }
         //母账户入金  交易类通知 
         String eventDataString = JSONObject.toJSONString(transactionCallBackReqDTO.getEventData());
         LoanCallbackEntity loanCallbackEntity = loanCallbackService.saveLog(null, transactionCallBackReqDTO.getEventId(), eventType, eventDataString
                 , transactionCallBackReqDTO.getCreatedAt(), null, null);
         log.info("保存回调日志信息:{}", JSONObject.toJSONString(loanCallbackEntity));
-        // executorConfig.asyncServiceExecutor().execute(()->detailsNotice(loanCallbackEntity));
-       // detailsNotice(loanCallbackEntity);
+        executorConfig.asyncServiceExecutor().execute(()->detailsNotice(loanCallbackEntity));
+        return "";
     }
 
     /**
