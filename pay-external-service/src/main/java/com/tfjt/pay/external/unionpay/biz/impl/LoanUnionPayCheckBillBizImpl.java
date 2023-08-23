@@ -46,42 +46,45 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
     @Resource
     private LoanUnionpayCheckBillService loanUnionpayCheckBillService;
 
-    @Override
-    public void downloadCheckBill(DateTime yesterday, int number) throws FileNotFoundException {
-        if (number>=NumberConstant.THREE){
-            log.error("下载对账单失败:{},次数:{}",yesterday,number);
-            throw new TfException(ExceptionCodeEnum.FAIL);
-        }
-        String format = DateUtil.format(yesterday, DatePattern.NORM_DATE_PATTERN);
-        Result<String> stringResult = unionPayService.downloadCheckBill(format);
-        if (stringResult.getCode()!= NumberConstant.ZERO){
-            log.error("调用银行对账单接口失败:{}", JSONObject.toJSONString(stringResult));
-            this.downloadCheckBill(yesterday,++number);
-        }else {
-            File file = new File("/tmp/checkBill");
-            if(!file.exists()){
-                file.mkdirs();
-            }
-            File cvsFile = new File(file, "checkbill" + format + ".cvs");
-            FileOutputStream fileOutputStream = new FileOutputStream(cvsFile);
-            HttpUtil.download(stringResult.getData(),fileOutputStream,true);
-            String absolutePath = cvsFile.getAbsolutePath();
-            log.info("导入文件的CVS地址:{}",absolutePath);
-            loanUnionpayCheckBillService.loadFile(absolutePath);
+    @Resource
+    private FileStorageService fileStorageService;
 
-            FileStorageService fileStorageService = new FileStorageService();
-            UploadPretreatment of = fileStorageService.of(stringResult.getData());
-            FileInfo upload = of.upload();
-            if(Objects.isNull(upload)){
-                this.downloadCheckBill(yesterday,++number);
+    @Override
+    public void downloadCheckBill(DateTime yesterday, int number) {
+        if (number >= NumberConstant.THREE) {
+            log.error("下载对账单失败:{},次数:{}", yesterday, number);
+            return;
+        }
+        try {
+            String format = DateUtil.format(yesterday, DatePattern.NORM_DATE_PATTERN);
+            Result<String> stringResult = unionPayService.downloadCheckBill(format);
+            if (stringResult.getCode() != NumberConstant.ZERO) {
+                log.error("调用银行对账单接口失败:{}", JSONObject.toJSONString(stringResult));
+                this.downloadCheckBill(yesterday, ++number);
+            } else {
+                File file = new File("/tmp/checkBill");
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                File cvsFile = new File(file, "checkbill" + format + ".cvs");
+                FileOutputStream fileOutputStream = new FileOutputStream(cvsFile);
+                HttpUtil.download(stringResult.getData(), fileOutputStream, true);
+                String absolutePath = cvsFile.getAbsolutePath();
+                log.info("导入文件的CVS地址:{}", absolutePath);
+                //loanUnionpayCheckBillService.loadFile(absolutePath);
+                UploadPretreatment of = fileStorageService.of(cvsFile);
+                FileInfo upload = of.upload();
+                String url = upload.getUrl();
+                LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = new LoanUnionpayCheckBillEntity();
+                loanUnionpayCheckBillEntity.setDate(yesterday);
+                loanUnionpayCheckBillEntity.setUrl(url);
+                loanUnionpayCheckBillEntity.setBalanceAcctId(tfAccountConfig.getBalanceAcctId());
+                loanUnionpayCheckBillEntity.setCeateTime(new Date());
+                this.loanUnionpayCheckBillService.save(loanUnionpayCheckBillEntity);
+                cvsFile.delete();
             }
-            String url = upload.getUrl();
-            LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = new LoanUnionpayCheckBillEntity();
-            loanUnionpayCheckBillEntity.setDate(yesterday);
-            loanUnionpayCheckBillEntity.setUrl(url);
-            loanUnionpayCheckBillEntity.setBalanceAcctId(tfAccountConfig.getBalanceAcctId());
-            loanUnionpayCheckBillEntity.setCeateTime(new Date());
-            this.loanUnionpayCheckBillService.save(loanUnionpayCheckBillEntity);
+        } catch (Exception e) {
+            log.error("下载对账单失败");
         }
     }
 

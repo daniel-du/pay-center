@@ -35,11 +35,7 @@ public class LoanBusinessJob {
     public void downloadCheckBill(){
         DateTime yesterday = DateUtil.yesterday();
         log.info("开始执行:{}下载账单下载任务........",yesterday);
-        try {
-            loanUnionPayCheckBillBiz.downloadCheckBill(yesterday, NumberConstant.ZERO);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        loanUnionPayCheckBillBiz.downloadCheckBill(yesterday, NumberConstant.ZERO);
         log.info("结束执行:{}下载账单下载任务........",yesterday);
     }
     /**

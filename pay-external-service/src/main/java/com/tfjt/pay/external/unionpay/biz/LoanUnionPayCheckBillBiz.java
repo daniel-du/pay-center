@@ -16,5 +16,5 @@ public interface LoanUnionPayCheckBillBiz {
      * @param yesterday 指定日期
      * @param number 失败次数
      */
-    void downloadCheckBill(DateTime yesterday, int number) throws FileNotFoundException;
+    void downloadCheckBill(DateTime yesterday, int number);
 }
