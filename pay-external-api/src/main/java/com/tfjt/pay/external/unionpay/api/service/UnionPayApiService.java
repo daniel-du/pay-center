@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayBalanceDivideReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayCheckBillReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayLoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
@@ -63,7 +64,7 @@ public interface UnionPayApiService {
      * @param date
      * @return
      */
-    Result<String> downloadCheckBill(String date);
+    Result<String> downloadCheckBill(UnionPayCheckBillReqDTO date);
 
     /**
      * 提现

@@ -195,6 +195,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     @Override
     public void applicationCallback() {
 
+
     }
 
 
