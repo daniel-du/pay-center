@@ -92,7 +92,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             return "";
         }
         //母账户入金  交易类通知
-        String eventData = transactionCallBackReqDTO.getEventData().toString();
+        String eventData = JSONObject.toJSON(transactionCallBackReqDTO.getEventData()).toString();
         LoanCallbackEntity loanCallbackEntity = loanCallbackService.saveLog(null, transactionCallBackReqDTO.getEventId(), eventType, eventData
                 , transactionCallBackReqDTO.getCreatedAt(), null, null);
         log.info("保存回调日志信息:{}", JSONObject.toJSONString(loanCallbackEntity));
