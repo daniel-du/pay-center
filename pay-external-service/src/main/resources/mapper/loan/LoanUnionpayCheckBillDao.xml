@@ -11,6 +11,10 @@
         <result property="balanceAcctId" column="balance_acct_id"/>
         <result property="ceateTime" column="ceate_time"/>
     </resultMap>
+    <select id="loadFile">
+        LOAD DATA INFILE #{_parameter} ignore into table tf_loan_unionpay_check_bill_details
+        fields terminated by ',' enclosed by ""
+    </select>
 
 
 </mapper>

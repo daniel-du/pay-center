@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.FileNotFoundException;
 
 /**
  * 贷款业务定时任务
@@ -34,7 +35,11 @@ public class LoanBusinessJob {
     public void downloadCheckBill(){
         DateTime yesterday = DateUtil.yesterday();
         log.info("开始执行:{}下载账单下载任务........",yesterday);
-        loanUnionPayCheckBillBiz.downloadCheckBill(yesterday, NumberConstant.ZERO);
+        try {
+            loanUnionPayCheckBillBiz.downloadCheckBill(yesterday, NumberConstant.ZERO);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         log.info("结束执行:{}下载账单下载任务........",yesterday);
     }
     /**

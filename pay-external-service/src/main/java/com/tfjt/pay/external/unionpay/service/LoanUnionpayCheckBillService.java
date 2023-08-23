@@ -19,5 +19,11 @@ public interface LoanUnionpayCheckBillService extends IService<LoanUnionpayCheck
      * @return 对账单保存信息
      */
     LoanUnionpayCheckBillEntity getByDateAndAccountId(String date, String balanceAcctId);
+
+    /**
+     * 保存文件到数据库中
+     * @param absolutePath 文件的绝对路径
+     */
+    void loadFile(String absolutePath);
 }
 

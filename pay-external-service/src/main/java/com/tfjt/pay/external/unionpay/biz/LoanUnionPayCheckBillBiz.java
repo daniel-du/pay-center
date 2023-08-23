@@ -2,6 +2,8 @@ package com.tfjt.pay.external.unionpay.biz;
 
 import cn.hutool.core.date.DateTime;
 
+import java.io.FileNotFoundException;
+
 /**
  * @author songx
  * @date 2023-08-18 21:33
@@ -14,5 +16,5 @@ public interface LoanUnionPayCheckBillBiz {
      * @param yesterday 指定日期
      * @param number 失败次数
      */
-    void downloadCheckBill(DateTime yesterday, int number);
+    void downloadCheckBill(DateTime yesterday, int number) throws FileNotFoundException;
 }

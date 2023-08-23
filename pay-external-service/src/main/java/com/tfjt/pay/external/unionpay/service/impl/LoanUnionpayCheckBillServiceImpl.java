@@ -22,4 +22,9 @@ public class LoanUnionpayCheckBillServiceImpl extends ServiceImpl<LoanUnionpayCh
 
         return this.getOne(wrapper);
     }
+
+    @Override
+    public void loadFile(String absolutePath) {
+        this.getBaseMapper().loadFile(absolutePath);
+    }
 }

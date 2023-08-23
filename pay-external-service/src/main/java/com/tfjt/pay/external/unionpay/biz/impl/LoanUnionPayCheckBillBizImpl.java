@@ -24,6 +24,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.Objects;
 
@@ -44,7 +47,7 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
     private LoanUnionpayCheckBillService loanUnionpayCheckBillService;
 
     @Override
-    public void downloadCheckBill(DateTime yesterday, int number) {
+    public void downloadCheckBill(DateTime yesterday, int number) throws FileNotFoundException {
         if (number>=NumberConstant.THREE){
             log.error("下载对账单失败:{},次数:{}",yesterday,number);
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -55,6 +58,17 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
             log.error("调用银行对账单接口失败:{}", JSONObject.toJSONString(stringResult));
             this.downloadCheckBill(yesterday,++number);
         }else {
+            File file = new File("/tmp/checkBill");
+            if(!file.exists()){
+                file.mkdirs();
+            }
+            File cvsFile = new File(file, "checkbill" + format + ".cvs");
+            FileOutputStream fileOutputStream = new FileOutputStream(cvsFile);
+            HttpUtil.download(stringResult.getData(),fileOutputStream,true);
+            String absolutePath = cvsFile.getAbsolutePath();
+            log.info("导入文件的CVS地址:{}",absolutePath);
+            loanUnionpayCheckBillService.loadFile(absolutePath);
+
             FileStorageService fileStorageService = new FileStorageService();
             UploadPretreatment of = fileStorageService.of(stringResult.getData());
             FileInfo upload = of.upload();
