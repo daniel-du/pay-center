@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
+import com.tfjt.pay.external.unionpay.constants.CommonConstants;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.req.*;
@@ -19,13 +21,13 @@ import com.tfjt.pay.external.unionpay.service.LoanOrderDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanOrderGoodsService;
 import com.tfjt.pay.external.unionpay.service.LoanOrderService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
-import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.util.InstructIdUtil;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +56,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
     private LoanOrderDetailsService loanOrderDetailsService;
 
     @Resource
-    private OrderNumberUtil orderNumberUtil;
+    private RedisCache redisCache;
+
 
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     @Override
@@ -125,12 +128,14 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
      * 并生成调用银联下单接口参数
      *
      * @param loanOrderUnifiedorderDTO 商品订单信息
+     * @param notifyUrl
      * @return 调用银联参数
      */
     @Override
     @Transactional(rollbackFor = {TfException.class, Exception.class}, propagation = Propagation.REQUIRES_NEW)
-    public ConsumerPoliciesReqDTO unifiedorderSaveOrderAndBuildUnionPayParam(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
-        String generatedOrderNumber = orderNumberUtil.generateOrderNumber("FK");
+    public ConsumerPoliciesReqDTO unifiedorderSaveOrderAndBuildUnionPayParam(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO, String notifyUrl) {
+        String generatedOrderNumber = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_MK_ORDER,new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,redisCache);
+
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = new ConsumerPoliciesReqDTO();
         consumerPoliciesReqDTO.setPayBalanceAcctId(loanOrderUnifiedorderDTO.getPayBalanceAcctId());
         consumerPoliciesReqDTO.setCombinedOutOrderNo(generatedOrderNumber);
@@ -150,7 +155,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             LoanOrderDetailsEntity orderDetailsEntity = new LoanOrderDetailsEntity();
             BeanUtil.copyProperties(loanOrderDetailsReqDTO, orderDetailsEntity);
             orderDetailsEntity.setOrderId(orderEntity.getId());
-            orderDetailsEntity.setTradeOrderNo(orderNumberUtil.generateOrderNumber("SFK"));
+            String orderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_MK_ORDER_SUB,new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,redisCache);
+            orderDetailsEntity.setTradeOrderNo(orderNo);
             orderDetailsEntity.setPayBalanceAcctId(orderDetailsEntity.getPayBalanceAcctId());
             orderDetailsEntity.setAppId(orderDetailsEntity.getAppId());
             orderDetailsEntity.setCreatedAt(date);
@@ -193,6 +199,9 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             list.add(guaranteePaymentDTO);
         }
         consumerPoliciesReqDTO.setGuaranteePaymentParams(list);
+        HashMap<String, Object> extra = new HashMap<>();
+        extra.put("notifyUrl", notifyUrl);
+        consumerPoliciesReqDTO.setExtra(extra);
         return consumerPoliciesReqDTO;
     }
 

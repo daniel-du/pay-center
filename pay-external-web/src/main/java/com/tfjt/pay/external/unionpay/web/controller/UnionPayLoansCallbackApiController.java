@@ -39,7 +39,6 @@ public class UnionPayLoansCallbackApiController {
      */
     @PostMapping("/twoIncomingCallBack")
     public void commonCallback(@RequestBody UnionPayLoansBaseCallBackDTO yinLianLoansBaseCallBackDTO) throws IOException, ParseException {
-       // String param = HttpUtil.getString(request.getInputStream(), null, false);
         log.info("交易类回调参数:{}", JSONObject.toJSONString(yinLianLoansBaseCallBackDTO));
         unionPayNoticeBiz.commonCallback(yinLianLoansBaseCallBackDTO);
     }
