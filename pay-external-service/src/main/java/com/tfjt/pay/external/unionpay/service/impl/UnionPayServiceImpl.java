@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.TransactionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.utils.UnionPayBaseBuilderUtils;
@@ -38,6 +39,8 @@ public class UnionPayServiceImpl implements UnionPayService {
             
             log.info("合并消费担保下单解析返回信息{}", consumerPoliciesRespDTO);
             return Result.ok(consumerPoliciesRespDTO);
+        }catch (TfException e){
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("合并消费担保下单报错{},{}", JSON.toJSON(consumerPoliciesReqDTO),e);
             return Result.failed(e.getMessage());
@@ -57,7 +60,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(consumerPoliciesRespDTO);
         }catch (TfException e){
             log.error("合并消费担保确认报错{},{}", JSON.toJSON(consumerPoliciesReqDTO),e);
-            return Result.failed(e.getMessage());
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("合并消费担保确认异常{},{}", JSON.toJSON(consumerPoliciesReqDTO),e);
             return Result.failed(e.getMessage());
@@ -77,7 +80,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(withdrawalCreateRespDTO);
         }catch (TfException e){
             log.error("提现创建报错{},{}", JSON.toJSON(withdrawalCreateReqDTO),e);
-            return Result.failed(e.getMessage());
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("提现创建异常{},{}", JSON.toJSON(withdrawalCreateReqDTO),e);
             return Result.failed(e.getMessage());
@@ -97,7 +100,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(electronicBookRespDTO);
         }catch (TfException e){
             log.error("电子账簿流水查询报错{},{}", JSON.toJSON(electronicBookReqDTO),e);
-            return Result.failed(e.getMessage());
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("电子账簿流水查询异常{},{}", JSON.toJSON(electronicBookReqDTO),e);
             return Result.failed(e.getMessage());
@@ -118,7 +121,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(consumerPoliciesRespDTO);
         }catch (TfException e){
             log.error("使用系统订单号查询合并消费担保下单订单状态报错{},{}", JSON.toJSON(jsonObject),e);
-            return Result.failed(e.getMessage());
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("使用系统订单号查询合并消费担保下单订单状态异常{},{}", JSON.toJSON(jsonObject),e);
             return Result.failed(e.getMessage());
@@ -140,7 +143,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(consumerPoliciesRespDTO);
         }catch (TfException e){
             log.error("使用平台订单号查询合并消费担保下单订单状态报错{},{}", JSON.toJSON(jsonObject),e);
-            return Result.failed(e.getMessage());
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("使用平台订单号查询合并消费担保下单订单状态异常{},{}", JSON.toJSON(jsonObject),e);
             return Result.failed(e.getMessage());
@@ -160,6 +163,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return loanAccountDTO;
         }catch (TfException e){
             log.error("调用电子账簿查询(电子账簿ID)返回 TfException{},{}", JSON.toJSON(param),e);
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("调用电子账簿查询(电子账簿ID)返回 Exception{},{}", JSON.toJSON(param),e);
         }
@@ -191,7 +195,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(withdrawalCreateRespDTO);
         } catch (TfException e){
             log.error("调用提现查询返回 TfException{},{}", JSON.toJSON(param),e);
-            return Result.failed(e.getMessage());
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("调用提现查询返回 Exception{},{}", JSON.toJSON(param),e);
             return Result.failed(e.getMessage());
@@ -207,7 +211,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(combination.getString("downloadUrl"));
         }catch (TfException e){
             log.error("调用下载对账单查询返回 TfException{},{}", JSON.toJSON(param),e);
-            return Result.failed(e.getMessage());
+            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
         }catch (Exception e){
             log.error("调用下载对账单查询返回 Exception{},{}", JSON.toJSON(param),e);
             return Result.failed(e.getMessage());
