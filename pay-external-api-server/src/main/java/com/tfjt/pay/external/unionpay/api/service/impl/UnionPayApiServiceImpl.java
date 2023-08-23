@@ -44,8 +44,6 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.tfjt.pay.external.unionpay.constants.CommonConstants.LOAN_REQ_NO_PREFIX;
-
 /**
  * 银联接口服务实现类
  *
@@ -204,7 +202,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
-        String outOrderNo = InstructIdUtil.getInstructId(LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74, redisCache);
+        String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74, redisCache);
         String md5Str = withdrawalReqDTO.getLoanUserId() + ":" + withdrawalReqDTO.getAmount();
         String idempotentMd5 = MD5Util.getMD5String(md5Str);
         String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
