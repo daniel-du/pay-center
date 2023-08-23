@@ -169,7 +169,29 @@
             <artifactId>qiniu-java-sdk</artifactId>
             <version>7.12.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-cloud-goods-interface</artifactId>
+            <version>5.0.9-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-spring-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.baomidou</groupId>
+                    <artifactId>lock4j-redis-template-spring-boot-starter</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!--阿里云短信验证码-->
         <dependency>
