@@ -42,10 +42,11 @@ public interface LoanOrderBiz {
      * 保存下单商品信息
      * 并生成调用银联下单接口参数
      *
-     * @param loanOrderUnifiedorderReqDTO    商品订单信息
+     * @param loanOrderUnifiedorderReqDTO 商品订单信息
+     * @param notifyUrl
      * @return 调用银联参数
      */
-     ConsumerPoliciesReqDTO unifiedorderSaveOrderAndBuildUnionPayParam(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO);
+     ConsumerPoliciesReqDTO unifiedorderSaveOrderAndBuildUnionPayParam(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO, String notifyUrl);
     /**
      * 修改订单状态
      *

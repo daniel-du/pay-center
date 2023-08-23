@@ -6,7 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
-import com.tfjt.pay.external.unionpay.constants.TransactionTypeConstants;
+import com.tfjt.pay.external.unionpay.constants.CommonConstants;
+import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDetailDTO;
@@ -16,9 +17,10 @@ import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
-import com.tfjt.pay.external.unionpay.utils.OrderNumberUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.util.InstructIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -48,7 +50,8 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
     private LoanBalanceDivideDetailsService payBalanceDivideDetailsService;
 
     @Resource
-    private OrderNumberUtil orderNumberUtil;
+    private RedisCache redisCache;
+
     @Transactional(rollbackFor = {TfException.class,Exception.class})
     @Override
     public void saveDivide(String tradeOrderNo, List<LoanBalanceDivideDetailsEntity> saveList, BalanceDivideReqDTO balanceDivideReqDTO) {
@@ -140,7 +143,8 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
         LoanBalanceDivideDetailsEntity payBalanceDivideDetailsEntity = new LoanBalanceDivideDetailsEntity();
         BeanUtil.copyProperties(subBalanceDivideReqDTO, payBalanceDivideDetailsEntity);
         payBalanceDivideDetailsEntity.setDivideId(divideId);
-        payBalanceDivideDetailsEntity.setSubTradeOrderNo(orderNumberUtil.generateOrderNumber(TransactionTypeConstants.TRANSACTION_TYPE_DB_SUB));
+        String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_DBS,new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51,redisCache);
+        payBalanceDivideDetailsEntity.setSubTradeOrderNo(tradeOrderNo);
         payBalanceDivideDetailsEntity.setCreateTime(date);
         return payBalanceDivideDetailsEntity;
     }

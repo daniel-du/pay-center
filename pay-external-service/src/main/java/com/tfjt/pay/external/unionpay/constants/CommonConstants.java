@@ -116,5 +116,30 @@ public interface CommonConstants {
 	 * 贷款业务单号
 	 */
 	String LOAN_REQ_NO_PREFIX="LORQ";
+	/**
+	 * 转账
+	 */
+	String TRANSACTION_TYPE_TB = "LOTB";
+	/**
+	 * 分账
+	 */
+	String TRANSACTION_TYPE_DB = "LODB";
+
+	/**
+	 * 分账子订单
+	 */
+	String TRANSACTION_TYPE_DBS = "LDBS";
+	/**
+	 * 下单
+	 */
+	String TRANSACTION_TYPE_MK_ORDER = "LOMO";
+	/**
+	 * 下单子订单
+	 */
+	String TRANSACTION_TYPE_MK_ORDER_SUB = "LMOS";
+
+
+
+
 
 }
