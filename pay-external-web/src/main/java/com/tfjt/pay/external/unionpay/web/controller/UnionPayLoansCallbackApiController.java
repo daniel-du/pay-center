@@ -38,10 +38,9 @@ public class UnionPayLoansCallbackApiController {
      * 通用的回调通知
      */
     @PostMapping("/twoIncomingCallBack")
-    public void commonCallback(HttpServletRequest request, HttpServletResponse response) throws IOException, ParseException {
-        String param = HttpUtil.getString(request.getInputStream(), null, false);
-        log.info("交易类回调参数:{}", param);
-        UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO = JSONObject.parseObject(param, UnionPayLoansBaseCallBackDTO.class);
-        unionPayNoticeBiz.commonCallback(transactionCallBackReqDTO,response);
+    public void commonCallback(@RequestBody UnionPayLoansBaseCallBackDTO yinLianLoansBaseCallBackDTO) throws IOException, ParseException {
+       // String param = HttpUtil.getString(request.getInputStream(), null, false);
+        log.info("交易类回调参数:{}", JSONObject.toJSONString(yinLianLoansBaseCallBackDTO));
+        unionPayNoticeBiz.commonCallback(yinLianLoansBaseCallBackDTO);
     }
 }

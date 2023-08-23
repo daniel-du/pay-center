@@ -80,7 +80,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
     @Lock4j(keys = "#transactionCallBackReqDTO.eventId", expire = 3000, acquireTimeout = 3000)
     @Override
-    public void commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO, HttpServletResponse response) throws ParseException {
+    public void commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO) throws ParseException {
         LoanCallbackEntity tfLoanCallbackEntity = loanCallbackService.getOne(new LambdaQueryWrapper<LoanCallbackEntity>().eq(LoanCallbackEntity::getEventId, transactionCallBackReqDTO.getEventId()));
         if (tfLoanCallbackEntity != null) {
             log.info("事件回调已添加{}", transactionCallBackReqDTO.getEventId());
