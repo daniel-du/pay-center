@@ -6,6 +6,8 @@ package com.tfjt.pay.external.unionpay.constants;
  * @email 598482054@qq.com
  */
 public class UnionPayTradeResultCodeConstant {
+
+    public static final String TRADE_RESULT_CODE_10 = "10";//支付充值;
     public static final String TRADE_RESULT_CODE_20 = "20";//支付充值;
     public static final String TRADE_RESULT_CODE_21 = "21";//充值退款;
     public static final String TRADE_RESULT_CODE_25 = "25";//可提现支付充值;

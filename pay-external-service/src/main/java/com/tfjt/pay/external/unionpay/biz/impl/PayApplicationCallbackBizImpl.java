@@ -92,8 +92,8 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
      * @return
      */
     @Override
-    public boolean noticeFmsIncomeNotice(List<LoadBalanceNoticeEntity> list, String eventId, String eventType, Long callbackId) {
-        return sendRequest(fmsAppId, JSONObject.toJSONString(list), eventId, eventType, callbackId);
+    public boolean noticeFmsIncomeNotice(List<LoadBalanceNoticeEntity> list, String eventType, String eventId, Long callbackId) {
+        return sendRequest(fmsAppId, JSONObject.toJSONString(list), eventId,eventType, callbackId);
     }
 
     @Override

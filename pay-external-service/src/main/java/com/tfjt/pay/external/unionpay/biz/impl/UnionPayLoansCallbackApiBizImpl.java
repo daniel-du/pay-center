@@ -15,7 +15,7 @@ import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
 
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDTO;
+import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.service.*;
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,9 +91,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             yinLianLoansCallbackApiService.unionPayLoansBaseCallBack(transactionCallBackReqDTO);
             return "";
         }
-        //母账户入金  交易类通知 
-        String eventDataString = JSONObject.toJSONString(transactionCallBackReqDTO.getEventData());
-        LoanCallbackEntity loanCallbackEntity = loanCallbackService.saveLog(null, transactionCallBackReqDTO.getEventId(), eventType, eventDataString
+        //母账户入金  交易类通知
+        String eventData = transactionCallBackReqDTO.getEventData().toString();
+        LoanCallbackEntity loanCallbackEntity = loanCallbackService.saveLog(null, transactionCallBackReqDTO.getEventId(), eventType, eventData
                 , transactionCallBackReqDTO.getCreatedAt(), null, null);
         log.info("保存回调日志信息:{}", JSONObject.toJSONString(loanCallbackEntity));
         executorConfig.asyncServiceExecutor().execute(()->detailsNotice(loanCallbackEntity));
@@ -205,26 +204,36 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
      * @param loanCallbackEntity 日志记录信息
      */
     private void detailsNotice(LoanCallbackEntity loanCallbackEntity) {
-        if (UnionPayEventTypeConstant.ROOT_TRANSFER_DEPOSIT.equals(loanCallbackEntity.getEventType())) {
+        String eventType = loanCallbackEntity.getEventType();
+        if (UnionPayEventTypeConstant.ROOT_TRANSFER_DEPOSIT.equals(eventType)
+            || UnionPayEventTypeConstant.TRANSFER_DEPOSIT.equals(eventType)
+            || UnionPayEventTypeConstant.WITHDRAWAL_RETURN.equals(eventType)
+            || UnionPayEventTypeConstant.LARGE_PAYMENT.equals(eventType)
+                || UnionPayEventTypeConstant.LARGE_PAYMENT_DEPOSIT_REFUND_RETURN.equals(eventType)
+            || UnionPayEventTypeConstant.TRANSFER_DEPOSIT_REFUND_RETURN.equals(eventType)) {
+
             //处理母账户入金
-            balanceIncomeNotice(loanCallbackEntity.getEventData(), loanCallbackEntity.getId());
-        } else if (UnionPayEventTypeConstant.TRADE_RESULT.equals(loanCallbackEntity.getEventType())) {
+            balanceIncomeNotice(loanCallbackEntity.getEventData(), loanCallbackEntity.getId(),loanCallbackEntity.getEventType(),loanCallbackEntity.getEventId(),loanCallbackEntity.getCreatedAt());
+        } else if (UnionPayEventTypeConstant.TRADE_RESULT.equals(eventType)) {
             //处理交易结果
             treadResult(loanCallbackEntity);
         }
     }
 
-
+//[{"amount":100,"balanceAcctId":"2008230724456622719","balanceAcctNo":"035030000000046265019","bankMemo":"模拟测试二级商户电子账簿入金:rel_acct_deposit @XAfwdXyaigVVzOrhm5KGFBRJczHPHgYd1brlaE9g4tPSonuzxL3c9DEikXq2cNr0M8Z7jGCKt1WkBBRyy8dIlxc6M6rCUVc9MUvwFtrKCds7Q26NgDP4jvX0YOfftuFvoaonIh5lB0elTmK4V6NbZytYg4iJGxAYtSGuhbF6s67l8MEd3gctghLSIqoYO1Xq6tNu5oga","createTime":1692782603831,"createdAt":1692779437249,"eventId":"9008746502537163899","eventType":"transfer_deposit","id":6,"payBankAcctName":"河北同福云商科技有限公司","payBankAcctNo":"6221320406254979","payBankBranchCode":"313335081005","payBankCode":"313335081005","recordedAt":1692779437227,"tradeId":"4308746502532542470","tradeType":"11","transactionNo":"RealBankMock9781909479213125"}]
     /**
      * 处理银联入金通知
+     *
      * @param eventDataString 银联字符串
+     * @param createdAt
      */
-    public void balanceIncomeNotice(String eventDataString, Long id) {
-        UnionPayIncomeDTO unionPayIncomeDTO = JSONObject.parseObject(eventDataString, UnionPayIncomeDTO.class);
-        List<LoadBalanceNoticeEntity> list = payBalanceNoticeService.saveByEventDate(unionPayIncomeDTO);
-        boolean result = payApplicationCallbackBiz.noticeFmsIncomeNotice(list, unionPayIncomeDTO.getEventType(), unionPayIncomeDTO.getEventId(), id);
-        //记录通知状态
-        this.loanCallbackService.updateNoticeStatus(id,result,unionPayIncomeDTO.getEventId());
+    public void balanceIncomeNotice(String eventDataString, Long id, String eventType, String eventId,  String createdAt) {
+        log.info(eventDataString);
+        JSONObject jsonObject = JSONObject.parseObject(eventDataString);
+        log.info(jsonObject.toJSONString());
+        UnionPayIncomeDetailsDTO unionPayIncomeDTO = JSONObject.parseObject(eventDataString, UnionPayIncomeDetailsDTO.class);
+        List<LoadBalanceNoticeEntity> list = payBalanceNoticeService.saveByEventDate(unionPayIncomeDTO,eventType,eventId,createdAt);
+         payApplicationCallbackBiz.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, eventId, id);
     }
 
 }
