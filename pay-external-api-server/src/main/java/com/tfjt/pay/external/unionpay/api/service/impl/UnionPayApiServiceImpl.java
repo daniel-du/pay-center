@@ -80,7 +80,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
     RedisCache redisCache;
 
-    @Value("unionPay.loan.notifyUrl")
+    @Value("${unionPay.loan.notifyUrl}")
     private String notifyUrl;
     private final static String WITHDRAWAL_IDEMPOTENT_KEY = "idempotent:withdrawal";
 
