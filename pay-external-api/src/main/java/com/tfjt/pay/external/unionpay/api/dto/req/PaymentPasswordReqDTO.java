@@ -1,5 +1,9 @@
 package com.tfjt.pay.external.unionpay.api.dto.req;
 
+import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
+import lombok.Data;
+
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -10,60 +14,22 @@ import java.io.Serializable;
  * @author young
  * @since 2023-08-11
  */
-public class PaymentPasswordReqDTO implements Serializable {
+@Data
+public class PaymentPasswordReqDTO extends UserTypeDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-
-    /**
-     * 贷款用户id
-     */
-    private Long loanUserId;
 
     /**
      * 密码
      */
+    @NotBlank(message = "密码不能为空")
     private String password;
 
 
+    @NotBlank(message = "盐不能为空")
     /**
      * 盐
      */
     private String salt;
 
-    public Long getLoanUserId() {
-        return loanUserId;
-    }
-
-    public void setLoanUserId(Long loanUserId) {
-        this.loanUserId = loanUserId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt;
-    }
-
-    public PaymentPasswordReqDTO() {
-    }
-
-    @Override
-    public String toString() {
-        return "PaymentPasswordReqDTO{" +
-                "loanUserId=" + loanUserId +
-                ", password='" + password + '\'' +
-                ", salt='" + salt + '\'' +
-                '}';
-    }
 }

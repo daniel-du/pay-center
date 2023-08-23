@@ -31,18 +31,20 @@ public class PaymentPasswordEntity implements Serializable {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+    /**
+     * 1 是商家 2 供应商
+     */
+    @ApiModelProperty(value = "类型")
+    private Integer type;
 
     @ApiModelProperty(value = "业务ID")
-    private String loanUserId;
+    private String busId;
 
     @ApiModelProperty(value = "密码")
     private String password;
 
     @ApiModelProperty(value = "盐")
     private String salt;
-
-    @ApiModelProperty(value = "是否删除")
-    private Boolean isDelete;
 
     @ApiModelProperty(value = "创建时间")
     private Date createTime;

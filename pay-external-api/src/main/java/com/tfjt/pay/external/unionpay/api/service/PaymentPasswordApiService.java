@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PaymentPasswordRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -21,14 +22,14 @@ public interface PaymentPasswordApiService {
 
     /**
      *
-     * @param paymentPasswordDTO
+     * @param userType
      * @return
      */
-    public Result<PaymentPasswordRespDTO> getSalt(Long loanUserId);
+    public Result<String> getSalt(UserTypeDTO userType);
     /**
      * 判断密码是否存在
      */
-    public Result<Boolean> isExist(Long loanUserId);
+    public Result<Boolean> isExist(UserTypeDTO userType);
 
     /**
      * 验证支付密码
