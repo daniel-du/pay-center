@@ -50,6 +50,6 @@ public interface LoanApiService {
 
     Result<String> unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO);
 
-    public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO);
+    Result<String> bindSettleAcct(BankInfoReqDTO bankInfoReqDTO);
 
 }

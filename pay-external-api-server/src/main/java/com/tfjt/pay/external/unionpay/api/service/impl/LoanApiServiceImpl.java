@@ -188,7 +188,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo", "#bankInfoReqDTO.bankCardNo", "#bankInfoReqDTO.type"}, expire = 3000, acquireTimeout = 4000)
-    public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
+    public Result<String> bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if (loanUser == null) {
             throw new TfException("未找到贷款用户");
@@ -209,9 +209,14 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
         } catch (TfException ex) {
-            throw new TfException(ex.getCode(), ex.getMessage());
+           return Result.failed(ex.getMessage());
         }
-        return custBankInfoService.save(custBankInfoEntity);
+        boolean save = custBankInfoService.save(custBankInfoEntity);
+        if(save){
+            return Result.ok("绑定成功");
+        }else {
+            return Result.failed("绑定失败");
+        }
     }
 
 }
