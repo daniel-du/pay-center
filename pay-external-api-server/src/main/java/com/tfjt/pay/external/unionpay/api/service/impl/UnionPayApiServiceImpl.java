@@ -308,7 +308,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             checkLoanAccount(loanOrderUnifiedorderDTO.getPayBalanceAcctId(), totalAmount,loanOrderUnifiedorderDTO.getPayBalanceAcctName());
             //2.保存订单信息
             LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
-            BeanUtil.copyProperties(loanOrderUnifiedorderReqDTO, loanOrderUnifiedorderReqDTO);
+            BeanUtil.copyProperties(loanOrderUnifiedorderDTO, loanOrderUnifiedorderReqDTO);
             ConsumerPoliciesReqDTO consumerPoliciesReqDTO = this.loanOrderBiz.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO,notifyUrl);
             Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
             if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
