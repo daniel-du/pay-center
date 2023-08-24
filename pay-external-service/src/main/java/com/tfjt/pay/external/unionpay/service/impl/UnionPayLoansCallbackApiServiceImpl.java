@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -52,30 +53,31 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
      * @param unionPayLoansBaseCallBackDTO
      * @return
      */
-    public Long settleAcctsValidateCallBack(AcctValidationParamDTO eventData, String settleAcctId, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
+    public Long settleAcctsValidateCallBack(AcctValidationParamDTO eventData, String settleAcctId, String outRequestNo, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
         log.info("打款验证通知-回调参数{}", JSONObject.toJSONString(eventData));
-
         //修改验证状态
         LoanUserEntity tfLoanUserEntity = tfLoanUserService.getBySettleAcctId(settleAcctId);
         if(tfLoanUserEntity==null){
             throw new TfException(ExceptionCodeEnum.NOT_NULL.getCode(), tfLoanUserEntity.getSettleAcctId()+"贷款用户信息不存在");
+        }else {
+            LoanUserEntity oldTfLoanUserEntity = tfLoanUserService.getOne(new LambdaQueryWrapper<LoanUserEntity>().eq(LoanUserEntity::getOutRequestNo, outRequestNo));
+            if(oldTfLoanUserEntity != null && StringUtils.isNotBlank(settleAcctId)){
+                oldTfLoanUserEntity.setSettleAcctId(settleAcctId);
+                tfLoanUserService.updateById(oldTfLoanUserEntity);
+            }
         }
-        CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(eventData.getDestAcctNo(), tfLoanUserEntity.getId());
-        if(custBankInfo== null){
-            throw new TfException(ExceptionCodeEnum.NOT_NULL.getCode(), eventData.getDestAcctNo()+"银行卡信息不存在");
-        }
-        custBankInfo.setVerifyStatus("succeeded");
-        custBankInfoService.updateById(custBankInfo);
+        //修改银行是否打款状态1是
+        updateBankCallStatus(tfLoanUserEntity);
 
-        //同步业务用户表
-        TfLoanUserEntityDTO tfLoanUserEntityDTO =new TfLoanUserEntityDTO();
-        BeanUtil.copyProperties(tfLoanUserEntity, tfLoanUserEntityDTO);
-        List<TfLoanUserEntityDTO> tfLoanUserEntityDTOList = new ArrayList<>();
-        tfLoanUserEntityDTOList.add(tfLoanUserEntityDTO);
-        tfLoanUserRpcService.updateBatch(tfLoanUserEntityDTOList);
-        //保存日志
         return tfLoanUserEntity.getId();
 
+    }
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateBankCallStatus(LoanUserEntity tfLoanUserEntity ) {
+        tfLoanUserEntity.setBankCallStatus(1);
+        tfLoanUserService.updateById(tfLoanUserEntity);
     }
 
 
@@ -93,23 +95,36 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         //2贷款回调
         if(Objects.equals("settle_acct_pay_amount_validation", unionPayLoansBaseCallBackDTO.getEventType())){
             SettleAcctsEventDataDTO eventDataDTO  = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), SettleAcctsEventDataDTO.class);
-            id = settleAcctsValidateCallBack(eventDataDTO.getAcctValidationParam(), eventDataDTO.getSettleAcctId(), unionPayLoansBaseCallBackDTO);
+            id = settleAcctsValidateCallBack(eventDataDTO.getAcctValidationParam(), eventDataDTO.getSettleAcctId(), eventDataDTO.getOutRequestNo(),unionPayLoansBaseCallBackDTO);
         }
         return id;
     }
 
     public Long twoIncomingCallBack(TwoIncomingEventDataDTO twoIncomingEventDataDTO, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
         log.info("二级商户进件回调结果通知-回调参数{}", JSONObject.toJSONString(twoIncomingEventDataDTO));
+        log.info("二级商户进件回调结果通知-回调参数{}", JSONObject.toJSONString(twoIncomingEventDataDTO));
         LoanUserEntity tfLoanUserEntity = verifyIncomingCallBack(twoIncomingEventDataDTO);
         //修改货款商户
         updatTfLoanUserEntity(twoIncomingEventDataDTO, tfLoanUserEntity);
-        if(!Objects.equals("failed",twoIncomingEventDataDTO.getApplicationStatus() ) && StringUtils.isNotBlank(twoIncomingEventDataDTO.getBalanceAcctId())){
+        if(Objects.equals("succeeded",twoIncomingEventDataDTO.getApplicationStatus())){
             //添加电子账单
-            addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(),twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
+            addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(),  twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
         }
+
+        //同步业务用户表
+        saveBusData(tfLoanUserEntity);
+
         return tfLoanUserEntity.getId();
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    void saveBusData(LoanUserEntity tfLoanUserEntity) {
+        TfLoanUserEntityDTO tfLoanUserEntityDTO =new TfLoanUserEntityDTO();
+        BeanUtil.copyProperties(tfLoanUserEntity, tfLoanUserEntityDTO);
+        List<TfLoanUserEntityDTO> tfLoanUserEntityDTOList = new ArrayList<>();
+        tfLoanUserEntityDTOList.add(tfLoanUserEntityDTO);
+        tfLoanUserRpcService.updateBatch(tfLoanUserEntityDTOList);
+    }
     /**
      * 验证参数
      * @param twoIncomingEventDataDTO
