@@ -287,6 +287,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Lock4j(keys = "#loanOrderUnifiedorderDTO.businessOrderNo", expire = 10000)
     @Override
     public Result<String> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
+        log.info("下单参数:{}",JSONObject.toJSONString(loanOrderUnifiedorderDTO));
         //1.判断单号是否存在
         if (this.loanOrderBiz.checkExistBusinessOrderNo(loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId())) {
             log.error("业务单号已存在:{},appId:{}", loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId());
