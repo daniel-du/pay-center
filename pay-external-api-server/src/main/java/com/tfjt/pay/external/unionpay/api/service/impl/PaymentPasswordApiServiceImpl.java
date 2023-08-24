@@ -6,13 +6,17 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
 import com.tfjt.pay.external.unionpay.api.service.PaymentPasswordApiService;
+import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.PaymentPasswordEntity;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.service.PaymentPasswordService;
+import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 
 import javax.annotation.Resource;
@@ -25,15 +29,22 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
     @Resource
     private PaymentPasswordService paymentPasswordService;
 
+    @Autowired
+    private LoanUserService loanUserService;
+
     @Override
     public Result<String> savePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
+        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
+        if (loanUser == null) {
+            throw new TfException("未找到贷款用户");
+        }
         try {
             ValidatorUtils.validateEntity(paymentPasswordDTO);
             PaymentPasswordEntity paymentPassword = new PaymentPasswordEntity();
             BeanUtils.copyProperties(paymentPasswordDTO, paymentPassword);
             paymentPasswordService.save(paymentPassword);
         } catch (Exception ex) {
-            if(ex instanceof DuplicateKeyException) {
+            if (ex instanceof DuplicateKeyException) {
                 return Result.failed("请勿重复设置支付密码");
             }
             log.error("", ex);
@@ -44,6 +55,10 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
 
     @Override
     public Result<String> updatePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
+        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
+        if (loanUser == null) {
+            throw new TfException("未找到贷款用户");
+        }
         try {
             UpdateWrapper<PaymentPasswordEntity> updateWrapper = Wrappers.update();
             updateWrapper.lambda().eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId());
@@ -58,14 +73,16 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
     }
 
     /**
-     *
      * @param userType
      * @return
      */
     @Override
     public Result<String> getSalt(UserTypeDTO userType) {
         String salt = null;
-
+        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(userType.getBusId(), userType.getType());
+        if (loanUser == null) {
+            throw new TfException("未找到贷款用户");
+        }
         try {
             PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getType, userType.getType()).eq(PaymentPasswordEntity::getBusId, userType.getBusId()));
             if (ObjectUtils.isNotEmpty(paymentPassword)) {
@@ -80,11 +97,16 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
 
     /**
      * 查询密码是否存在
+     *
      * @param userType
      * @return
      */
     @Override
     public Result<Boolean> isExist(UserTypeDTO userType) {
+        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(userType.getBusId(), userType.getType());
+        if (loanUser == null) {
+            throw new TfException("未找到贷款用户");
+        }
         boolean result;
         try {
             result = paymentPasswordService.count(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getType, userType.getType()).eq(PaymentPasswordEntity::getBusId, userType.getBusId())) > 0;
@@ -98,12 +120,17 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
 
     /**
      * 验证密码
+     *
      * @param paymentPasswordDTO
      * @return
      */
     @Override
     public Result<Boolean> verifyPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         boolean result = false;
+        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
+        if (loanUser == null) {
+            throw new TfException("未找到贷款用户");
+        }
         try {
             PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()));
             if (ObjectUtils.isNotEmpty(paymentPassword)) {
