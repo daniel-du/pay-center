@@ -891,7 +891,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         log.info("查询账户返回值{}", JSON.toJSONString(unionPayLoansBaseReturn));
         SettleAcctsDTO settleAcctDTO = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), SettleAcctsDTO.class);
         if (settleAcctDTO != null && settleAcctDTO.getSettleAccts() != null && settleAcctDTO.getSettleAccts().size() > 0) {
-            CustBankInfoEntity custBankInfoEntity = custBankInfoService.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, tfLoanUserEntity.getId()));
+            CustBankInfoEntity custBankInfoEntity = custBankInfoService.getByLoanUserId(tfLoanUserEntity.getId());
             if (custBankInfoEntity != null) {
                 List<SettleAcctsMxDTO> list = settleAcctDTO.getSettleAccts().stream().filter(i -> Objects.equals(i.getBankAcctNo(), custBankInfoEntity.getBankCardNo())).collect(Collectors.toList());
                 if (list.size() > 0) {

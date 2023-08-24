@@ -129,4 +129,10 @@ failed：被驳回
 
 	private String mchApplicationId; //二级商户系统订单号
 
+
+	/**
+	 * 银行是否打款状态1是
+	 */
+	private Integer bankCallStatus;
+
 }
