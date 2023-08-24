@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
@@ -78,8 +79,13 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
+        List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(bankInfoReqDTO.getLoanUserId());
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
         BeanUtils.copyProperties(bankInfoReqDTO, custBankInfoEntity);
+        if(CollUtil.isNotEmpty(bankInfo)){
+            String career = bankInfo.get(0).getCareer();
+            custBankInfoEntity.setCareer(career);
+        }
         try {
             UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
