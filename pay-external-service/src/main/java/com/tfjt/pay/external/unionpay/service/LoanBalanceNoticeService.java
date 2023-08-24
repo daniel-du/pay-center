@@ -1,7 +1,7 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDTO;
+import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
 import com.tfjt.pay.external.unionpay.entity.LoadBalanceNoticeEntity;
 
 import java.util.List;
@@ -15,6 +15,6 @@ import java.util.List;
  */
 public interface LoanBalanceNoticeService extends IService<LoadBalanceNoticeEntity> {
 
-    List<LoadBalanceNoticeEntity> saveByEventDate(UnionPayIncomeDTO eventDataString);
+    List<LoadBalanceNoticeEntity> saveByEventDate(UnionPayIncomeDetailsDTO eventDataString, String eventType, String eventId, String createdAt);
 }
 
