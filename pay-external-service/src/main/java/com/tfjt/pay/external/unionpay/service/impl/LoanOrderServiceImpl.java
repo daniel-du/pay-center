@@ -67,7 +67,7 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
         try {
             Date finshDate = DateUtil.parseDate(eventDataDTO.getFinishedAt(),DateUtil.YYYY_MM_DD_T_HH_MM_SS_SSSXXX);
             orderEntity.setFinishedAt(finshDate);
-            if(this.updateById(orderEntity)){
+            if(!this.updateById(orderEntity)){
                 log.error("更新订单信息失败:{}", JSONObject.toJSONString(orderEntity));
                 throw new TfException(ExceptionCodeEnum.FAIL);
             }

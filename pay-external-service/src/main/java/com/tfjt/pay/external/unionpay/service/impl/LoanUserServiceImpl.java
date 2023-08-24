@@ -245,12 +245,18 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
 
     @Override
     public List<UnionPayLoanUserRespDTO> listLoanUserByBusId(String type, List<String> busIds) {
-        return this.getBaseMapper().listLoanUserByBusId(type,busIds);
+        return this.getBaseMapper().listLoanUserByBusId(type, busIds);
     }
 
     @Override
     public LoanUserEntity getByBalanceAcctId(String balanceAcctId) {
         return this.getBaseMapper().getByBalanceAcctId(balanceAcctId);
+    }
+
+    @Override
+    public Long getLoanUserIdByBalanceAccId(String balanceAcctId) {
+        LoanUserEntity user = this.getByBalanceAcctId(balanceAcctId);
+        return Objects.isNull(user) ? null : user.getId();
     }
 
     /**
@@ -263,12 +269,12 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         List<LoanUserEntity> upList = new ArrayList<>();
         curList.forEach(tfLoanUserEntity -> {
             //1 一级
-            if(StringUtils.isNotBlank(tfLoanUserEntity.getCusId())){
+            if (StringUtils.isNotBlank(tfLoanUserEntity.getCusId())) {
                 IncomingReturn incomingReturn = unionPayLoansApiService.getIncomingInfo(tfLoanUserEntity.getOutRequestNo());
-                if(incomingReturn!=null){
-                    if(Objects.equals(incomingReturn.getCusId(), tfLoanUserEntity.getCusId()) && !Objects.equals(tfLoanUserEntity.getApplicationStatus(), incomingReturn.getApplicationStatus())){
+                if (incomingReturn != null) {
+                    if (Objects.equals(incomingReturn.getCusId(), tfLoanUserEntity.getCusId()) && !Objects.equals(tfLoanUserEntity.getApplicationStatus(), incomingReturn.getApplicationStatus())) {
                         tfLoanUserEntity.setApplicationStatus(incomingReturn.getApplicationStatus());
-                        if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+                        if (ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())) {
                             tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
                         }
                     }
@@ -276,12 +282,12 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
 
             }
             //2 二级
-            if(StringUtils.isNotBlank(tfLoanUserEntity.getMchApplicationId())){
+            if (StringUtils.isNotBlank(tfLoanUserEntity.getMchApplicationId())) {
                 IncomingReturn incomingReturn = unionPayLoansApiService.getTwoIncomingInfo(tfLoanUserEntity.getOutRequestNo());
-                if(incomingReturn!=null){
-                    if(Objects.equals(incomingReturn.getMchApplicationId(), tfLoanUserEntity.getMchApplicationId()) && !Objects.equals(tfLoanUserEntity.getApplicationStatus(), incomingReturn.getApplicationStatus())){
+                if (incomingReturn != null) {
+                    if (Objects.equals(incomingReturn.getMchApplicationId(), tfLoanUserEntity.getMchApplicationId()) && !Objects.equals(tfLoanUserEntity.getApplicationStatus(), incomingReturn.getApplicationStatus())) {
                         tfLoanUserEntity.setApplicationStatus(incomingReturn.getApplicationStatus());
-                        if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+                        if (ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())) {
                             tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
                         }
                     }
@@ -290,7 +296,7 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
             upList.add(tfLoanUserEntity);
 
         });
-        if(upList!=null && upList.size()>0){
+        if (upList != null && upList.size() > 0) {
             this.updateBatchById(upList);
             //rpc 同步 业务库
             List<TfLoanUserEntityDTO> tfLoanUserEntityDTOList = BeanUtils.copyList2Other(TfLoanUserEntityDTO.class, upList);

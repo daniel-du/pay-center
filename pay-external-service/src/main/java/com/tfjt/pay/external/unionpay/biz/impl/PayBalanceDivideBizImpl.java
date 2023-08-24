@@ -16,6 +16,7 @@ import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceDivideService;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
@@ -48,6 +49,9 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
     private LoanBalanceDivideService payBalanceDivideService;
     @Resource
     private LoanBalanceDivideDetailsService payBalanceDivideDetailsService;
+
+    @Resource
+    private LoanUserService userService;
 
     @Resource
     private RedisCache redisCache;
@@ -146,6 +150,7 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
         String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_DBS,new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51,redisCache);
         payBalanceDivideDetailsEntity.setSubTradeOrderNo(tradeOrderNo);
         payBalanceDivideDetailsEntity.setCreateTime(date);
+        payBalanceDivideDetailsEntity.setLoanUserId(userService.getLoanUserIdByBalanceAccId(subBalanceDivideReqDTO.getRecvBalanceAcctId()));
         return payBalanceDivideDetailsEntity;
     }
 

@@ -318,7 +318,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             return Result.ok(result.getData().getStatus());
         }catch (TfException e){
             e.printStackTrace();
-            log.error("转账异常");
+            log.error("生单异常");
             return Result.failed(e.getMessage());
         }
     }
