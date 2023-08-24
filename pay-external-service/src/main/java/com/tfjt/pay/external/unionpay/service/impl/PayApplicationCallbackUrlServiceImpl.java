@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class PayApplicationCallbackUrlServiceImpl extends ServiceImpl<PayApplica
         PayApplicationCallbackUrlEntity one = this.getOne(queryWrapper);
         if(Objects.isNull(one)){
             log.error("应用回调地址不存在:appId{},eventType:{}",appId,eventType);
-            throw new TfException("回调信息地址");
+            throw new TfException(PayExceptionCodeEnum.CALLBACK_URL_NOT_FOUND);
         }
         return one.getUrl();
     }

@@ -19,7 +19,7 @@
         where a.id in
         <foreach collection="list" separator="," open="(" close=")" item="item">
             #{item}
-        </foreach> and a.type = #{type}
+        </foreach> and u.type = #{type}
 
     </select>
     <select id="getByBalanceAcctId" resultType="com.tfjt.pay.external.unionpay.entity.LoanUserEntity">
@@ -28,7 +28,8 @@
             type,
             bus_id,
             creator,
-            type
+            type,
+            name
         FROM
             tf_loan_user
         WHERE id = (select loan_user_id from tf_loan_balance_acct where balance_acct_id=#{parameter})

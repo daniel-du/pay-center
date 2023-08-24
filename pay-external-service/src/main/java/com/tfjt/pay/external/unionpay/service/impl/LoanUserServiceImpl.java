@@ -138,7 +138,7 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
             //实时查询
             if (StringUtils.isNotBlank(loanUser.getOutRequestNo()) && StringUtils.isNotBlank(loanUser.getMchApplicationId())) {
                 IncomingReturn incomingReturn = unionPayLoansApiService.getTwoIncomingInfo(loanUser.getOutRequestNo());
-                dto.setApplicationStatus(loanUser.getApplicationStatus());
+                dto.setApplicationStatus(incomingReturn.getApplicationStatus());
                 if (ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())) {
                     dto.setErrMsg(incomingReturn.getFailureMsgs());
                 }
