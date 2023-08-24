@@ -297,25 +297,31 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Override
     public Result<String> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
         log.info("下单参数:{}",JSONObject.toJSONString(loanOrderUnifiedorderDTO));
-        //1.判断单号是否存在
-        if (this.loanOrderBiz.checkExistBusinessOrderNo(loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId())) {
-            log.error("业务单号已存在:{},appId:{}", loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId());
-            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+        try{
+            //1.判断单号是否存在
+            if (this.loanOrderBiz.checkExistBusinessOrderNo(loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId())) {
+                log.error("业务单号已存在:{},appId:{}", loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId());
+                throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+            }
+            List<UnionPayLoanOrderDetailsReqDTO> detailsDTOList = loanOrderUnifiedorderDTO.getDetailsDTOList();
+            int totalAmount = detailsDTOList.stream().mapToInt(UnionPayLoanOrderDetailsReqDTO::getAmount).sum();
+            checkLoanAccount(loanOrderUnifiedorderDTO.getPayBalanceAcctId(), totalAmount,loanOrderUnifiedorderDTO.getPayBalanceAcctName());
+            //2.保存订单信息
+            LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
+            BeanUtil.copyProperties(loanOrderUnifiedorderReqDTO, loanOrderUnifiedorderReqDTO);
+            ConsumerPoliciesReqDTO consumerPoliciesReqDTO = this.loanOrderBiz.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO,notifyUrl);
+            Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
+            if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
+                log.error("调用银联接口失败");
+                return Result.failed(result.getMsg());
+            }
+            this.loanOrderBiz.saveMergeConsumerResult(result, loanOrderUnifiedorderDTO.getAppId());
+            return Result.ok(result.getData().getStatus());
+        }catch (TfException e){
+            e.printStackTrace();
+            log.error("转账异常");
+            return Result.failed(e.getMessage());
         }
-        List<UnionPayLoanOrderDetailsReqDTO> detailsDTOList = loanOrderUnifiedorderDTO.getDetailsDTOList();
-        int totalAmount = detailsDTOList.stream().mapToInt(UnionPayLoanOrderDetailsReqDTO::getAmount).sum();
-        checkLoanAccount(loanOrderUnifiedorderDTO.getPayBalanceAcctId(), totalAmount,loanOrderUnifiedorderDTO.getPayBalanceAcctName());
-        //2.保存订单信息
-        LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
-        BeanUtil.copyProperties(loanOrderUnifiedorderReqDTO, loanOrderUnifiedorderReqDTO);
-        ConsumerPoliciesReqDTO consumerPoliciesReqDTO = this.loanOrderBiz.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO,notifyUrl);
-        Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
-        if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
-            log.error("调用银联接口失败");
-            return Result.failed(result.getMsg());
-        }
-        this.loanOrderBiz.saveMergeConsumerResult(result, loanOrderUnifiedorderDTO.getAppId());
-        return Result.ok(result.getData().getStatus());
     }
 
     @Override
