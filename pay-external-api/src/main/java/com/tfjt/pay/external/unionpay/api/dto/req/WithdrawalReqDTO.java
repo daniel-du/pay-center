@@ -1,5 +1,8 @@
 package com.tfjt.pay.external.unionpay.api.dto.req;
 
+import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -10,45 +13,13 @@ import java.io.Serializable;
  * @create 2023/8/16 11:21
  */
 
-public class WithdrawalReqDTO implements Serializable {
-    private Long loanUserId;
+@Data
+public class WithdrawalReqDTO extends UserTypeDTO implements Serializable {
     private Integer amount;
 
     private Long bankInfoId;
 
     private String appId;
 
-    public Long getLoanUserId() {
-        return loanUserId;
-    }
-
-    public void setLoanUserId(Long loanUserId) {
-        this.loanUserId = loanUserId;
-    }
-
-    public Integer getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Integer amount) {
-        this.amount = amount;
-    }
-
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
-    public Long getBankInfoId() {
-        return bankInfoId;
-    }
-
-    public void setBankInfoId(Long bankInfoId) {
-        this.bankInfoId = bankInfoId;
-    }
 
 }
