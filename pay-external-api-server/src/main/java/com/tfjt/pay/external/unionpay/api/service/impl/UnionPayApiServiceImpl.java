@@ -385,7 +385,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         if (!balanceAcctId.equals(accountConfig.getBalanceAcctId())) {
             LoanUserEntity user = loanUserService.getByBalanceAcctId(balanceAcctId);
             if (!Objects.isNull(user)) {
-                balanceAcctDTO.setBalanceAcctName(user.getCreator());
+                balanceAcctDTO.setBalanceAcctName(user.getName());
                 balanceAcctDTO.setType(user.getType());
             }
         }
