@@ -25,15 +25,18 @@ import lombok.ToString;
 @AllArgsConstructor
 public enum PayExceptionCodeEnum  implements ExceptionCode {
     TREAD_ORDER_NO_REPEAT(9000001, "业务单号已进行过交易"),
+
+
     BALANCE_ACCOUNT_NOT_FOUND(9000002,"电子账簿不存在"),
     BALANCE_ACCOUNT_FREEZE(9000003,"电子账簿已冻结"),
     TREAD_PARAMETER_ILLEGAL(9000004,"交易参数异常"),
     DATABASE_SAVE_FAIL(9000005,"数据保存异常"),
     DATABASE_UPDATE_FAIL(9000006,"数据更新异常"),
+    CALLBACK_URL_NOT_FOUND(9000007,"数据更新异常"),
 
 
 
-    UNIONPAY_RESPONSE_ERROR(9000002, "银联系统交易异常"),
+    UNIONPAY_RESPONSE_ERROR(9000008, "银联系统交易异常"),
 
 
     ;
