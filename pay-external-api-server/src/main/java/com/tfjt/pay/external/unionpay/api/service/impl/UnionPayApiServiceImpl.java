@@ -434,7 +434,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             log.error("用户不存在");
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }
-        if(balanceAccName.equals(user.getName())){
+        if(!balanceAccName.equals(user.getName())){
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
         }
     }
