@@ -96,7 +96,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
                 throw new TfException(PayExceptionCodeEnum.TREAD_ORDER_NO_REPEAT);
             }
             checkLoanAccount(payTransferDTO.getOutBalanceAcctId(), payTransferDTO.getAmount(),payTransferDTO.getOutBalanceAcctName());
-            checkLoanAccount(payTransferDTO.getInBalanceAcctId(), null,payTransferDTO.getInBalanceAcctName());
             //2.保存订单信息
             String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_TB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
             LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();

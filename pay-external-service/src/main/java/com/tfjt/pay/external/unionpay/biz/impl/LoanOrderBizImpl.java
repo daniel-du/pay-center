@@ -224,9 +224,6 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         wrapper.eq(LoanOrderEntity::getTradeOrderNo, data.getCombinedOutOrderNo())
                 .eq(LoanOrderEntity::getAppId,appId);
         LoanOrderEntity one = this.orderService.getOne(wrapper);
-
-
-
         //修改订单状态
         LoanOrderEntity loanOrderEntity = new LoanOrderEntity();
         loanOrderEntity.setCombinedGuaranteePaymentId(data.getCombinedGuaranteePaymentId());
