@@ -92,7 +92,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
             TwoIncomingEventDataDTO twoIncomingEventDataDTO  = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), TwoIncomingEventDataDTO.class);
             id = twoIncomingCallBack(twoIncomingEventDataDTO, unionPayLoansBaseCallBackDTO);
         }
-        //2贷款回调
+        //2打款验证
         if(Objects.equals("settle_acct_pay_amount_validation", unionPayLoansBaseCallBackDTO.getEventType())){
             SettleAcctsEventDataDTO eventDataDTO  = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), SettleAcctsEventDataDTO.class);
             id = settleAcctsValidateCallBack(eventDataDTO.getAcctValidationParam(), eventDataDTO.getSettleAcctId(), eventDataDTO.getOutRequestNo(),unionPayLoansBaseCallBackDTO);
