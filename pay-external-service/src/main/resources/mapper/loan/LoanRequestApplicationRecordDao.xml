@@ -14,6 +14,10 @@
         <result property="tradeOrderNo" column="trade_order_no"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
+    <select id="listError"
+            resultType="com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity">
+        SELECT * FROM tf_loan_request_application_record WHERE tf_loan_request_application_record
+    </select>
 
 
 </mapper>

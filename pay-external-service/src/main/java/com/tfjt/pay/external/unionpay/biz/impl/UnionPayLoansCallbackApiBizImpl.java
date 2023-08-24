@@ -5,7 +5,6 @@ import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.biz.PayApplicationCallbackBiz;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
-import com.tfjt.pay.external.unionpay.config.ExecutorConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
 import com.tfjt.pay.external.unionpay.constants.UnionPayEventTypeConstant;
@@ -73,9 +72,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     @Resource
     private LoanWithdrawalOrderService withdrawalOrderService;
 
-
     @Resource
-    private ExecutorConfig executorConfig;
+    private LoanRequestApplicationRecordService loanRequestApplicationRecordService;
+
 
     @Lock4j(keys = "#transactionCallBackReqDTO.eventId", expire = 3000, acquireTimeout = 3000)
     @Override
@@ -190,7 +189,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
     @Override
     public void applicationCallback() {
-
+      List<LoanRequestApplicationRecordEntity> list =   loanRequestApplicationRecordService.listError();
 
     }
 

@@ -3,6 +3,8 @@ package com.tfjt.pay.external.unionpay.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity;
 
+import java.util.List;
+
 
 /**
  * 贷款-调用回调业务日志表
@@ -17,5 +19,11 @@ public interface LoanRequestApplicationRecordService extends IService<LoanReques
      * @param record
      */
     void asyncSave(LoanRequestApplicationRecordEntity record);
+
+    /**
+     * 获取当前日志失败的
+     * @return list
+     */
+    List<LoanRequestApplicationRecordEntity> listError();
 }
 
