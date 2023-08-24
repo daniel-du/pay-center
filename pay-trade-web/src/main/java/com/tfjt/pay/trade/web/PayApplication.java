@@ -1,4 +1,4 @@
-package com.tfjt.pay.web;
+package com.tfjt.pay.trade.web;
 
 import cn.xuyanwu.spring.file.storage.EnableFileStorage;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
