@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Slf4j
-@DubboService(filter = "AuthProviderFilter")
+@DubboService
 public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService {
 
     @Resource
