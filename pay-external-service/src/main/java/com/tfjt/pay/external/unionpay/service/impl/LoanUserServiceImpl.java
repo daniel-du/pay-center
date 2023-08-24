@@ -62,6 +62,7 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
     @Autowired
     private UnionPayLoansApiService unionPayLoansApiService;
 
+
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#loanUserEntity.busId"}, expire = 3000, acquireTimeout = 4000)
     @Override
@@ -261,17 +262,34 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         List<LoanUserEntity> upList = new ArrayList<>();
         curList.forEach(tfLoanUserEntity -> {
             //1 一级
-            IncomingReturn incomingReturn = unionPayLoansApiService.getTwoIncomingInfo(tfLoanUserEntity.getOutRequestNo());
-            if (Objects.equals(incomingReturn.getMchApplicationId(), tfLoanUserEntity.getMchApplicationId()) && !Objects.equals(tfLoanUserEntity.getApplicationStatus(), incomingReturn.getApplicationStatus())) {
-                tfLoanUserEntity.setApplicationStatus(incomingReturn.getApplicationStatus());
-                if (ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())) {
-                    tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
+            if(StringUtils.isNotBlank(tfLoanUserEntity.getCusId())){
+                IncomingReturn incomingReturn = unionPayLoansApiService.getIncomingInfo(tfLoanUserEntity.getOutRequestNo());
+                if(incomingReturn!=null){
+                    if(Objects.equals(incomingReturn.getCusId(), tfLoanUserEntity.getCusId()) && !Objects.equals(tfLoanUserEntity.getApplicationStatus(), incomingReturn.getApplicationStatus())){
+                        tfLoanUserEntity.setApplicationStatus(incomingReturn.getApplicationStatus());
+                        if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+                            tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
+                        }
+                    }
                 }
-                upList.add(tfLoanUserEntity);
+
             }
+            //2 二级
+            if(StringUtils.isNotBlank(tfLoanUserEntity.getMchApplicationId())){
+                IncomingReturn incomingReturn = unionPayLoansApiService.getTwoIncomingInfo(tfLoanUserEntity.getOutRequestNo());
+                if(incomingReturn!=null){
+                    if(Objects.equals(incomingReturn.getMchApplicationId(), tfLoanUserEntity.getMchApplicationId()) && !Objects.equals(tfLoanUserEntity.getApplicationStatus(), incomingReturn.getApplicationStatus())){
+                        tfLoanUserEntity.setApplicationStatus(incomingReturn.getApplicationStatus());
+                        if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+                            tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
+                        }
+                    }
+                }
+            }
+            upList.add(tfLoanUserEntity);
+
         });
-        if (upList.size() > 0) {
-            log.info("线程名称-" + Thread.currentThread().getName() + "处理贷款更新数据长度" + curList.size());
+        if(upList!=null && upList.size()>0){
             this.updateBatchById(upList);
             //rpc 同步 业务库
             List<TfLoanUserEntityDTO> tfLoanUserEntityDTOList = BeanUtils.copyList2Other(TfLoanUserEntityDTO.class, upList);
