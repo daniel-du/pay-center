@@ -167,7 +167,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             orderDetailsEntity.setOrderId(orderEntity.getId());
             String orderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_MK_ORDER_SUB,new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,redisCache);
             orderDetailsEntity.setTradeOrderNo(orderNo);
-            orderDetailsEntity.setPayBalanceAcctId(orderDetailsEntity.getPayBalanceAcctId());
+            orderDetailsEntity.setPayBalanceAcctId(orderEntity.getPayBalanceAcctId());
             orderDetailsEntity.setAppId(orderDetailsEntity.getAppId());
             orderDetailsEntity.setCreatedAt(date);
             orderDetailsEntity.setPayLoanUserId(orderEntity.getLoanUserId());
