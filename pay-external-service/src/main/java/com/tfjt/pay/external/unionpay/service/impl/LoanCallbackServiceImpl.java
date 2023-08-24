@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dao.LoanCallbackDao;
+import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanCallbackEntity;
 import com.tfjt.pay.external.unionpay.service.LoanCallbackService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -13,24 +15,27 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Objects;
 
 @Slf4j
 @Service("tfLoanCallbackService")
 public class LoanCallbackServiceImpl extends BaseServiceImpl<LoanCallbackDao, LoanCallbackEntity> implements LoanCallbackService {
 
     @Override
-    public LoanCallbackEntity saveLog(Long loanUserId, String eventId, String eventType, String eventData, String createdAt, Integer type, String destAcctNo) {
+    public LoanCallbackEntity saveLog(Long loanUserId, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO, Integer type, String destAcctNo) {
         LoanCallbackEntity tfLoanCallbackEntity = new LoanCallbackEntity();
         tfLoanCallbackEntity.setLoanUserId(loanUserId);
-        tfLoanCallbackEntity.setEventId(eventId);
-        tfLoanCallbackEntity.setEventType(eventType);
-        tfLoanCallbackEntity.setEventData(eventData);
-        tfLoanCallbackEntity.setCreatedAt(createdAt);
+        tfLoanCallbackEntity.setEventId(unionPayLoansBaseCallBackDTO.getEventId());
+        tfLoanCallbackEntity.setEventType(unionPayLoansBaseCallBackDTO.getEventType());
+        tfLoanCallbackEntity.setEventData( JSONObject.toJSON(unionPayLoansBaseCallBackDTO.getEventData()).toString());
+        tfLoanCallbackEntity.setCreatedAt(unionPayLoansBaseCallBackDTO.getCreatedAt());
         tfLoanCallbackEntity.setCreateDate(new Date());
         if(StringUtils.isNotBlank(destAcctNo)){
             tfLoanCallbackEntity.setDestAcctNo(destAcctNo);
         }
-        tfLoanCallbackEntity.setType(type);
+        if (ObjectUtil.isNotNull(type)) {
+            tfLoanCallbackEntity.setType(type);
+        }
         this.save(tfLoanCallbackEntity);
         return tfLoanCallbackEntity;
     }

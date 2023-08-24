@@ -95,7 +95,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
                 log.error("业务单号已存在:{},appId:{}", payTransferDTO.getBusinessOrderNo(), payTransferDTO.getAppId());
                 throw new TfException(PayExceptionCodeEnum.TREAD_ORDER_NO_REPEAT);
             }
-            checkLoanAccount(payTransferDTO.getOutBalanceAcctId(), payTransferDTO.getAmount());
+            checkLoanAccount(payTransferDTO.getOutBalanceAcctId(), payTransferDTO.getAmount(),payTransferDTO.getOutBalanceAcctName());
+            checkLoanAccount(payTransferDTO.getInBalanceAcctId(), null,payTransferDTO.getInBalanceAcctName());
             //2.保存订单信息
             String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_TB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
             LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();
@@ -106,7 +107,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
             if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
                 log.error("调用银联接口失败");
-                throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
+                throw new TfException(result.getMsg());
             }
             this.loanOrderBiz.saveMergeConsumerResult(result, payTransferDTO.getAppId());
             return Result.ok(result.getData().getStatus());
@@ -296,25 +297,31 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Override
     public Result<String> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
         log.info("下单参数:{}",JSONObject.toJSONString(loanOrderUnifiedorderDTO));
-        //1.判断单号是否存在
-        if (this.loanOrderBiz.checkExistBusinessOrderNo(loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId())) {
-            log.error("业务单号已存在:{},appId:{}", loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId());
-            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+        try{
+            //1.判断单号是否存在
+            if (this.loanOrderBiz.checkExistBusinessOrderNo(loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId())) {
+                log.error("业务单号已存在:{},appId:{}", loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId());
+                throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+            }
+            List<UnionPayLoanOrderDetailsReqDTO> detailsDTOList = loanOrderUnifiedorderDTO.getDetailsDTOList();
+            int totalAmount = detailsDTOList.stream().mapToInt(UnionPayLoanOrderDetailsReqDTO::getAmount).sum();
+            checkLoanAccount(loanOrderUnifiedorderDTO.getPayBalanceAcctId(), totalAmount,loanOrderUnifiedorderDTO.getPayBalanceAcctName());
+            //2.保存订单信息
+            LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
+            BeanUtil.copyProperties(loanOrderUnifiedorderDTO, loanOrderUnifiedorderReqDTO);
+            ConsumerPoliciesReqDTO consumerPoliciesReqDTO = this.loanOrderBiz.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO,notifyUrl);
+            Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
+            if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
+                log.error("调用银联接口失败");
+                return Result.failed(result.getMsg());
+            }
+            this.loanOrderBiz.saveMergeConsumerResult(result, loanOrderUnifiedorderDTO.getAppId());
+            return Result.ok(result.getData().getStatus());
+        }catch (TfException e){
+            e.printStackTrace();
+            log.error("转账异常");
+            return Result.failed(e.getMessage());
         }
-        List<UnionPayLoanOrderDetailsReqDTO> detailsDTOList = loanOrderUnifiedorderDTO.getDetailsDTOList();
-        int totalAmount = detailsDTOList.stream().mapToInt(UnionPayLoanOrderDetailsReqDTO::getAmount).sum();
-        checkLoanAccount(loanOrderUnifiedorderDTO.getPayBalanceAcctId(), totalAmount);
-        //2.保存订单信息
-        LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
-        BeanUtil.copyProperties(loanOrderUnifiedorderReqDTO, loanOrderUnifiedorderReqDTO);
-        ConsumerPoliciesReqDTO consumerPoliciesReqDTO = this.loanOrderBiz.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO,notifyUrl);
-        Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
-        if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
-            log.error("调用银联接口失败");
-            return Result.failed(result.getMsg());
-        }
-        this.loanOrderBiz.saveMergeConsumerResult(result, loanOrderUnifiedorderDTO.getAppId());
-        return Result.ok(result.getData().getStatus());
     }
 
     @Override
@@ -404,21 +411,31 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     /**
      * 检查用户状态是否正常
      *
-     * @param balanceAcctId 电子账簿信息
-     * @param amount        转账金额
+     * @param balanceAcctId  电子账簿信息
+     * @param amount         转账金额
+     * @param balanceAccName 电子账簿名称
      */
-    private void checkLoanAccount(String balanceAcctId, Integer amount) {
+    private void checkLoanAccount(String balanceAcctId, Integer amount,String balanceAccName) {
         LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
         if (Objects.isNull(loanAccountDTO)) {
             log.error("电子账簿信息不存在:{}", balanceAcctId);
-            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }
+
         if (loanAccountDTO.isFrozen()) {
-            throw new TfException(String.format("电子账簿[%s]已冻结", balanceAcctId));
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_FREEZE);
         }
         if (amount != null && loanAccountDTO.getSettledAmount() < amount) {
             log.error("账户余额不足");
-            throw new TfException(ExceptionCodeEnum.FAIL);
+            throw new TfException(PayExceptionCodeEnum.BALANCE_NOT_ENOUTH);
+        }
+        LoanUserEntity user = loanUserService.getByBalanceAcctId(balanceAcctId);
+        if(Objects.isNull(user)){
+            log.error("用户不存在");
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+        }
+        if(!balanceAccName.equals(user.getName())){
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
         }
     }
 

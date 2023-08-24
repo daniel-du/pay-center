@@ -28,11 +28,14 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
 
 
     BALANCE_ACCOUNT_NOT_FOUND(9000002,"电子账簿不存在"),
+
     BALANCE_ACCOUNT_FREEZE(9000003,"电子账簿已冻结"),
     TREAD_PARAMETER_ILLEGAL(9000004,"交易参数异常"),
     DATABASE_SAVE_FAIL(9000005,"数据保存异常"),
     DATABASE_UPDATE_FAIL(9000006,"数据更新异常"),
     CALLBACK_URL_NOT_FOUND(9000007,"数据更新异常"),
+    BALANCE_NOT_ENOUTH(9000007,"账号余额不足"),
+    BALANCE_ACCOUNT_NAME_ERROR(9000003,"电子名称与电子账簿不符合"),
 
 
 
