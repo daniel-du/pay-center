@@ -65,4 +65,8 @@ public class LoanOrderGoodsEntity implements Serializable {
 	 */
 	private String recvBalanceAcctId;
 
+	private Long payLoanUserId;
+
+	private Long recvLoanUserId;
+
 }

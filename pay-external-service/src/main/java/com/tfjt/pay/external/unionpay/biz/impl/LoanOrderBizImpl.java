@@ -20,6 +20,7 @@ import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanOrderDetailsService;
 import com.tfjt.pay.external.unionpay.service.LoanOrderGoodsService;
 import com.tfjt.pay.external.unionpay.service.LoanOrderService;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
@@ -56,6 +57,9 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
     private LoanOrderDetailsService loanOrderDetailsService;
 
     @Resource
+    private LoanUserService userService;
+
+    @Resource
     private RedisCache redisCache;
 
 
@@ -72,6 +76,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         orderEntity.setCreateAt(date);
         orderEntity.setAppId(payTransferDTO.getAppId());
         orderEntity.setBusinessType(Integer.valueOf(UnionPayBusinessTypeEnum.TRANSFER.getCode()));
+        orderEntity.setLoanUserId(userService.getLoanUserIdByBalanceAccId(payTransferDTO.getOutBalanceAcctId()));
         if (!this.orderService.save(orderEntity)) {
             log.error("保存转账订单信息失败:{}", JSONObject.toJSONString(orderEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -88,6 +93,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         orderDetailsEntity.setAppId(payTransferDTO.getAppId());
         orderDetailsEntity.setPayBalanceAcctId(payTransferDTO.getOutBalanceAcctId());
         orderDetailsEntity.setTradeOrderNo(tradeOrderNo);
+        orderDetailsEntity.setRecvLoanUserId(userService.getLoanUserIdByBalanceAccId(payTransferDTO.getInBalanceAcctId()));
+        orderDetailsEntity.setPayLoanUserId(orderEntity.getLoanUserId());
 
         if (!this.loanOrderDetailsService.save(orderDetailsEntity)) {
             log.error("保存转账订单收款详情失败:{}", JSONObject.toJSONString(orderEntity));
@@ -104,6 +111,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         orderGoodsEntity.setProductCount(NumberConstant.ONE);
         orderGoodsEntity.setProductAmount(payTransferDTO.getAmount());
         orderGoodsEntity.setDetailsId(orderDetailsEntity.getId());
+        orderGoodsEntity.setPayLoanUserId(orderDetailsEntity.getPayLoanUserId());
+        orderGoodsEntity.setRecvLoanUserId(orderDetailsEntity.getRecvLoanUserId());
         if (!this.loanOrderGoodsService.save(orderGoodsEntity)) {
             log.error("保存转账商品详情失败:{}", JSONObject.toJSONString(orderEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -145,6 +154,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         orderEntity.setBusinessType(Integer.valueOf(UnionPayBusinessTypeEnum.UNIFIEDORDER.getCode()));
         orderEntity.setCreateAt(date);
         orderEntity.setTradeOrderNo(generatedOrderNumber);
+        orderEntity.setLoanUserId(userService.getLoanUserIdByBalanceAccId(orderEntity.getPayBalanceAcctId()));
         if (!this.orderService.save(orderEntity)) {
             log.error("保存贷款订单信息失败:{}", JSONObject.toJSONString(orderEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -160,7 +170,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             orderDetailsEntity.setPayBalanceAcctId(orderDetailsEntity.getPayBalanceAcctId());
             orderDetailsEntity.setAppId(orderDetailsEntity.getAppId());
             orderDetailsEntity.setCreatedAt(date);
-            orderDetailsEntity.setPayBalanceAcctId(loanOrderUnifiedorderDTO.getPayBalanceAcctId());
+            orderDetailsEntity.setPayLoanUserId(orderEntity.getLoanUserId());
+            orderDetailsEntity.setRecvLoanUserId(userService.getLoanUserIdByBalanceAccId(orderDetailsEntity.getRecvBalanceAcctId()));
             if (!this.loanOrderDetailsService.save(orderDetailsEntity)) {
                 log.error("保存贷款订单详情信息失败:{}", JSONObject.toJSONString(orderDetailsEntity));
                 throw new TfException(ExceptionCodeEnum.FAIL);
@@ -182,6 +193,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
                 orderGoodsEntity.setAppId(loanOrderUnifiedorderDTO.getAppId());
                 orderGoodsEntity.setPayBalanceAcctId(loanOrderUnifiedorderDTO.getPayBalanceAcctId());
                 orderGoodsEntity.setRecvBalanceAcctId(loanOrderDetailsReqDTO.getRecvBalanceAcctId());
+                orderGoodsEntity.setPayLoanUserId(orderDetailsEntity.getPayLoanUserId());
+                orderGoodsEntity.setRecvLoanUserId(orderDetailsEntity.getRecvLoanUserId());
                 orderGoodsEntity.setCreateAt(date);
 
                 ExtraDTO extraDTO = new ExtraDTO();

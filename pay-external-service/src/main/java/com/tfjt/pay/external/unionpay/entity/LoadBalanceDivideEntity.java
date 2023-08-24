@@ -73,4 +73,5 @@ partially_succeeded:部分成功
 	 */
 	private String businessOrderNo;
 
+
 }

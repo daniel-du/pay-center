@@ -102,9 +102,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
      *
      * @param loanCallbackEntity
      */
-    public void treadResult(LoanCallbackEntity loanCallbackEntity) {
-        Thread thread = Thread.currentThread();
-        log.info("开始处理..:{}",thread.getName());
+    public Long treadResult(LoanCallbackEntity loanCallbackEntity) {
         String eventData = loanCallbackEntity.getEventData();
         EventDataDTO eventDataDTO = JSONObject.parseObject(eventData, EventDataDTO.class);
         String tradeType = eventDataDTO.getTradeType().toString();
@@ -112,30 +110,32 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         // 下单回调
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60.equals(tradeType)) {
             LoanOrderEntity orderEntity = loanOrderService.treadResult(eventDataDTO);
-            boolean result = payApplicationCallbackBiz.noticeShop(orderEntity, tradeType,loanCallbackEntity.getId());
-            //记录通知状态
-            this.loanCallbackService.updateNoticeStatus(loanCallbackEntity.getId(),result,orderEntity.getTradeOrderNo());
             //交易成功的进行银联订单确认操作
             if (TradeResultConstant.UNIONPAY_SUCCEEDED.equals(eventDataDTO.getStatus())) {
                 //订单确认
                 this.confirmOrder(orderEntity);
             }
-        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74.equals(tradeType)){
+            payApplicationCallbackBiz.noticeShop(orderEntity, tradeType, loanCallbackEntity.getId());
+            return orderEntity.getLoanUserId();
+        }
+        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74.equals(tradeType)) {
             //TODO 提现入账
             LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
-            if(withdrawalOrder!=null){
+            if (withdrawalOrder != null) {
                 withdrawalOrder.setStatus(eventDataDTO.getStatus());
                 withdrawalOrderService.updateById(withdrawalOrder);
-                payApplicationCallbackBiz.noticeWithdrawalNotice(withdrawalOrder,loanCallbackEntity.getEventType(),loanCallbackEntity.getId());
+                payApplicationCallbackBiz.noticeWithdrawalNotice(withdrawalOrder, loanCallbackEntity.getEventType(), loanCallbackEntity.getId());
             }
+            return null;
 
-        }else if(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeType)){
+        }
+        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeType)) {
             //分账通知
             LoadBalanceDivideEntity divideEntity = loanBalanceDivideService.divideNotice(eventDataDTO);
-            boolean fmsResult = payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
-            boolean shopResult = payApplicationCallbackBiz.noticeShopDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
-            this.loanCallbackService.updateNoticeStatus(loanCallbackEntity.getId(),fmsResult && shopResult,divideEntity.getTradeOrderNo());
+            payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
+            payApplicationCallbackBiz.noticeShopDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
         }
+        return null;
     }
 
     /**
@@ -144,7 +144,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
      * @param order 订单id
      */
     public void confirmOrder(LoanOrderEntity order) {
-        log.info("订单确认:{}",JSONObject.toJSONString(order));
+        log.info("订单确认:{}", JSONObject.toJSONString(order));
         ConsumerPoliciesCheckReqDTO consumerPoliciesCheckReqDTO = new ConsumerPoliciesCheckReqDTO();
         consumerPoliciesCheckReqDTO.setOutOrderNo(order.getTradeOrderNo());
         consumerPoliciesCheckReqDTO.setGuaranteePaymentId(order.getCombinedGuaranteePaymentId());
@@ -168,9 +168,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         Map<String, Object> extra = new HashMap<>();
         extra.put("productInfos", goods);
         consumerPoliciesCheckReqDTO.setExtra(extra);
-        log.info("订单确认调用银联发送消息>>>>>>>>>>>>>>>{}",JSONObject.toJSONString(consumerPoliciesCheckReqDTO));
+        log.info("订单确认调用银联发送消息>>>>>>>>>>>>>>>{}", JSONObject.toJSONString(consumerPoliciesCheckReqDTO));
         Result<ConsumerPoliciesCheckRespDTO> consumerPoliciesCheckRespDTOResult = unionPayService.mergeConsumerPoliciesCheck(consumerPoliciesCheckReqDTO);
-        log.info("订单确认调用银联接收消息<<<<<<<<<<<<<<<{}",JSONObject.toJSONString(consumerPoliciesCheckRespDTOResult));
+        log.info("订单确认调用银联接收消息<<<<<<<<<<<<<<<{}", JSONObject.toJSONString(consumerPoliciesCheckRespDTOResult));
         if (consumerPoliciesCheckRespDTOResult.getCode() == NumberConstant.ONE) {
             order.setConfirmStatus(NumberConstant.ONE);
             this.loanOrderService.updateById(order);
@@ -203,34 +203,32 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     private void detailsNotice(LoanCallbackEntity loanCallbackEntity) {
         String eventType = loanCallbackEntity.getEventType();
         if (UnionPayEventTypeConstant.ROOT_TRANSFER_DEPOSIT.equals(eventType)
-            || UnionPayEventTypeConstant.TRANSFER_DEPOSIT.equals(eventType)
-            || UnionPayEventTypeConstant.WITHDRAWAL_RETURN.equals(eventType)
-            || UnionPayEventTypeConstant.LARGE_PAYMENT.equals(eventType)
+                || UnionPayEventTypeConstant.TRANSFER_DEPOSIT.equals(eventType)
+                || UnionPayEventTypeConstant.WITHDRAWAL_RETURN.equals(eventType)
+                || UnionPayEventTypeConstant.LARGE_PAYMENT.equals(eventType)
                 || UnionPayEventTypeConstant.LARGE_PAYMENT_DEPOSIT_REFUND_RETURN.equals(eventType)
-            || UnionPayEventTypeConstant.TRANSFER_DEPOSIT_REFUND_RETURN.equals(eventType)) {
-
+                || UnionPayEventTypeConstant.TRANSFER_DEPOSIT_REFUND_RETURN.equals(eventType)) {
             //处理母账户入金
-            balanceIncomeNotice(loanCallbackEntity.getEventData(), loanCallbackEntity.getId(),loanCallbackEntity.getEventType(),loanCallbackEntity.getEventId(),loanCallbackEntity.getCreatedAt());
+            balanceIncomeNotice(loanCallbackEntity.getEventData(), loanCallbackEntity.getId(), loanCallbackEntity.getEventType(), loanCallbackEntity.getEventId(), loanCallbackEntity.getCreatedAt());
         } else if (UnionPayEventTypeConstant.TRADE_RESULT.equals(eventType)) {
             //处理交易结果
             treadResult(loanCallbackEntity);
         }
     }
 
-//[{"amount":100,"balanceAcctId":"2008230724456622719","balanceAcctNo":"035030000000046265019","bankMemo":"模拟测试二级商户电子账簿入金:rel_acct_deposit @XAfwdXyaigVVzOrhm5KGFBRJczHPHgYd1brlaE9g4tPSonuzxL3c9DEikXq2cNr0M8Z7jGCKt1WkBBRyy8dIlxc6M6rCUVc9MUvwFtrKCds7Q26NgDP4jvX0YOfftuFvoaonIh5lB0elTmK4V6NbZytYg4iJGxAYtSGuhbF6s67l8MEd3gctghLSIqoYO1Xq6tNu5oga","createTime":1692782603831,"createdAt":1692779437249,"eventId":"9008746502537163899","eventType":"transfer_deposit","id":6,"payBankAcctName":"河北同福云商科技有限公司","payBankAcctNo":"6221320406254979","payBankBranchCode":"313335081005","payBankCode":"313335081005","recordedAt":1692779437227,"tradeId":"4308746502532542470","tradeType":"11","transactionNo":"RealBankMock9781909479213125"}]
     /**
      * 处理银联入金通知
      *
      * @param eventDataString 银联字符串
      * @param createdAt
      */
-    public void balanceIncomeNotice(String eventDataString, Long id, String eventType, String eventId,  String createdAt) {
+    public void balanceIncomeNotice(String eventDataString, Long id, String eventType, String eventId, String createdAt) {
         log.info(eventDataString);
         JSONObject jsonObject = JSONObject.parseObject(eventDataString);
         log.info(jsonObject.toJSONString());
         UnionPayIncomeDetailsDTO unionPayIncomeDTO = JSONObject.parseObject(eventDataString, UnionPayIncomeDetailsDTO.class);
-        List<LoadBalanceNoticeEntity> list = payBalanceNoticeService.saveByEventDate(unionPayIncomeDTO,eventType,eventId,createdAt);
-         payApplicationCallbackBiz.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, eventId, id);
+        List<LoadBalanceNoticeEntity> list = payBalanceNoticeService.saveByEventDate(unionPayIncomeDTO, eventType, eventId, createdAt);
+        payApplicationCallbackBiz.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, eventId, id);
     }
 
 }
