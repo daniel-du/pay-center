@@ -412,11 +412,13 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         if (null != req) {
             unionPayLoanReqLogService.asyncSaveLog(unionPayLoansBaseReturn, p, req, loanUserId);
         }
+        //银联贷款返回码
         if (!Objects.equals("LWZ99999", unionPayLoansBaseReturn.getRespCode())) {
             log.error("银联调用失败{}", responseEntity.getBody().toString());
             throw new TfException(500, unionPayLoansBaseReturn.getRespMsg());
         }
 
+        //银行返回码
         if (Objects.equals("200", unionPayLoansBaseReturn.getRespLwzCode())) {
             IncomingReturn incomingReturn = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), IncomingReturn.class);
             if (Objects.equals(incomingReturn.getApplicationStatus(), "failed")) {
