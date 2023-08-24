@@ -52,7 +52,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
      * @param unionPayLoansBaseCallBackDTO
      * @return
      */
-    public Boolean settleAcctsValidateCallBack(AcctValidationParamDTO eventData, String settleAcctId, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
+    public Long settleAcctsValidateCallBack(AcctValidationParamDTO eventData, String settleAcctId, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
         log.info("打款验证通知-回调参数{}", JSONObject.toJSONString(eventData));
 
         //修改验证状态
@@ -74,8 +74,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         tfLoanUserEntityDTOList.add(tfLoanUserEntityDTO);
         tfLoanUserRpcService.updateBatch(tfLoanUserEntityDTOList);
         //保存日志
-        tfLoanCallbackService.saveLog(custBankInfo.getLoanUserId(), unionPayLoansBaseCallBackDTO.getEventId(), unionPayLoansBaseCallBackDTO.getEventType(), JSONObject.toJSONString(eventData),unionPayLoansBaseCallBackDTO.getCreatedAt(), 1, eventData.getDestAcctNo());
-        return true;
+        return tfLoanUserEntity.getId();
 
     }
 
@@ -83,32 +82,32 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     @Lock4j(keys = {"#unionPayLoansBaseCallBackDTO.eventId"}, expire = 3000, acquireTimeout = 2000)
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Boolean unionPayLoansBaseCallBack(UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
+    public Long unionPayLoansBaseCallBack(UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
 
-
+        Long id = null;
         //1二级进件回调
         if(Objects.equals("mch_application_finished", unionPayLoansBaseCallBackDTO.getEventType())){
             TwoIncomingEventDataDTO twoIncomingEventDataDTO  = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), TwoIncomingEventDataDTO.class);
-            twoIncomingCallBack(twoIncomingEventDataDTO, unionPayLoansBaseCallBackDTO);
+            id = twoIncomingCallBack(twoIncomingEventDataDTO, unionPayLoansBaseCallBackDTO);
         }
         //2贷款回调
         if(Objects.equals("settle_acct_pay_amount_validation", unionPayLoansBaseCallBackDTO.getEventType())){
             SettleAcctsEventDataDTO eventDataDTO  = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), SettleAcctsEventDataDTO.class);
-            settleAcctsValidateCallBack(eventDataDTO.getAcctValidationParam(), eventDataDTO.getSettleAcctId(), unionPayLoansBaseCallBackDTO);
+            id = settleAcctsValidateCallBack(eventDataDTO.getAcctValidationParam(), eventDataDTO.getSettleAcctId(), unionPayLoansBaseCallBackDTO);
         }
-        return true;
+        return id;
     }
 
-    public Boolean twoIncomingCallBack(TwoIncomingEventDataDTO twoIncomingEventDataDTO, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
+    public Long twoIncomingCallBack(TwoIncomingEventDataDTO twoIncomingEventDataDTO, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
         log.info("二级商户进件回调结果通知-回调参数{}", JSONObject.toJSONString(twoIncomingEventDataDTO));
         LoanUserEntity tfLoanUserEntity = verifyIncomingCallBack(twoIncomingEventDataDTO);
         //修改货款商户
         updatTfLoanUserEntity(twoIncomingEventDataDTO, tfLoanUserEntity);
-        //添加电子账单
-        addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(),  twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
-        //保存记录
-        tfLoanCallbackService.saveLog(tfLoanUserEntity.getId(), unionPayLoansBaseCallBackDTO.getEventId(), unionPayLoansBaseCallBackDTO.getEventType(), JSONObject.toJSONString(twoIncomingEventDataDTO),unionPayLoansBaseCallBackDTO.getCreatedAt(), 2, "");
-        return true;
+        if(!Objects.equals("failed",twoIncomingEventDataDTO.getApplicationStatus() ) && StringUtils.isNotBlank(twoIncomingEventDataDTO.getBalanceAcctId())){
+            //添加电子账单
+            addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(),twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
+        }
+        return tfLoanUserEntity.getId();
     }
 
     /**
