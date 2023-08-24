@@ -3,14 +3,16 @@ package com.tfjt.pay.external.unionpay.job;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBiz;
+import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.xxl.job.core.biz.model.ReturnT;
+import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.io.FileNotFoundException;
 
 /**
  * 贷款业务定时任务
@@ -27,6 +29,9 @@ public class LoanBusinessJob {
 
     @Resource
     private UnionPayLoansCallbackApiBiz unionPayLoansCallbackApiBiz;
+
+    @Resource
+    private LoanUserBizService loanUserBizService;
 
     /**
      * 下载昨日对账单
@@ -51,5 +56,26 @@ public class LoanBusinessJob {
     @XxlJob("applicationCallback")
     public void applicationCallback(){
         unionPayLoansCallbackApiBiz.applicationCallback();
+    }
+
+
+
+    /**
+     * 贷款签约状态修改
+     * @param param
+     * @return
+     */
+    @XxlJob("applicationStatusUpdateJob")
+    public ReturnT<String> applicationStatusUpdateJob(String param) {
+        long start = System.currentTimeMillis();
+        String jobParam = XxlJobHelper.getJobParam();
+
+        XxlJobHelper.log("--------------------------开始贷款签约状态修改任务----------------------");
+        loanUserBizService.applicationStatusUpdateJob(jobParam);
+        long end1 = System.currentTimeMillis();
+
+        XxlJobHelper.log("--------------------------结束贷款签约状态修改任务任务----------------------");
+        XxlJobHelper.log("---------------------"+Thread.currentThread().getName()+"总计用时"+(end1 - start)/1000+"S---------------------------");
+        return ReturnT.SUCCESS;
     }
 }
