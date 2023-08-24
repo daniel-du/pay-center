@@ -166,6 +166,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         long start = System.currentTimeMillis();
         String result = "";
         try {
+
             log.info("应用服务发送交易通知>>>>>>>>>>>>>:{},请求参数:{},appId:{}", callBackUrl, parameter, appId);
             result = HttpUtil.post(callBackUrl, parameter);
             log.info("接受应用服务发送交易通知<<<<<<<<<<:{}", result);

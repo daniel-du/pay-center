@@ -46,7 +46,7 @@ public class LoanBusinessJob {
         unionPayLoansCallbackApiBiz.confirmOrder();
     }
     /**
-     * 定时扫描未确认的订单信息
+     * 通知失败的任务
      */
     @XxlJob("applicationCallback")
     public void applicationCallback(){
