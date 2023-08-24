@@ -102,7 +102,6 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
     public Long twoIncomingCallBack(TwoIncomingEventDataDTO twoIncomingEventDataDTO, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO) {
         log.info("二级商户进件回调结果通知-回调参数{}", JSONObject.toJSONString(twoIncomingEventDataDTO));
-        log.info("二级商户进件回调结果通知-回调参数{}", JSONObject.toJSONString(twoIncomingEventDataDTO));
         LoanUserEntity tfLoanUserEntity = verifyIncomingCallBack(twoIncomingEventDataDTO);
         //修改货款商户
         updatTfLoanUserEntity(twoIncomingEventDataDTO, tfLoanUserEntity);
