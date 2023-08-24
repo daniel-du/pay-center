@@ -132,6 +132,14 @@ public class CustBankInfoController {
                 return Result.failed("手机号格式错误！");
             }
             ValidatorUtils.validateEntity(custBankInfo);
+            //判断卡号是否存在
+            CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(custBankInfo.getBankCardNo(), custBankInfo.getLoanUserId());
+            if (bankInfoByBankCardNoAndLoanUserId != null) {
+                if(!custBankInfo.getId().equals(bankInfoByBankCardNoAndLoanUserId.getId())){
+                    return Result.failed("该卡号已存在");
+                }
+            }
+
             //查询贷款用户类型
             LoanUserEntity loanUerInfo = loanUserService.getById(custBankInfo.getLoanUserId());
             long loanUserType = loanUerInfo.getLoanUserType();

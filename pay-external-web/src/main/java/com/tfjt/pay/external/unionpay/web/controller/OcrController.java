@@ -75,13 +75,13 @@ public class OcrController {
             error.printStackTrace();
             // 如有需要，请打印 error
             Common.assertAsString(error.message);
-            return Result.failed(error.message);
+            return Result.failed("无法识别营业执照");
         } catch (Exception _error) {
             _error.printStackTrace();
             TeaException error = new TeaException(_error.getMessage(), _error);
             // 如有需要，请打印 error
             Common.assertAsString(error.message);
-            return Result.failed(error.message);
+            return Result.failed("识别营业执照异常");
         }
     }
 }
