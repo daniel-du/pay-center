@@ -88,27 +88,32 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Override
     public Result<String> transfer(UnionPayTransferRespDTO payTransferDTO) {
         log.info("转账接收参数:{}", JSONObject.toJSONString(payTransferDTO));
-        ValidatorUtils.validateEntity(payTransferDTO);
-        //1.判断单号是否存在
-        if (loanOrderBiz.checkExistBusinessOrderNo(payTransferDTO.getBusinessOrderNo(), payTransferDTO.getAppId())) {
-            log.error("业务单号已存在:{},appId:{}", payTransferDTO.getBusinessOrderNo(), payTransferDTO.getAppId());
-            throw new TfException(PayExceptionCodeEnum.TREAD_ORDER_NO_REPEAT);
+        try{
+            ValidatorUtils.validateEntity(payTransferDTO);
+            //1.判断单号是否存在
+            if (loanOrderBiz.checkExistBusinessOrderNo(payTransferDTO.getBusinessOrderNo(), payTransferDTO.getAppId())) {
+                log.error("业务单号已存在:{},appId:{}", payTransferDTO.getBusinessOrderNo(), payTransferDTO.getAppId());
+                throw new TfException(PayExceptionCodeEnum.TREAD_ORDER_NO_REPEAT);
+            }
+            checkLoanAccount(payTransferDTO.getOutBalanceAcctId(), payTransferDTO.getAmount());
+            //2.保存订单信息
+            String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_TB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
+            LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();
+            BeanUtil.copyProperties(payTransferDTO, loanTransferRespDTO);
+            loanOrderBiz.transferSaveOrder(loanTransferRespDTO, tradeOrderNo);
+            //3.调用银联信息
+            ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
+            Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
+            if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
+                log.error("调用银联接口失败");
+                throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
+            }
+            this.loanOrderBiz.saveMergeConsumerResult(result, payTransferDTO.getAppId());
+            return Result.ok(result.getData().getStatus());
+        }catch (TfException e){
+            e.printStackTrace();
+            return Result.failed(e.getMessage());
         }
-        checkLoanAccount(payTransferDTO.getOutBalanceAcctId(), payTransferDTO.getAmount());
-        //2.保存订单信息
-        String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_TB,new Date(),UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,redisCache);
-        LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();
-        BeanUtil.copyProperties(payTransferDTO, loanTransferRespDTO);
-        loanOrderBiz.transferSaveOrder(loanTransferRespDTO, tradeOrderNo);
-        //3.调用银联信息
-        ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
-        Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
-        if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
-            log.error("调用银联接口失败");
-            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
-        }
-        this.loanOrderBiz.saveMergeConsumerResult(result, payTransferDTO.getAppId());
-        return Result.ok(result.getData().getStatus());
     }
 
     @Override
@@ -181,6 +186,9 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             this.payBalanceDivideBiz.updateByUnionPayDivideReqDTO(result.getData(), balanceDivideReq.getAppId());
             //6.解析返回数据响应给业务系统
             return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
+        } catch (TfException e) {
+            //交易失败的状态
+            return Result.failed(e.getMessage());
         } catch (Exception e) {
             log.error("调用银联异常分账接口异常:{}", e.getMessage());
             //7.查询交易结果信息,防止请求发出未收到响应重复支付
