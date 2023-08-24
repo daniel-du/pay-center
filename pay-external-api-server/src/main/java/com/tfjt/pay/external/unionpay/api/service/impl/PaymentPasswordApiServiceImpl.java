@@ -1,12 +1,10 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
-import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.PaymentPasswordRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.PaymentPasswordApiService;
 import com.tfjt.pay.external.unionpay.entity.PaymentPasswordEntity;
 import com.tfjt.pay.external.unionpay.service.PaymentPasswordService;
@@ -21,7 +19,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Slf4j
-@DubboService
+@DubboService(filter = "AuthProviderFilter")
 public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService {
 
     @Resource

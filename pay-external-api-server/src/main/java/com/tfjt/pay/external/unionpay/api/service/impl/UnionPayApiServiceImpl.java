@@ -200,8 +200,13 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
+        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(withdrawalReqDTO.getBusId(), withdrawalReqDTO.getType());
+        if (loanUser == null) {
+            return Result.failed("未找到贷款用户");
+        }
         String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74, redisCache);
-        String md5Str = withdrawalReqDTO.getLoanUserId() + ":" + withdrawalReqDTO.getAmount();
+        String md5Str =withdrawalReqDTO.getBusId()+":"+ withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
+        log.info("放重复提交加密后的M5d值为：{}", md5Str);
         String idempotentMd5 = MD5Util.getMD5String(md5Str);
         String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
         log.info("放重复提交加密后的M5d值为：{}", idempotentMd5);
@@ -210,7 +215,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         } else {
             return Result.failed("请勿重复提现");
         }
-        LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(withdrawalReqDTO.getLoanUserId());
+        LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
         withdrawalCreateReqDTO.setOutOrderNo(outOrderNo);
