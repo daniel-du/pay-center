@@ -8,5 +8,5 @@ import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
  */
 public interface UnionPayLoansCallbackApiService {
 
-    Boolean unionPayLoansBaseCallBack(UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO);
+    Long unionPayLoansBaseCallBack(UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO);
 }

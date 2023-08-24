@@ -117,6 +117,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
     @Override
     public Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Integer type, String bid) {
         try {
+            log.info("参数：bid={},type={}", bid, type);
             LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bid, type);
             if (ObjectUtils.isEmpty(loanUser)) {
                 return Result.failed("未查询到相关用户");

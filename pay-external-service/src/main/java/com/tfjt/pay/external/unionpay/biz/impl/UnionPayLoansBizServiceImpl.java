@@ -48,6 +48,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public void unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
+        log.info("解绑银行卡参数：{}", bankInfoReqDTO);
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(bankInfoReqDTO.getLoanUserId());
         if (custBankInfos.size()==1) {
             throw new TfException("解绑银行卡失败，至少保留一张银行卡");
@@ -79,6 +80,11 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
+        log.info("绑定银行卡参数：{}", bankInfoReqDTO);
+        CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId= custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), bankInfoReqDTO.getLoanUserId());
+        if(bankInfoByBankCardNoAndLoanUserId!=null){
+            throw new TfException("银行卡已存在");
+        }
         List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(bankInfoReqDTO.getLoanUserId());
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
         BeanUtils.copyProperties(bankInfoReqDTO, custBankInfoEntity);

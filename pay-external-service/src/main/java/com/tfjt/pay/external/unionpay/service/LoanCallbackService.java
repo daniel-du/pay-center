@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanCallbackEntity;
 
 /**
@@ -12,7 +13,7 @@ import com.tfjt.pay.external.unionpay.entity.LoanCallbackEntity;
  */
 public interface LoanCallbackService extends IService<LoanCallbackEntity> {
 
-    LoanCallbackEntity saveLog(Long loanUserId, String eventId, String eventType, String toJSONString, String createdAt, Integer type, String destAcctNo);
+    LoanCallbackEntity saveLog(Long loanUserId, UnionPayLoansBaseCallBackDTO unionPayLoansBaseCallBackDTO, Integer type, String destAcctNo);
 
     void updateNoticeStatus(Long id, boolean result, String tradeOrderNo);
 }
