@@ -160,13 +160,15 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             orderDetailsEntity.setPayBalanceAcctId(orderDetailsEntity.getPayBalanceAcctId());
             orderDetailsEntity.setAppId(orderDetailsEntity.getAppId());
             orderDetailsEntity.setCreatedAt(date);
-            if (this.loanOrderDetailsService.save(orderDetailsEntity)) {
+            orderDetailsEntity.setPayBalanceAcctId(loanOrderUnifiedorderDTO.getPayBalanceAcctId());
+            if (!this.loanOrderDetailsService.save(orderDetailsEntity)) {
                 log.error("保存贷款订单详情信息失败:{}", JSONObject.toJSONString(orderDetailsEntity));
                 throw new TfException(ExceptionCodeEnum.FAIL);
             }
             GuaranteePaymentDTO guaranteePaymentDTO = new GuaranteePaymentDTO();
             guaranteePaymentDTO.setAmount(loanOrderDetailsReqDTO.getAmount());
-            guaranteePaymentDTO.setPayBalanceAcctId(orderDetailsEntity.getPayBalanceAcctId());
+            //guaranteePaymentDTO.setPayBalanceAcctId(orderDetailsEntity.getPayBalanceAcctId());
+            guaranteePaymentDTO.setRecvBalanceAcctId(orderDetailsEntity.getRecvBalanceAcctId());
             guaranteePaymentDTO.setOutOrderNo(orderDetailsEntity.getTradeOrderNo());
             guaranteePaymentDTO.setRecvBalanceAcctId(guaranteePaymentDTO.getRecvBalanceAcctId());
             List<ExtraDTO> listGoods = new ArrayList<>();
