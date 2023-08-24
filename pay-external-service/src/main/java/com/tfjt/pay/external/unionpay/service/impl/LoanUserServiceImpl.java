@@ -157,7 +157,8 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         if (!ObjectUtil.isEmpty(idcardInfoEntity)) {
             dto.setMerchantShortName(idcardInfoEntity.getMerchantShortName());
         }
-        CustBankInfoEntity custBankInfoEntity = custBankInfoService.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId));
+
+        CustBankInfoEntity custBankInfoEntity = custBankInfoService.getByLoanUserId(loanUserId);
         if (custBankInfoEntity != null) {
             dto.setPhone(custBankInfoEntity.getPhone());
         }
