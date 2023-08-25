@@ -48,7 +48,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     private TfLoanUserRpcService tfLoanUserRpcService;
 
     /**
-     * 打款验证通知
+     * 打款验证通知 settleAcctId 进件新增之后 修改不变
      * @param eventData
      * @param unionPayLoansBaseCallBackDTO
      * @return
@@ -58,8 +58,11 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         log.info("打款验证通知-回调参数{}", JSONObject.toJSONString(eventData));
         LoanUserEntity tfLoanUserEntity = tfLoanUserService.getOne(new LambdaQueryWrapper<LoanUserEntity>().eq(LoanUserEntity::getOutRequestNo, outRequestNo));
         if(tfLoanUserEntity != null && StringUtils.isNotBlank(settleAcctId)){
-            tfLoanUserEntity.setSettleAcctId(settleAcctId);
-            tfLoanUserService.updateById(tfLoanUserEntity);
+            if(StringUtils.isBlank(tfLoanUserEntity.getSettleAcctId())){
+                tfLoanUserEntity.setSettleAcctId(settleAcctId);
+                tfLoanUserService.updateById(tfLoanUserEntity);
+            }
+
         }
         //修改银行是否打款状态1是
         updateBankCallStatus(tfLoanUserEntity);
