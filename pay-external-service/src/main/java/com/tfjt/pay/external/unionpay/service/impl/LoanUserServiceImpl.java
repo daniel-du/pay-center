@@ -253,6 +253,12 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         return this.getBaseMapper().getByBalanceAcctId(balanceAcctId);
     }
 
+    @Override
+    public Integer getBankCallStatus(Long loanUserId) {
+        LoanUserEntity loanUser = this.getById(loanUserId);
+        return loanUser.getBankCallStatus();
+    }
+
     /**
      * 查询并更新贷款用户-状态
      *
