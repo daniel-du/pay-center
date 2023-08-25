@@ -254,6 +254,12 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
     }
 
     @Override
+    public Integer getBankCallStatus(Long loanUserId) {
+        LoanUserEntity loanUser = this.getById(loanUserId);
+        return loanUser.getBankCallStatus();
+    }
+
+    @Override
     public Long getLoanUserIdByBalanceAccId(String balanceAcctId) {
         LoanUserEntity user = this.getByBalanceAcctId(balanceAcctId);
         return Objects.isNull(user) ? null : user.getId();

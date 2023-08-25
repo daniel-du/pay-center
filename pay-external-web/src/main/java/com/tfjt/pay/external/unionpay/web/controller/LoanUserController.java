@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.tfcloud.business.api.TfLoanBalanceRpcService;
@@ -112,6 +113,7 @@ public class LoanUserController {
 
         return Result.ok(tfLoanUser);
     }
+
 
     /**
      * 判断是否进件

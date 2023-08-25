@@ -75,4 +75,20 @@ public class UserLoanInfoController {
             return Result.failed(e.getMessage());
         }
     }
+
+    /**
+     * 银行是否打款状态
+     * @param loanUserId
+     * @return
+     */
+    @GetMapping("/getBankCallStatus")
+    public Result<Integer> getBankCallStatus(@RequestParam Long loanUserId) {
+        try {
+            return Result.ok(this.loanUserService.getBankCallStatus(loanUserId));
+        }catch (Exception e){
+            log.error("查询银行是否打款状态,loanUserId:{}",loanUserId);
+            return Result.failed(e.getMessage());
+        }
+    }
+
 }

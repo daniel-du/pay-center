@@ -53,6 +53,8 @@ public interface LoanUserService extends IService<LoanUserEntity> {
      */
     LoanUserEntity getByBalanceAcctId(String balanceAcctId);
 
+    Integer getBankCallStatus(Long loanUserId);
+
     /**
      *
      * @param balanceAcctId

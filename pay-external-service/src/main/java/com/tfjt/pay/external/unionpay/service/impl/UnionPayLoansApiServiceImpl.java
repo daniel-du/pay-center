@@ -908,11 +908,11 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     public UnionPayLoansSettleAcctDTO querySettleAcctByOutRequestNo(Long loanUserId, String outRequestNo) {
 
         CustBankInfoEntity custBankInfoEntity = custBankInfoService.getByLoanUserId(loanUserId);
-        if (Objects.equals(custBankInfoEntity.getVerifyStatus(), "succeeded")) {
+/*        if (Objects.equals(custBankInfoEntity.getVerifyStatus(), "succeeded")) {
             UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = new UnionPayLoansSettleAcctDTO();
             unionPayLoansSettleAcctDTO.setVerifyStatus("succeeded");
             return unionPayLoansSettleAcctDTO;
-        }
+        }*/
         //业务参数复制
         Map<String, String> reqParams = new HashMap<>();
         reqParams.put("outRequestNo", outRequestNo);
