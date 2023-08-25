@@ -334,6 +334,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             custBankInfoService.updateCustBankVerifyStatus(loanUserId, unionPayLoansSettleAcct.getBankAcctNo(), unionPayLoansSettleAcct.getVerifyStatus());
         }
         getBaseIncomingReturnStr(responseEntity, null, null, null);
+        //修改打款验证按钮显示
+        LoanUserEntity tfLoanUserEntity = loanUserService.getById(loanUserId);
+        tfLoanUserEntity.setBankCallStatus(0);
+        loanUserService.updateById(tfLoanUserEntity);
         return unionPayLoansSettleAcct;
     }
 

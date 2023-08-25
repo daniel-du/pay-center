@@ -103,6 +103,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         LoanUserEntity tfLoanUserEntity = verifyIncomingCallBack(twoIncomingEventDataDTO);
         //修改货款商户
         updatTfLoanUserEntity(twoIncomingEventDataDTO, tfLoanUserEntity);
+
         if(Objects.equals("succeeded",twoIncomingEventDataDTO.getApplicationStatus())){
             //添加电子账单
             addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(),  twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
