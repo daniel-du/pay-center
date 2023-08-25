@@ -73,16 +73,21 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
-        LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
-        loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
-        loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
-        LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-        if (Objects.isNull(balanceAcc)) {
-            return Result.failed("电子账簿信息不存在");
+        try{
+            LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
+            loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
+            loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
+            LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+            if (Objects.isNull(balanceAcc)) {
+                return Result.failed("电子账簿信息不存在");
+            }
+            loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
+            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getRelAcctNo());
+            return Result.ok(loanTransferToTfDTO);
+        }catch (Exception e){
+            e.printStackTrace();
+            return Result.failed(e.getMessage());
         }
-        loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
-        loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getRelAcctNo());
-        return Result.ok(loanTransferToTfDTO);
     }
 
     @Override
