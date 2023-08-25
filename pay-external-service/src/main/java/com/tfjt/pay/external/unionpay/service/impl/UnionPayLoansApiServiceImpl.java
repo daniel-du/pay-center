@@ -293,8 +293,8 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
             log.info("二级进件修改接口{}", responseEntity.getBody().toString());
             incomingReturn = getBaseIncomingReturn(responseEntity, tfLoanUserEntity, req, tfLoanUserEntity.getId());
+            //二级商户信息的修改需通过银行运营人员审核，如果变更法人手机号或者绑定账户相关内容，需要重新打款验证
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
-            //tfLoanUserEntity.setCusId(incomingReturn.getCusId());
             loanUserService.updateById(tfLoanUserEntity);
         } catch (TfException e) {
             log.error("银联-二级进件-修改失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
