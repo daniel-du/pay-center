@@ -189,7 +189,16 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         long end = System.currentTimeMillis();
         record.setResponseTime((int) (end - start));
         //异步记录请求日志
-        boolean b = "success".equalsIgnoreCase(result);
+        boolean b = false;
+        if (StringUtil.isNotBlank(result)){
+            try {
+                JSONObject jsonObject = JSONObject.parseObject(result);
+                Integer code = jsonObject.getInteger("code");
+                b = HttpStatus.HTTP_OK == code;
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
         record.setCallbackStatus(b? NumberConstant.ONE:NumberConstant.ZERO);
         recordService.asyncSave(record);
         return b;
