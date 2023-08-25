@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
@@ -293,6 +294,11 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
             log.info("二级进件修改接口{}", responseEntity.getBody().toString());
             incomingReturn = getBaseIncomingReturn(responseEntity, tfLoanUserEntity, req, tfLoanUserEntity.getId());
+            IncomingReturn incomingReturnSel = this.getTwoIncomingInfo(incomingReturn.getOutRequestNo());
+            tfLoanUserEntity.setApplicationStatus(incomingReturnSel.getApplicationStatus());
+            if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+                tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
+            }
             //二级商户信息的修改需通过银行运营人员审核，如果变更法人手机号或者绑定账户相关内容，需要重新打款验证
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
             loanUserService.updateById(tfLoanUserEntity);
