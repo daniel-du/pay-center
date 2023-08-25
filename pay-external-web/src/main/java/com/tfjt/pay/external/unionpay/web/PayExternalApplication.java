@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  */
 @SpringBootApplication(scanBasePackages = {"com.tfjt.pay.external"})
 @MapperScan({"com.tfjt.pay.external.**.dao"})
-@ComponentScan(basePackages={"com.tfjt.pay.external","com.tfjt.tfcommon.core.util"})
+@ComponentScan(basePackages={"com.tfjt.pay.external","com.tfjt.tfcommon.core.util","com.tfjt.tfcommon.auth.interceptor"})
 @ServletComponentScan
 @EnableAsync
 @EnableFeignClients
