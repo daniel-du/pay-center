@@ -1,9 +1,8 @@
-package com.tfjt.pay.external.unionpay.entity;
+package com.tfjt.pay.external.unionpay.dto.resp;
 
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -16,8 +15,7 @@ import java.io.Serializable;
  * @date 2023-05-23 08:48:02
  */
 @Data
-@TableName("tf_loan_balance_acct")
-public class LoanBalanceAcctEntity implements Serializable {
+public class LoanBalanceAcctRespDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -37,5 +35,9 @@ public class LoanBalanceAcctEntity implements Serializable {
 	 * 电子账簿账簿号
 	 */
 	private String relAcctNo;
+	/**
+	 * 电子账号名称
+	 */
+	private String balanceAcctName;
 
 }
