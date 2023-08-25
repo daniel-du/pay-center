@@ -179,6 +179,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         }
 
         if(Objects.equals("failed",twoIncomingEventDataDTO.getApplicationStatus() )){
+            tfLoanUserEntity.setBankCallStatus(1);
             if(!Objects.isNull(twoIncomingEventDataDTO.getFailedAt())){
                 tfLoanUserEntity.setFailedAt(twoIncomingEventDataDTO.getFailedAt());
             }
