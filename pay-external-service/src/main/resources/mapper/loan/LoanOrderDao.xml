@@ -15,9 +15,17 @@
         <result property="createAt" column="create_at"/>
         <result property="finishedAt" column="finished_at"/>
         <result property="status" column="status"/>
-        <result property="appid" column="appid"/>
+        <result property="appId" column="app_id"/>
         <result property="businessType" column="business_type"/>
     </resultMap>
+    <select id="listNotConfirmOrder" resultType="com.tfjt.pay.external.unionpay.entity.LoanOrderEntity">
+        select * from tf_loan_order  o
+            where o.created_at &gt;= #{date}
+            and o.id in (
+                select order_id from tf_loan_order_details where confirm_status = 0
+
+                )
+    </select>
 
 
 </mapper>

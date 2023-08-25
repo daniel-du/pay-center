@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import cn.hutool.core.date.DateTime;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -85,6 +86,12 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
             log.error("解析银联日期失败:{}",eventDataDTO.getFinishedAt());
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
+    }
+
+    @Override
+    public List<LoanOrderEntity> listNotConfirmOrder() {
+        DateTime dateTime = cn.hutool.core.date.DateUtil.beginOfDay(cn.hutool.core.date.DateUtil.date());
+        return this.getBaseMapper().listNotConfirmOrder(dateTime);
     }
 
 }

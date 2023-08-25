@@ -77,6 +77,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         orderEntity.setAppId(payTransferDTO.getAppId());
         orderEntity.setBusinessType(Integer.valueOf(UnionPayBusinessTypeEnum.TRANSFER.getCode()));
         orderEntity.setLoanUserId(userService.getLoanUserIdByBalanceAccId(payTransferDTO.getOutBalanceAcctId()));
+        orderEntity.setAmount(payTransferDTO.getAmount());
         if (!this.orderService.save(orderEntity)) {
             log.error("保存转账订单信息失败:{}", JSONObject.toJSONString(orderEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
