@@ -1,4 +1,4 @@
-package com.tfjt.pay.web;
+package com.tfjt.pay.trade.web;
 
 import org.junit.runner.RunWith;
 import org.mybatis.spring.annotation.MapperScan;

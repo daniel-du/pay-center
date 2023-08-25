@@ -56,7 +56,7 @@ public interface UnionPayApiService {
      * @param loanOrderUnifiedorderDTO
      * @return
      */
-    Result<String> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO);
+    Result<MergeConsumerRepDTO> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO);
 
 
     /**

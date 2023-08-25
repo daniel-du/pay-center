@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -7,6 +9,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tfjt.pay.external.unionpay.dao.LoanRequestApplicationRecordDao;
 import com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity;
 import com.tfjt.pay.external.unionpay.service.LoanRequestApplicationRecordService;
+
+import java.util.List;
 
 
 @Service("loanRequestApplicationRecordService")
@@ -17,5 +21,11 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
     @Override
     public void asyncSave(LoanRequestApplicationRecordEntity record) {
         this.save(record);
+    }
+
+    @Override
+    public List<LoanRequestApplicationRecordEntity> listError() {
+        DateTime dateTime = DateUtil.beginOfDay(DateUtil.date());
+        return this.getBaseMapper().listError(dateTime);
     }
 }

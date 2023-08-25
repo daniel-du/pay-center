@@ -1,8 +1,11 @@
 package com.tfjt.pay.external.unionpay.dao;
 
+import cn.hutool.core.date.DateTime;
 import com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 贷款-调用回调业务日志表
@@ -13,5 +16,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface LoanRequestApplicationRecordDao extends BaseMapper<LoanRequestApplicationRecordEntity> {
-	
+
+    List<LoanRequestApplicationRecordEntity> listError(DateTime date);
 }

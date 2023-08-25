@@ -54,20 +54,25 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             throw new TfException("解绑银行卡失败，至少保留一张银行卡");
         }else{
             CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), bankInfoReqDTO.getLoanUserId());
-            log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
-            LoanUserEntity loanUser = loanUserService.getById(bankInfoReqDTO.getLoanUserId());
-            if(ObjectUtils.isNotEmpty(loanUser)){
-                ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
-                deleteSettleAcctParams.setBankAcctNo(bankInfoReqDTO.getBankCardNo());
-                deleteSettleAcctParams.setCusId(loanUser.getCusId());
-                deleteSettleAcctParams.setMchId(loanUser.getBusId());
-                unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
-            }else{
-                throw new TfException("贷款用户不存在");
+            if(ObjectUtils.isNotEmpty(custBankInfo)){
+                log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
+                LoanUserEntity loanUser = loanUserService.getById(bankInfoReqDTO.getLoanUserId());
+                if(ObjectUtils.isNotEmpty(loanUser)){
+                    ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
+                    deleteSettleAcctParams.setBankAcctNo(bankInfoReqDTO.getBankCardNo());
+                    deleteSettleAcctParams.setCusId(loanUser.getCusId());
+                    deleteSettleAcctParams.setMchId(loanUser.getBusId());
+                    unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
+                }else{
+                    throw new TfException("贷款用户不存在");
+                }
+                //标记删除银行卡
+                custBankInfo.setDeleted(true);
+                custBankInfoService.updateCustBankInfo(custBankInfo);
+            }else {
+                throw new TfException("解绑银行卡失败，银行卡不存在");
             }
-            //标记删除银行卡
-            custBankInfo.setDeleted(true);
-            custBankInfoService.updateCustBankInfo(custBankInfo);
+
         }
 
     }

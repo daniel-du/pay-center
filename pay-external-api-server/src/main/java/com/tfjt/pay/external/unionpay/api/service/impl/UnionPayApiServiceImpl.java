@@ -294,7 +294,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Lock4j(keys = "#loanOrderUnifiedorderDTO.businessOrderNo", expire = 10000)
     @Override
-    public Result<String> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
+    public Result<MergeConsumerRepDTO> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
         log.info("下单参数:{}",JSONObject.toJSONString(loanOrderUnifiedorderDTO));
         try{
             //1.判断单号是否存在
@@ -315,10 +315,14 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
                 return Result.failed(result.getMsg());
             }
             this.loanOrderBiz.saveMergeConsumerResult(result, loanOrderUnifiedorderDTO.getAppId());
-            return Result.ok(result.getData().getStatus());
+            MergeConsumerRepDTO mergeConsumerRepDTO = new MergeConsumerRepDTO();
+            mergeConsumerRepDTO.setBusinessOrderNo(loanOrderUnifiedorderDTO.getBusinessOrderNo());
+            mergeConsumerRepDTO.setStatus(result.getData().getStatus());
+            // mergeConsumerRepDTO.setReason(result.getData().getRemark());
+            return Result.ok(mergeConsumerRepDTO);
         }catch (TfException e){
             e.printStackTrace();
-            log.error("转账异常");
+            log.error("生单异常");
             return Result.failed(e.getMessage());
         }
     }

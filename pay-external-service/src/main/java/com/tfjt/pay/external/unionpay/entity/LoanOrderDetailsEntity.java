@@ -97,4 +97,8 @@ public class LoanOrderDetailsEntity implements Serializable {
 	 */
 	private String appId;
 
+	private Long payLoanUserId;
+
+	private Long recvLoanUserId;
+
 }

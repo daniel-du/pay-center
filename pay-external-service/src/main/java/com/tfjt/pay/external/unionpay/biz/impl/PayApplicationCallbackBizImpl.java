@@ -150,7 +150,16 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         }
     }
 
+    @Override
+    public boolean retryNotice(LoanRequestApplicationRecordEntity o) {
+        return sendRequest(o.getAppId(),o.getRequestParam(),o.getTradeOrderNo(),o.getTradeType(),o.getCallbackId(),o.getRequestUrl());
+    }
 
+
+    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId) {
+        String callBackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(eventType, appId);
+        return sendRequest(appId,parameter,tradeOrderNo,eventType,callbackId,callBackUrl);
+    }
     /**
      * 发送请求并记录请求日志信息
      *
@@ -160,9 +169,9 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
      * @param eventType    通知类型
      * @param callbackId   关联银联回调记录表id
      */
-    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId) {
-        String callBackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(eventType, appId);
-        LoanRequestApplicationRecordEntity record = builderRecord(appId, parameter, tradeOrderNo, callbackId,callBackUrl);
+    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId,String callBackUrl) {
+
+        LoanRequestApplicationRecordEntity record = builderRecord(appId, parameter, tradeOrderNo, callbackId,callBackUrl,eventType);
         long start = System.currentTimeMillis();
         String result = "";
         try {
@@ -194,11 +203,13 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
      * @param tradeOrderNo 业务id
      * @param callbackId   银联通知表id
      * @param callBackUrl  请求地址
+     * @param eventType    事件类型 同银联回调类型
      * @return 通知记录信息
      */
-    private LoanRequestApplicationRecordEntity builderRecord(String appId, String parameter, String tradeOrderNo, Long callbackId, String callBackUrl) {
+    private LoanRequestApplicationRecordEntity builderRecord(String appId, String parameter, String tradeOrderNo, Long callbackId, String callBackUrl, String eventType) {
         LoanRequestApplicationRecordEntity record = new LoanRequestApplicationRecordEntity();
         record.setAppId(appId);
+        record.setTradeType(eventType);
         record.setRequestParam(parameter);
         record.setTradeOrderNo(tradeOrderNo);
         record.setCreateTime(new Date());

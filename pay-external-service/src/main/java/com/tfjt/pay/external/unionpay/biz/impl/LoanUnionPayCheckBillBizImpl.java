@@ -66,7 +66,7 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
                 if (!file.exists()) {
                     file.mkdirs();
                 }
-                File cvsFile = new File(file, "checkbill" + format + ".cvs");
+                File cvsFile = new File(file, "checkbill" + format + ".csv");
                 FileOutputStream fileOutputStream = new FileOutputStream(cvsFile);
                 HttpUtil.download(stringResult.getData(), fileOutputStream, true);
                 String absolutePath = cvsFile.getAbsolutePath();

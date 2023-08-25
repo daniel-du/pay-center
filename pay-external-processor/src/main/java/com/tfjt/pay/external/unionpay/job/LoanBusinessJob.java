@@ -48,14 +48,18 @@ public class LoanBusinessJob {
      */
     @XxlJob("confirmOrder")
     public void confirmOrder(){
+        log.info("开始执行订单确认任务........");
         unionPayLoansCallbackApiBiz.confirmOrder();
+        log.info("结束执行订单确认任务........");
     }
     /**
      * 通知失败的任务
      */
     @XxlJob("applicationCallback")
     public void applicationCallback(){
+        log.info("开始执行通知失败的任务.......");
         unionPayLoansCallbackApiBiz.applicationCallback();
+        log.info("结束执行通知失败的任务........");
     }
 
 

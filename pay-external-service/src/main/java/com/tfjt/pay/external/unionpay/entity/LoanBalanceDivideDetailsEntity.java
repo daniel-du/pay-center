@@ -81,5 +81,8 @@ public class LoanBalanceDivideDetailsEntity implements Serializable {
 	 * 业务系统子项订单号
 	 */
 	private String subBusinessOrderNo;
+	/**
+	 * */
+	private Long loanUserId;
 
 }
