@@ -54,6 +54,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
      * @return
      */
     public Long settleAcctsValidateCallBack(AcctValidationParamDTO eventData, String settleAcctId, String outRequestNo) {
+        log.info("打款验证通知-平台号{},账号ID{}", outRequestNo, settleAcctId);
         log.info("打款验证通知-回调参数{}", JSONObject.toJSONString(eventData));
         LoanUserEntity tfLoanUserEntity = tfLoanUserService.getOne(new LambdaQueryWrapper<LoanUserEntity>().eq(LoanUserEntity::getOutRequestNo, outRequestNo));
         if(tfLoanUserEntity != null && StringUtils.isNotBlank(settleAcctId)){
