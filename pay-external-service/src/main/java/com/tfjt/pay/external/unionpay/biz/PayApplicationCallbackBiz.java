@@ -1,9 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz;
 
-import com.tfjt.pay.external.unionpay.entity.LoadBalanceDivideEntity;
-import com.tfjt.pay.external.unionpay.entity.LoadBalanceNoticeEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanWithdrawalOrderEntity;
+import com.tfjt.pay.external.unionpay.entity.*;
 
 import java.util.List;
 
@@ -56,5 +53,9 @@ public interface PayApplicationCallbackBiz {
 
     boolean noticeWithdrawalNotice(LoanWithdrawalOrderEntity withdrawalOrderEntity, String eventType, Long id);
 
-
+    /**
+     * 补偿发送
+     * @param o 失败记录信息
+     */
+    boolean retryNotice(LoanRequestApplicationRecordEntity o);
 }

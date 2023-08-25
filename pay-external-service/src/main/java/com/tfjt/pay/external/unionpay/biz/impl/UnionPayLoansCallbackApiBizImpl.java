@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -190,6 +191,11 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     @Override
     public void applicationCallback() {
       List<LoanRequestApplicationRecordEntity> list =   loanRequestApplicationRecordService.listError();
+      if(CollectionUtil.isNotEmpty(list)){
+          list.forEach(o->{
+              payApplicationCallbackBiz.retryNotice(o);
+          });
+      }
 
     }
 

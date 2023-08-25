@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.dao;
 
+import cn.hutool.core.date.DateTime;
 import com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -16,5 +17,5 @@ import java.util.List;
 @Mapper
 public interface LoanRequestApplicationRecordDao extends BaseMapper<LoanRequestApplicationRecordEntity> {
 
-    List<LoanRequestApplicationRecordEntity> listError();
+    List<LoanRequestApplicationRecordEntity> listError(DateTime date);
 }

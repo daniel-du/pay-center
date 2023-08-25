@@ -16,7 +16,11 @@
     </resultMap>
     <select id="listError"
             resultType="com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity">
-        SELECT * FROM tf_loan_request_application_record WHERE tf_loan_request_application_record
+        SELECT id,app_id,request_url,request_param,trade_order_no,trade_type FROM tf_loan_request_application_record r WHERE id in (
+            select max(id) as id from tf_loan_request_application_record where create_time &gt;= #{date}
+                group by app_id,trade_order_no having count(id) &lt;=10
+            ) and callback_status=0
+
     </select>
 
 
