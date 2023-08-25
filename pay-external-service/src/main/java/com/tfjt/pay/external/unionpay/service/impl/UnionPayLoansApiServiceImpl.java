@@ -156,6 +156,16 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         if (StringUtils.isNotBlank(incomingReturn.getMchApplicationId())) {
             tfLoanUserEntity.setMchApplicationId(incomingReturn.getMchApplicationId());
         }
+
+        if(StringUtils.isBlank(incomingReturn.getSettleAcctId())){
+            tfLoanUserEntity.setSettleAcctId("");
+        }
+
+        IncomingReturn incomingReturnSel = this.getTwoIncomingInfo(incomingReturn.getOutRequestNo());
+        tfLoanUserEntity.setApplicationStatus(incomingReturnSel.getApplicationStatus());
+        if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+            tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
+        }
         loanUserService.updateById(tfLoanUserEntity);
         //通知业务
         loanUserService.asynNotice(tfLoanUserEntity);
