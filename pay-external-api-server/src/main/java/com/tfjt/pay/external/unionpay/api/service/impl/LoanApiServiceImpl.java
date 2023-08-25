@@ -21,6 +21,7 @@ import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -73,19 +74,19 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
-        try{
+        try {
             LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
             loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
             loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
             LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
             if (Objects.isNull(balanceAcc)) {
-                return Result.failed("电子账簿信息不存在");
+                throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
             }
             loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
             loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getRelAcctNo());
             return Result.ok(loanTransferToTfDTO);
-        }catch (Exception e){
-            e.printStackTrace();
+        } catch (TfException e) {
+            log.error("");
             return Result.failed(e.getMessage());
         }
     }
@@ -219,11 +220,11 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             throw new TfException("未找到贷款用户");
         }
         CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
-        if(custBankInfo!=null){
+        if (custBankInfo != null) {
             throw new TfException("该银行卡已绑定,请勿重复绑定");
         }
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
-        if (CollUtil.isNotEmpty(custBankInfos) && custBankInfos.size()== 10) {
+        if (CollUtil.isNotEmpty(custBankInfos) && custBankInfos.size() == 10) {
             throw new TfException("最多绑定10张银行卡");
         }
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
@@ -234,12 +235,12 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
         } catch (TfException ex) {
-           return Result.failed(ex.getMessage());
+            return Result.failed(ex.getMessage());
         }
         boolean save = custBankInfoService.save(custBankInfoEntity);
-        if(save){
+        if (save) {
             return Result.ok("绑定成功");
-        }else {
+        } else {
             return Result.failed("绑定失败");
         }
     }
