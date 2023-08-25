@@ -82,6 +82,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         }
         loanOrderUnifiedorderResqDTO.setDetailsDTOList(detailsRespDTOS);
         loanOrderUnifiedorderResqDTO.setTotalFee(orderEntity.getAmount());
+        loanOrderUnifiedorderResqDTO.setOutTradeNo(orderEntity.getBusinessOrderNo());
         String parameter = JSONObject.toJSONString(loanOrderUnifiedorderResqDTO);
         return sendRequest(orderEntity.getAppId(), parameter, orderEntity.getTradeOrderNo(), eventType, callbackId);
     }
@@ -189,16 +190,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         long end = System.currentTimeMillis();
         record.setResponseTime((int) (end - start));
         //异步记录请求日志
-        boolean b = false;
-        if (StringUtil.isNotBlank(result)){
-            try {
-                JSONObject jsonObject = JSONObject.parseObject(result);
-                Integer code = jsonObject.getInteger("code");
-                b = HttpStatus.HTTP_OK == code;
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+        boolean b = "success".equalsIgnoreCase(result);
         record.setCallbackStatus(b? NumberConstant.ONE:NumberConstant.ZERO);
         recordService.asyncSave(record);
         return b;
