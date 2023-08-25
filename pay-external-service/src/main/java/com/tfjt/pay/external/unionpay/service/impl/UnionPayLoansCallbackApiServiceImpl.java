@@ -103,6 +103,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         LoanUserEntity tfLoanUserEntity = verifyIncomingCallBack(twoIncomingEventDataDTO);
         //修改货款商户
         updatTfLoanUserEntity(twoIncomingEventDataDTO, tfLoanUserEntity);
+
         if(Objects.equals("succeeded",twoIncomingEventDataDTO.getApplicationStatus())){
             //添加电子账单
             addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(),  twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
@@ -178,6 +179,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         }
 
         if(Objects.equals("failed",twoIncomingEventDataDTO.getApplicationStatus() )){
+            tfLoanUserEntity.setBankCallStatus(1);
             if(!Objects.isNull(twoIncomingEventDataDTO.getFailedAt())){
                 tfLoanUserEntity.setFailedAt(twoIncomingEventDataDTO.getFailedAt());
             }
