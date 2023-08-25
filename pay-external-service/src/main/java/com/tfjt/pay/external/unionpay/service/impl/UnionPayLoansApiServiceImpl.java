@@ -157,10 +157,6 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             tfLoanUserEntity.setMchApplicationId(incomingReturn.getMchApplicationId());
         }
 
-        if(StringUtils.isBlank(incomingReturn.getSettleAcctId())){
-            tfLoanUserEntity.setSettleAcctId("");
-        }
-
         IncomingReturn incomingReturnSel = this.getTwoIncomingInfo(incomingReturn.getOutRequestNo());
         tfLoanUserEntity.setApplicationStatus(incomingReturnSel.getApplicationStatus());
         if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
