@@ -303,8 +303,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
                 tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
             }
-
-
+            tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
             loanUserService.updateById(tfLoanUserEntity);
         } catch (TfException e) {
             log.error("银联-二级进件-修改失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
