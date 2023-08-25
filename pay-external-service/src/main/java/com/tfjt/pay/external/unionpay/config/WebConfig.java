@@ -8,12 +8,15 @@
 
 package com.tfjt.pay.external.unionpay.config;
 
+import com.tfjt.tfcommon.auth.interceptor.AuthInterceptor;
 import com.tfjt.tfcommon.core.cache.RedisCache;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -25,14 +28,18 @@ import javax.annotation.Resource;
  * @author Mark sunlightcs@gmail.com
  */
 @Configuration
+@Slf4j
 public class WebConfig implements WebMvcConfigurer {
 
+    @Resource
+    InterceptorProperties interceptorProperties;
 
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        // 认证拦截器，并指定拦截的路径
-//        registry.addInterceptor(new AuthInterceptor()).addPathPatterns("/**");
-//    }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        log.info("要过滤的路径{}",interceptorProperties.getExcludePath());
+        // 认证拦截器，并指定拦截的路径
+        registry.addInterceptor(new AuthInterceptor()).addPathPatterns("/**").excludePathPatterns(interceptorProperties.getExcludePath());
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
