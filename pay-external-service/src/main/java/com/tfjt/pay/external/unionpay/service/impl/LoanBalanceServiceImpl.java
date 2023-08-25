@@ -25,7 +25,7 @@ import java.util.List;
 public class LoanBalanceServiceImpl extends BaseServiceImpl<LoanBalanceDao, LoanBalanceEntity> implements LoanBalanceService {
 
     @DubboReference
-    private TfLoanBalanceRpcService tfLoanBalanceRpcService;
+    private TfLoanBalanceRpcService loanBalanceRpcService;
 
     @Override
     public LoanBalanceEntity getByShopId(Integer shopId) {
@@ -52,7 +52,7 @@ public class LoanBalanceServiceImpl extends BaseServiceImpl<LoanBalanceDao, Loan
 
         com.tfjt.tfcloud.business.dto.TfLoanBalanceCreateDto tfLoanBalanceCreateDto = new com.tfjt.tfcloud.business.dto.TfLoanBalanceCreateDto();
         BeanUtil.copyProperties(tfLoanBalanceEntity, tfLoanBalanceCreateDto);
-        Long update = tfLoanBalanceRpcService.update(tfLoanBalanceCreateDto);
+        Long update = loanBalanceRpcService.update(tfLoanBalanceCreateDto);
         if(!b || update == null){
             throw new TfException(500, "保存贷款信息");
         }
