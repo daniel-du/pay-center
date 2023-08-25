@@ -10,12 +10,15 @@ import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.req.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
 import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.service.UnionPayLoansApiService;
+import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,8 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     CustBankInfoService custBankInfoService;
     @Resource
     LoanUserService loanUserService;
+    @Value("${unionPayLoans.encodedPub}")
+    private String encodedPub;
 
 
     /**
@@ -50,34 +55,39 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public void unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         log.info("解绑银行卡参数：{}", bankInfoReqDTO);
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(bankInfoReqDTO.getLoanUserId());
-        if (custBankInfos.size()==1) {
+        if (custBankInfos.size() == 1) {
             throw new TfException("解绑银行卡失败，至少保留一张银行卡");
-        }else{
+        } else {
             CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), bankInfoReqDTO.getLoanUserId());
-            if(ObjectUtils.isNotEmpty(custBankInfo)){
+            if (ObjectUtils.isNotEmpty(custBankInfo)) {
                 log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
                 LoanUserEntity loanUser = loanUserService.getById(bankInfoReqDTO.getLoanUserId());
-                if(ObjectUtils.isNotEmpty(loanUser)){
+                if (ObjectUtils.isNotEmpty(loanUser)) {
                     ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
-                    deleteSettleAcctParams.setBankAcctNo(bankInfoReqDTO.getBankCardNo());
-                    deleteSettleAcctParams.setCusId(loanUser.getCusId());
-                    deleteSettleAcctParams.setMchId(loanUser.getBusId());
+                    deleteSettleAcctParams.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfoReqDTO.getBankCardNo()));
+                    if (LoanUserTypeEnum.PERSONAL.getCode().equals(loanUser.getLoanUserType())) {
+                        deleteSettleAcctParams.setCusId(loanUser.getCusId());
+                    } else {
+                        deleteSettleAcctParams.setMchId(loanUser.getMchId());
+                    }
                     unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
-                }else{
+                } else {
                     throw new TfException("贷款用户不存在");
                 }
                 //标记删除银行卡
                 custBankInfo.setDeleted(true);
                 custBankInfoService.updateCustBankInfo(custBankInfo);
-            }else {
+            } else {
                 throw new TfException("解绑银行卡失败，银行卡不存在");
             }
 
         }
 
     }
+
     /**
      * 绑定银行卡
+     *
      * @param bankInfoReqDTO
      * @return
      */
@@ -86,14 +96,14 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         log.info("绑定银行卡参数：{}", bankInfoReqDTO);
-        CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId= custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), bankInfoReqDTO.getLoanUserId());
-        if(bankInfoByBankCardNoAndLoanUserId!=null){
+        CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), bankInfoReqDTO.getLoanUserId());
+        if (bankInfoByBankCardNoAndLoanUserId != null) {
             throw new TfException("银行卡已存在");
         }
         List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(bankInfoReqDTO.getLoanUserId());
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
         BeanUtils.copyProperties(bankInfoReqDTO, custBankInfoEntity);
-        if(CollUtil.isNotEmpty(bankInfo)){
+        if (CollUtil.isNotEmpty(bankInfo)) {
             String career = bankInfo.get(0).getCareer();
             custBankInfoEntity.setCareer(career);
         }

@@ -20,7 +20,9 @@ import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -30,6 +32,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -63,6 +66,9 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Resource
     UnionPayLoansApiService unionPayLoansApiService;
+
+    @Value("${unionPayLoans.encodedPub}")
+    private String encodedPub;
 
 
     @Override
@@ -167,20 +173,33 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         if (loanUser == null) {
             return Result.failed("未找到贷款用户");
         }
+        log.info("解绑银行卡参数：{}", bankInfoReqDTO);
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
         if (custBankInfos.size() == 1) {
-            return Result.failed("解绑银行卡失败，至少保留一张银行卡");
+            throw new TfException("解绑银行卡失败，至少保留一张银行卡");
         } else {
             CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
-            log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
-            ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
-            deleteSettleAcctParams.setBankAcctNo(bankInfoReqDTO.getBankCardNo());
-            deleteSettleAcctParams.setCusId(loanUser.getCusId());
-            deleteSettleAcctParams.setMchId(loanUser.getBusId());
-            unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
-            //标记删除银行卡
-            custBankInfo.setDeleted(true);
-            custBankInfoService.updateCustBankInfo(custBankInfo);
+            if (com.baomidou.mybatisplus.core.toolkit.ObjectUtils.isNotEmpty(custBankInfo)) {
+                log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
+                if (com.baomidou.mybatisplus.core.toolkit.ObjectUtils.isNotEmpty(loanUser)) {
+                    ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
+                    deleteSettleAcctParams.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfoReqDTO.getBankCardNo()));
+                    if (LoanUserTypeEnum.PERSONAL.getCode().equals(loanUser.getLoanUserType())) {
+                        deleteSettleAcctParams.setCusId(loanUser.getCusId());
+                    } else {
+                        deleteSettleAcctParams.setMchId(loanUser.getMchId());
+                    }
+                    unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
+                } else {
+                    throw new TfException("贷款用户不存在");
+                }
+                //标记删除银行卡
+                custBankInfo.setDeleted(true);
+                custBankInfoService.updateCustBankInfo(custBankInfo);
+            } else {
+                throw new TfException("解绑银行卡失败，银行卡不存在");
+            }
+
         }
         return Result.ok("解绑成功");
     }
