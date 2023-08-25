@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
@@ -23,7 +24,22 @@ public interface LoanApiService {
      */
     Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid);
 
+    /**
+     * 指定店铺是否完成进件
+     * @param type 类型
+     * @param bid  bid
+     * @return refuan
+     */
     Result<Map<String,Object>> incomingIsFinish(String type, String bid);
+
+    /**
+     * 批量获取是否进件 判断供应商和商家是否同时都完成进件
+     * 并返回要支付商家的余额信息
+     * @param list  判断列表
+     * @return  是否可以使用贷款
+     */
+    Result<Map<String,Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list);
+
 
     /**
      * 通过贷款用户ID获取银行卡

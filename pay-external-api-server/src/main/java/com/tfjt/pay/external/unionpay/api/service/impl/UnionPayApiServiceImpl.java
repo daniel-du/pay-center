@@ -256,40 +256,44 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
             return Result.ok(withdrawalRespDTO);
         }
-
     }
 
     @Override
     public Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo, String appId) {
         log.info("查询交易结果信息:{}", businessOrderNo);
-
-        LoanOrderEntity one = this.loanOrderBiz.getByBusinessAndAppId(businessOrderNo, appId);
-        LoanQueryOrderRespDTO loanQueryOrderRespDTO = new LoanQueryOrderRespDTO();
-        if (one == null) {
-
-            loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_FAILED);
-            return Result.ok(loanQueryOrderRespDTO);
-        }
-        loanQueryOrderRespDTO.setBusiness_type(one.getBusinessType());
-        loanQueryOrderRespDTO.setOut_trade_no(businessOrderNo);
-        loanQueryOrderRespDTO.setTransaction_id(one.getCombinedGuaranteePaymentId());
-        loanQueryOrderRespDTO.setPay_balanceAcct_id(one.getPayBalanceAcctId());
-        loanQueryOrderRespDTO.setMetadata(one.getMetadata());
-        loanQueryOrderRespDTO.setPay_balance_acct_name(one.getPayBalanceAcctName());
-        loanQueryOrderRespDTO.setTotal_fee(one.getAmount());
-        if (TradeResultConstant.UNIONPAY_UNKNOWN.equals(one.getStatus())) {
-            Result<ConsumerPoliciesRespDTO> consumerPoliciesRespDTOResult = unionPayService.queryPlatformOrderStatus(one.getTradeOrderNo());
-            int code = consumerPoliciesRespDTOResult.getCode();
-            if (code == NumberConstant.ONE) {
-                ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
-                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
-            } else {
-                return Result.failed();
+        try{
+            LoanOrderEntity one = this.loanOrderBiz.getByBusinessAndAppId(businessOrderNo, appId);
+            LoanQueryOrderRespDTO loanQueryOrderRespDTO = new LoanQueryOrderRespDTO();
+            if (one == null) {
+                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_FAILED);
+                return Result.ok(loanQueryOrderRespDTO);
             }
-        } else {
-            loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+            loanQueryOrderRespDTO.setBusiness_type(one.getBusinessType());
+            loanQueryOrderRespDTO.setOut_trade_no(businessOrderNo);
+            loanQueryOrderRespDTO.setTransaction_id(one.getCombinedGuaranteePaymentId());
+            loanQueryOrderRespDTO.setPay_balanceAcct_id(one.getPayBalanceAcctId());
+            loanQueryOrderRespDTO.setMetadata(one.getMetadata());
+            loanQueryOrderRespDTO.setPay_balance_acct_name(one.getPayBalanceAcctName());
+            loanQueryOrderRespDTO.setTotal_fee(one.getAmount());
+            if (TradeResultConstant.UNIONPAY_UNKNOWN.equals(one.getStatus())) {
+                Result<ConsumerPoliciesRespDTO> consumerPoliciesRespDTOResult = unionPayService.queryPlatformOrderStatus(one.getTradeOrderNo());
+                int code = consumerPoliciesRespDTOResult.getCode();
+                if (code == NumberConstant.ONE) {
+                    ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
+                    loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+                } else {
+                    return Result.failed();
+                }
+            } else {
+                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+            }
+
+            loanQueryOrderRespDTO.setTread_type(PayTypeConstants.PAY_TYPE_LOAN);
+            return Result.ok(loanQueryOrderRespDTO);
+        }catch (TfException e){
+            e.printStackTrace();
+            return Result.failed(e.getMessage());
         }
-        return Result.ok(loanQueryOrderRespDTO);
     }
 
     @Lock4j(keys = "#loanOrderUnifiedorderDTO.businessOrderNo", expire = 10000)

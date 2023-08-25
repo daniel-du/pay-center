@@ -4,13 +4,16 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.lock.annotation.Lock4j;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
@@ -39,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Lzh
@@ -117,6 +121,43 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         result.put("isIncoming", false);
         result.put("settledAmount", balance);
         return Result.ok(result);
+    }
+
+    @Override
+    public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
+        try{
+            Map<String, List<UnionPayIncomingDTO>> collect = list.stream().collect(Collectors.groupingBy(UnionPayIncomingDTO::getType));
+            List<UnionPayIncomingDTO> shops = collect.get(NumberConstant.ONE.toString());
+            List<UnionPayIncomingDTO> dealers = collect.get(NumberConstant.TWO.toString());
+            if(CollectionUtil.isEmpty(shops)){
+                return Result.failed(PayExceptionCodeEnum.PAYER_NOT_FOUND);
+            }
+            if(shops.size()>NumberConstant.ONE){
+                return Result.failed(PayExceptionCodeEnum.PAYER_TOO_MUCH);
+            }
+            if(CollectionUtil.isEmpty(dealers)){
+                return Result.failed(PayExceptionCodeEnum.PAYEE_NOT_FOUND);
+            }
+            Map<String, Object> result = new HashMap<>();
+            for (UnionPayIncomingDTO unionPayIncomingDTO : dealers) {
+                LambdaQueryWrapper<LoanUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                objectLambdaQueryWrapper.eq(LoanUserEntity::getType,unionPayIncomingDTO.getType())
+                        .eq(LoanUserEntity::getBusId,unionPayIncomingDTO.getBid());
+                LoanUserEntity one = this.getOne(objectLambdaQueryWrapper);
+                if (Objects.isNull(one)){
+                    result.put("isIncoming", true);
+                    return Result.ok(result);
+                }
+            }
+            UnionPayIncomingDTO unionPayIncomingDTO = shops.get(NumberConstant.ZERO);
+            return incomingIsFinish(unionPayIncomingDTO.getType(),unionPayIncomingDTO.getBid());
+        }catch (TfException e){
+            log.error("批量判断进件是否完成tfException:{}",e.getMessage());
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
     }
 
     /**
