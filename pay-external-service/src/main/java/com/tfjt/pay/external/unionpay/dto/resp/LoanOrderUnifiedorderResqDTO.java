@@ -21,7 +21,7 @@ public class LoanOrderUnifiedorderResqDTO implements Serializable {
     private String outTradeNo;
 
     /**付款账户信息*/
-    @JSONField(name = "pay_balanceAcct_id")
+    @JSONField(name = "pay_balance_acct_id")
     private String payBalanceAcctId;
     /**
      * 名称

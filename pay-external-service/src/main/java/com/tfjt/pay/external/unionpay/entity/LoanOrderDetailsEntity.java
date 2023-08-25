@@ -101,4 +101,6 @@ public class LoanOrderDetailsEntity implements Serializable {
 
 	private Long recvLoanUserId;
 
+	private Integer confirmStatus;
+
 }

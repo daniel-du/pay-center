@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,5 +28,11 @@ public interface LoanOrderService extends IService<LoanOrderEntity> {
      * @param eventDataDTO
      */
     LoanOrderEntity treadResult(EventDataDTO eventDataDTO);
+
+    /**
+     * 查询当日未确认的订单
+     * @return
+     */
+    List<LoanOrderEntity> listNotConfirmOrder();
 }
 

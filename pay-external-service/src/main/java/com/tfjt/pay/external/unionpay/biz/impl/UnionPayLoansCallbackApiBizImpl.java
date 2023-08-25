@@ -147,42 +147,46 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         log.info("订单确认:{}", JSONObject.toJSONString(order));
         ConsumerPoliciesCheckReqDTO consumerPoliciesCheckReqDTO = new ConsumerPoliciesCheckReqDTO();
         consumerPoliciesCheckReqDTO.setOutOrderNo(order.getTradeOrderNo());
-        consumerPoliciesCheckReqDTO.setGuaranteePaymentId(order.getCombinedGuaranteePaymentId());
         consumerPoliciesCheckReqDTO.setAmount(order.getAmount());
 
         LambdaQueryWrapper<LoanOrderDetailsEntity> detailsQueryWrapper = new LambdaQueryWrapper<>();
-        detailsQueryWrapper.eq(LoanOrderDetailsEntity::getOrderId, order.getId());
+        detailsQueryWrapper.eq(LoanOrderDetailsEntity::getOrderId, order.getId())
+                .eq(LoanOrderDetailsEntity::getConfirmedAmount,NumberConstant.ZERO);
         List<LoanOrderDetailsEntity> loanOrderDetailsEntities = this.loanOrderDetailsService.list(detailsQueryWrapper);
-        List<ExtraDTO> goods = new ArrayList<>();
-        List<Long> detailsId = loanOrderDetailsEntities.stream().map(LoanOrderDetailsEntity::getId).collect(Collectors.toList());
-        List<LoanOrderGoodsEntity> loanOrderGoodsEntities = this.loanOrderGoodsService.list(new LambdaQueryWrapper<LoanOrderGoodsEntity>()
-                .in(LoanOrderGoodsEntity::getDetailsId, detailsId));
-        for (LoanOrderGoodsEntity goodsEntity : loanOrderGoodsEntities) {
-            ExtraDTO extraDTO = new ExtraDTO();
-            extraDTO.setOrderNo(goodsEntity.getOrderBusinessOrderNo());
-            extraDTO.setOrderAmount(String.valueOf(goodsEntity.getProductAmount()));
-            extraDTO.setProductCount(String.valueOf(goodsEntity.getProductCount()));
-            extraDTO.setProductName(goodsEntity.getProductName());
-            goods.add(extraDTO);
-        }
-        Map<String, Object> extra = new HashMap<>();
-        extra.put("productInfos", goods);
-        consumerPoliciesCheckReqDTO.setExtra(extra);
-        log.info("订单确认调用银联发送消息>>>>>>>>>>>>>>>{}", JSONObject.toJSONString(consumerPoliciesCheckReqDTO));
-        Result<ConsumerPoliciesCheckRespDTO> consumerPoliciesCheckRespDTOResult = unionPayService.mergeConsumerPoliciesCheck(consumerPoliciesCheckReqDTO);
-        log.info("订单确认调用银联接收消息<<<<<<<<<<<<<<<{}", JSONObject.toJSONString(consumerPoliciesCheckRespDTOResult));
-        if (consumerPoliciesCheckRespDTOResult.getCode() == NumberConstant.ONE) {
-            order.setConfirmStatus(NumberConstant.ONE);
-            this.loanOrderService.updateById(order);
+        for (LoanOrderDetailsEntity loanOrderDetailsEntity : loanOrderDetailsEntities) {
+            List<ExtraDTO> goods = new ArrayList<>();
+            List<LoanOrderGoodsEntity> loanOrderGoodsEntities = this.loanOrderGoodsService.list(new LambdaQueryWrapper<LoanOrderGoodsEntity>()
+                    .eq(LoanOrderGoodsEntity::getDetailsId, loanOrderDetailsEntity.getId()));
+            for (LoanOrderGoodsEntity goodsEntity : loanOrderGoodsEntities) {
+                ExtraDTO extraDTO = new ExtraDTO();
+                extraDTO.setOrderNo(goodsEntity.getOrderBusinessOrderNo());
+                extraDTO.setOrderAmount(String.valueOf(goodsEntity.getProductAmount()));
+                extraDTO.setProductCount(String.valueOf(goodsEntity.getProductCount()));
+                extraDTO.setProductName(goodsEntity.getProductName());
+                goods.add(extraDTO);
+            }
+            Map<String, Object> extra = new HashMap<>();
+            extra.put("productInfos", goods);
+            consumerPoliciesCheckReqDTO.setExtra(extra);
+            consumerPoliciesCheckReqDTO.setGuaranteePaymentId(loanOrderDetailsEntity.getGuaranteePaymentId());
+            try{
+                log.info("订单确认调用银联发送消息>>>>>>>>>>>>>>>{}", JSONObject.toJSONString(consumerPoliciesCheckReqDTO));
+                Result<ConsumerPoliciesCheckRespDTO> consumerPoliciesCheckRespDTOResult = unionPayService.mergeConsumerPoliciesCheck(consumerPoliciesCheckReqDTO);
+                log.info("订单确认调用银联接收消息<<<<<<<<<<<<<<<{}", JSONObject.toJSONString(consumerPoliciesCheckRespDTOResult));
+                if (consumerPoliciesCheckRespDTOResult.getCode() == NumberConstant.ONE) {
+                    loanOrderDetailsEntity.setConfirmStatus(NumberConstant.ONE);
+                    this.loanOrderDetailsService.updateById(loanOrderDetailsEntity);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
         }
     }
 
     @Override
     public void confirmOrder() {
-        LambdaQueryWrapper<LoanOrderEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(LoanOrderEntity::getStatus, TradeResultConstant.UNIONPAY_SUCCEEDED)
-                .eq(LoanOrderEntity::getConfirmStatus, NumberConstant.ZERO);
-        List<LoanOrderEntity> list = this.loanOrderService.list(queryWrapper);
+        List<LoanOrderEntity> list = this.loanOrderService.listNotConfirmOrder();
         for (LoanOrderEntity orderEntity : list) {
             confirmOrder(orderEntity);
         }
