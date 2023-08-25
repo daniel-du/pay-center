@@ -294,7 +294,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             log.info("二级进件修改接口{}", responseEntity.getBody().toString());
             incomingReturn = getBaseIncomingReturn(responseEntity, tfLoanUserEntity, req, tfLoanUserEntity.getId());
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
-            tfLoanUserEntity.setCusId(incomingReturn.getCusId());
+            //tfLoanUserEntity.setCusId(incomingReturn.getCusId());
             loanUserService.updateById(tfLoanUserEntity);
         } catch (TfException e) {
             log.error("银联-二级进件-修改失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
@@ -384,6 +384,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         UnionPayLoansHoldingCompany unionPayLoansHoldingCompany = buildYinLianLoansHoldingCompany(tfLoanUserEntity.getId());
 
         UnionPayLoansTwoIncomingEditDTO unionPayLoansTwoIncomingEditDTO = UnionPayLoansTwoIncomingEditDTO.builder()
+                .mchId(tfLoanUserEntity.getMchId())
                 .businessLicense(businessLicenseInFoDTO.getBusinessLicenseDTO())
                 .legalPersonIdCard(legalPersonIdCard)
                 .contactIdCard(legalPersonIdCard)
