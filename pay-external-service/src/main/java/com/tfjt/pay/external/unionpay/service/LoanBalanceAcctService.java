@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public interface LoanBalanceAcctService extends IService<LoanBalanceAcctEntity> 
      * @param type
      * @return
      */
-    LoanBalanceAcctEntity getBalanceAcctIdByBidAndType(String bid, String type);
+    LoanBalanceAcctRespDTO getBalanceAcctIdByBidAndType(String bid, String type);
 
     LoanBalanceAcctEntity getAccountBookByLoanUserId(Long loanUserId);
 }

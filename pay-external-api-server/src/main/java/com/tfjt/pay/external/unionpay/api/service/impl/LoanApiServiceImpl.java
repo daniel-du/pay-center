@@ -19,6 +19,7 @@ import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
@@ -82,12 +83,13 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
             loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
             loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
-            LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+            LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+           // loanBalanceAcctService.get
             if (Objects.isNull(balanceAcc)) {
                 throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
             }
             loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
-            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getRelAcctNo());
+            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getBalanceAcctName());
             return Result.ok(loanTransferToTfDTO);
         } catch (TfException e) {
             log.error("");
@@ -103,7 +105,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
                 .eq("type", type).eq("bus_id", bid));
         if (ObjectUtils.isNotEmpty(loanUser)) {
             //进件完成，查询余额信息
-            LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+            LoanBalanceAcctRespDTO  balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
             if (Objects.isNull(balanceAcc)) {
                 return Result.failed("电子账簿信息不存在");
             }

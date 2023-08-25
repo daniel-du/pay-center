@@ -315,32 +315,21 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
     private void judgeIsRepayMen(UnionPayLoansTwoIncomingEditDTO unionPayLoansTwoIncomingEditDTO, LoanUserEntity tfLoanUserEntity) {
         SettleAcctDTO settleAcct = unionPayLoansTwoIncomingEditDTO.getSettleAcct();
-        Map<String, String> reqParams = new HashMap<>();
-        if (Objects.equals(tfLoanUserEntity.getLoanUserType(), 0)) {
-            return;
-        }
-        if (!Objects.equals(tfLoanUserEntity.getLoanUserType(), 0)) {
-            reqParams.put("mchId", tfLoanUserEntity.getMchApplicationId());
-        }
-        ResponseEntity<UnionPayLoansBaseReturn> responseEntity = getUnionPayInfoByUserEntity(reqParams);
-        UnionPayLoansBaseReturn unionPayLoansBaseReturn = responseEntity.getBody();
-        SettleAcctsDTO settleAcctDTO = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), SettleAcctsDTO.class);
-        if (null != settleAcctDTO) {
+        String legalPersonMobileNumber = unionPayLoansTwoIncomingEditDTO.getLegalPersonMobileNumber();
+        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = querySettleAcctByOutRequestNo(tfLoanUserEntity.getId(), tfLoanUserEntity.getOutRequestNo());
+        if (null != unionPayLoansSettleAcctDTO) {
             String name = settleAcct.getName();
             String bankAcctNo = settleAcct.getBankAcctNo();
             String bankBranchCode = settleAcct.getBankBranchCode();
             String type = settleAcct.getType();
-            List<SettleAcctsMxDTO> settleAccts = settleAcctDTO.getSettleAccts();
-            if (CollectionUtil.isNotEmpty(settleAccts)) {
-                SettleAcctsMxDTO settleAcctsMxDTO = settleAccts.get(0);
-                String nameOld = settleAcctsMxDTO.getName();
-                String bankAcctNoOld = settleAcctsMxDTO.getBankAcctNo();
-                String bankBranchCodeOld = settleAcctsMxDTO.getBankBranchCode();
-                String typeOld = settleAcctsMxDTO.getBankAcctType();
-                if (!name.equals(UnionPaySignUtil.SM2(encodedPub, nameOld)) || !bankAcctNo.equals(UnionPaySignUtil.SM2(encodedPub, bankAcctNoOld))
-                        || !bankBranchCodeOld.equals(bankBranchCode) || !typeOld.equals(type)) {
-                    tfLoanUserEntity.setBankCallStatus(1);
-                }
+            String nameOld = unionPayLoansSettleAcctDTO.getName();
+            String bankAcctNoOld = unionPayLoansSettleAcctDTO.getBankAcctNo();
+            String bankBranchCodeOld = unionPayLoansSettleAcctDTO.getBankBranchCode();
+            String typeOld = unionPayLoansSettleAcctDTO.getBankAcctType();
+            String mobileNumber = unionPayLoansSettleAcctDTO.getMobileNumber();
+            if (!name.equals(UnionPaySignUtil.SM2(encodedPub, nameOld)) || !bankAcctNo.equals(UnionPaySignUtil.SM2(encodedPub, bankAcctNoOld))
+                    || !bankBranchCodeOld.equals(bankBranchCode) || !typeOld.equals(type) || !legalPersonMobileNumber.equals(mobileNumber)) {
+                tfLoanUserEntity.setBankCallStatus(1);
             }
         }
 
