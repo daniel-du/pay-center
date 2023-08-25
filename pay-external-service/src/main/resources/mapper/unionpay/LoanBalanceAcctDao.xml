@@ -3,7 +3,7 @@
 
 <mapper namespace="com.tfjt.pay.external.unionpay.dao.LoanBalanceAcctDao">
     <select id="getBalanceAcctIdByBidAndType" resultType="com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity">
-        select  a.balance_acct_id,a.rel_acct_no  from tf_loan_user u JOIN tf_loan_balance_acct a ON a.loan_user_id=u.id
+        select  a.balance_acct_id,a.rel_acct_no,u.name as balanceAcctName  from tf_loan_user u JOIN tf_loan_balance_acct a ON a.loan_user_id=u.id
         where u.bus_id=#{busId} and u.type = #{type} and u.application_status='succeeded' limit 1
     </select>
 </mapper>

@@ -37,5 +37,9 @@ public class LoanBalanceAcctEntity implements Serializable {
 	 * 电子账簿账簿号
 	 */
 	private String relAcctNo;
+	/**
+	 * 电子账号名称
+	 */
+	private String balanceAcctName;
 
 }

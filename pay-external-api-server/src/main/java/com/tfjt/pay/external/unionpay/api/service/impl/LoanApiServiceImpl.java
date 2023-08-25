@@ -82,12 +82,14 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
             loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
             loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
+
             LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+           // loanBalanceAcctService.get
             if (Objects.isNull(balanceAcc)) {
                 throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
             }
             loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
-            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getRelAcctNo());
+            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getBalanceAcctName());
             return Result.ok(loanTransferToTfDTO);
         } catch (TfException e) {
             log.error("");
