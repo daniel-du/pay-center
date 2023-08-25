@@ -48,4 +48,7 @@ public class LoanQueryOrderRespDTO implements Serializable {
      * 银联订单号
      */
     private String transaction_id;
+
+
+    private String tread_type;
 }
