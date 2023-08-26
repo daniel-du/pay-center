@@ -214,7 +214,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         log.info("放重复提交加密后的M5d值为：{}", idempotentMd5);
         if (StringUtils.isEmpty(isIdempotent)) {
             redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY, idempotentMd5, 60, TimeUnit.MINUTES);
-        } else {
+        } else if (idempotentMd5.equals(isIdempotent)) {
             return Result.failed("请勿重复提现");
         }
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
