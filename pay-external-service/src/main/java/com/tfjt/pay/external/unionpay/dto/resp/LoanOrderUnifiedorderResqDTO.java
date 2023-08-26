@@ -59,5 +59,8 @@ public class LoanOrderUnifiedorderResqDTO implements Serializable {
     @JSONField(name = "transaction_id")
     private String transactionId;
 
+    @JSONField(name = "trade_type")
+    private String tradeType;
+
 
 }

@@ -30,21 +30,13 @@ public class UnionPayServiceImpl implements UnionPayService {
 
     @Override
     public Result<ConsumerPoliciesRespDTO> mergeConsumerPolicies(ConsumerPoliciesReqDTO consumerPoliciesReqDTO) {
-        try{
-            log.info("进入合并消费担保下单");
-            ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
-                    TransactionCodeEnum.LWZ634_COMBINED_GUARANTEE_PAYMENTS.getCode(),
-                    JSON.toJSONString(consumerPoliciesReqDTO),
-                    ConsumerPoliciesRespDTO.class,consumerPoliciesReqDTO.getCombinedOutOrderNo());
-            
-            log.info("合并消费担保下单解析返回信息{}", consumerPoliciesRespDTO);
-            return Result.ok(consumerPoliciesRespDTO);
-        }catch (TfException e){
-            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
-        }catch (Exception e){
-            log.error("合并消费担保下单报错{},{}", JSON.toJSON(consumerPoliciesReqDTO),e);
-            return Result.failed(e.getMessage());
-        }
+        log.info("进入合并消费担保下单");
+        ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
+                TransactionCodeEnum.LWZ634_COMBINED_GUARANTEE_PAYMENTS.getCode(),
+                JSON.toJSONString(consumerPoliciesReqDTO),
+                ConsumerPoliciesRespDTO.class,consumerPoliciesReqDTO.getCombinedOutOrderNo());
+        log.info("合并消费担保下单解析返回信息{}", consumerPoliciesRespDTO);
+        return Result.ok(consumerPoliciesRespDTO);
 
     }
 
@@ -172,17 +164,9 @@ public class UnionPayServiceImpl implements UnionPayService {
 
     @Override
     public Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
-        try{
-            UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ616_ALLOCATIONS.getCode(),
-                    JSON.toJSONString(unionPayDivideReqDTO),UnionPayDivideRespDTO.class,unionPayDivideReqDTO.getOutOrderNo());
-            return Result.ok(unionPayDivideRespDTO);
-        } catch (TfException e){
-            log.error("调用分账返回 TfException{},{}", JSON.toJSON(unionPayDivideReqDTO),e);
-            return Result.failed(e.getMessage());
-        }catch (Exception e){
-            log.error("调用分账返回 Exception{},{}", JSON.toJSON(unionPayDivideReqDTO),e);
-            return Result.failed(e.getMessage());
-        }
+        UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ616_ALLOCATIONS.getCode(),
+                JSON.toJSONString(unionPayDivideReqDTO),UnionPayDivideRespDTO.class,unionPayDivideReqDTO.getOutOrderNo());
+        return Result.ok(unionPayDivideRespDTO);
     }
 
     @Override

@@ -83,6 +83,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         loanOrderUnifiedorderResqDTO.setDetailsDTOList(detailsRespDTOS);
         loanOrderUnifiedorderResqDTO.setTotalFee(orderEntity.getAmount());
         loanOrderUnifiedorderResqDTO.setOutTradeNo(orderEntity.getBusinessOrderNo());
+        loanOrderUnifiedorderResqDTO.setTradeType("loanPay");
         String parameter = JSONObject.toJSONString(loanOrderUnifiedorderResqDTO);
         return sendRequest(orderEntity.getAppId(), parameter, orderEntity.getTradeOrderNo(), eventType, callbackId);
     }
