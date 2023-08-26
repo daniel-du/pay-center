@@ -162,6 +162,7 @@ public class CustBusinessInfoController {
                     custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getFacadePhotoUrl());
                     custBusinessAttachInfoEntity.setType(ImgTypeEnum.FACADE_PHOTO.getCode());
+                    custBusinessAttachInfoEntity.setCustBusinessInfoId(custBusinessInfo.getId());
                     custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
@@ -174,6 +175,7 @@ public class CustBusinessInfoController {
                     custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
                     custBusinessAttachInfoEntity.setType(ImgTypeEnum.SHOP_PHOTO.getCode());
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getShopPhotoUrl());
+                    custBusinessAttachInfoEntity.setCustBusinessInfoId(custBusinessInfo.getId());
                     custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
@@ -187,6 +189,7 @@ public class CustBusinessInfoController {
                     custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
                     custBusinessAttachInfoEntity.setType(ImgTypeEnum.GOOD_PHOTO.getCode());
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getGoodsPhotoUrl());
+                    custBusinessAttachInfoEntity.setCustBusinessInfoId(custBusinessInfo.getId());
                     custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
@@ -199,6 +202,7 @@ public class CustBusinessInfoController {
                     custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
                     custBusinessAttachInfoEntity.setType(ImgTypeEnum.EVIDENC_PHOTO.getCode());
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getAuxiliaryPhotoUrl());
+                    custBusinessAttachInfoEntity.setCustBusinessInfoId(custBusinessInfo.getId());
                     custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
