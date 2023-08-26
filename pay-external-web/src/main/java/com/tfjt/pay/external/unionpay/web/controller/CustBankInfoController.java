@@ -68,10 +68,8 @@ public class CustBankInfoController {
      * 信息
      */
     @GetMapping("/info/{loanUserId}")
-    public Result<?> info(@PathVariable("loanUserId") Integer loanUserId) {
-
-
-        CustBankInfoEntity custBankInfo = custBankInfoService.getBaseMapper().selectOne(Wrappers.lambdaQuery(CustBankInfoEntity.class).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
+    public Result<?> info(@PathVariable("loanUserId") Long loanUserId) {
+        CustBankInfoEntity custBankInfo = custBankInfoService.getByLoanUserId(loanUserId);
         return Result.ok(custBankInfo);
     }
 
