@@ -118,8 +118,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             payApplicationCallbackBiz.noticeShop(orderEntity, tradeType, loanCallbackEntity.getId());
             return orderEntity.getLoanUserId();
         }
-        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74.equals(tradeType)) {
-            //TODO 提现入账
+        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30.equals(tradeType)) {
             LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
             if (withdrawalOrder != null) {
                 withdrawalOrder.setStatus(eventDataDTO.getStatus());

@@ -206,7 +206,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         if (loanUser == null) {
             return Result.failed("未找到贷款用户");
         }
-        String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_74, redisCache);
+        String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
         String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
         log.info("放重复提交加密后的M5d值为：{}", md5Str);
         String idempotentMd5 = MD5Util.getMD5String(md5Str);

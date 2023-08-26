@@ -144,6 +144,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
      */
     @Override
     public boolean noticeWithdrawalNotice(LoanWithdrawalOrderEntity withdrawalOrderEntity, String eventType, Long id) {
+        log.info("提现回调");
         String callbackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(eventType, withdrawalOrderEntity.getAppId());
         if (StringUtil.isNotBlank(callbackUrl)) {
             Map<String, Object> params = new HashMap<>();
