@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
@@ -102,7 +103,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         Map<String, Object> result = new HashMap<>();
         BigDecimal balance = new BigDecimal("0");
         LoanUserEntity loanUser = this.baseMapper.selectOne(new QueryWrapper<LoanUserEntity>()
-                .eq("type", type).eq("bus_id", bid));
+                .eq("type", type).eq("bus_id", bid).eq("application_status","succeeded"));
         if (ObjectUtils.isNotEmpty(loanUser)) {
             //进件完成，查询余额信息
             LoanBalanceAcctRespDTO  balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
@@ -144,7 +145,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             for (UnionPayIncomingDTO unionPayIncomingDTO : dealers) {
                 LambdaQueryWrapper<LoanUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 objectLambdaQueryWrapper.eq(LoanUserEntity::getType,unionPayIncomingDTO.getType())
-                        .eq(LoanUserEntity::getBusId,unionPayIncomingDTO.getBid());
+                        .eq(LoanUserEntity::getBusId,unionPayIncomingDTO.getBid()).eq(LoanUserEntity::getApplicationStatus, "succeeded");
                 LoanUserEntity one = this.getOne(objectLambdaQueryWrapper);
                 if (Objects.isNull(one)){
                     result.put("isIncoming", true);

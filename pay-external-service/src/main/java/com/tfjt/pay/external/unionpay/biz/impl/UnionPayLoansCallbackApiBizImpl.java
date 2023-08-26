@@ -173,7 +173,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 log.info("订单确认调用银联发送消息>>>>>>>>>>>>>>>{}", JSONObject.toJSONString(consumerPoliciesCheckReqDTO));
                 Result<ConsumerPoliciesCheckRespDTO> consumerPoliciesCheckRespDTOResult = unionPayService.mergeConsumerPoliciesCheck(consumerPoliciesCheckReqDTO);
                 log.info("订单确认调用银联接收消息<<<<<<<<<<<<<<<{}", JSONObject.toJSONString(consumerPoliciesCheckRespDTOResult));
-                if (consumerPoliciesCheckRespDTOResult.getCode() == NumberConstant.ONE) {
+                if (consumerPoliciesCheckRespDTOResult.getCode() == NumberConstant.ZERO) {
                     loanOrderDetailsEntity.setConfirmStatus(NumberConstant.ONE);
                     this.loanOrderDetailsService.updateById(loanOrderDetailsEntity);
                 }

@@ -156,12 +156,14 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         orderEntity.setCreateAt(date);
         orderEntity.setTradeOrderNo(generatedOrderNumber);
         orderEntity.setLoanUserId(userService.getLoanUserIdByBalanceAccId(orderEntity.getPayBalanceAcctId()));
+        List<LoanOrderDetailsReqDTO> detailsDTOList = loanOrderUnifiedorderDTO.getDetailsDTOList();
+        orderEntity.setAmount(detailsDTOList.stream().mapToInt(LoanOrderDetailsReqDTO::getAmount).sum());
         if (!this.orderService.save(orderEntity)) {
             log.error("保存贷款订单信息失败:{}", JSONObject.toJSONString(orderEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
         List<GuaranteePaymentDTO> list = new ArrayList<>();
-        List<LoanOrderDetailsReqDTO> detailsDTOList = loanOrderUnifiedorderDTO.getDetailsDTOList();
+
         for (LoanOrderDetailsReqDTO loanOrderDetailsReqDTO : detailsDTOList) {
             LoanOrderDetailsEntity orderDetailsEntity = new LoanOrderDetailsEntity();
             BeanUtil.copyProperties(loanOrderDetailsReqDTO, orderDetailsEntity);

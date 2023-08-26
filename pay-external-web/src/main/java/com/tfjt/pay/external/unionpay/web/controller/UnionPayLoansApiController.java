@@ -35,13 +35,13 @@ public class UnionPayLoansApiController {
      * @return
      */
     @PostMapping("incoming")
-    public Result<?> incoming(Long id) {
+    public Result<?> incoming(Long id,String smsCode) {
         try {
             LoanUserEntity loanUserEntity = tfLoanUserService.getById(id);
             if (null == loanUserEntity) {
                 Result.failed(500, "贷款商户不存在");
             }
-            yinLianLoansApiService.incoming(loanUserEntity);
+            yinLianLoansApiService.incoming(loanUserEntity,smsCode);
             return Result.ok(loanUserEntity);
         } catch (TfException e) {
             log.error("YinLianLoansApiController.incoming.err:{}", e);
@@ -59,13 +59,13 @@ public class UnionPayLoansApiController {
      * @return
      */
     @PostMapping("twoIncoming")
-    public Result<?> twoIncoming(Long id) {
+    public Result<?> twoIncoming(Long id,String smsCode) {
         try {
             LoanUserEntity LoanUserEntity = tfLoanUserService.getById(id);
             if (null == LoanUserEntity) {
                 Result.failed(500, "贷款商户不存在");
             }
-            return Result.ok(yinLianLoansApiService.twoIncoming(LoanUserEntity));
+            return Result.ok(yinLianLoansApiService.twoIncoming(LoanUserEntity,smsCode));
         } catch (TfException e) {
             log.error("YinLianLoansApiController.incoming.err:{}", e);
             return Result.failed(e.getCode(), e.getMessage());
@@ -262,5 +262,6 @@ public class UnionPayLoansApiController {
             return Result.failed(e.getMessage());
         }
     }
+
 
 }
