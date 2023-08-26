@@ -158,6 +158,11 @@ public class CustBusinessInfoController {
                 if(custBusinessAttachInfoEntity !=null ){
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getFacadePhotoUrl());
                     custBusinessAttachInfoService.updateById(custBusinessAttachInfoEntity);
+                }else{
+                    custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
+                    custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getFacadePhotoUrl());
+                    custBusinessAttachInfoEntity.setType(ImgTypeEnum.FACADE_PHOTO.getCode());
+                    custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
             if(StringUtils.isNotBlank(custBusinessInfo.getShopPhotoUrl())){
@@ -165,6 +170,11 @@ public class CustBusinessInfoController {
                 if(custBusinessAttachInfoEntity !=null ){
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getShopPhotoUrl());
                     custBusinessAttachInfoService.updateById(custBusinessAttachInfoEntity);
+                }else{
+                    custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
+                    custBusinessAttachInfoEntity.setType(ImgTypeEnum.SHOP_PHOTO.getCode());
+                    custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getShopPhotoUrl());
+                    custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
 
@@ -173,6 +183,11 @@ public class CustBusinessInfoController {
                 if(custBusinessAttachInfoEntity !=null ){
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getGoodsPhotoUrl());
                     custBusinessAttachInfoService.updateById(custBusinessAttachInfoEntity);
+                }else{
+                    custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
+                    custBusinessAttachInfoEntity.setType(ImgTypeEnum.GOOD_PHOTO.getCode());
+                    custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getGoodsPhotoUrl());
+                    custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
             if(StringUtils.isNotBlank(custBusinessInfo.getAuxiliaryPhotoUrl())){
@@ -180,6 +195,11 @@ public class CustBusinessInfoController {
                 if(custBusinessAttachInfoEntity !=null ){
                     custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getAuxiliaryPhotoUrl());
                     custBusinessAttachInfoService.updateById(custBusinessAttachInfoEntity);
+                }else{
+                    custBusinessAttachInfoEntity = new CustBusinessAttachInfoEntity();
+                    custBusinessAttachInfoEntity.setType(ImgTypeEnum.EVIDENC_PHOTO.getCode());
+                    custBusinessAttachInfoEntity.setImgUrl(custBusinessInfo.getAuxiliaryPhotoUrl());
+                    custBusinessAttachInfoService.save(custBusinessAttachInfoEntity);
                 }
             }
             if (bool) {
