@@ -19,7 +19,7 @@ public interface UnionPayLoansApiService {
      * @param tfLoanUserEntity
      * @return
      */
-    LoanUserEntity incoming(LoanUserEntity tfLoanUserEntity);
+    LoanUserEntity incoming(LoanUserEntity tfLoanUserEntity,String smsCode);
 
 
     /**
@@ -73,7 +73,7 @@ public interface UnionPayLoansApiService {
      * @param tfLoanUserEntity
      * @return
      */
-    IncomingReturn twoIncoming(LoanUserEntity tfLoanUserEntity);
+    IncomingReturn twoIncoming(LoanUserEntity tfLoanUserEntity,String smsCode);
 
     /**
      * 二级进件查询
@@ -104,4 +104,6 @@ public interface UnionPayLoansApiService {
      * @return
      */
     String getSettleAcctId(Long loanUserId);
+
+    Boolean getMobileStatus(String mobile);
 }
