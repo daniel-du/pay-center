@@ -4,6 +4,7 @@ package com.tfjt.pay.external.unionpay.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.dao.LoanBalanceAcctDao;
+import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
@@ -35,7 +36,7 @@ public class LoanBalanceAcctServiceImpl extends BaseServiceImpl<LoanBalanceAcctD
     }
 
     @Override
-    public LoanBalanceAcctEntity getBalanceAcctIdByBidAndType(String busId, String type) {
+    public LoanBalanceAcctRespDTO getBalanceAcctIdByBidAndType(String busId, String type) {
 
         return this.getBaseMapper().getBalanceAcctIdByBidAndType(busId,type);
     }

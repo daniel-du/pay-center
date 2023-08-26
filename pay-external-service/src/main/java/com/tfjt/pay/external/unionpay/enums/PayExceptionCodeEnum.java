@@ -34,12 +34,15 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     DATABASE_SAVE_FAIL(9000005,"数据保存异常"),
     DATABASE_UPDATE_FAIL(9000006,"数据更新异常"),
     CALLBACK_URL_NOT_FOUND(9000007,"应用回到地址未找到"),
-    BALANCE_NOT_ENOUTH(9000007,"账号余额不足"),
-    BALANCE_ACCOUNT_NAME_ERROR(9000003,"电子名称与电子账簿不符合"),
+    BALANCE_NOT_ENOUTH(9000008,"账号余额不足"),
+    BALANCE_ACCOUNT_NAME_ERROR(9000009,"电子名称与电子账簿不符合"),
+    PAYER_NOT_FOUND(9000010,"付款方不存在"),
+    PAYER_TOO_MUCH(9000012,"暂不支付多个付款方"),
+    PAYEE_NOT_FOUND(9000010,"收款方不存在"),
 
 
 
-    UNIONPAY_RESPONSE_ERROR(9000008, "银联系统交易异常"),
+    UNIONPAY_RESPONSE_ERROR(9000011, "银联系统交易异常"),
 
 
     ;

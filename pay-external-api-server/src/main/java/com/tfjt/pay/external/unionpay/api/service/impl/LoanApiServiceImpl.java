@@ -4,23 +4,28 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.lock.annotation.Lock4j;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -38,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Lzh
@@ -73,16 +79,22 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
-        LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
-        loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
-        loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
-        LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-        if (Objects.isNull(balanceAcc)) {
-            return Result.failed("电子账簿信息不存在");
+        try {
+            LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
+            loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
+            loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
+            LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+           // loanBalanceAcctService.get
+            if (Objects.isNull(balanceAcc)) {
+                throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+            }
+            loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
+            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getBalanceAcctName());
+            return Result.ok(loanTransferToTfDTO);
+        } catch (TfException e) {
+            log.error("");
+            return Result.failed(e.getMessage());
         }
-        loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
-        loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getRelAcctNo());
-        return Result.ok(loanTransferToTfDTO);
     }
 
     @Override
@@ -93,7 +105,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
                 .eq("type", type).eq("bus_id", bid));
         if (ObjectUtils.isNotEmpty(loanUser)) {
             //进件完成，查询余额信息
-            LoanBalanceAcctEntity balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+            LoanBalanceAcctRespDTO  balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
             if (Objects.isNull(balanceAcc)) {
                 return Result.failed("电子账簿信息不存在");
             }
@@ -111,6 +123,43 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         result.put("isIncoming", false);
         result.put("settledAmount", balance);
         return Result.ok(result);
+    }
+
+    @Override
+    public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
+        try{
+            Map<String, List<UnionPayIncomingDTO>> collect = list.stream().collect(Collectors.groupingBy(UnionPayIncomingDTO::getType));
+            List<UnionPayIncomingDTO> shops = collect.get(NumberConstant.ONE.toString());
+            List<UnionPayIncomingDTO> dealers = collect.get(NumberConstant.TWO.toString());
+            if(CollectionUtil.isEmpty(shops)){
+                return Result.failed(PayExceptionCodeEnum.PAYER_NOT_FOUND);
+            }
+            if(shops.size()>NumberConstant.ONE){
+                return Result.failed(PayExceptionCodeEnum.PAYER_TOO_MUCH);
+            }
+            if(CollectionUtil.isEmpty(dealers)){
+                return Result.failed(PayExceptionCodeEnum.PAYEE_NOT_FOUND);
+            }
+            Map<String, Object> result = new HashMap<>();
+            for (UnionPayIncomingDTO unionPayIncomingDTO : dealers) {
+                LambdaQueryWrapper<LoanUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                objectLambdaQueryWrapper.eq(LoanUserEntity::getType,unionPayIncomingDTO.getType())
+                        .eq(LoanUserEntity::getBusId,unionPayIncomingDTO.getBid());
+                LoanUserEntity one = this.getOne(objectLambdaQueryWrapper);
+                if (Objects.isNull(one)){
+                    result.put("isIncoming", true);
+                    return Result.ok(result);
+                }
+            }
+            UnionPayIncomingDTO unionPayIncomingDTO = shops.get(NumberConstant.ZERO);
+            return incomingIsFinish(unionPayIncomingDTO.getType(),unionPayIncomingDTO.getBid());
+        }catch (TfException e){
+            log.error("批量判断进件是否完成tfException:{}",e.getMessage());
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
     }
 
     /**
@@ -214,11 +263,11 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             throw new TfException("未找到贷款用户");
         }
         CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
-        if(custBankInfo!=null){
+        if (custBankInfo != null) {
             throw new TfException("该银行卡已绑定,请勿重复绑定");
         }
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
-        if (CollUtil.isNotEmpty(custBankInfos) && custBankInfos.size()== 10) {
+        if (CollUtil.isNotEmpty(custBankInfos) && custBankInfos.size() == 10) {
             throw new TfException("最多绑定10张银行卡");
         }
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
@@ -229,12 +278,12 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
         } catch (TfException ex) {
-           return Result.failed(ex.getMessage());
+            return Result.failed(ex.getMessage());
         }
         boolean save = custBankInfoService.save(custBankInfoEntity);
-        if(save){
+        if (save) {
             return Result.ok("绑定成功");
-        }else {
+        } else {
             return Result.failed("绑定失败");
         }
     }
