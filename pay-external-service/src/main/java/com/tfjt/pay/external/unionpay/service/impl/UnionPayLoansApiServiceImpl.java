@@ -345,7 +345,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Lock4j(keys = {"#id"}, expire = 3000, acquireTimeout = 4000)
+    @Lock4j(keys = {"#loanUserId"}, expire = 3000, acquireTimeout = 4000)
     public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount) {
         String settleAcctId = getSettleAcctId(loanUserId);
         if (StringUtils.isBlank(settleAcctId)) {
@@ -358,19 +358,21 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ527_SETTLE_ACCTS_VALIDATE.getCode(), JSON.toJSONString(reqParams));
         //调用银联接口
         ResponseEntity<UnionPayLoansBaseReturn> responseEntity = post(unionPayLoansBaseReq);
-        UnionPayLoansBaseReturn unionPayLoansBaseReturn = responseEntity.getBody();
-        unionPayLoanReqLogService.asyncSaveLog(unionPayLoansBaseReturn, reqParams, null, null);
-        log.info("查询账户返回值{}", JSON.toJSONString(unionPayLoansBaseReturn));
-        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcct = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), UnionPayLoansSettleAcctDTO.class);
-        //修改银行卡验证接口
-        if (unionPayLoansSettleAcct != null && StringUtils.isNotBlank(unionPayLoansSettleAcct.getBankAcctNo()) && StringUtils.isNotBlank(unionPayLoansSettleAcct.getVerifyStatus())) {
-            custBankInfoService.updateCustBankVerifyStatus(loanUserId, unionPayLoansSettleAcct.getBankAcctNo(), unionPayLoansSettleAcct.getVerifyStatus());
-        }
+        log.info("打款金额验证{}", JSON.toJSONString(responseEntity));
+
         getBaseIncomingReturnStr(responseEntity, null, null, null);
+
         //修改打款验证按钮显示
         LoanUserEntity tfLoanUserEntity = loanUserService.getById(loanUserId);
         tfLoanUserEntity.setBankCallStatus(0);
         loanUserService.updateById(tfLoanUserEntity);
+
+        UnionPayLoansBaseReturn unionPayLoansBaseReturn = responseEntity.getBody();
+        unionPayLoanReqLogService.asyncSaveLog(unionPayLoansBaseReturn, reqParams, null, null);
+
+
+        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcct = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), UnionPayLoansSettleAcctDTO.class);
+
         return unionPayLoansSettleAcct;
     }
 
