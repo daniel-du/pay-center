@@ -126,6 +126,9 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
             dto.setType(NumberConstant.THREE);
             dto.setPayAccountName(divideEntity.getPayBalanceAcctName());
             dto.setPayBalanceAcctId(divideEntity.getPayBalanceAcctId());
+            dto.setRecvAccountName(listDetail.getRecvBalanceAcctName());
+            dto.setRecvBalanceAcctId(listDetail.getRecvBalanceAcctId());
+            dto.setBusOrderNo(listDetail.getSubBusinessOrderNo());
             list.add(dto);
         }
         return sendRequest(shopAppId, JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
