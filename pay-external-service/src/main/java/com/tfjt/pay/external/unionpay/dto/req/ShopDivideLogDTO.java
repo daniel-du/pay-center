@@ -42,7 +42,7 @@ public class ShopDivideLogDTO implements Serializable {
     /**
      * 收款电子账簿id
      */
-    private Integer recvBalanceAcctId;
+    private String recvBalanceAcctId;
     /**
      * 付款户名
      */
@@ -51,4 +51,8 @@ public class ShopDivideLogDTO implements Serializable {
      * 收款户名
      */
     private String recvAccountName;
+    /**
+     * 分账订单号
+     */
+    private String busOrderNo;
 }
