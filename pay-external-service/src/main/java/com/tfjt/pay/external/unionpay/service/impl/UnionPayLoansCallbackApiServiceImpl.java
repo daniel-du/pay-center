@@ -142,8 +142,8 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
     private void addTfLoanBalanceAcct(String relAcctNo, String balanceAcctId, Long loanUserId) {
 
-        LoanBalanceAcctEntity old = tfLoanBalanceAcctService.getTfLoanBalanceAcctEntity(relAcctNo, balanceAcctId, loanUserId);
-        if(old == null){
+        LoanBalanceAcctEntity one = tfLoanBalanceAcctService.getOne(new LambdaQueryWrapper<LoanBalanceAcctEntity>().eq(LoanBalanceAcctEntity::getLoanUserId, loanUserId));
+        if(one == null){
             LoanBalanceAcctEntity tfLoanBalanceAcctEntity = new LoanBalanceAcctEntity();
             tfLoanBalanceAcctEntity.setLoanUserId(Integer.valueOf(String.valueOf(loanUserId)));
             if (StringUtils.isNotBlank(relAcctNo)) {
@@ -153,6 +153,14 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
                 tfLoanBalanceAcctEntity.setBalanceAcctId(balanceAcctId);
             }
             tfLoanBalanceAcctService.save(tfLoanBalanceAcctEntity);
+        }else {
+            if (StringUtils.isNotBlank(relAcctNo)) {
+                one.setRelAcctNo(relAcctNo);
+            }
+            if (StringUtils.isNotBlank(balanceAcctId)) {
+                one.setBalanceAcctId(balanceAcctId);
+            }
+            tfLoanBalanceAcctService.updateById(one);
         }
     }
 
@@ -183,7 +191,6 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
             if(!Objects.isNull(twoIncomingEventDataDTO.getFailedAt())){
                 tfLoanUserEntity.setFailedAt(twoIncomingEventDataDTO.getFailedAt());
             }
-
             if(twoIncomingEventDataDTO.getFailureMsgs()!=null && twoIncomingEventDataDTO.getFailureMsgs().size()>0){
                 String param = getParam(twoIncomingEventDataDTO.getFailureMsgs());
                 String reason = getReason(twoIncomingEventDataDTO.getFailureMsgs());
