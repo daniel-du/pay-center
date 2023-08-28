@@ -74,7 +74,10 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateBankCallStatus(LoanUserEntity tfLoanUserEntity ) {
-        tfLoanUserEntity.setBankCallStatus(1);
+        Integer loanUserType = tfLoanUserEntity.getLoanUserType();
+        if (!"0".equals(loanUserType)) {
+            tfLoanUserEntity.setBankCallStatus(1);
+        }
         tfLoanUserService.updateById(tfLoanUserEntity);
     }
 
@@ -187,7 +190,10 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         }
 
         if(Objects.equals("failed",twoIncomingEventDataDTO.getApplicationStatus() )){
-            tfLoanUserEntity.setBankCallStatus(1);
+            Integer loanUserType = tfLoanUserEntity.getLoanUserType();
+            if (!"0".equals(loanUserType)) {
+                tfLoanUserEntity.setBankCallStatus(1);
+            }
             if(!Objects.isNull(twoIncomingEventDataDTO.getFailedAt())){
                 tfLoanUserEntity.setFailedAt(twoIncomingEventDataDTO.getFailedAt());
             }

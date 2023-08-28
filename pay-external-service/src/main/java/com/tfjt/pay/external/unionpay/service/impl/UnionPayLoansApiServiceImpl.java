@@ -344,7 +344,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             String mobileNumber = unionPayLoansSettleAcctDTO.getMobileNumber();
             if (!name.equals(UnionPaySignUtil.SM2(encodedPub, nameOld)) || !bankAcctNo.equals(UnionPaySignUtil.SM2(encodedPub, bankAcctNoOld))
                     || !bankBranchCodeOld.equals(bankBranchCode) || !typeOld.equals(type) || !legalPersonMobileNumber.equals(mobileNumber)) {
-                tfLoanUserEntity.setBankCallStatus(1);
+                Integer loanUserType = tfLoanUserEntity.getLoanUserType();
+                if (!"0".equals(loanUserType)) {
+                    tfLoanUserEntity.setBankCallStatus(1);
+                }
             }
         }
 
