@@ -35,7 +35,7 @@ public class UnionPayLoansApiController {
      * @return
      */
     @PostMapping("incoming")
-    public Result<?> incoming(Long id,String smsCode) {
+        public Result<?> incoming(Long id,String smsCode) {
         try {
             LoanUserEntity loanUserEntity = tfLoanUserService.getById(id);
             if (null == loanUserEntity) {

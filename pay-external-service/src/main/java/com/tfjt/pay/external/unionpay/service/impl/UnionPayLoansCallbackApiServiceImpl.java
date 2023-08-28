@@ -65,7 +65,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
         }
         //修改银行是否打款状态1是
-        updateBankCallStatus(tfLoanUserEntity);
+//        updateBankCallStatus(tfLoanUserEntity);
 
         return tfLoanUserEntity.getId();
 
@@ -190,10 +190,6 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         }
 
         if(Objects.equals("failed",twoIncomingEventDataDTO.getApplicationStatus() )){
-            Integer loanUserType = tfLoanUserEntity.getLoanUserType();
-            if (!"0".equals(loanUserType)) {
-                tfLoanUserEntity.setBankCallStatus(1);
-            }
             if(!Objects.isNull(twoIncomingEventDataDTO.getFailedAt())){
                 tfLoanUserEntity.setFailedAt(twoIncomingEventDataDTO.getFailedAt());
             }
