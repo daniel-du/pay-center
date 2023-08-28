@@ -1,6 +1,9 @@
 package com.tfjt.pay.external.unionpay.biz;
 
-import com.tfjt.pay.external.unionpay.dto.req.BankInfoReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.WithdrawalRespDTO;
+import com.tfjt.tfcommon.dto.response.Result;
 
 /**
  * 进件业务层接口
@@ -21,4 +24,12 @@ public interface UnionPayLoansBizService {
      * @return
      */
     public boolean bindSettleAcct(BankInfoReqDTO  BankInfoReqDTO);
+
+    /**
+     * 提现
+     * @param withdrawalReqDTO
+     * @return
+     */
+    Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO);
+
 }

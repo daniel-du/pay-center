@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = PayExternalApplication.class)
 @MapperScan({"com.tfjt.**.dao"})
-@ComponentScan({"com.tfjt"})
+@ComponentScan(basePackages={"com.tfjt.pay.external","com.tfjt.tfcommon.core.util"})
 @ActiveProfiles("local")
 public class BaseTest {
 

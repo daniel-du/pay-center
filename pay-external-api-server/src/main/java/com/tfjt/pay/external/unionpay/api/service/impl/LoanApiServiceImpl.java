@@ -1,9 +1,7 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
@@ -12,23 +10,17 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
+import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
-import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
-import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
-import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
-import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
-import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -36,10 +28,8 @@ import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -74,6 +64,9 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
     @Resource
     UnionPayLoansApiService unionPayLoansApiService;
 
+    @Resource
+    UnionPayLoansBizService unionPayLoansBizService;
+
     @Value("${unionPayLoans.encodedPub}")
     private String encodedPub;
 
@@ -85,7 +78,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
             loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
             LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-           // loanBalanceAcctService.get
+            // loanBalanceAcctService.get
             if (Objects.isNull(balanceAcc)) {
                 throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
             }
@@ -103,10 +96,10 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
         Map<String, Object> result = new HashMap<>();
         BigDecimal balance = new BigDecimal("0");
         LoanUserEntity loanUser = this.baseMapper.selectOne(new QueryWrapper<LoanUserEntity>()
-                .eq("type", type).eq("bus_id", bid).eq("application_status","succeeded"));
+                .eq("type", type).eq("bus_id", bid).eq("application_status", "succeeded"));
         if (ObjectUtils.isNotEmpty(loanUser)) {
             //进件完成，查询余额信息
-            LoanBalanceAcctRespDTO  balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+            LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
             if (Objects.isNull(balanceAcc)) {
                 return Result.failed("电子账簿信息不存在");
             }
@@ -128,36 +121,36 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
-        try{
+        try {
             Map<String, List<UnionPayIncomingDTO>> collect = list.stream().collect(Collectors.groupingBy(UnionPayIncomingDTO::getType));
             List<UnionPayIncomingDTO> shops = collect.get(NumberConstant.ONE.toString());
             List<UnionPayIncomingDTO> dealers = collect.get(NumberConstant.TWO.toString());
-            if(CollectionUtil.isEmpty(shops)){
+            if (CollectionUtil.isEmpty(shops)) {
                 return Result.failed(PayExceptionCodeEnum.PAYER_NOT_FOUND);
             }
-            if(shops.size()>NumberConstant.ONE){
+            if (shops.size() > NumberConstant.ONE) {
                 return Result.failed(PayExceptionCodeEnum.PAYER_TOO_MUCH);
             }
-            if(CollectionUtil.isEmpty(dealers)){
+            if (CollectionUtil.isEmpty(dealers)) {
                 return Result.failed(PayExceptionCodeEnum.PAYEE_NOT_FOUND);
             }
             Map<String, Object> result = new HashMap<>();
             for (UnionPayIncomingDTO unionPayIncomingDTO : dealers) {
                 LambdaQueryWrapper<LoanUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                objectLambdaQueryWrapper.eq(LoanUserEntity::getType,unionPayIncomingDTO.getType())
-                        .eq(LoanUserEntity::getBusId,unionPayIncomingDTO.getBid()).eq(LoanUserEntity::getApplicationStatus, "succeeded");
+                objectLambdaQueryWrapper.eq(LoanUserEntity::getType, unionPayIncomingDTO.getType())
+                        .eq(LoanUserEntity::getBusId, unionPayIncomingDTO.getBid()).eq(LoanUserEntity::getApplicationStatus, "succeeded");
                 LoanUserEntity one = this.getOne(objectLambdaQueryWrapper);
-                if (Objects.isNull(one)){
+                if (Objects.isNull(one)) {
                     result.put("isIncoming", true);
                     return Result.ok(result);
                 }
             }
             UnionPayIncomingDTO unionPayIncomingDTO = shops.get(NumberConstant.ZERO);
-            return incomingIsFinish(unionPayIncomingDTO.getType(),unionPayIncomingDTO.getBid());
-        }catch (TfException e){
-            log.error("批量判断进件是否完成tfException:{}",e.getMessage());
+            return incomingIsFinish(unionPayIncomingDTO.getType(), unionPayIncomingDTO.getBid());
+        } catch (TfException e) {
+            log.error("批量判断进件是否完成tfException:{}", e.getMessage());
             return Result.failed(e.getMessage());
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
@@ -219,70 +212,14 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<String> unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
-        if (loanUser == null) {
-            return Result.failed("未找到贷款用户");
-        }
-        log.info("解绑银行卡参数：{}", bankInfoReqDTO);
-        List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
-        if (custBankInfos.size() == 1) {
-            throw new TfException("解绑银行卡失败，至少保留一张银行卡");
-        } else {
-            CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
-            if (com.baomidou.mybatisplus.core.toolkit.ObjectUtils.isNotEmpty(custBankInfo)) {
-                log.info("删除绑定银行卡:{}", bankInfoReqDTO.getBankCardNo());
-                if (com.baomidou.mybatisplus.core.toolkit.ObjectUtils.isNotEmpty(loanUser)) {
-                    ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
-                    deleteSettleAcctParams.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfoReqDTO.getBankCardNo()));
-                    if (LoanUserTypeEnum.PERSONAL.getCode().equals(loanUser.getLoanUserType())) {
-                        deleteSettleAcctParams.setCusId(loanUser.getCusId());
-                    } else {
-                        deleteSettleAcctParams.setMchId(loanUser.getMchId());
-                    }
-                    unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
-                } else {
-                    throw new TfException("贷款用户不存在");
-                }
-                //标记删除银行卡
-                custBankInfo.setDeleted(true);
-                custBankInfoService.updateCustBankInfo(custBankInfo);
-            } else {
-                throw new TfException("解绑银行卡失败，银行卡不存在");
-            }
-
-        }
+        unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
         return Result.ok("解绑成功");
     }
 
-
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo", "#bankInfoReqDTO.bankCardNo", "#bankInfoReqDTO.type"}, expire = 3000, acquireTimeout = 4000)
     public Result<String> bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
-        if (loanUser == null) {
-            throw new TfException("未找到贷款用户");
-        }
-        CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
-        if (custBankInfo != null) {
-            throw new TfException("该银行卡已绑定,请勿重复绑定");
-        }
-        List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
-        if (CollUtil.isNotEmpty(custBankInfos) && custBankInfos.size() == 10) {
-            throw new TfException("最多绑定10张银行卡");
-        }
-        CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
-        BeanUtils.copyProperties(bankInfoReqDTO, custBankInfoEntity);
-        try {
-            custBankInfoEntity.setLoanUserId(loanUser.getId());
-            UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
-            //银行账号类型
-            custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
-        } catch (TfException ex) {
-            return Result.failed(ex.getMessage());
-        }
-        boolean save = custBankInfoService.save(custBankInfoEntity);
-        if (save) {
+        boolean boundSettleAcct = unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
+        if (boundSettleAcct) {
             return Result.ok("绑定成功");
         } else {
             return Result.failed("绑定失败");

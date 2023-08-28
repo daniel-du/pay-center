@@ -1,75 +1,30 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
 import com.tfjt.pay.external.unionpay.api.service.PaymentPasswordApiService;
-import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
-import com.tfjt.pay.external.unionpay.entity.PaymentPasswordEntity;
-import com.tfjt.pay.external.unionpay.service.LoanUserService;
-import com.tfjt.pay.external.unionpay.service.PaymentPasswordService;
-import com.tfjt.tfcommon.core.exception.TfException;
-import com.tfjt.tfcommon.core.validator.ValidatorUtils;
+import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 @Slf4j
 @DubboService
 public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService {
 
     @Resource
-    private PaymentPasswordService paymentPasswordService;
-
-    @Autowired
-    private LoanUserService loanUserService;
+    private LoanUserBizService loanUserBizService;
 
     @Override
     public Result<String> savePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
-        if (loanUser == null) {
-            throw new TfException("未找到贷款用户");
-        }
-        try {
-            ValidatorUtils.validateEntity(paymentPasswordDTO);
-            PaymentPasswordEntity paymentPassword = new PaymentPasswordEntity();
-            BeanUtils.copyProperties(paymentPasswordDTO, paymentPassword);
-            paymentPasswordService.save(paymentPassword);
-        } catch (Exception ex) {
-            if (ex instanceof DuplicateKeyException) {
-                return Result.failed("请勿重复设置支付密码");
-            }
-            log.error("", ex);
-            return Result.failed(ex.getMessage());
-        }
-        return Result.ok();
+        return loanUserBizService.savePaymentPassword(paymentPasswordDTO);
     }
 
     @Override
     public Result<String> updatePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
-        if (loanUser == null) {
-            throw new TfException("未找到贷款用户");
-        }
-        try {
-            UpdateWrapper<PaymentPasswordEntity> updateWrapper = Wrappers.update();
-            updateWrapper.lambda().eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId());
-            PaymentPasswordEntity paymentPasswordEntity = new PaymentPasswordEntity();
-            paymentPasswordEntity.setPassword(paymentPasswordDTO.getPassword());
-            paymentPasswordService.update(paymentPasswordEntity, updateWrapper);
-        } catch (Exception ex) {
-            log.error("", ex);
-            return Result.failed(ex.getMessage());
-        }
-        return Result.ok();
+        return loanUserBizService.updatePaymentPassword(paymentPasswordDTO);
     }
 
     /**
@@ -78,21 +33,7 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
      */
     @Override
     public Result<String> getSalt(UserTypeDTO userType) {
-        String salt = null;
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(userType.getBusId(), userType.getType());
-        if (loanUser == null) {
-            throw new TfException("未找到贷款用户");
-        }
-        try {
-            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getType, userType.getType()).eq(PaymentPasswordEntity::getBusId, userType.getBusId()));
-            if (ObjectUtils.isNotEmpty(paymentPassword)) {
-                salt = paymentPassword.getSalt();
-            }
-        } catch (Exception ex) {
-            log.error("", ex);
-            return Result.failed(ex.getMessage());
-        }
-        return Result.ok(salt);
+        return loanUserBizService.getSalt(userType);
     }
 
     /**
@@ -103,18 +44,7 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
      */
     @Override
     public Result<Boolean> isExist(UserTypeDTO userType) {
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(userType.getBusId(), userType.getType());
-        if (loanUser == null) {
-            throw new TfException("未找到贷款用户");
-        }
-        boolean result;
-        try {
-            result = paymentPasswordService.count(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getType, userType.getType()).eq(PaymentPasswordEntity::getBusId, userType.getBusId())) > 0;
-        } catch (Exception ex) {
-            log.error("", ex);
-            return Result.failed(ex.getMessage());
-        }
-        return Result.ok(result);
+        return loanUserBizService.isExist(userType);
     }
 
 
@@ -126,21 +56,6 @@ public class PaymentPasswordApiServiceImpl implements PaymentPasswordApiService 
      */
     @Override
     public Result<Boolean> verifyPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
-        boolean result = false;
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
-        if (loanUser == null) {
-            throw new TfException("未找到贷款用户");
-        }
-        try {
-            PaymentPasswordEntity paymentPassword = paymentPasswordService.getOne(Wrappers.lambdaQuery(PaymentPasswordEntity.class).eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()));
-            if (ObjectUtils.isNotEmpty(paymentPassword)) {
-                result = Objects.equals(paymentPasswordDTO.getPassword(), paymentPassword.getPassword());
-                return Result.ok(result);
-            }
-        } catch (Exception ex) {
-            log.error("", ex);
-            return Result.failed(ex.getMessage());
-        }
-        return Result.ok(result);
+        return loanUserBizService.verifyPassword(paymentPasswordDTO);
     }
 }

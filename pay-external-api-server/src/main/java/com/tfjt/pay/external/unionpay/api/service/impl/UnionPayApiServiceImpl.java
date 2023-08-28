@@ -2,7 +2,6 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.tfjt.pay.external.unionpay.api.dto.req.*;
@@ -10,29 +9,33 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
 import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
+import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.*;
-import com.tfjt.pay.external.unionpay.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.UnionPayProduct;
 import com.tfjt.pay.external.unionpay.dto.req.*;
-import com.tfjt.pay.external.unionpay.dto.resp.*;
-import com.tfjt.pay.external.unionpay.entity.*;
+import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDetailDTO;
+import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.service.LoanUnionpayCheckBillService;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
-import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
-import com.tfjt.pay.external.unionpay.service.*;
-import com.tfjt.pay.external.unionpay.utils.*;
+import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.util.InstructIdUtil;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
-import com.tfjt.tfcommon.core.util.InstructIdUtil;
-
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 银联接口服务实现类
@@ -57,17 +59,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
     private UnionPayService unionPayService;
     @Resource
-    LoanBalanceAcctService loanBalanceAcctService;
-    @Resource
-    CustBankInfoService custBankInfoService;
-
-    @Resource
-    LoanWithdrawalOrderService withdrawalOrderService;
-    @Resource
     private LoanUnionpayCheckBillService loanUnionpayCheckBillService;
-
-    @Value("${unionPayLoans.encodedPub}")
-    private String encodedPub;
 
     @Resource
     private LoanOrderBiz loanOrderBiz;
@@ -82,7 +74,10 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
 
     @Value("${unionPay.loan.notifyUrl}")
     private String notifyUrl;
-    private final static String WITHDRAWAL_IDEMPOTENT_KEY = "idempotent:withdrawal";
+
+
+    @Resource
+    private UnionPayLoansBizService unionPayLoansBizService;
 
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Override
@@ -200,56 +195,8 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      * @return 提现结果
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
-        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(withdrawalReqDTO.getBusId(), withdrawalReqDTO.getType());
-        if (loanUser == null) {
-            return Result.failed("未找到贷款用户");
-        }
-        String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
-        String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
-        log.info("放重复提交加密后的M5d值为：{}", md5Str);
-        String idempotentMd5 = MD5Util.getMD5String(md5Str);
-        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
-        log.info("放重复提交加密后的M5d值为：{}", idempotentMd5);
-        if (StringUtils.isEmpty(isIdempotent)) {
-            redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY, idempotentMd5, 60, TimeUnit.MINUTES);
-        } else if (idempotentMd5.equals(isIdempotent)) {
-            return Result.failed("请勿重复提现");
-        }
-        LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
-        CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
-        WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
-        withdrawalCreateReqDTO.setOutOrderNo(outOrderNo);
-        withdrawalCreateReqDTO.setSentAt(DateUtil.getNowByRFC3339());
-        withdrawalCreateReqDTO.setAmount(withdrawalReqDTO.getAmount());
-        withdrawalCreateReqDTO.setServiceFee(null);
-        withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
-        withdrawalCreateReqDTO.setBusinessType(UnionPayBusinessTypeEnum.WITHDRAWAL.getCode());
-        withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
-        withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
-        withdrawalCreateReqDTO.setRemark("");
-        Map<String, Object> map = new HashMap<>();
-        map.put("notifyUrl", notifyUrl);
-        withdrawalCreateReqDTO.setExtra(map);
-        //插入业务表
-        LoanWithdrawalOrderEntity loanWithdrawalOrderEntity = BeanUtil.copyProperties(withdrawalCreateReqDTO, LoanWithdrawalOrderEntity.class);
-        loanWithdrawalOrderEntity.setBankAcctNo(bankInfo.getBankCardNo());
-        loanWithdrawalOrderEntity.setMobileNumber(bankInfo.getPhone());
-        loanWithdrawalOrderEntity.setAppId(withdrawalReqDTO.getAppId());
-        log.info("银联提现参数插入业务表:{}", JSON.toJSONString(loanWithdrawalOrderEntity));
-        withdrawalOrderService.save(loanWithdrawalOrderEntity);
-        log.info("银联提现参数:{}", JSON.toJSONString(withdrawalCreateReqDTO));
-        Result<WithdrawalCreateRespDTO> withdrawalCreateResp = unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
-        WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
-        if (withdrawalCreateResp.getCode() != NumberConstant.ZERO) {
-            return Result.failed(withdrawalCreateResp.getMsg());
-        } else {
-            //更新状态
-            loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
-            withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
-            return Result.ok(withdrawalRespDTO);
-        }
+        return this.unionPayLoansBizService.withdrawalCreation(withdrawalReqDTO);
     }
 
     @Override
