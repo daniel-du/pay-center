@@ -1111,7 +1111,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         //在绑定
         Long loanUserId = custBankInfo.getLoanUserId();
         LoanUserEntity byId = loanUserService.getById(loanUserId);
-        byId.setBankCallStatus(1);
+        Integer loanUserType = byId.getLoanUserType();
+        if (!"0".equals(loanUserType)) {
+            byId.setBankCallStatus(1);
+        }
         loanUserService.updateById(byId);
         return bindAddSettleAcct(custBankInfo);
     }
