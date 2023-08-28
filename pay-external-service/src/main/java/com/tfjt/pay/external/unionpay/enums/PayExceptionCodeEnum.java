@@ -43,6 +43,7 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
 
 
     UNIONPAY_RESPONSE_ERROR(9000011, "银联系统交易异常"),
+    SMSCODE_ERROR(9000012, "验证码失效，请重新填写。"),
 
 
     ;

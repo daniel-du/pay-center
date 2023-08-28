@@ -11,6 +11,7 @@ import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.dto.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.BankTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.UnionPayLoanBussCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.MessageDigestUtils;
@@ -624,11 +625,11 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
                     validationMobileNumber(phone);
                     custBankInfoEntity.setSmsCode("");
                     custBankInfoService.updateById(custBankInfoEntity);
-                    throw new TfException(500, "验证码失效，请重新填写。");
+                    throw new TfException(PayExceptionCodeEnum.SMSCODE_ERROR);
                 }
                 String smsCodeOld = custBankInfoEntity.getSmsCode();
                 if (StringUtils.isEmpty(smsCodeOld)) {
-                    throw new TfException(500, "验证码失效，请重新填写。");
+                    throw new TfException(PayExceptionCodeEnum.SMSCODE_ERROR);
                 }
                 smsCode = smsCodeOld;
             }
