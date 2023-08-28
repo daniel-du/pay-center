@@ -27,7 +27,7 @@ import java.util.Map;
  * @date 2023-05-24 09:00:44
  */
 @RestController
-@RequestMapping("ncomingreason")
+@RequestMapping("incomingreason")
 public class NcomingReasonController {
     @Autowired
     private NcomingReasonService ncomingReasonService;
