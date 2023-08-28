@@ -42,4 +42,10 @@ public class LoanUnionpayCheckBillEntity implements Serializable {
 	 */
 	private Date ceateTime;
 
+
+	private Integer status;
+
+
+	private String reason;
+
 }

@@ -275,10 +275,13 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Override
     public Result<String> downloadCheckBill(UnionPayCheckBillReqDTO date) {
         LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(date.getDate(), accountConfig.getBalanceAcctId());
-        if (byDateAndAccountId.getBalanceAcctId() != null) {
+        if (Objects.isNull(byDateAndAccountId)) {
+            return Result.failed("下载对账单失败");
+        }
+        if (Objects.equals(NumberConstant.ONE, byDateAndAccountId.getStatus())) {
             return Result.ok(byDateAndAccountId.getUrl());
         }
-        return Result.failed("下载对账单失败");
+        return Result.failed(byDateAndAccountId.getReason());
     }
 
     /**
@@ -340,7 +343,12 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     private BalanceAcctRespDTO getBalanceAcctDTOByAccountId(String balanceAcctId) {
 
-        LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
+        LoanAccountDTO loanAccountDTO = null;
+        try {
+            loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (Objects.isNull(loanAccountDTO)) {
             return null;
         }
