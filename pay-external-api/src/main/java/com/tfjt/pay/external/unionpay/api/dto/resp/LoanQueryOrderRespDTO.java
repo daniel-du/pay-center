@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.api.dto.resp;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author songx
@@ -51,4 +52,6 @@ public class LoanQueryOrderRespDTO implements Serializable {
 
 
     private String tread_type;
+
+    private List<LoanOrderDetailsRespDTO> details_dto_list;
 }

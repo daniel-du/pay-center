@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
@@ -20,10 +21,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDetailDTO;
-import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanUnionpayCheckBillService;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
@@ -222,13 +220,15 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
                 if (code == NumberConstant.ONE) {
                     ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
                     loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+
                 } else {
-                    return Result.failed();
+                    return Result.failed(consumerPoliciesRespDTOResult.getMsg());
                 }
             } else {
                 loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
             }
-
+            List<LoanOrderDetailsRespDTO>  details_dto_list = this.loanOrderBiz.listLoanOrderDetailsRespDTO(one.getId());
+            loanQueryOrderRespDTO.setDetails_dto_list(details_dto_list);
             loanQueryOrderRespDTO.setTread_type(PayTypeConstants.PAY_TYPE_LOAN);
             return Result.ok(loanQueryOrderRespDTO);
         } catch (TfException e) {

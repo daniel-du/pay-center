@@ -1,38 +1,32 @@
-package com.tfjt.pay.external.unionpay.dto.resp;
+package com.tfjt.pay.external.unionpay.api.dto.resp;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.io.Serializable;
 
 /**
- * 下单收款商户信息
- *
  * @author songx
- * @date 2023-08-15 14:47
+ * @date 2023-08-28 17:28
  * @email 598482054@qq.com
  */
 @Data
 public class LoanOrderDetailsRespDTO implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     /**
      * 收款电子账簿id
      */
-    @JSONField(name = "recv_balance_acct_id")
-    private String recvBalanceAcctId;
+    private String recv_balance_acct_id;
 
     /**
      * 收款方名称
      */
-    @JSONField(name = "recv_balance_acct_name")
-    private String recvBalanceAcctName;
+
+    private String recv_balance_acct_name;
     /***
      * 业务子交易单号
      */
-    @JSONField(name = "sub_business_order_no")
-    private String subBusinessOrderNo;
+
+    private String sub_business_order_no;
     /***
      * 自定义参数 JSON
      */
@@ -43,5 +37,4 @@ public class LoanOrderDetailsRespDTO implements Serializable {
      * 收款金额
      */
     private Integer amount;
-
 }

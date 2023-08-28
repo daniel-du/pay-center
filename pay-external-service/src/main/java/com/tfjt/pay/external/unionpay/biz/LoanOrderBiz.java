@@ -1,12 +1,15 @@
 package com.tfjt.pay.external.unionpay.biz;
 
+import com.tfjt.pay.external.unionpay.api.dto.resp.LoanOrderDetailsRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.LoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.LoanTransferRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
+import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 /**
  * @author songx
@@ -54,4 +57,14 @@ public interface LoanOrderBiz {
      * @param appId appId
      */
     void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result, String appId);
+
+    /**
+     * 根据订单id获取订单详情
+     * @param id
+     * @return
+     */
+    List<LoanOrderDetailsEntity> listOrderDetailByOrderId(Long id);
+
+    List<LoanOrderDetailsRespDTO> listLoanOrderDetailsRespDTO(Long id);
+
 }

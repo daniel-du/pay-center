@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.resp.LoanOrderDetailsRespDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
 import com.tfjt.pay.external.unionpay.constants.CommonConstants;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -264,5 +265,28 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
                 throw new TfException(PayExceptionCodeEnum.DATABASE_UPDATE_FAIL);
             }
         }
+    }
+
+    @Override
+    public List<LoanOrderDetailsEntity> listOrderDetailByOrderId(Long id) {
+        LambdaQueryWrapper<LoanOrderDetailsEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(LoanOrderDetailsEntity::getOrderId,id);
+        return this.loanOrderDetailsService.list(queryWrapper);
+    }
+
+    @Override
+    public List<LoanOrderDetailsRespDTO> listLoanOrderDetailsRespDTO(Long id) {
+        List<LoanOrderDetailsRespDTO> details_dto_list = new ArrayList<>();
+        List<LoanOrderDetailsEntity> loanOrderDetailsEntities = this.listOrderDetailByOrderId(id);
+        for (LoanOrderDetailsEntity loanOrderDetailsEntity : loanOrderDetailsEntities) {
+            LoanOrderDetailsRespDTO dto = new LoanOrderDetailsRespDTO();
+            dto.setMetadata(loanOrderDetailsEntity.getMetadata());
+            dto.setRecv_balance_acct_id(loanOrderDetailsEntity.getRecvBalanceAcctId());
+            dto.setAmount(loanOrderDetailsEntity.getAmount());
+            dto.setSub_business_order_no(loanOrderDetailsEntity.getSubBusinessOrderNo());
+            dto.setRecv_balance_acct_name(loanOrderDetailsEntity.getRecvBalanceAcctName());
+            details_dto_list.add(dto);
+        }
+        return details_dto_list;
     }
 }
