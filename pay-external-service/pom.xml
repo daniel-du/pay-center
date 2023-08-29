@@ -203,13 +203,25 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-common-auth-interceptor</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>pay-external-api</artifactId>
             <version>${project.external.api.version}</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-shop-api</artifactId>
+            <version>1.3.8.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-boot-starter</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

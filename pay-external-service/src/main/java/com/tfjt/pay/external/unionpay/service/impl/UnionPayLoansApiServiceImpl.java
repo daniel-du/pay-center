@@ -901,9 +901,15 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
     }
 
-    private void delSettleAcct(String cusId, String bankCardNo) {
+
+    private void delSettleAcct(String cusId, String bankCardNo,Integer settlementType,String mchId) {
         ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
-        deleteSettleAcctParams.setCusId(cusId);
+        if (String.valueOf(settlementType).equals(BankTypeEnum.PERSONAL.getCode())) {
+            deleteSettleAcctParams.setCusId(cusId);
+        }
+        if (String.valueOf(settlementType).equals(BankTypeEnum.CORPORATE.getCode())) {
+            deleteSettleAcctParams.setMchId(mchId);
+        }
         deleteSettleAcctParams.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankCardNo));
         UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ522_SETTLE_ACCTS_DELETE.getCode(), JSON.toJSONString(deleteSettleAcctParams));
         Date req = new Date();
@@ -936,7 +942,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             //个人用户ID
             unionPayLoansSettleAcctDTO.setCusId(tfLoanUser.getCusId());
             //银行账户类型
-            unionPayLoansSettleAcctDTO.setBankAcctType(BankTypeEnum.PERSONAL.getCode());
+            unionPayLoansSettleAcctDTO.setBankAcctType(String.valueOf(custBankInfoEntity.getSettlementType()));
             unionPayLoansSettleAcctDTO.setMchId(tfLoanUser.getMchId());
             //开户银行编码
             unionPayLoansSettleAcctDTO.setBankCode(custBankInfoEntity.getBankCode());
@@ -1104,21 +1110,21 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         //先删除
         LoanUserInfoDTO loanUerInfo = loanUserService.getLoanUerInfo(custBankInfo.getLoanUserId());
 
-        this.delSettleAcct(loanUerInfo.getCusId(), oldBankCardNo);
-/*        if(!isDel){
-            log.info("删除银行卡失败{}",custBankInfo.getLoanUserId());
-            throw new TfException(500, "删除银行卡失败");
-        }*/
         //修改
-        //在绑定
+        //先绑定
         Long loanUserId = custBankInfo.getLoanUserId();
         LoanUserEntity byId = loanUserService.getById(loanUserId);
         Integer loanUserType = byId.getLoanUserType();
         if (!"0".equals(loanUserType)) {
             byId.setBankCallStatus(1);
         }
+        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = bindAddSettleAcct(custBankInfo);
+        String settleAcctId = unionPayLoansSettleAcctDTO.getSettleAcctId();
+        byId.setSettleAcctId(settleAcctId);
         loanUserService.updateById(byId);
-        return bindAddSettleAcct(custBankInfo);
+        //再删除
+        this.delSettleAcct(loanUerInfo.getCusId(), oldBankCardNo,custBankInfo.getSettlementType(),byId.getMchId());
+        return unionPayLoansSettleAcctDTO;
     }
 
 

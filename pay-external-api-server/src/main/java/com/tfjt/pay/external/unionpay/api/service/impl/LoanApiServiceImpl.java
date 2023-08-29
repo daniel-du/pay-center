@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
@@ -122,6 +123,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
+        log.info("listIncomingIsFinish 入参:{}", JSONObject.toJSONString(list));
         try {
             Map<String, List<UnionPayIncomingDTO>> collect = list.stream().collect(Collectors.groupingBy(UnionPayIncomingDTO::getType));
             List<UnionPayIncomingDTO> shops = collect.get(NumberConstant.ONE.toString());
@@ -141,28 +143,29 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             if(map.getCode()!=NumberConstant.ZERO){
                 return Result.failed(map.getMsg());
             }
-            returnMap.put("shopIsFrozen",false);
-            returnMap.put("shopIsIncoming",true);
-            returnMap.put("wanlshopIsFrozen",map.getData().get("isFrozen"));
-            returnMap.put("wanlshopIsIncoming",map.getData().get("isIncoming"));
-            returnMap.put("wanlshopSettledAmount",map.getData().get("settledAmount"));
+            returnMap.put("supplierFrozen",false);
+            returnMap.put("supplierIncoming",true);
+            returnMap.put("shopFrozen",map.getData().get("isFrozen"));
+            returnMap.put("shopIncoming",map.getData().get("isIncoming"));
+            returnMap.put("shopSettledAmount",map.getData().get("settledAmount"));
             for (UnionPayIncomingDTO unionPayIncoming : dealers) {
                 Result<Map<String, Object>> mapResult = incomingIsFinish(unionPayIncoming.getType(), unionPayIncoming.getBid());
                 if (mapResult.getCode() == NumberConstant.ZERO) {
                     Map<String, Object> data = mapResult.getData();
                     if(!Boolean.parseBoolean(data.get("isIncoming").toString())){
-                        returnMap.put("shopIsIncoming",false);
+                        returnMap.put("supplierIncoming",false);
                         return Result.ok(returnMap);
                     }
                     if(Boolean.parseBoolean(data.get("isFrozen").toString())){
-                        returnMap.put("shopIsFrozen",true);
+                        returnMap.put("supplierFrozen",true);
                         return Result.ok(returnMap);
                     }
                 }else{
                     return Result.failed(mapResult.getMsg());
                 }
             }
-            return Result.failed(returnMap);
+            log.info("listIncomingIsFinish 出参:{}", JSONObject.toJSONString(returnMap));
+            return Result.ok(returnMap);
         } catch (TfException e) {
             log.error("批量判断进件是否完成tfException:{}", e.getMessage());
             return Result.failed(e.getMessage());

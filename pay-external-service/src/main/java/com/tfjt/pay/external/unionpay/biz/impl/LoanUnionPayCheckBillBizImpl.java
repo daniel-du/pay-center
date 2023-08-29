@@ -50,17 +50,17 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
     private FileStorageService fileStorageService;
 
     @Override
-    public void downloadCheckBill(DateTime yesterday, int number) {
-        if (number >= NumberConstant.THREE) {
-            log.error("下载对账单失败:{},次数:{}", yesterday, number);
-            return;
-        }
+    public void downloadCheckBill(DateTime yesterday) {
+        LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = new LoanUnionpayCheckBillEntity();
+        loanUnionpayCheckBillEntity.setDate(yesterday);
+
+        loanUnionpayCheckBillEntity.setBalanceAcctId(tfAccountConfig.getBalanceAcctId());
+        loanUnionpayCheckBillEntity.setCeateTime(new Date());
         try {
             String format = DateUtil.format(yesterday, DatePattern.NORM_DATE_PATTERN);
             Result<String> stringResult = unionPayService.downloadCheckBill(format);
             if (stringResult.getCode() != NumberConstant.ZERO) {
                 log.error("调用银行对账单接口失败:{}", JSONObject.toJSONString(stringResult));
-                this.downloadCheckBill(yesterday, ++number);
             } else {
                 File file = new File("/tmp/checkBill");
                 if (!file.exists()) {
@@ -75,17 +75,16 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
                 UploadPretreatment of = fileStorageService.of(cvsFile);
                 FileInfo upload = of.upload();
                 String url = upload.getUrl();
-                LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = new LoanUnionpayCheckBillEntity();
-                loanUnionpayCheckBillEntity.setDate(yesterday);
                 loanUnionpayCheckBillEntity.setUrl(url);
-                loanUnionpayCheckBillEntity.setBalanceAcctId(tfAccountConfig.getBalanceAcctId());
-                loanUnionpayCheckBillEntity.setCeateTime(new Date());
-                this.loanUnionpayCheckBillService.save(loanUnionpayCheckBillEntity);
+                loanUnionpayCheckBillEntity.setStatus(NumberConstant.ONE);
                 cvsFile.delete();
             }
         } catch (Exception e) {
             log.error("下载对账单失败");
+            loanUnionpayCheckBillEntity.setReason(e.getMessage());
+            loanUnionpayCheckBillEntity.setStatus(NumberConstant.ZERO);
         }
+        this.loanUnionpayCheckBillService.save(loanUnionpayCheckBillEntity);
     }
 
 }

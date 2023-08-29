@@ -40,7 +40,7 @@ public class LoanBusinessJob {
     public void downloadCheckBill(){
         DateTime yesterday = DateUtil.yesterday();
         log.info("开始执行:{}下载账单下载任务........",yesterday);
-        loanUnionPayCheckBillBiz.downloadCheckBill(yesterday, NumberConstant.ZERO);
+        loanUnionPayCheckBillBiz.downloadCheckBill(yesterday);
         log.info("结束执行:{}下载账单下载任务........",yesterday);
     }
     /**
