@@ -152,6 +152,9 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
         if (StringUtils.isNotBlank(loanUser.getMchApplicationId())) {
             dto.setMchApplicationId(loanUser.getMchApplicationId());
         }
+        if (StringUtils.isNotBlank(loanUser.getMchId())) {
+            dto.setMchId(loanUser.getMchId());
+        }
         CustIdcardInfoEntity idcardInfoEntity = this.custIdcardInfoService.getOne(new LambdaQueryWrapper<CustIdcardInfoEntity>()
                 .eq(CustIdcardInfoEntity::getLoanUserId, loanUserId));
         if (!ObjectUtil.isEmpty(idcardInfoEntity)) {
