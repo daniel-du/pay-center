@@ -112,6 +112,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             }
             result.put("isIncoming", true);
             result.put("settledAmount", balance);
+            result.put("isFrozen",loanAccountDTO.isFrozen());
             return Result.ok(result);
         }
         result.put("isIncoming", false);
