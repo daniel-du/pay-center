@@ -108,20 +108,19 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     @Override
     public UnionPayLoansSettleAcctDTO updateCustBankInfo(CustBankInfoEntity custBankInfo) {
         UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = new UnionPayLoansSettleAcctDTO();
-        LoanUserEntity tfLoanUserEntity = loanUserService.getById(custBankInfo.getLoanUserId());
-        if (StringUtils.isNotBlank(tfLoanUserEntity.getCusId())) {
-            //当银行卡修改则调用新增绑定账号逻辑
-            CustBankInfoEntity old = this.getById(custBankInfo.getId());
-            if (!Objects.equals(custBankInfo.getBankCardNo(), old.getBankCardNo())
-                    || !Objects.equals(custBankInfo.getAccountName(), old.getAccountName())
-                    || !Objects.equals(custBankInfo.getCity(), old.getCity())
-                    || !Objects.equals(custBankInfo.getBankCode(), old.getBankCode())
-                    || !Objects.equals(custBankInfo.getCareer(), old.getCareer())
-            ) {
-                //删除只能删除已绑定的
-                unionPayLoansSettleAcctDTO = unionPayLoansApiService.delAndBindAddSettleAcct(custBankInfo, old.getBankCardNo());
-            }
+
+        //当银行卡修改则调用新增绑定账号逻辑
+        CustBankInfoEntity old = this.getById(custBankInfo.getId());
+        if (!Objects.equals(custBankInfo.getBankCardNo(), old.getBankCardNo())
+                || !Objects.equals(custBankInfo.getAccountName(), old.getAccountName())
+                || !Objects.equals(custBankInfo.getCity(), old.getCity())
+                || !Objects.equals(custBankInfo.getBankCode(), old.getBankCode())
+                || !Objects.equals(custBankInfo.getCareer(), old.getCareer())
+        ) {
+            //删除只能删除已绑定的
+            unionPayLoansSettleAcctDTO = unionPayLoansApiService.delAndBindAddSettleAcct(custBankInfo, old.getBankCardNo());
         }
+
         this.updateById(custBankInfo);
         return unionPayLoansSettleAcctDTO;
     }

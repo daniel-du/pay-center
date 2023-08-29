@@ -937,6 +937,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             unionPayLoansSettleAcctDTO.setCusId(tfLoanUser.getCusId());
             //银行账户类型
             unionPayLoansSettleAcctDTO.setBankAcctType(BankTypeEnum.PERSONAL.getCode());
+            unionPayLoansSettleAcctDTO.setMchId(tfLoanUser.getMchId());
             //开户银行编码
             unionPayLoansSettleAcctDTO.setBankCode(custBankInfoEntity.getBankCode());
             //开户银行省市编码
