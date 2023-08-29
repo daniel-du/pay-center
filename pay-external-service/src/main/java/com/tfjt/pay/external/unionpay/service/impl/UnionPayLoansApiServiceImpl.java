@@ -305,8 +305,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
             UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ59_MCH_APPLICATIONS_RENEW.getCode(), JSON.toJSONString(unionPayLoansTwoIncomingEditDTO));
 
-            //二级商户信息的修改需通过银行运营人员审核，如果变更法人手机号或者绑定账户相关内容，需要重新打款验证
-            judgeIsRepayMen(unionPayLoansTwoIncomingEditDTO,tfLoanUserEntity);
+
 
             ResponseEntity<UnionPayLoansBaseReturn> responseEntity = post(unionPayLoansBaseReq);
 
@@ -1110,6 +1109,13 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         }*/
         //修改
         //在绑定
+        Long loanUserId = custBankInfo.getLoanUserId();
+        LoanUserEntity byId = loanUserService.getById(loanUserId);
+        Integer loanUserType = byId.getLoanUserType();
+        if (!"0".equals(loanUserType)) {
+            byId.setBankCallStatus(1);
+        }
+        loanUserService.updateById(byId);
         return bindAddSettleAcct(custBankInfo);
     }
 
