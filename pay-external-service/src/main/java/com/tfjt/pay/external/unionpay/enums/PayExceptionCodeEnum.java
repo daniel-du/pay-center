@@ -39,6 +39,7 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     PAYER_NOT_FOUND(9000010,"付款方不存在"),
     PAYER_TOO_MUCH(9000011,"暂不支付多个付款方"),
     PAYEE_NOT_FOUND(9000012,"收款方不存在"),
+    UNIONPAY_CHECK_BILL_NOT_FOUND(9000015,"当日电子对账单不存在"),
 
 
 

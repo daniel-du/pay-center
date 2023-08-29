@@ -189,17 +189,9 @@ public class UnionPayServiceImpl implements UnionPayService {
     @Override
     public Result<String> downloadCheckBill(String format) {
         JSONObject param = new JSONObject();
-        try {
-            param.put("billDate",format);
-            JSONObject combination = (JSONObject)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ91_RECEIPT_QUERY_REQ.getCode(), param.toJSONString(), JSONObject.class,format);
-            return Result.ok(combination.getString("downloadUrl"));
-        }catch (TfException e){
-            log.error("调用下载对账单查询返回 TfException{},{}", JSON.toJSON(param),e);
-            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
-        }catch (Exception e){
-            log.error("调用下载对账单查询返回 Exception{},{}", JSON.toJSON(param),e);
-            return Result.failed(e.getMessage());
-        }
+        param.put("billDate",format);
+        JSONObject combination = (JSONObject)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ91_RECEIPT_QUERY_REQ.getCode(), param.toJSONString(), JSONObject.class,format);
+        return Result.ok(combination.getString("downloadUrl"));
 
 
     }

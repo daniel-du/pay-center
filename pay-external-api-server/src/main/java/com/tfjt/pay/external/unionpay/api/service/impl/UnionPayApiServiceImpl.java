@@ -275,7 +275,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     public Result<String> downloadCheckBill(UnionPayCheckBillReqDTO date) {
         LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(date.getDate(), accountConfig.getBalanceAcctId());
         if (Objects.isNull(byDateAndAccountId)) {
-            return Result.failed("下载对账单失败");
+            return Result.failed(PayExceptionCodeEnum.UNIONPAY_CHECK_BILL_NOT_FOUND);
         }
         if (Objects.equals(NumberConstant.ONE, byDateAndAccountId.getStatus())) {
             return Result.ok(byDateAndAccountId.getUrl());
