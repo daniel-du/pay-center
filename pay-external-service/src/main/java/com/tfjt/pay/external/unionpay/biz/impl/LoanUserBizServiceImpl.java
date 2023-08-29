@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
+import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -39,6 +40,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
+    @Lock4j(keys = {"#paymentPasswordDTO.busId","#paymentPasswordDTO.type","#paymentPasswordDTO.password"}, expire = 3000, acquireTimeout = 4000)
     public Result<String> savePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         checkLoanUser(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
         try {
@@ -57,9 +59,11 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
+    @Lock4j(keys = {"#paymentPasswordDTO.busId","#paymentPasswordDTO.type","#paymentPasswordDTO.password"}, expire = 3000, acquireTimeout = 4000)
     public Result<String> updatePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         checkLoanUser(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
         try {
+
             UpdateWrapper<PaymentPasswordEntity> updateWrapper = Wrappers.update();
             updateWrapper.lambda().eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType()).eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId());
             PaymentPasswordEntity paymentPasswordEntity = new PaymentPasswordEntity();
