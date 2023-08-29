@@ -101,9 +101,8 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             //进件完成，查询余额信息
             LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
             if (Objects.isNull(balanceAcc)) {
-                return Result.failed("电子账簿信息不存在");
+                return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
             }
-
             LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcc.getBalanceAcctId());
             if (ObjectUtils.isNotEmpty(loanAccountDTO)) {
                 Integer settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
@@ -112,11 +111,12 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             }
             result.put("isIncoming", true);
             result.put("settledAmount", balance);
-            result.put("isFrozen",loanAccountDTO.isFrozen());
+            result.put("isFrozen", loanAccountDTO.isFrozen());
             return Result.ok(result);
         }
         result.put("isIncoming", false);
         result.put("settledAmount", balance);
+        result.put("isFrozen", true);
         return Result.ok(result);
     }
 
@@ -135,19 +135,34 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             if (CollectionUtil.isEmpty(dealers)) {
                 return Result.failed(PayExceptionCodeEnum.PAYEE_NOT_FOUND);
             }
-            Map<String, Object> result = new HashMap<>();
-            for (UnionPayIncomingDTO unionPayIncomingDTO : dealers) {
-                LambdaQueryWrapper<LoanUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                objectLambdaQueryWrapper.eq(LoanUserEntity::getType, unionPayIncomingDTO.getType())
-                        .eq(LoanUserEntity::getBusId, unionPayIncomingDTO.getBid()).eq(LoanUserEntity::getApplicationStatus, "succeeded");
-                LoanUserEntity one = this.getOne(objectLambdaQueryWrapper);
-                if (Objects.isNull(one)) {
-                    result.put("isIncoming", true);
-                    return Result.ok(result);
+            UnionPayIncomingDTO unionPayIncomingDTO = shops.get(NumberConstant.ZERO);
+            Map<String, Object> returnMap = new HashMap<>();
+            Result<Map<String, Object>> map = incomingIsFinish(unionPayIncomingDTO.getType(), unionPayIncomingDTO.getBid());
+            if(map.getCode()!=NumberConstant.ZERO){
+                return Result.failed(map.getMsg());
+            }
+            returnMap.put("shopIsFrozen",false);
+            returnMap.put("shopIsIncoming",true);
+            returnMap.put("wanlshopIsFrozen",map.getData().get("isFrozen"));
+            returnMap.put("wanlshopIsIncoming",map.getData().get("isIncoming"));
+            returnMap.put("wanlshopSettledAmount",map.getData().get("settledAmount"));
+            for (UnionPayIncomingDTO unionPayIncoming : dealers) {
+                Result<Map<String, Object>> mapResult = incomingIsFinish(unionPayIncoming.getType(), unionPayIncoming.getBid());
+                if (mapResult.getCode() == NumberConstant.ZERO) {
+                    Map<String, Object> data = mapResult.getData();
+                    if(!Boolean.parseBoolean(data.get("isIncoming").toString())){
+                        returnMap.put("shopIsIncoming",false);
+                        return Result.ok(returnMap);
+                    }
+                    if(Boolean.parseBoolean(data.get("isFrozen").toString())){
+                        returnMap.put("shopIsFrozen",true);
+                        return Result.ok(returnMap);
+                    }
+                }else{
+                    return Result.failed(mapResult.getMsg());
                 }
             }
-            UnionPayIncomingDTO unionPayIncomingDTO = shops.get(NumberConstant.ZERO);
-            return incomingIsFinish(unionPayIncomingDTO.getType(), unionPayIncomingDTO.getBid());
+            return Result.failed(returnMap);
         } catch (TfException e) {
             log.error("批量判断进件是否完成tfException:{}", e.getMessage());
             return Result.failed(e.getMessage());

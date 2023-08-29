@@ -123,13 +123,13 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     public Result<BalanceAcctRespDTO> getBalanceByAccountId(String balanceAcctId) {
         log.debug("查询电子账簿id:{}", balanceAcctId);
         if (StringUtil.isBlank(balanceAcctId)) {
-            return Result.failed("电子账簿id不能为空");
+            return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }
         BalanceAcctRespDTO balanceAcctDTO = getBalanceAcctDTOByAccountId(balanceAcctId);
         if (Objects.isNull(balanceAcctDTO)) {
             String message = String.format("[%s]电子账簿信息不存在", balanceAcctId);
             log.error(String.format(message));
-            return Result.failed(message);
+            return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }
         return Result.ok(balanceAcctDTO);
     }
@@ -138,7 +138,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     public Result<Map<String, BalanceAcctRespDTO>> listBalanceByAccountIds(List<String> balanceAcctIds) {
         log.info("批量查询电子账户参数信息:{}", JSONObject.toJSONString(balanceAcctIds));
         if (CollectionUtil.isEmpty(balanceAcctIds)) {
-            return Result.failed("电子账簿id不能为空");
+            return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }
         Map<String, BalanceAcctRespDTO> result = new HashMap<>(balanceAcctIds.size());
         for (String balanceAcctId : balanceAcctIds) {
@@ -150,7 +150,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
     @Lock4j(keys = {"#balanceDivideReq.businessOrderNo"}, expire = 10000, acquireTimeout = 3000)
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result<Map<String, SubBalanceDivideRespDTO>> balanceDivide(UnionPayBalanceDivideReqDTO balanceDivideReq) {
         log.info("请求分账参数<<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(balanceDivideReq));

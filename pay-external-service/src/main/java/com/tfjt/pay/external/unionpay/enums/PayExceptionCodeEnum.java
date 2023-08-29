@@ -37,13 +37,13 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     BALANCE_NOT_ENOUTH(9000008,"账号余额不足"),
     BALANCE_ACCOUNT_NAME_ERROR(9000009,"电子名称与电子账簿不符合"),
     PAYER_NOT_FOUND(9000010,"付款方不存在"),
-    PAYER_TOO_MUCH(9000012,"暂不支付多个付款方"),
-    PAYEE_NOT_FOUND(9000010,"收款方不存在"),
+    PAYER_TOO_MUCH(9000011,"暂不支付多个付款方"),
+    PAYEE_NOT_FOUND(9000012,"收款方不存在"),
 
 
 
-    UNIONPAY_RESPONSE_ERROR(9000011, "银联系统交易异常"),
-    SMSCODE_ERROR(9000012, "验证码失效，请重新填写。"),
+    UNIONPAY_RESPONSE_ERROR(9000013, "银联系统交易异常"),
+    SMSCODE_ERROR(9000014, "验证码失效，请重新填写。"),
 
 
     ;
