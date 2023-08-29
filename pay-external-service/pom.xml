@@ -221,6 +221,18 @@
                     <groupId>io.springfox</groupId>
                     <artifactId>springfox-boot-starter</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.tf.log</groupId>
+                    <artifactId>tf-log-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.tf</groupId>
+                    <artifactId>tf-monitor-base</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
