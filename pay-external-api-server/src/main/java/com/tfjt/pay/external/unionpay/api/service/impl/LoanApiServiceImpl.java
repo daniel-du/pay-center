@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
@@ -122,6 +123,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
 
     @Override
     public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
+        log.info("listIncomingIsFinish 入参:{}", JSONObject.toJSONString(list));
         try {
             Map<String, List<UnionPayIncomingDTO>> collect = list.stream().collect(Collectors.groupingBy(UnionPayIncomingDTO::getType));
             List<UnionPayIncomingDTO> shops = collect.get(NumberConstant.ONE.toString());
@@ -162,7 +164,8 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
                     return Result.failed(mapResult.getMsg());
                 }
             }
-            return Result.failed(returnMap);
+            log.info("listIncomingIsFinish 出参:{}", JSONObject.toJSONString(returnMap));
+            return Result.ok(returnMap);
         } catch (TfException e) {
             log.error("批量判断进件是否完成tfException:{}", e.getMessage());
             return Result.failed(e.getMessage());
