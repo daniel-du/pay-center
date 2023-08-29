@@ -14,7 +14,6 @@ public interface LoanUnionPayCheckBillBiz {
      * 下载指定日期的银联对账单
      *
      * @param yesterday 指定日期
-     * @param number 失败次数
      */
-    void downloadCheckBill(DateTime yesterday, int number);
+    void downloadCheckBill(DateTime yesterday);
 }
