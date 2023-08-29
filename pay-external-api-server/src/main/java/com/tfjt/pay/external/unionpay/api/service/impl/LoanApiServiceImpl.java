@@ -141,21 +141,21 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             if(map.getCode()!=NumberConstant.ZERO){
                 return Result.failed(map.getMsg());
             }
-            returnMap.put("shopIsFrozen",false);
-            returnMap.put("shopIsIncoming",true);
-            returnMap.put("wanlshopIsFrozen",map.getData().get("isFrozen"));
-            returnMap.put("wanlshopIsIncoming",map.getData().get("isIncoming"));
-            returnMap.put("wanlshopSettledAmount",map.getData().get("settledAmount"));
+            returnMap.put("supplierFrozen",false);
+            returnMap.put("supplierIncoming",true);
+            returnMap.put("shopFrozen",map.getData().get("isFrozen"));
+            returnMap.put("shopIncoming",map.getData().get("isIncoming"));
+            returnMap.put("shopSettledAmount",map.getData().get("settledAmount"));
             for (UnionPayIncomingDTO unionPayIncoming : dealers) {
                 Result<Map<String, Object>> mapResult = incomingIsFinish(unionPayIncoming.getType(), unionPayIncoming.getBid());
                 if (mapResult.getCode() == NumberConstant.ZERO) {
                     Map<String, Object> data = mapResult.getData();
                     if(!Boolean.parseBoolean(data.get("isIncoming").toString())){
-                        returnMap.put("shopIsIncoming",false);
+                        returnMap.put("supplierIncoming",false);
                         return Result.ok(returnMap);
                     }
                     if(Boolean.parseBoolean(data.get("isFrozen").toString())){
-                        returnMap.put("shopIsFrozen",true);
+                        returnMap.put("supplierFrozen",true);
                         return Result.ok(returnMap);
                     }
                 }else{
