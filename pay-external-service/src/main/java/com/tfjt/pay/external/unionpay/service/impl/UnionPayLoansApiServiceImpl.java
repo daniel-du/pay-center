@@ -167,7 +167,11 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         }
         Integer loanUserType = tfLoanUserEntity.getLoanUserType();
         if (!"0".equals(loanUserType)) {
-            tfLoanUserEntity.setBankCallStatus(1);
+            CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
+            int settlementType = custBankInfoEntity.getSettlementType();
+            if (2 == settlementType) {
+                tfLoanUserEntity.setBankCallStatus(1);
+            }
         }
         loanUserService.updateById(tfLoanUserEntity);
         //通知业务
@@ -1119,7 +1123,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         LoanUserEntity byId = loanUserService.getById(loanUserId);
         Integer loanUserType = byId.getLoanUserType();
         if (!"0".equals(loanUserType)) {
-            byId.setBankCallStatus(1);
+            int settlementType = custBankInfo.getSettlementType();
+            if (2 == settlementType) {
+                byId.setBankCallStatus(1);
+            }
         }
         UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = bindAddSettleAcct(custBankInfo);
         String settleAcctId = unionPayLoansSettleAcctDTO.getSettleAcctId();
