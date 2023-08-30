@@ -9,14 +9,12 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayLoanOrderDetailsReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayLoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanOrderDetailsRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.LoanQueryOrderRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.MergeConsumerRepDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
-import com.tfjt.pay.external.unionpay.constants.CommonConstants;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.constants.RedisConstant;
-import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
+import com.tfjt.pay.external.unionpay.constants.*;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.req.*;
@@ -137,9 +135,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             log.error("保存转账商品详情失败:{}", JSONObject.toJSONString(orderEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
-        redisCache.setCacheObject(buildRedisKey(orderEntity.getBusinessOrderNo(),orderEntity.getAppId()),orderEntity.getId());
+        redisCache.setCacheObject(buildRedisKey(orderEntity.getBusinessOrderNo(), orderEntity.getAppId()), orderEntity.getId());
     }
-
 
 
     @Override
@@ -161,7 +158,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
     @Override
     @Transactional(rollbackFor = {TfException.class, Exception.class}, propagation = Propagation.REQUIRES_NEW)
     public ConsumerPoliciesReqDTO unifiedorderSaveOrderAndBuildUnionPayParam(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO, String notifyUrl) {
-        String generatedOrderNumber = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_MK_ORDER,new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,redisCache);
+        String generatedOrderNumber = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_MK_ORDER, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
 
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = new ConsumerPoliciesReqDTO();
         consumerPoliciesReqDTO.setPayBalanceAcctId(loanOrderUnifiedorderDTO.getPayBalanceAcctId());
@@ -185,18 +182,18 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             LoanOrderDetailsEntity orderDetailsEntity = new LoanOrderDetailsEntity();
             BeanUtil.copyProperties(loanOrderDetailsReqDTO, orderDetailsEntity);
             orderDetailsEntity.setOrderId(orderEntity.getId());
-            String orderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_MK_ORDER_SUB,new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60,redisCache);
+            String orderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_MK_ORDER_SUB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
             orderDetailsEntity.setTradeOrderNo(orderNo);
             orderDetailsEntity.setPayBalanceAcctId(orderEntity.getPayBalanceAcctId());
             orderDetailsEntity.setAppId(orderDetailsEntity.getAppId());
             orderDetailsEntity.setCreatedAt(date);
             orderDetailsEntity.setPayLoanUserId(orderEntity.getLoanUserId());
 
-            if(orderDetailsEntity.getRecvBalanceAcctId().equals(accountConfig.getBalanceAcctId())){
+            if (orderDetailsEntity.getRecvBalanceAcctId().equals(accountConfig.getBalanceAcctId())) {
                 orderDetailsEntity.setRecvBalanceAcctName(accountConfig.getBalanceAcctName());
-            }else {
+            } else {
                 LoanUserEntity user = userService.getByBalanceAcctId(orderDetailsEntity.getRecvBalanceAcctId());
-                if(user==null){
+                if (user == null) {
                     throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
                 }
                 orderDetailsEntity.setRecvLoanUserId(user.getId());
@@ -246,13 +243,14 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         extra.put("notifyUrl", notifyUrl);
         consumerPoliciesReqDTO.setExtra(extra);
         //单号信息缓存在redis中,并保持24个小时
-        redisCache.setCacheObject(buildRedisKey(loanOrderUnifiedorderDTO.getBusinessOrderNo(),loanOrderUnifiedorderDTO.getAppId()),orderEntity.getId(),24, TimeUnit.HOURS);
+        redisCache.setCacheObject(buildRedisKey(loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId()), orderEntity.getId(), 24, TimeUnit.HOURS);
         return consumerPoliciesReqDTO;
     }
+
     @Override
     public List<LoanOrderDetailsEntity> listOrderDetailByOrderId(Long id) {
         LambdaQueryWrapper<LoanOrderDetailsEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(LoanOrderDetailsEntity::getOrderId,id);
+        queryWrapper.eq(LoanOrderDetailsEntity::getOrderId, id);
         return this.loanOrderDetailsService.list(queryWrapper);
     }
 
@@ -271,6 +269,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         }
         return details_dto_list;
     }
+
     /*************调整优化代码开始    *******************/
     @Lock4j(keys = "#loanOrderUnifiedorderDTO.businessOrderNo", expire = 10000)
     @Transactional(rollbackFor = Exception.class)
@@ -294,8 +293,8 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = bean.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO, notifyUrl);
         Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
         if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
-            log.error("调用银联接口失败:{}",result.getMsg());
-            saveMergeConsumerFailResult(consumerPoliciesReqDTO.getCombinedOutOrderNo(),result.getMsg(),loanOrderUnifiedorderDTO.getAppId());
+            log.error("调用银联接口失败:{}", result.getMsg());
+            saveMergeConsumerFailResult(consumerPoliciesReqDTO.getCombinedOutOrderNo(), result.getMsg(), loanOrderUnifiedorderDTO.getAppId());
             return Result.failed(result.getMsg());
         }
         //保存银联返回信息
@@ -305,6 +304,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         mergeConsumerRepDTO.setStatus(result.getData().getStatus());
         return Result.ok(mergeConsumerRepDTO);
     }
+
     @Lock4j(keys = "#payTransferDTO.businessOrderNo", expire = 5000)
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -326,17 +326,58 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
         Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
         if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
-            log.error("调用银联接口失败:{}",result.getMsg());
-            saveMergeConsumerFailResult(consumerPoliciesReqDTO.getCombinedOutOrderNo(),result.getMsg(),payTransferDTO.getAppId());
+            log.error("调用银联接口失败:{}", result.getMsg());
+            saveMergeConsumerFailResult(consumerPoliciesReqDTO.getCombinedOutOrderNo(), result.getMsg(), payTransferDTO.getAppId());
             return Result.failed(result.getMsg());
         }
         saveMergeConsumerResult(result, payTransferDTO.getAppId());
         return Result.ok(result.getData().getStatus());
     }
 
+    @Override
+    public Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo, String appId) {
+
+        try {
+            LoanOrderEntity one = getByBusinessAndAppId(businessOrderNo, appId);
+            LoanQueryOrderRespDTO loanQueryOrderRespDTO = new LoanQueryOrderRespDTO();
+            if (one == null) {
+                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_FAILED);
+                return Result.ok(loanQueryOrderRespDTO);
+            }
+            loanQueryOrderRespDTO.setBusiness_type(one.getBusinessType());
+            loanQueryOrderRespDTO.setOut_trade_no(businessOrderNo);
+            loanQueryOrderRespDTO.setTransaction_id(one.getCombinedGuaranteePaymentId());
+            loanQueryOrderRespDTO.setPay_balanceAcct_id(one.getPayBalanceAcctId());
+            loanQueryOrderRespDTO.setMetadata(one.getMetadata());
+            loanQueryOrderRespDTO.setPay_balance_acct_name(one.getPayBalanceAcctName());
+            loanQueryOrderRespDTO.setTotal_fee(one.getAmount());
+            if (TradeResultConstant.UNIONPAY_UNKNOWN.equals(one.getStatus())) {
+                Result<ConsumerPoliciesRespDTO> consumerPoliciesRespDTOResult = unionPayService.queryPlatformOrderStatus(one.getTradeOrderNo());
+                int code = consumerPoliciesRespDTOResult.getCode();
+                if (code == NumberConstant.ONE) {
+                    ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
+                    loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+
+                } else {
+                    return Result.failed(consumerPoliciesRespDTOResult.getMsg());
+                }
+            } else {
+                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+            }
+            List<LoanOrderDetailsRespDTO> details_dto_list = listLoanOrderDetailsRespDTO(one.getId());
+            loanQueryOrderRespDTO.setDetails_dto_list(details_dto_list);
+            loanQueryOrderRespDTO.setTread_type(PayTypeConstants.PAY_TYPE_LOAN);
+            return Result.ok(loanQueryOrderRespDTO);
+        } catch (TfException e) {
+            e.printStackTrace();
+            return Result.failed(e.getMessage());
+        }
+    }
+
 
     /**
      * 构建转账交易参数
+     *
      * @param payTransferDTO 转账参数
      */
     private ConsumerPoliciesReqDTO buildTransferUnionPayParam(UnionPayTransferRespDTO payTransferDTO, String tradeOrderNo) {
@@ -371,10 +412,11 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
 
     /**
      * 处理银联调用成功的数据
+     *
      * @param result 银联合并下单返回数据
-     * @param appId appId
+     * @param appId  appId
      */
-    public void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result,String appId) {
+    public void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result, String appId) {
         ConsumerPoliciesRespDTO data = result.getData();
         String status = data.getStatus();
         Date finshDate = null;
@@ -387,7 +429,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         }
         LambdaQueryWrapper<LoanOrderEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LoanOrderEntity::getTradeOrderNo, data.getCombinedOutOrderNo())
-                .eq(LoanOrderEntity::getAppId,appId);
+                .eq(LoanOrderEntity::getAppId, appId);
         LoanOrderEntity one = this.orderService.getOne(wrapper);
         //修改订单状态
         LoanOrderEntity loanOrderEntity = new LoanOrderEntity();
@@ -407,7 +449,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             orderDetailsEntity.setFinishedAt(finshDate);
             LambdaUpdateWrapper<LoanOrderDetailsEntity> detailsUpdateWrapper = new LambdaUpdateWrapper<>();
             detailsUpdateWrapper.eq(LoanOrderDetailsEntity::getTradeOrderNo, guaranteePaymentResult.getOutOrderNo())
-                    .eq(LoanOrderDetailsEntity::getOrderId,one.getId());
+                    .eq(LoanOrderDetailsEntity::getOrderId, one.getId());
             if (!this.loanOrderDetailsService.update(orderDetailsEntity, detailsUpdateWrapper)) {
                 log.error("更新订单详细信息失败:{},交易订单号:{}", JSONObject.toJSONString(orderDetailsEntity), guaranteePaymentResult.getOutOrderNo());
                 throw new TfException(PayExceptionCodeEnum.DATABASE_UPDATE_FAIL);
@@ -417,6 +459,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
 
     /**
      * 处理银联实时返回失败的订单信息
+     *
      * @param combinedOutOrderNo 银联交易订单号
      * @param msg                失败信息
      * @param appId              appId
@@ -424,7 +467,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
     public void saveMergeConsumerFailResult(String combinedOutOrderNo, String msg, String appId) {
         LambdaQueryWrapper<LoanOrderEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LoanOrderEntity::getTradeOrderNo, combinedOutOrderNo)
-                .eq(LoanOrderEntity::getAppId,appId);
+                .eq(LoanOrderEntity::getAppId, appId);
         LoanOrderEntity one = this.orderService.getOne(wrapper);
         //修改订单状态
         LoanOrderEntity loanOrderEntity = new LoanOrderEntity();
@@ -435,35 +478,38 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             return;
         }
         LambdaUpdateWrapper<LoanOrderDetailsEntity> detailsUpdateWrapper = new LambdaUpdateWrapper<>();
-        detailsUpdateWrapper.eq(LoanOrderDetailsEntity::getOrderId,one.getId())
-                .set(LoanOrderDetailsEntity::getReason,msg)
-                .set(LoanOrderDetailsEntity::getStatus,TransactionStatusEnum.FAILED.getCode());
+        detailsUpdateWrapper.eq(LoanOrderDetailsEntity::getOrderId, one.getId())
+                .set(LoanOrderDetailsEntity::getReason, msg)
+                .set(LoanOrderDetailsEntity::getStatus, TransactionStatusEnum.FAILED.getCode());
         if (!this.loanOrderDetailsService.update(detailsUpdateWrapper)) {
-            log.error("更新修改失败订单状态异常,主订单id:{}",one.getId());
+            log.error("更新修改失败订单状态异常,主订单id:{}", one.getId());
         }
     }
+
     /**
      * 检验单号是否使用过
+     *
      * @param businessOrderNo 业务单号
      * @param appId           应用id
      * @return true 单号已经使用  false  单号未使用
      */
     @Override
     public boolean checkExistBusinessOrderNo(String businessOrderNo, String appId) {
-        Object cacheObject = redisCache.getCacheObject(buildRedisKey(businessOrderNo,appId));
-        if(cacheObject!=null){
+        Object cacheObject = redisCache.getCacheObject(buildRedisKey(businessOrderNo, appId));
+        if (cacheObject != null) {
             return true;
         }
-        return orderService.checkExistBusinessOrderNo(businessOrderNo,appId);
+        return orderService.checkExistBusinessOrderNo(businessOrderNo, appId);
     }
 
     /**
      * 创建保存在redis中的key
+     *
      * @param businessOrderNo 交易订单号
      * @param appId           appId
      * @return 缓存在redis中的key
      */
-    private String buildRedisKey(String businessOrderNo,String appId){
+    private String buildRedisKey(String businessOrderNo, String appId) {
         return RedisConstant.PAY_GENERATE_ORDER_NO + ":" + appId + ":" + businessOrderNo;
     }
 }

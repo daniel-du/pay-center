@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.biz;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayLoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanOrderDetailsRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.LoanQueryOrderRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.MergeConsumerRepDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
@@ -83,4 +84,12 @@ public interface LoanOrderBiz {
      * @return               转账结果
      */
     Result<String> transfer(UnionPayTransferRespDTO payTransferDTO);
+
+    /**
+     * 查询交易记录接口
+     * @param businessOrderNo 业务系统唯一标识
+     * @param appId           业务appId
+     * @return                交易结果
+     */
+    Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo, String appId);
 }
