@@ -3,7 +3,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
@@ -11,6 +11,7 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
+import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -46,133 +47,33 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @DubboService
-public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEntity> implements LoanApiService {
-    @Autowired
-    private TfAccountConfig accountConfig;
-
-    @Autowired
-    private LoanBalanceAcctService loanBalanceAcctService;
-
-    @Autowired
-    private UnionPayService unionPayService;
+public class LoanApiServiceImpl  implements LoanApiService {
 
     @Resource
-    CustBankInfoService custBankInfoService;
+    private LoanUserBizService loanUserBizService;
+
 
     @Autowired
     private LoanUserService loanUserService;
 
-    @Resource
-    UnionPayLoansApiService unionPayLoansApiService;
 
     @Resource
     UnionPayLoansBizService unionPayLoansBizService;
 
-    @Value("${unionPayLoans.encodedPub}")
-    private String encodedPub;
-
 
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
-        try {
-            LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
-            loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
-            loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
-            LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-            // loanBalanceAcctService.get
-            if (Objects.isNull(balanceAcc)) {
-                throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
-            }
-            loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
-            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getBalanceAcctName());
-            return Result.ok(loanTransferToTfDTO);
-        } catch (TfException e) {
-            log.error("");
-            return Result.failed(e.getMessage());
-        }
+        return loanUserBizService.getBalanceAcctId(type,bid);
     }
 
     @Override
     public Result<Map<String, Object>> incomingIsFinish(String type, String bid) {
-        Map<String, Object> result = new HashMap<>();
-        BigDecimal balance = new BigDecimal("0");
-        LoanUserEntity loanUser = this.baseMapper.selectOne(new QueryWrapper<LoanUserEntity>()
-                .eq("type", type).eq("bus_id", bid).eq("application_status", "succeeded"));
-        if (ObjectUtils.isNotEmpty(loanUser)) {
-            //进件完成，查询余额信息
-            LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-            if (Objects.isNull(balanceAcc)) {
-                return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
-            }
-            LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcc.getBalanceAcctId());
-            if (ObjectUtils.isNotEmpty(loanAccountDTO)) {
-                Integer settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
-                BigDecimal bigDecimal = new BigDecimal(100);
-                balance = new BigDecimal(settledAmount).divide(bigDecimal);
-            }
-            result.put("isIncoming", true);
-            result.put("settledAmount", balance);
-            result.put("isFrozen", loanAccountDTO.isFrozen());
-            return Result.ok(result);
-        }
-        result.put("isIncoming", false);
-        result.put("settledAmount", balance);
-        result.put("isFrozen", true);
-        return Result.ok(result);
+        return loanUserBizService.incomingIsFinish(type,bid);
     }
 
     @Override
     public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
-        log.info("listIncomingIsFinish 入参:{}", JSONObject.toJSONString(list));
-        try {
-            Map<String, List<UnionPayIncomingDTO>> collect = list.stream().collect(Collectors.groupingBy(UnionPayIncomingDTO::getType));
-            List<UnionPayIncomingDTO> shops = collect.get(NumberConstant.ONE.toString());
-            List<UnionPayIncomingDTO> dealers = collect.get(NumberConstant.TWO.toString());
-            if (CollectionUtil.isEmpty(shops)) {
-                return Result.failed(PayExceptionCodeEnum.PAYER_NOT_FOUND);
-            }
-            if (shops.size() > NumberConstant.ONE) {
-                return Result.failed(PayExceptionCodeEnum.PAYER_TOO_MUCH);
-            }
-            if (CollectionUtil.isEmpty(dealers)) {
-                return Result.failed(PayExceptionCodeEnum.PAYEE_NOT_FOUND);
-            }
-            UnionPayIncomingDTO unionPayIncomingDTO = shops.get(NumberConstant.ZERO);
-            Map<String, Object> returnMap = new HashMap<>();
-            Result<Map<String, Object>> map = incomingIsFinish(unionPayIncomingDTO.getType(), unionPayIncomingDTO.getBid());
-            if(map.getCode()!=NumberConstant.ZERO){
-                return Result.failed(map.getMsg());
-            }
-            returnMap.put("supplierFrozen",false);
-            returnMap.put("supplierIncoming",true);
-            returnMap.put("shopFrozen",map.getData().get("isFrozen"));
-            returnMap.put("shopIncoming",map.getData().get("isIncoming"));
-            returnMap.put("shopSettledAmount",map.getData().get("settledAmount"));
-            for (UnionPayIncomingDTO unionPayIncoming : dealers) {
-                Result<Map<String, Object>> mapResult = incomingIsFinish(unionPayIncoming.getType(), unionPayIncoming.getBid());
-                if (mapResult.getCode() == NumberConstant.ZERO) {
-                    Map<String, Object> data = mapResult.getData();
-                    if(!Boolean.parseBoolean(data.get("isIncoming").toString())){
-                        returnMap.put("supplierIncoming",false);
-                        return Result.ok(returnMap);
-                    }
-                    if(Boolean.parseBoolean(data.get("isFrozen").toString())){
-                        returnMap.put("supplierFrozen",true);
-                        return Result.ok(returnMap);
-                    }
-                }else{
-                    return Result.failed(mapResult.getMsg());
-                }
-            }
-            log.info("listIncomingIsFinish 出参:{}", JSONObject.toJSONString(returnMap));
-            return Result.ok(returnMap);
-        } catch (TfException e) {
-            log.error("批量判断进件是否完成tfException:{}", e.getMessage());
-            return Result.failed(e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return Result.failed(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
+        return loanUserBizService.listIncomingIsFinish(list);
     }
 
     /**
@@ -184,49 +85,19 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
      */
     @Override
     public Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Integer type, String bid) {
-        try {
-            log.info("参数：bid={},type={}", bid, type);
-            LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bid, type);
-            if (ObjectUtils.isEmpty(loanUser)) {
-                return Result.failed(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
-            }
-            List<BankInfoDTO> bankInfoByBus = custBankInfoService.getBankInfoByBus(loanUser.getId());
-            List<CustBankInfoRespDTO> custBankInfoResp = new ArrayList<>();
-            bankInfoByBus.forEach(bankInfoDTO -> {
-                CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
-                BeanUtil.copyProperties(bankInfoDTO, custBankInfoRespDTO);
-                custBankInfoResp.add(custBankInfoRespDTO);
-            });
-            return Result.ok(custBankInfoResp);
-        } catch (TfException ex) {
-            return Result.failed(ex.getMessage());
-        }
+        return loanUserBizService.getCustBankInfoList(type,bid);
     }
 
 
     @Override
     public Result<BalanceAcctRespDTO> getAccountInfoByBusId(String type, String busId) {
-        Result<List<BalanceAcctRespDTO>> listResult = this.listAccountInfoByBusId(type, Collections.singletonList(busId));
-        List<BalanceAcctRespDTO> data = listResult.getData();
-        if (CollectionUtil.isEmpty(data)) {
-            throw new TfException(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
-        }
-        return Result.ok(data.get(0));
+        return loanUserBizService.getAccountInfoByBusId(type,busId);
+
     }
 
     @Override
     public Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type, List<String> busIds) {
-        List<UnionPayLoanUserRespDTO> unionPayLoanUserRespDTOS = loanUserService.listLoanUserByBusId(type, busIds);
-        if (CollectionUtil.isEmpty(unionPayLoanUserRespDTOS)) {
-            return Result.ok(new ArrayList<>());
-        }
-        List<BalanceAcctRespDTO> list = new ArrayList<>(unionPayLoanUserRespDTOS.size());
-        for (UnionPayLoanUserRespDTO unionPayLoanUserRespDTO : unionPayLoanUserRespDTOS) {
-            BalanceAcctRespDTO balanceAcctRespDTO = new BalanceAcctRespDTO();
-            BeanUtil.copyProperties(unionPayLoanUserRespDTO, balanceAcctRespDTO);
-            list.add(balanceAcctRespDTO);
-        }
-        return Result.ok(list);
+        return loanUserBizService.listAccountInfoByBusId(type,busIds);
     }
 
     @Override

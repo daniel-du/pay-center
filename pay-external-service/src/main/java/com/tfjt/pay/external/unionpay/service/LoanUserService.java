@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
@@ -9,6 +10,7 @@ import com.tfjt.tfcloud.business.dto.TfLoanUserEntityDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 贷款-用户
@@ -69,5 +71,13 @@ public interface LoanUserService extends IService<LoanUserEntity> {
      * @param balanceAcctName 电子账户名称
      */
     void checkLoanAccount(String balanceAcctId, Integer totalAmount, String balanceAcctName);
+
+    /**
+     * 获取指定电子账簿的账户信息
+     *
+     * @param balanceAcctId 账户账户id
+     * @return 电子账户信息
+     */
+    BalanceAcctRespDTO getBalanceAcctDTOByAccountId(String balanceAcctId);
 }
 

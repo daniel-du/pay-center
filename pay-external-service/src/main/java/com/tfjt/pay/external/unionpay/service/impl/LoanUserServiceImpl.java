@@ -2,12 +2,14 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.config.ExecutorConfig;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
@@ -37,10 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -307,6 +306,29 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
         }
         log.info("账户信息验证通过");
+    }
+
+    @Override
+    public BalanceAcctRespDTO getBalanceAcctDTOByAccountId(String balanceAcctId) {
+        LoanAccountDTO loanAccountDTO = null;
+        try {
+            loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (Objects.isNull(loanAccountDTO)) {
+            return null;
+        }
+        BalanceAcctRespDTO balanceAcctDTO = new BalanceAcctRespDTO();
+        BeanUtil.copyProperties(loanAccountDTO, balanceAcctDTO);
+        if (!balanceAcctId.equals(accountConfig.getBalanceAcctId())) {
+            LoanUserEntity user = getByBalanceAcctId(balanceAcctId);
+            if (!Objects.isNull(user)) {
+                balanceAcctDTO.setBalanceAcctName(user.getName());
+                balanceAcctDTO.setType(user.getType());
+            }
+        }
+        return balanceAcctDTO;
     }
 
     /**

@@ -314,6 +314,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Result<String> transfer(UnionPayTransferRespDTO payTransferDTO) {
+        log.info("转账接收参数:{}", JSONObject.toJSONString(payTransferDTO));
         ValidatorUtils.validateEntity(payTransferDTO);
         //1.判断单号是否存在
         if (checkExistBusinessOrderNo(payTransferDTO.getBusinessOrderNo(), payTransferDTO.getAppId())) {

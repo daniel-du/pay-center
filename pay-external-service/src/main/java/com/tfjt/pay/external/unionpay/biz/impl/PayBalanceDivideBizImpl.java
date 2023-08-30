@@ -7,6 +7,7 @@ import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayBalanceDivideReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
@@ -158,6 +159,7 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
     @Lock4j(keys = {"#balanceDivideReq.businessOrderNo"}, expire = 10000, acquireTimeout = 3000)
     @Override
     public Result<Map<String, SubBalanceDivideRespDTO>> balanceDivide(UnionPayBalanceDivideReqDTO balanceDivideReq) {
+        log.info("请求分账参数<<<<<<<<<<<<<<<<:{}", JSONObject.toJSONString(balanceDivideReq));
         ValidatorUtils.validateEntity(balanceDivideReq);
         String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_DB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51, redisCache);
         String businessOrderNo = balanceDivideReq.getBusinessOrderNo();
