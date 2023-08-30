@@ -372,6 +372,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     private void checkLoanAccount(String balanceAcctId, Integer amount, String balanceAccName) {
         LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
+        log.info("loanAccountDTO:{}",JSONObject.toJSONString(loanAccountDTO));
         if (Objects.isNull(loanAccountDTO)) {
             log.error("电子账簿信息不存在:{}", balanceAcctId);
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
@@ -385,6 +386,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
             throw new TfException(PayExceptionCodeEnum.BALANCE_NOT_ENOUTH);
         }
         LoanUserEntity user = loanUserService.getByBalanceAcctId(balanceAcctId);
+        log.info("user:{}",JSONObject.toJSONString(user));
         if (Objects.isNull(user)) {
             log.error("用户不存在");
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
