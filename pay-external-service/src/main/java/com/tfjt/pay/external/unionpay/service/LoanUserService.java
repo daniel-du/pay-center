@@ -61,5 +61,13 @@ public interface LoanUserService extends IService<LoanUserEntity> {
      * @return 用户id
      */
     Long getLoanUserIdByBalanceAccId(String balanceAcctId);
+
+    /**
+     * 账号信息是否正确
+     * @param balanceAcctId 电子账户id
+     * @param totalAmount   检验当前电子账户金额是否大于 totalAmount金额
+     * @param balanceAcctName 电子账户名称
+     */
+    void checkLoanAccount(String balanceAcctId, Integer totalAmount, String balanceAcctName);
 }
 

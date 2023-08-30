@@ -1,10 +1,14 @@
 package com.tfjt.pay.external.unionpay.biz;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayBalanceDivideReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.BalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceDivideDetailsEntity;
+import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author songx
@@ -28,4 +32,11 @@ public interface PayBalanceDivideBiz {
     void checkExistBusinessOrderNo(String businessOrderNo);
 
     void updateByUnionPayDivideReqDTO(UnionPayDivideRespDTO data,  String appId);
+
+    /**
+     * 银联分账信息
+     * @param balanceDivideReq 分账参数
+     * @return 分账交易结果
+     */
+    Result<Map<String, SubBalanceDivideRespDTO>> balanceDivide(UnionPayBalanceDivideReqDTO balanceDivideReq);
 }
