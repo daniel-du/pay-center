@@ -118,7 +118,12 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
                 || !Objects.equals(custBankInfo.getCareer(), old.getCareer())
         ) {
             //删除只能删除已绑定的
-            unionPayLoansSettleAcctDTO = unionPayLoansApiService.delAndBindAddSettleAcct(custBankInfo, old.getBankCardNo());
+            LoanUserEntity byId = loanUserService.getById(custBankInfo.getLoanUserId());
+            String mchId = byId.getMchId();
+            String cusId = byId.getCusId();
+            if (StringUtils.isNotBlank(mchId) || StringUtils.isNotBlank(cusId)) {
+                unionPayLoansSettleAcctDTO = unionPayLoansApiService.delAndBindAddSettleAcct(custBankInfo, old.getBankCardNo());
+            }
         }
 
         this.updateById(custBankInfo);
