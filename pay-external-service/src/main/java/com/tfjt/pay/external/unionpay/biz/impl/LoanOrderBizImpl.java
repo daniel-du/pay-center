@@ -16,6 +16,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderGoodsEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanOrderDetailsService;
@@ -175,7 +176,12 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             orderDetailsEntity.setAppId(orderDetailsEntity.getAppId());
             orderDetailsEntity.setCreatedAt(date);
             orderDetailsEntity.setPayLoanUserId(orderEntity.getLoanUserId());
-            orderDetailsEntity.setRecvLoanUserId(userService.getLoanUserIdByBalanceAccId(orderDetailsEntity.getRecvBalanceAcctId()));
+            LoanUserEntity user = userService.getByBalanceAcctId(orderDetailsEntity.getRecvBalanceAcctId());
+            if(user==null){
+                throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+            }
+            orderDetailsEntity.setRecvLoanUserId(user.getId());
+            orderDetailsEntity.setRecvBalanceAcctName(user.getName());
             if (!this.loanOrderDetailsService.save(orderDetailsEntity)) {
                 log.error("保存贷款订单详情信息失败:{}", JSONObject.toJSONString(orderDetailsEntity));
                 throw new TfException(ExceptionCodeEnum.FAIL);
