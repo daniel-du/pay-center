@@ -22,6 +22,7 @@ import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanWithdrawalOrderEntity;
 import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
@@ -93,12 +94,12 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public void unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if(loanUser == null){
-            throw new TfException("贷款用户不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
         }
         log.info("解绑银行卡参数：{}", bankInfoReqDTO);
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
         if (custBankInfos.size() == 1) {
-            throw new TfException("解绑银行卡失败，至少保留一张银行卡");
+            throw new TfException(PayExceptionCodeEnum.LAST_ONE_BANK_CARD.getMsg());
         } else {
             CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
             if (ObjectUtils.isNotEmpty(custBankInfo)) {
@@ -113,13 +114,13 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
                     }
                     unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
                 } else {
-                    throw new TfException("贷款用户不存在");
+                    throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
                 }
                 //标记删除银行卡
                 custBankInfo.setDeleted(true);
                 custBankInfoService.updateCustBankInfo(custBankInfo);
             } else {
-                throw new TfException("解绑银行卡失败，银行卡不存在");
+                throw new TfException(PayExceptionCodeEnum.ABSENT_BANK_CARD.getMsg());
             }
 
         }
@@ -138,12 +139,12 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if(loanUser == null){
-            throw new TfException("贷款用户不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
         }
         log.info("绑定银行卡参数：{}", bankInfoReqDTO);
         CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
         if (bankInfoByBankCardNoAndLoanUserId != null) {
-            throw new TfException("银行卡已存在");
+            throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD.getMsg());
         }
         List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
@@ -167,7 +168,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(withdrawalReqDTO.getBusId(), withdrawalReqDTO.getType());
         if (loanUser == null) {
-            return Result.failed("未找到贷款用户");
+            return Result.failed(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
         }
         String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
         String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
@@ -178,7 +179,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         if (StringUtils.isEmpty(isIdempotent)) {
             redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY, idempotentMd5, 60, TimeUnit.MINUTES);
         } else if (idempotentMd5.equals(isIdempotent)) {
-            return Result.failed("请勿重复提现");
+            return Result.failed(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
         }
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
