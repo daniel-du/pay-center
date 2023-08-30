@@ -165,7 +165,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
             tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
         }
-        tfLoanUserEntity.setBankCallStatus(1);
+        Integer loanUserType = tfLoanUserEntity.getLoanUserType();
+        if (!"0".equals(loanUserType)) {
+            tfLoanUserEntity.setBankCallStatus(1);
+        }
         loanUserService.updateById(tfLoanUserEntity);
         //通知业务
         loanUserService.asynNotice(tfLoanUserEntity);
