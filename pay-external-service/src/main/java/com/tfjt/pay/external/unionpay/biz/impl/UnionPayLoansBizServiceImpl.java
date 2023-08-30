@@ -201,6 +201,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         loanWithdrawalOrderEntity.setBankAcctNo(bankInfo.getBankCardNo());
         loanWithdrawalOrderEntity.setMobileNumber(bankInfo.getPhone());
         loanWithdrawalOrderEntity.setAppId(withdrawalReqDTO.getAppId());
+        loanWithdrawalOrderEntity.setWithdrawalOrderNo(withdrawalCreateReqDTO.getOutOrderNo());
         log.info("银联提现参数插入业务表:{}", JSON.toJSONString(loanWithdrawalOrderEntity));
         withdrawalOrderService.save(loanWithdrawalOrderEntity);
         log.info("银联提现参数:{}", JSON.toJSONString(withdrawalCreateReqDTO));
