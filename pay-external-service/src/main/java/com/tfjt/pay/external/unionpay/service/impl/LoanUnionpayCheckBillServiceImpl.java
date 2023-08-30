@@ -25,7 +25,7 @@ public class LoanUnionpayCheckBillServiceImpl extends ServiceImpl<LoanUnionpayCh
                 .eq(LoanUnionpayCheckBillEntity::getBalanceAcctId,balanceAcctId)
                 .orderByDesc(LoanUnionpayCheckBillEntity::getId);
         List<LoanUnionpayCheckBillEntity> list = this.list(wrapper);
-        if(CollectionUtil.isNotEmpty(list)){
+        if(CollectionUtil.isEmpty(list)){
             return null;
         }
 
