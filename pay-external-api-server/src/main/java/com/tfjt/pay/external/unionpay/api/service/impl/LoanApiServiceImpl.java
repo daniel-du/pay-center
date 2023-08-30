@@ -188,7 +188,7 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
             log.info("参数：bid={},type={}", bid, type);
             LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bid, type);
             if (ObjectUtils.isEmpty(loanUser)) {
-                return Result.failed("未查询到相关用户");
+                return Result.failed(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
             }
             List<BankInfoDTO> bankInfoByBus = custBankInfoService.getBankInfoByBus(loanUser.getId());
             List<CustBankInfoRespDTO> custBankInfoResp = new ArrayList<>();
@@ -232,16 +232,16 @@ public class LoanApiServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEnt
     @Override
     public Result<String> unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
-        return Result.ok("解绑成功");
+        return Result.ok(PayExceptionCodeEnum.BIND_BANK_CARD_FAILED.getMsg());
     }
 
     @Override
     public Result<String> bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         boolean boundSettleAcct = unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
         if (boundSettleAcct) {
-            return Result.ok("绑定成功");
+            return Result.ok(PayExceptionCodeEnum.BIND_BANK_CARD_SUCCESS.getMsg());
         } else {
-            return Result.failed("绑定失败");
+            return Result.failed(PayExceptionCodeEnum.BIND_BANK_CARD_FAILED.getMsg());
         }
     }
 

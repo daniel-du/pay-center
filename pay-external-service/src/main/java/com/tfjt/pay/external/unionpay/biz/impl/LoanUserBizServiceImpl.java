@@ -9,6 +9,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.PaymentPasswordEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.service.PaymentPasswordService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -50,7 +51,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
             paymentPasswordService.save(paymentPassword);
         } catch (Exception ex) {
             if (ex instanceof DuplicateKeyException) {
-                return Result.failed("请勿重复设置支付密码");
+                return Result.failed(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
             }
             log.error("", ex);
             return Result.failed(ex.getMessage());
@@ -126,7 +127,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     private void checkLoanUser(String busId, Integer type) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(busId, type);
         if (loanUser == null) {
-            throw new TfException("未找到贷款用户");
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
         }
     }
 }
