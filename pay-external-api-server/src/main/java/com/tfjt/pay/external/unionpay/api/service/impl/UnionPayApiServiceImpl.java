@@ -387,7 +387,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         }
         LoanUserEntity user = loanUserService.getByBalanceAcctId(balanceAcctId);
         log.info("user:{}",JSONObject.toJSONString(user));
-        if (user==null) {
+        if (Objects.isNull(user)) {
             log.info("用户不存在");
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }

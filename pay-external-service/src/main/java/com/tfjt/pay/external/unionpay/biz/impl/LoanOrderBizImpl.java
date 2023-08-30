@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanOrderDetailsRespDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
+import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.CommonConstants;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
@@ -63,6 +64,9 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
 
     @Resource
     private RedisCache redisCache;
+
+    @Resource
+    private TfAccountConfig accountConfig;
 
 
     @Transactional(rollbackFor = {TfException.class, Exception.class})
@@ -176,12 +180,17 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             orderDetailsEntity.setAppId(orderDetailsEntity.getAppId());
             orderDetailsEntity.setCreatedAt(date);
             orderDetailsEntity.setPayLoanUserId(orderEntity.getLoanUserId());
-            LoanUserEntity user = userService.getByBalanceAcctId(orderDetailsEntity.getRecvBalanceAcctId());
-            if(user==null){
-                throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+
+            if(orderDetailsEntity.getRecvBalanceAcctId().equals(accountConfig.getBalanceAcctId())){
+                orderDetailsEntity.setRecvBalanceAcctName(accountConfig.getBalanceAcctName());
+            }else {
+                LoanUserEntity user = userService.getByBalanceAcctId(orderDetailsEntity.getRecvBalanceAcctId());
+                if(user==null){
+                    throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+                }
+                orderDetailsEntity.setRecvLoanUserId(user.getId());
+                orderDetailsEntity.setRecvBalanceAcctName(user.getName());
             }
-            orderDetailsEntity.setRecvLoanUserId(user.getId());
-            orderDetailsEntity.setRecvBalanceAcctName(user.getName());
             if (!this.loanOrderDetailsService.save(orderDetailsEntity)) {
                 log.error("保存贷款订单详情信息失败:{}", JSONObject.toJSONString(orderDetailsEntity));
                 throw new TfException(ExceptionCodeEnum.FAIL);
