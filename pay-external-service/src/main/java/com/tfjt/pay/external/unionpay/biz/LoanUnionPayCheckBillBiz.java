@@ -1,6 +1,9 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import cn.hutool.core.date.DateTime;
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayCheckBillReqDTO;
+import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillEntity;
+import com.tfjt.tfcommon.dto.response.Result;
 
 import java.io.FileNotFoundException;
 
@@ -15,5 +18,12 @@ public interface LoanUnionPayCheckBillBiz {
      *
      * @param yesterday 指定日期
      */
-    void downloadCheckBill(DateTime yesterday);
+    LoanUnionpayCheckBillEntity downloadCheckBill(DateTime yesterday);
+
+    /**
+     * 下载指定日期的电子对账单
+     * @param unionPayCheckBillReqDTO
+     * @return 电子对账对下载地址
+     */
+    Result<String> downloadCheckBill(UnionPayCheckBillReqDTO unionPayCheckBillReqDTO);
 }

@@ -8,6 +8,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
+import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBiz;
 import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
@@ -58,7 +59,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
     private UnionPayService unionPayService;
     @Resource
-    private LoanUnionpayCheckBillService loanUnionpayCheckBillService;
+    private LoanUnionPayCheckBillBiz loanUnionPayCheckBillBiz;
 
     @Resource
     private LoanOrderBiz loanOrderBiz;
@@ -273,15 +274,10 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
     }
 
     @Override
-    public Result<String> downloadCheckBill(UnionPayCheckBillReqDTO date) {
-        LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(date.getDate(), accountConfig.getBalanceAcctId());
-        if (Objects.isNull(byDateAndAccountId)) {
-            return Result.failed(PayExceptionCodeEnum.UNIONPAY_CHECK_BILL_NOT_FOUND);
-        }
-        if (Objects.equals(NumberConstant.ONE, byDateAndAccountId.getStatus())) {
-            return Result.ok(byDateAndAccountId.getUrl());
-        }
-        return Result.failed(byDateAndAccountId.getReason());
+    public Result<String> downloadCheckBill(UnionPayCheckBillReqDTO unionPayCheckBillReqDTO) {
+        return  loanUnionPayCheckBillBiz.downloadCheckBill(unionPayCheckBillReqDTO);
+
+
     }
 
     /**
