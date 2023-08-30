@@ -165,7 +165,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
+    public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO){
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(withdrawalReqDTO.getBusId(), withdrawalReqDTO.getType());
         if (loanUser == null) {
             return Result.failed(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
@@ -185,7 +185,8 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
         withdrawalCreateReqDTO.setOutOrderNo(outOrderNo);
-        withdrawalCreateReqDTO.setSentAt(DateUtil.getNowByRFC3339());
+        Date now = new Date();
+        withdrawalCreateReqDTO.setSentAt(DateUtil.getByRFC3339(now));
         withdrawalCreateReqDTO.setAmount(withdrawalReqDTO.getAmount());
         withdrawalCreateReqDTO.setServiceFee(null);
         withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
@@ -201,6 +202,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         loanWithdrawalOrderEntity.setBankAcctNo(bankInfo.getBankCardNo());
         loanWithdrawalOrderEntity.setMobileNumber(bankInfo.getPhone());
         loanWithdrawalOrderEntity.setAppId(withdrawalReqDTO.getAppId());
+        loanWithdrawalOrderEntity.setSendAt(now);
         loanWithdrawalOrderEntity.setWithdrawalOrderNo(withdrawalCreateReqDTO.getOutOrderNo());
         log.info("银联提现参数插入业务表:{}", JSON.toJSONString(loanWithdrawalOrderEntity));
         withdrawalOrderService.save(loanWithdrawalOrderEntity);

@@ -13,7 +13,6 @@ import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
-
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author songx
@@ -123,7 +121,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             if (withdrawalOrder != null) {
                 withdrawalOrder.setStatus(eventDataDTO.getStatus());
                 withdrawalOrderService.updateById(withdrawalOrder);
-                payApplicationCallbackBiz.noticeWithdrawalNotice(withdrawalOrder, loanCallbackEntity.getEventType(), loanCallbackEntity.getId());
+                payApplicationCallbackBiz.noticeWithdrawalNotice(withdrawalOrder, tradeType, loanCallbackEntity.getId());
             }
             return null;
 
