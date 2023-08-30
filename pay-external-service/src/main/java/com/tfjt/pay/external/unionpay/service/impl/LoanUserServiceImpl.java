@@ -3,23 +3,28 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.config.ExecutorConfig;
+import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
 import com.tfjt.pay.external.unionpay.dto.IncomingReturn;
 import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.CustIdcardInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.SupplierUuidEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.tfcloud.business.api.TfLoanUserRpcService;
 import com.tfjt.tfcloud.business.dto.TfLoanUserEntityDTO;
+import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
@@ -61,6 +66,12 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
 
     @Autowired
     private UnionPayLoansApiService unionPayLoansApiService;
+
+    @Resource
+    private UnionPayService unionPayService;
+
+    @Resource
+    private TfAccountConfig accountConfig;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -266,6 +277,36 @@ public class LoanUserServiceImpl extends BaseServiceImpl<LoanUserDao, LoanUserEn
     public Long getLoanUserIdByBalanceAccId(String balanceAcctId) {
         LoanUserEntity user = this.getByBalanceAcctId(balanceAcctId);
         return Objects.isNull(user) ? null : user.getId();
+    }
+
+    @Override
+    public void checkLoanAccount(String balanceAcctId, Integer totalAmount, String balanceAcctName) {
+        LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcctId);
+        log.info("loanAccountDTO:{}", JSONObject.toJSONString(loanAccountDTO));
+        if (Objects.isNull(loanAccountDTO)) {
+            log.error("电子账簿信息不存在:{}", balanceAcctId);
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+        }
+
+        if (loanAccountDTO.isFrozen()) {
+            log.info("当前用户已被冻结");
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_FREEZE);
+        }
+        if (totalAmount != null && loanAccountDTO.getSettledAmount() < totalAmount) {
+            log.error("账户余额不足");
+            throw new TfException(PayExceptionCodeEnum.BALANCE_NOT_ENOUTH);
+        }
+        LoanUserEntity user = this.getByBalanceAcctId(balanceAcctId);
+        if (Objects.isNull(user)) {
+            log.info("用户不存在");
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+        }
+        //不验证同福的名称
+        if (!accountConfig.getBalanceAcctId().equals(balanceAcctId) && !balanceAcctName.equals(user.getName())) {
+            log.info("电子名称与电子账簿不符合");
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NAME_ERROR);
+        }
+        log.info("账户信息验证通过");
     }
 
     /**

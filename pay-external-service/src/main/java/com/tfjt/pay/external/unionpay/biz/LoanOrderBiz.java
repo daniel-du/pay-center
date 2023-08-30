@@ -1,6 +1,9 @@
 package com.tfjt.pay.external.unionpay.biz;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayLoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanOrderDetailsRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.MergeConsumerRepDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.LoanOrderUnifiedorderReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.LoanTransferRespDTO;
@@ -46,7 +49,7 @@ public interface LoanOrderBiz {
      * 并生成调用银联下单接口参数
      *
      * @param loanOrderUnifiedorderReqDTO 商品订单信息
-     * @param notifyUrl
+     * @param notifyUrl                   银联回调通知地址
      * @return 调用银联参数
      */
      ConsumerPoliciesReqDTO unifiedorderSaveOrderAndBuildUnionPayParam(LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO, String notifyUrl);
@@ -67,4 +70,17 @@ public interface LoanOrderBiz {
 
     List<LoanOrderDetailsRespDTO> listLoanOrderDetailsRespDTO(Long id);
 
+    /**
+     * 下单接口
+     * @param loanOrderUnifiedorderDTO 下单参数
+     * @return 下单返回信息
+     */
+    Result<MergeConsumerRepDTO> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO);
+
+    /**
+     * 转账信息
+     * @param payTransferDTO 转账参数
+     * @return               转账结果
+     */
+    Result<String> transfer(UnionPayTransferRespDTO payTransferDTO);
 }

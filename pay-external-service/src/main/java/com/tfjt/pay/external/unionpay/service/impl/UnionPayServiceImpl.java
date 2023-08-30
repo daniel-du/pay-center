@@ -31,13 +31,20 @@ public class UnionPayServiceImpl implements UnionPayService {
     @Override
     public Result<ConsumerPoliciesRespDTO> mergeConsumerPolicies(ConsumerPoliciesReqDTO consumerPoliciesReqDTO) {
         log.info("进入合并消费担保下单");
-        ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
-                TransactionCodeEnum.LWZ634_COMBINED_GUARANTEE_PAYMENTS.getCode(),
-                JSON.toJSONString(consumerPoliciesReqDTO),
-                ConsumerPoliciesRespDTO.class,consumerPoliciesReqDTO.getCombinedOutOrderNo());
-        log.info("合并消费担保下单解析返回信息{}", consumerPoliciesRespDTO);
-        return Result.ok(consumerPoliciesRespDTO);
-
+        try{
+            ConsumerPoliciesRespDTO consumerPoliciesRespDTO = (ConsumerPoliciesRespDTO)unionPayBaseBuilderUtils.combination(
+                    TransactionCodeEnum.LWZ634_COMBINED_GUARANTEE_PAYMENTS.getCode(),
+                    JSON.toJSONString(consumerPoliciesReqDTO),
+                    ConsumerPoliciesRespDTO.class,consumerPoliciesReqDTO.getCombinedOutOrderNo());
+            log.info("合并消费担保下单解析返回信息{}", consumerPoliciesRespDTO);
+            return Result.ok(consumerPoliciesRespDTO);
+        }catch (TfException e){
+            log.error("合并消费担保下单报错{},{}", JSON.toJSON(consumerPoliciesReqDTO),e);
+            return Result.failed(e.getMessage());
+        }catch (Exception e){
+            log.error("合并消费担保下单异常{},{}", JSON.toJSON(consumerPoliciesReqDTO),e);
+            return Result.failed(e.getMessage());
+        }
     }
 
     @Override
