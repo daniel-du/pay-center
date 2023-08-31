@@ -101,7 +101,8 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
             LoanUserEntity byId = loanUserService.getById(custBankInfo.getLoanUserId());
             String mchId = byId.getMchId();
             String cusId = byId.getCusId();
-            if (StringUtils.isNotBlank(mchId) || StringUtils.isNotBlank(cusId)) {
+            Integer loanUserType = byId.getLoanUserType();
+            if ((StringUtils.isNotBlank(mchId) || StringUtils.isNotBlank(cusId)) && (loanUserType!=0)) {
                 unionPayLoansSettleAcctDTO = unionPayLoansApiService.delAndBindAddSettleAcct(custBankInfo, old.getBankCardNo());
             }
         }
