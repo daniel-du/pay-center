@@ -42,12 +42,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     @Override
     public Result<String> transfer(UnionPayTransferRespDTO payTransferDTO) {
-        try {
-            return loanOrderBiz.transfer(payTransferDTO);
-        } catch (TfException e) {
-            e.printStackTrace();
-            return Result.failed(e.getMessage());
-        }
+        return loanOrderBiz.transfer(payTransferDTO);
     }
 
     /**
@@ -86,15 +81,7 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     @Override
     public Result<Map<String, SubBalanceDivideRespDTO>> balanceDivide(UnionPayBalanceDivideReqDTO balanceDivideReq) {
-        try {
-            return payBalanceDivideBiz.balanceDivide(balanceDivideReq);
-        } catch (TfException e) {
-            //交易失败的状态
-            return Result.failed(e.getMessage());
-        } catch (Exception e) {
-            log.error("调用银联异常分账接口异常:{}", e.getMessage());
-        }
-        return Result.failed(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
+        return payBalanceDivideBiz.balanceDivide(balanceDivideReq);
     }
 
 
@@ -116,7 +103,6 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
      */
     @Override
     public Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo, String appId) {
-        log.info("查询交易结果信息:{}", businessOrderNo);
         return loanOrderBiz.orderQuery(businessOrderNo,appId);
     }
 
