@@ -97,7 +97,7 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-common-core</artifactId>
-            <version>4.0.10-SNAPSHOT</version>
+            <version>4.0.11</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -220,6 +220,18 @@
                 <exclusion>
                     <groupId>io.springfox</groupId>
                     <artifactId>springfox-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.tf.log</groupId>
+                    <artifactId>tf-log-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.tf</groupId>
+                    <artifactId>tf-monitor-base</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

@@ -33,6 +33,7 @@ public class LoanUserInfoDTO {
      * 平台订单号
      */
     private String outRequestNo;
+    private String mchId;
 
 
 }

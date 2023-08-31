@@ -294,4 +294,12 @@ public final class DateUtil extends DateUtils {
         return dateTime.atOffset(ZoneOffset.ofHours(8)).format(formatter);
     }
 
+
+    public static String getByRFC3339(Date date) {
+        Instant instant = date.toInstant();
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_T_HH_MM_SS_SSSXXX);
+        return localDateTime.atOffset(ZoneOffset.ofHours(8)).format(formatter);
+    }
+
 }

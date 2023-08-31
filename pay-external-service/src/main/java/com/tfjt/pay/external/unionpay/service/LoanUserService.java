@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
@@ -9,6 +10,7 @@ import com.tfjt.tfcloud.business.dto.TfLoanUserEntityDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 贷款-用户
@@ -48,7 +50,7 @@ public interface LoanUserService extends IService<LoanUserEntity> {
     List<UnionPayLoanUserRespDTO> listLoanUserByBusId(String type, List<String> busIds);
 
     /**
-     * 根据电子账簿id获取企业信息
+     * 根据电子账簿id获取用户信息
      * @param balanceAcctId 电子账簿id
      */
     LoanUserEntity getByBalanceAcctId(String balanceAcctId);
@@ -56,10 +58,26 @@ public interface LoanUserService extends IService<LoanUserEntity> {
     Integer getBankCallStatus(Long loanUserId);
 
     /**
-     *
-     * @param balanceAcctId
-     * @return
+     * 根据电子账簿id获取用户id
+     * @param balanceAcctId 电子账簿id
+     * @return 用户id
      */
     Long getLoanUserIdByBalanceAccId(String balanceAcctId);
+
+    /**
+     * 账号信息是否正确
+     * @param balanceAcctId 电子账户id
+     * @param totalAmount   检验当前电子账户金额是否大于 totalAmount金额
+     * @param balanceAcctName 电子账户名称
+     */
+    void checkLoanAccount(String balanceAcctId, Integer totalAmount, String balanceAcctName);
+
+    /**
+     * 获取指定电子账簿的账户信息
+     *
+     * @param balanceAcctId 账户账户id
+     * @return 电子账户信息
+     */
+    BalanceAcctRespDTO getBalanceAcctDTOByAccountId(String balanceAcctId);
 }
 

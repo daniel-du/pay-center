@@ -10,10 +10,12 @@ import cn.xuyanwu.spring.file.storage.FileStorageService;
 import cn.xuyanwu.spring.file.storage.UploadPretreatment;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayCheckBillReqDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanUnionpayCheckBillService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -50,7 +52,7 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
     private FileStorageService fileStorageService;
 
     @Override
-    public void downloadCheckBill(DateTime yesterday) {
+    public LoanUnionpayCheckBillEntity downloadCheckBill(DateTime yesterday) {
         LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = new LoanUnionpayCheckBillEntity();
         loanUnionpayCheckBillEntity.setDate(yesterday);
 
@@ -85,6 +87,25 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
             loanUnionpayCheckBillEntity.setStatus(NumberConstant.ZERO);
         }
         this.loanUnionpayCheckBillService.save(loanUnionpayCheckBillEntity);
+        return loanUnionpayCheckBillEntity;
+    }
+
+    @Override
+    public Result<String> downloadCheckBill(UnionPayCheckBillReqDTO unionPayCheckBillReqDTO) {
+        LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(unionPayCheckBillReqDTO.getDate(), tfAccountConfig.getBalanceAcctId());
+        //
+        if (Objects.isNull(byDateAndAccountId) || byDateAndAccountId.getStatus().equals(NumberConstant.ZERO)) {
+            LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = downloadCheckBill(DateUtil.parseDate(unionPayCheckBillReqDTO.getDate()));
+            if(Objects.equals(loanUnionpayCheckBillEntity.getStatus(), NumberConstant.ONE)){
+                return Result.ok(loanUnionpayCheckBillEntity.getUrl());
+            }
+            return Result.failed(loanUnionpayCheckBillEntity.getReason());
+        }
+
+        if (Objects.equals(NumberConstant.ONE, byDateAndAccountId.getStatus())) {
+            return Result.ok(byDateAndAccountId.getUrl());
+        }
+        return Result.failed(byDateAndAccountId.getReason());
     }
 
 }

@@ -31,4 +31,7 @@ public interface UnionPayLoansCallbackApiBiz {
      * 失败通知定时补偿
      */
     void applicationCallback();
+
+
+
 }

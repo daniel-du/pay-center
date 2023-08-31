@@ -29,15 +29,10 @@ public class HealthController {
 
     //完全配置，支持spel
     @GetMapping("/lock")
-    public Result<?> lock(String key) {
-        ;
-        return Result.ok(lockTest(key));
-    }
-    @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#key"}, expire = 10000, acquireTimeout = 3000)
-    public String lockTest(String key) {
-        log.info("请求｛｝-------------");
-        return key;
+    public Result<?> lock(String key) throws InterruptedException {
+        Thread.sleep(4000L);
+        return Result.ok(key);
     }
 
 }
