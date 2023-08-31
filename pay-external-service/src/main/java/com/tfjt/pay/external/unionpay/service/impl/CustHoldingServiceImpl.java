@@ -71,7 +71,7 @@ public class CustHoldingServiceImpl extends BaseServiceImpl<CustHoldingDao, Cust
         CustHoldingEntity entity = getByLoanUserId(dto.getLoanUserId());
         if(BeanUtil.isNotEmpty(entity)){
             log.error("根据loanUserId:{}查询的控股信息已存在", dto.getLoanUserId());
-            throw new TfException(500, PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+            throw new TfException(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
         }
 
         LambdaQueryWrapper<CustHoldingEntity> wrapper = new LambdaQueryWrapper<>();

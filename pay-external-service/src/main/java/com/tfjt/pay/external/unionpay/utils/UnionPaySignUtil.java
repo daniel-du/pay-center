@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.utils;
 import com.alibaba.fastjson.JSON;
 import com.tfjt.pay.external.unionpay.config.UnionPayCertificateConfig;
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseReq;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.gm.GMNamedCurves;
@@ -252,7 +253,7 @@ public class UnionPaySignUtil {
             return instance.sign();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new TfException(5001,"银联贷款-验签失败");
+            throw new TfException(PayExceptionCodeEnum.SIGN_ERROR.getMsg());
         }
     }
 

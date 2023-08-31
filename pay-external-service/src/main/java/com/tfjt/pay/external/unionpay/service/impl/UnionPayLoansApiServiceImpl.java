@@ -924,7 +924,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             unionPayLoansSettleAcctDTO.setMobileNumber(encPhone);
             unionPayLoansSettleAcctDTO.setSmsCode(custBankInfoEntity.getSmsCode());
         } else {
-            throw new TfException("贷款用户不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
         }
 
         return unionPayLoansSettleAcctDTO;
