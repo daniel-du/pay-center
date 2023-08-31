@@ -75,7 +75,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateBankCallStatus(LoanUserEntity tfLoanUserEntity ) {
         Integer loanUserType = tfLoanUserEntity.getLoanUserType();
-        if (!"0".equals(loanUserType)) {
+        if (loanUserType!=0) {
             tfLoanUserEntity.setBankCallStatus(1);
         }
         tfLoanUserService.updateById(tfLoanUserEntity);
