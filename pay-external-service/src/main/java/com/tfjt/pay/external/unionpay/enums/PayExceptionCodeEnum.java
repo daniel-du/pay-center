@@ -46,6 +46,7 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     UNIONPAY_RESPONSE_ERROR(9000013, "银联系统交易异常"),
     SMSCODE_ERROR(9000014, "验证码失效，请重新填写。"),
     REPEAT_OPERATION(9000015,"请勿重复操作"),
+    NO_DATA(9000016,"数据不存在"),
 
     /**
      * 贷款用户

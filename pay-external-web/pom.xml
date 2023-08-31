@@ -90,11 +90,6 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.tfjt</groupId>
-            <artifactId>tf-common-filter-log</artifactId>
-            <version>4.0.8-SNAPSHOT</version>
-        </dependency>
         <!-- nacos-config配置中心依赖 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

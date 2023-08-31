@@ -9,6 +9,7 @@ import com.tfjt.pay.external.unionpay.dao.CustHoldingDao;
 import com.tfjt.pay.external.unionpay.dto.CustHoldingCreateDto;
 import com.tfjt.pay.external.unionpay.dto.CustHoldingDeleteDto;
 import com.tfjt.pay.external.unionpay.entity.CustHoldingEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.CustHoldingService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
@@ -36,7 +37,7 @@ public class CustHoldingServiceImpl extends BaseServiceImpl<CustHoldingDao, Cust
         CustHoldingEntity entity = getByLoanUserId(dto.getLoanUserId());
         if(BeanUtil.isNotEmpty(entity)){
             log.error("根据loanUserId:{}新增的控股信息已存在", dto.getLoanUserId());
-            throw new TfException(500, "控股信息已存在");
+            throw new TfException(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
         }
         CustHoldingEntity custHoldingEntity = new CustHoldingEntity();
         BeanUtils.copyProperties(dto, custHoldingEntity);
@@ -53,7 +54,7 @@ public class CustHoldingServiceImpl extends BaseServiceImpl<CustHoldingDao, Cust
         List<CustHoldingEntity> list = this.list(new LambdaQueryWrapper<CustHoldingEntity>().eq(CustHoldingEntity::getLoanUserId, dto.getLoanUserId()));
         if(CollUtil.isEmpty(list)){
             log.error("根据loanUserId:{}查询的控股信息不存在 param:{}",dto.getLoanUserId(), JSONObject.toJSONString(dto));
-            throw new TfException(500, "控股信息不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
         }
 
         CustHoldingEntity custHoldingEntity = list.get(0);
@@ -70,7 +71,7 @@ public class CustHoldingServiceImpl extends BaseServiceImpl<CustHoldingDao, Cust
         CustHoldingEntity entity = getByLoanUserId(dto.getLoanUserId());
         if(BeanUtil.isNotEmpty(entity)){
             log.error("根据loanUserId:{}查询的控股信息已存在", dto.getLoanUserId());
-            throw new TfException(500, "控股信息已存在");
+            throw new TfException(500, PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
         }
 
         LambdaQueryWrapper<CustHoldingEntity> wrapper = new LambdaQueryWrapper<>();
