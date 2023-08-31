@@ -130,6 +130,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-common-filter-log</artifactId>
+            <version>4.0.8-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <!--指定仓库地址 -->
     <distributionManagement>

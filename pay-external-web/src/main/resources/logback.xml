@@ -2,7 +2,7 @@
     <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
     <springProperty scope="LOG_PATH" name="LOG_PATH" source="log.path"/>
     <springProperty scope="LOG_CONSOLE_OUT" name="CONSOLE_OUT" source="log.console.out"/>
-    <property name="APP_NAME" value="tf-cloud-pay-external" />
+    <property name="APP_NAME" value="tf-pay-external" />
     <!-- 日志文件名称前缀，为服务的名称 -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
@@ -16,7 +16,7 @@
     <property name="total.size.cap" value="20GB"/>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] %X{tid}  logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n
             </pattern>
         </encoder>
     </appender>
@@ -35,9 +35,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <layout charset="UTF-8" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
+        <layout charset="UTF-8">
             <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] %X{tid}  logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n</Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n</Pattern>
         </layout>
     </appender>
 
@@ -53,8 +53,8 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <layout charset="UTF-8" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] %X{tid}  logId[%X{logId}] url[%X{url}]  %logger{50}:%line -%msg%n</Pattern>
+        <layout charset="UTF-8">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}]  %logger{50}:%line -%msg%n</Pattern>
         </layout>
     </appender>
     <appender name="ASYNC_FILE_DEBUG" class="ch.qos.logback.classic.AsyncAppender">
@@ -74,7 +74,7 @@
             <totalSizeCap>${total.size.cap}</totalSizeCap>
         </rollingPolicy>
         <encoder charset="UTF-8">
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] %X{tid}  logId[%X{logId}] url[%X{url}] -%msg%n</Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -88,8 +88,8 @@
             <MaxHistory>${max.history}</MaxHistory>
             <totalSizeCap>${total.size.cap}</totalSizeCap>
         </rollingPolicy>
-        <layout charset="UTF-8" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] %X{tid}  logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n</Pattern>
+        <layout charset="UTF-8">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] traceId[%X{traceId}] logId[%X{logId}] url[%X{url}] %logger{50}:%line -%msg%n</Pattern>
         </layout>
     </appender>
 
@@ -121,7 +121,6 @@
         <appender-ref ref="NOTICE_FILE"/>
     </appender>
     <logger name="com.baomidou.mybatisplus.core" level="ERROR"/>
-    <logger name="org.apache.dubbo.remoting.transport" level="ERROR"/>
     <logger name="com.tf.log.common.filter.dubbo.LogFilterDubbo" additivity="false">
         <appender-ref ref="ASYNC_FILE_NOTICE"/>
     </logger>
@@ -132,20 +131,11 @@
         <appender-ref ref="ASYNC_FILE_NOTICE"/>
     </logger>
 
-    <!--    <appender name="grpc1-log" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">-->
-    <!--        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">-->
-    <!--            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">-->
-    <!--                <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{tid}] [%thread] %-5level %logger{36} -%msg%n</Pattern>-->
-    <!--            </layout>-->
-    <!--        </encoder>-->
-    <!--    </appender>-->
-
 
     <root level="${log.level:-INFO}">
         <appender-ref ref="ASYNC_FILE_ERROR"/>
         <appender-ref ref="ASYNC_FILE_INFO"/>
         <appender-ref ref="ASYNC_FILE_DEBUG"/>
-        <!--        <appender-ref ref="grpc1-log"/>-->
         <if condition='property("CONSOLE_OUT").contains("true")'>
             <then>
                 <appender-ref ref="STDOUT"/>
