@@ -55,7 +55,7 @@ public class LoanBalanceServiceImpl extends BaseServiceImpl<LoanBalanceDao, Loan
         BeanUtil.copyProperties(tfLoanBalanceEntity, tfLoanBalanceCreateDto);
         Long update = loanBalanceRpcService.update(tfLoanBalanceCreateDto);
         if(!b || update == null){
-            throw new TfException(PayExceptionCodeEnum.UPDATE_DATA_ERROR.getMsg());
+            throw new TfException(PayExceptionCodeEnum.UPDATE_DATA_ERROR);
         }
     }
 }

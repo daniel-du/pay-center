@@ -253,7 +253,7 @@ public class UnionPaySignUtil {
             return instance.sign();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new TfException(PayExceptionCodeEnum.SIGN_ERROR.getMsg());
+            throw new TfException(PayExceptionCodeEnum.SIGN_ERROR);
         }
     }
 

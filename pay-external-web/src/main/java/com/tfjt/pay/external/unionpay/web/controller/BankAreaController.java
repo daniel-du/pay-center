@@ -54,7 +54,7 @@ public class BankAreaController {
             List<BankAreaEntity> list = this.bankAreaService.getAllBankArea();
             return Result.ok(list);
         }catch (Exception e){
-            throw new TfException(PayExceptionCodeEnum.QUERY_BANK_CODE_FAILED.getMsg());
+            throw new TfException(PayExceptionCodeEnum.QUERY_BANK_CODE_FAILED);
         }
     }
 }

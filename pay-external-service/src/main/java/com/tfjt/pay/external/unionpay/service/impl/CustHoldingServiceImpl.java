@@ -37,7 +37,7 @@ public class CustHoldingServiceImpl extends BaseServiceImpl<CustHoldingDao, Cust
         CustHoldingEntity entity = getByLoanUserId(dto.getLoanUserId());
         if(BeanUtil.isNotEmpty(entity)){
             log.error("根据loanUserId:{}新增的控股信息已存在", dto.getLoanUserId());
-            throw new TfException(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+            throw new TfException(PayExceptionCodeEnum.REPEAT_OPERATION);
         }
         CustHoldingEntity custHoldingEntity = new CustHoldingEntity();
         BeanUtils.copyProperties(dto, custHoldingEntity);
@@ -54,7 +54,7 @@ public class CustHoldingServiceImpl extends BaseServiceImpl<CustHoldingDao, Cust
         List<CustHoldingEntity> list = this.list(new LambdaQueryWrapper<CustHoldingEntity>().eq(CustHoldingEntity::getLoanUserId, dto.getLoanUserId()));
         if(CollUtil.isEmpty(list)){
             log.error("根据loanUserId:{}查询的控股信息不存在 param:{}",dto.getLoanUserId(), JSONObject.toJSONString(dto));
-            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
 
         CustHoldingEntity custHoldingEntity = list.get(0);
@@ -71,7 +71,7 @@ public class CustHoldingServiceImpl extends BaseServiceImpl<CustHoldingDao, Cust
         CustHoldingEntity entity = getByLoanUserId(dto.getLoanUserId());
         if(BeanUtil.isNotEmpty(entity)){
             log.error("根据loanUserId:{}查询的控股信息已存在", dto.getLoanUserId());
-            throw new TfException(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+            throw new TfException(PayExceptionCodeEnum.REPEAT_OPERATION);
         }
 
         LambdaQueryWrapper<CustHoldingEntity> wrapper = new LambdaQueryWrapper<>();

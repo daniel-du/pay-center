@@ -62,7 +62,7 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
         //查询 loanID
         LoanUserEntity one = this.loanUserService.getById(loanUserId);
         if (ObjectUtil.isEmpty(one)) {
-            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
         return one;
     }

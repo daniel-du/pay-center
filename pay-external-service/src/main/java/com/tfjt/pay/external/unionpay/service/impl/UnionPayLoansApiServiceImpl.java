@@ -183,7 +183,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
     private UnionPayLoansTwoIncomingDTO buildYinLianLoansTwoIncomingDTO(LoanUserEntity tfLoanUserEntity, String smsCode) {
         if (StringUtils.isBlank(tfLoanUserEntity.getName())) {
-            throw new TfException(PayExceptionCodeEnum.NOT_NULL_MERCHANT.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NOT_NULL_MERCHANT);
         }
         String nonce = UUID.randomUUID().toString().replace("-", "");
         CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
@@ -224,7 +224,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     private UnionPayLoansHoldingCompany buildYinLianLoansHoldingCompany(Long id) {
         CustHoldingEntity tfCustHoldingEntity = tfCustHoldingService.getByLoanUserId(id);
         if (tfCustHoldingEntity == null) {
-            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
         UnionPayLoansHoldingCompany unionPayLoansHoldingCompany = new UnionPayLoansHoldingCompany();
         unionPayLoansHoldingCompany.setName(tfCustHoldingEntity.getHoldingName());
@@ -243,7 +243,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     private BusinessLicenseInFoDTO buildBusinessLicenseDTO(Long id) {
         CustBusinessDetailEntity custBusinessDetailEntity = custBusinessDetailService.getByLoanUserId(id);
         if (custBusinessDetailEntity == null) {
-            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
         BusinessLicenseInFoDTO businessLicenseInFoDTO = new BusinessLicenseInFoDTO();
         BusinessLicenseDTO businessLicenseDTO = new BusinessLicenseDTO();
@@ -343,7 +343,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount) {
         String settleAcctId = getSettleAcctId(loanUserId);
         if (StringUtils.isBlank(settleAcctId)) {
-            throw new TfException(PayExceptionCodeEnum.NO_SETTLE_ACCT.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_SETTLE_ACCT);
         }
         //业务参数复制
         Map<String, Object> reqParams = new HashMap<>();
@@ -616,7 +616,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     private CustBankInfoEntity verifyCustBankInfo(Long loanUserId) {
         CustBankInfoEntity custBankInfoEntity = custBankInfoService.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId));
         if (null == custBankInfoEntity) {
-            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
         try {
             ValidatorUtils.validateEntity(custBankInfoEntity, CustBankInfoEntity.class, VerifyBankInfo.class);
@@ -642,7 +642,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         IdCardDTO idCardDTO = new IdCardDTO();
         CustIdcardInfoEntity custIdcardInfoEntity = custIdcardInfoService.getOne(new LambdaQueryWrapper<CustIdcardInfoEntity>().eq(CustIdcardInfoEntity::getLoanUserId, loanUserId));
         if (null == custIdcardInfoEntity) {
-            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
         idCardDTO.setCopy(custIdcardInfoEntity.getFrontIdCardUrlMediaId());
         idCardDTO.setNational(custIdcardInfoEntity.getBackIdCardUrlMediaId());
@@ -809,7 +809,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             if (StringUtils.isNotBlank(incomingReturn.getMediaId())) {
                 return incomingReturn.getMediaId();
             }
-            throw new TfException(PayExceptionCodeEnum.UPLOAD_FILE_ERROR.getMsg());
+            throw new TfException(PayExceptionCodeEnum.UPLOAD_FILE_ERROR);
         } catch (TfException | IOException e) {
             log.error("银联-进件-上传图片失败：param={}", e);
             throw new TfException(e.getMessage());
@@ -924,7 +924,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             unionPayLoansSettleAcctDTO.setMobileNumber(encPhone);
             unionPayLoansSettleAcctDTO.setSmsCode(custBankInfoEntity.getSmsCode());
         } else {
-            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
 
         return unionPayLoansSettleAcctDTO;

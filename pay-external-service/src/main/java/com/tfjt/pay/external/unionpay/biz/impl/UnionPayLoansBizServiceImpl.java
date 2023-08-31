@@ -94,12 +94,12 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public void unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if(loanUser == null){
-            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
         log.info("解绑银行卡参数：{}", bankInfoReqDTO);
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
         if (custBankInfos.size() == 1) {
-            throw new TfException(PayExceptionCodeEnum.LAST_ONE_BANK_CARD.getMsg());
+            throw new TfException(PayExceptionCodeEnum.LAST_ONE_BANK_CARD);
         } else {
             CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
             if (ObjectUtils.isNotEmpty(custBankInfo)) {
@@ -114,13 +114,13 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
                     }
                     unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
                 } else {
-                    throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+                    throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
                 }
                 //标记删除银行卡
                 custBankInfo.setDeleted(true);
                 custBankInfoService.updateCustBankInfo(custBankInfo);
             } else {
-                throw new TfException(PayExceptionCodeEnum.ABSENT_BANK_CARD.getMsg());
+                throw new TfException(PayExceptionCodeEnum.ABSENT_BANK_CARD);
             }
 
         }
@@ -139,12 +139,12 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if(loanUser == null){
-            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
         log.info("绑定银行卡参数：{}", bankInfoReqDTO);
         CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
         if (bankInfoByBankCardNoAndLoanUserId != null) {
-            throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD.getMsg());
+            throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD);
         }
         List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
