@@ -179,7 +179,10 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         if (StringUtils.isEmpty(isIdempotent)) {
             redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY, idempotentMd5, 60, TimeUnit.MINUTES);
         } else if (idempotentMd5.equals(isIdempotent)) {
-            return Result.failed(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+            WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
+            withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
+            withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+            return Result.ok(withdrawalRespDTO);
         }
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
@@ -210,7 +213,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         Result<WithdrawalCreateRespDTO> withdrawalCreateResp = unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
         WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
         if (withdrawalCreateResp.getCode() != NumberConstant.ZERO) {
-            return Result.failed(withdrawalCreateResp.getMsg());
+            return Result.ok(withdrawalRespDTO);
         } else {
             //更新状态
             loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
