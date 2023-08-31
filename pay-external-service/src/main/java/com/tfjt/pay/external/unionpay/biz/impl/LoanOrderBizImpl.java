@@ -38,10 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author songx
@@ -230,6 +227,10 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             HashMap<String, Object> stringObjectHashMap = new HashMap<>();
             stringObjectHashMap.put("productInfos", listGoods);
             guaranteePaymentDTO.setExtra(stringObjectHashMap);
+            //金额是0不调用银联
+            if(Objects.equals(loanOrderDetailsReqDTO.getAmount(), NumberConstant.ZERO)){
+                continue;
+            }
             list.add(guaranteePaymentDTO);
         }
         consumerPoliciesReqDTO.setGuaranteePaymentParams(list);
