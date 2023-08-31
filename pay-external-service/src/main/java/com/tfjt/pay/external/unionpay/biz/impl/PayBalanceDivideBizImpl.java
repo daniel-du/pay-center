@@ -1,13 +1,11 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayBalanceDivideReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
@@ -32,6 +30,7 @@ import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.InstructIdUtil;
+import com.tfjt.tfcommon.core.util.SpringContextUtils;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -168,7 +167,7 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
         List<LoanBalanceDivideDetailsEntity> saveList = new ArrayList<>();
         BalanceDivideReqDTO balanceDivideReqDTO = new BalanceDivideReqDTO();
         BeanUtil.copyProperties(balanceDivideReq, balanceDivideReqDTO);
-        PayBalanceDivideBizImpl bean = SpringUtil.getBean(this.getClass());
+        PayBalanceDivideBizImpl bean = SpringContextUtils.getBean(this.getClass());
         bean.saveDivide(tradeOrderNo, saveList, balanceDivideReqDTO);
         UnionPayDivideReqDTO unionPayDivideReqDTO = buildBalanceDivideUnionPayParam(saveList, tradeOrderNo);
         //5.调用银联接口
