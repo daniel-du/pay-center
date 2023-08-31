@@ -357,10 +357,10 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
             loanQueryOrderRespDTO.setMetadata(one.getMetadata());
             loanQueryOrderRespDTO.setPay_balance_acct_name(one.getPayBalanceAcctName());
             loanQueryOrderRespDTO.setTotal_fee(one.getAmount());
-            if (TradeResultConstant.UNIONPAY_UNKNOWN.equals(one.getStatus())) {
+            if (!TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus())) {
                 Result<ConsumerPoliciesRespDTO> consumerPoliciesRespDTOResult = unionPayService.queryPlatformOrderStatus(one.getTradeOrderNo());
                 int code = consumerPoliciesRespDTOResult.getCode();
-                if (code == NumberConstant.ONE) {
+                if (code == NumberConstant.ZERO){
                     ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
                     loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
 
@@ -368,7 +368,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
                     return Result.failed(consumerPoliciesRespDTOResult.getMsg());
                 }
             } else {
-                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_SUCCESS);
             }
             List<LoanOrderDetailsRespDTO> details_dto_list = listLoanOrderDetailsRespDTO(one.getId());
             loanQueryOrderRespDTO.setDetails_dto_list(details_dto_list);
