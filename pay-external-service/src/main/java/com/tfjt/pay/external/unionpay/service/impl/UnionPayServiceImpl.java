@@ -9,6 +9,7 @@ import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.TransactionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.pay.external.unionpay.utils.UnionPayBaseBuilderUtils;
+import com.tfjt.tfcommon.core.annotation.GlobalDubboExceptionCatch;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -170,6 +171,7 @@ public class UnionPayServiceImpl implements UnionPayService {
     }
 
     @Override
+    @GlobalDubboExceptionCatch
     public Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
         UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ616_ALLOCATIONS.getCode(),
                 JSON.toJSONString(unionPayDivideReqDTO),UnionPayDivideRespDTO.class,unionPayDivideReqDTO.getOutOrderNo());

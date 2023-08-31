@@ -94,12 +94,12 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public void unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if(loanUser == null){
-            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
         log.info("解绑银行卡参数：{}", bankInfoReqDTO);
         List<CustBankInfoEntity> custBankInfos = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
         if (custBankInfos.size() == 1) {
-            throw new TfException(PayExceptionCodeEnum.LAST_ONE_BANK_CARD.getMsg());
+            throw new TfException(PayExceptionCodeEnum.LAST_ONE_BANK_CARD);
         } else {
             CustBankInfoEntity custBankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
             if (ObjectUtils.isNotEmpty(custBankInfo)) {
@@ -114,13 +114,13 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
                     }
                     unionPayLoansApiService.deleteSettleAcct(deleteSettleAcctParams);
                 } else {
-                    throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+                    throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
                 }
                 //标记删除银行卡
                 custBankInfo.setDeleted(true);
                 custBankInfoService.updateCustBankInfo(custBankInfo);
             } else {
-                throw new TfException(PayExceptionCodeEnum.ABSENT_BANK_CARD.getMsg());
+                throw new TfException(PayExceptionCodeEnum.ABSENT_BANK_CARD);
             }
 
         }
@@ -139,12 +139,12 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if(loanUser == null){
-            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
         log.info("绑定银行卡参数：{}", bankInfoReqDTO);
         CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
         if (bankInfoByBankCardNoAndLoanUserId != null) {
-            throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD.getMsg());
+            throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD);
         }
         List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
         CustBankInfoEntity custBankInfoEntity = new CustBankInfoEntity();
@@ -175,13 +175,14 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         }
         String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
         String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
-        log.info("放重复提交加密后的M5d值为：{}", md5Str);
+        log.info("防重复提交加密前的M5d值为：{}", md5Str);
         String idempotentMd5 = MD5Util.getMD5String(md5Str);
         String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
-        log.info("放重复提交加密后的M5d值为：{}", idempotentMd5);
+        log.info("防重复提交加密后的M5d值为：{}", idempotentMd5);
         if (StringUtils.isEmpty(isIdempotent)) {
             redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY, idempotentMd5, 60, TimeUnit.MINUTES);
         } else if (idempotentMd5.equals(isIdempotent)) {
+            log.info("重复提现了！！！");
             WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
             withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
             withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());

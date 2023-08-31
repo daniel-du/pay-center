@@ -345,7 +345,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     private void checkLoanUser(String busId, Integer type) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(busId, type);
         if (loanUser == null) {
-            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+            throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
     }
 }

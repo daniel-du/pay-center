@@ -11,6 +11,7 @@ import com.tfjt.pay.external.unionpay.entity.BankEntity;
 import com.tfjt.pay.external.unionpay.entity.BankInterbankNumberEntity;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
@@ -33,11 +34,6 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     private LoanUserService loanUserService;
     @Resource
     private UnionPayLoansApiService unionPayLoansApiService;
-    @Resource
-    private BankInterbankNumberService bankInterbankNumberService;
-    @Resource
-    private BankService bankService;
-
     @Override
     public List<BankInfoDTO> getBankInfoByBus(Long loanUserId) {
         LoanUserEntity one = getTfLoanUserEntity(loanUserId);
@@ -61,28 +57,12 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
 
     }
 
-    private String getTfBankEntity(CustBankInfoEntity custBankInfoEntity) {
-        BankInterbankNumberEntity bankInterbankNumberEntity = this.bankInterbankNumberService.getOne(new LambdaQueryWrapper<BankInterbankNumberEntity>()
-                .eq(BankInterbankNumberEntity::getBankCode, custBankInfoEntity.getBankCode()));
-        if (ObjectUtil.isEmpty(bankInterbankNumberEntity)) {
-            throw new TfException("查询支行信息异常");
-        }
-        BankEntity bankEntity = this.bankService.getOne(new LambdaQueryWrapper<BankEntity>()
-                .eq(BankEntity::getBankCode, bankInterbankNumberEntity.getDrecCode()));
-        if (ObjectUtil.isEmpty(bankEntity)) {
-            throw new TfException("银行卡查询总行信息异常");
-        }
-        custBankInfoEntity.setBigBankName(bankEntity.getBankName());
-        this.updateById(custBankInfoEntity);
-        return bankEntity.getBankName();
-    }
-
     @Override
     public LoanUserEntity getTfLoanUserEntity(Long loanUserId) {
         //查询 loanID
         LoanUserEntity one = this.loanUserService.getById(loanUserId);
         if (ObjectUtil.isEmpty(one)) {
-            throw new TfException("未查询到用户信息");
+            throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
         return one;
     }

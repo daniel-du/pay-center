@@ -2,6 +2,8 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 
 import com.tfjt.api.BusinessAuthApiService;
 import com.tfjt.pay.external.unionpay.biz.BusinessAuthBiz;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
+import com.tfjt.tfcommon.core.exception.TfException;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,12 @@ public class BusinessAuthBizImpl implements BusinessAuthBiz {
     BusinessAuthApiService businessAuthApiService;
     @Override
     public boolean businessAuth(String token) {
-        return businessAuthApiService.businessAuth(token);
+        boolean result;
+        try {
+            result = businessAuthApiService.businessAuth(token);
+        }catch (Exception ex){
+            throw new TfException(PayExceptionCodeEnum.SERVICE_ERROR);
+        }
+        return result;
     }
 }

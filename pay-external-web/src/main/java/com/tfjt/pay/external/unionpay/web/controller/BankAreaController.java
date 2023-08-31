@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.web.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.tfjt.pay.external.unionpay.entity.BankInterbankNumberEntity;
 import com.tfjt.pay.external.unionpay.entity.BankAreaEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.BankAreaService;
 import com.tfjt.pay.external.unionpay.service.BankInterbankNumberService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -53,7 +54,7 @@ public class BankAreaController {
             List<BankAreaEntity> list = this.bankAreaService.getAllBankArea();
             return Result.ok(list);
         }catch (Exception e){
-            throw new TfException(-1,"查询银行编码失败");
+            throw new TfException(PayExceptionCodeEnum.QUERY_BANK_CODE_FAILED);
         }
     }
 }

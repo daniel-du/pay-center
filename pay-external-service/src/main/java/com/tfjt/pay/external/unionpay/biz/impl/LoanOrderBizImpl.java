@@ -1,7 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -19,7 +18,6 @@ import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderGoodsEntity;
@@ -33,6 +31,7 @@ import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.InstructIdUtil;
+import com.tfjt.tfcommon.core.util.SpringContextUtils;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -293,7 +292,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         //2.保存订单信息
         LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
         BeanUtil.copyProperties(loanOrderUnifiedorderDTO, loanOrderUnifiedorderReqDTO);
-        LoanOrderBiz bean = SpringUtil.getBean(LoanOrderBiz.class);
+        LoanOrderBiz bean = SpringContextUtils.getBean(this.getClass());
         //3.调用银联接口
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = bean.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO, notifyUrl);
         Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
@@ -326,7 +325,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_TB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
         LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();
         BeanUtil.copyProperties(payTransferDTO, loanTransferRespDTO);
-        LoanOrderBizImpl bean = SpringUtil.getBean(this.getClass());
+        LoanOrderBizImpl bean = SpringContextUtils.getBean(this.getClass());
         bean.transferSaveOrder(loanTransferRespDTO, tradeOrderNo);
         //3.调用银联信息
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
@@ -342,42 +341,37 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
 
     @Override
     public Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo, String appId) {
-
-        try {
-            LoanOrderEntity one = getByBusinessAndAppId(businessOrderNo, appId);
-            LoanQueryOrderRespDTO loanQueryOrderRespDTO = new LoanQueryOrderRespDTO();
-            if (one == null) {
-                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_FAILED);
-                return Result.ok(loanQueryOrderRespDTO);
-            }
-            loanQueryOrderRespDTO.setBusiness_type(one.getBusinessType());
-            loanQueryOrderRespDTO.setOut_trade_no(businessOrderNo);
-            loanQueryOrderRespDTO.setTransaction_id(one.getCombinedGuaranteePaymentId());
-            loanQueryOrderRespDTO.setPay_balanceAcct_id(one.getPayBalanceAcctId());
-            loanQueryOrderRespDTO.setMetadata(one.getMetadata());
-            loanQueryOrderRespDTO.setPay_balance_acct_name(one.getPayBalanceAcctName());
-            loanQueryOrderRespDTO.setTotal_fee(one.getAmount());
-            if (TradeResultConstant.UNIONPAY_UNKNOWN.equals(one.getStatus())) {
-                Result<ConsumerPoliciesRespDTO> consumerPoliciesRespDTOResult = unionPayService.queryPlatformOrderStatus(one.getTradeOrderNo());
-                int code = consumerPoliciesRespDTOResult.getCode();
-                if (code == NumberConstant.ONE) {
-                    ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
-                    loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
-
-                } else {
-                    return Result.failed(consumerPoliciesRespDTOResult.getMsg());
-                }
-            } else {
-                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
-            }
-            List<LoanOrderDetailsRespDTO> details_dto_list = listLoanOrderDetailsRespDTO(one.getId());
-            loanQueryOrderRespDTO.setDetails_dto_list(details_dto_list);
-            loanQueryOrderRespDTO.setTread_type(PayTypeConstants.PAY_TYPE_LOAN);
+        log.info("查询交易结果信息:{}", businessOrderNo);
+        LoanOrderEntity one = getByBusinessAndAppId(businessOrderNo, appId);
+        LoanQueryOrderRespDTO loanQueryOrderRespDTO = new LoanQueryOrderRespDTO();
+        if (one == null) {
+            loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_FAILED);
             return Result.ok(loanQueryOrderRespDTO);
-        } catch (TfException e) {
-            e.printStackTrace();
-            return Result.failed(e.getMessage());
         }
+        loanQueryOrderRespDTO.setBusiness_type(one.getBusinessType());
+        loanQueryOrderRespDTO.setOut_trade_no(businessOrderNo);
+        loanQueryOrderRespDTO.setTransaction_id(one.getCombinedGuaranteePaymentId());
+        loanQueryOrderRespDTO.setPay_balanceAcct_id(one.getPayBalanceAcctId());
+        loanQueryOrderRespDTO.setMetadata(one.getMetadata());
+        loanQueryOrderRespDTO.setPay_balance_acct_name(one.getPayBalanceAcctName());
+        loanQueryOrderRespDTO.setTotal_fee(one.getAmount());
+        if (!TradeResultConstant.UNIONPAY_SUCCEEDED.equals(one.getStatus())) {
+            Result<ConsumerPoliciesRespDTO> consumerPoliciesRespDTOResult = unionPayService.queryPlatformOrderStatus(one.getTradeOrderNo());
+            int code = consumerPoliciesRespDTOResult.getCode();
+            if (code == NumberConstant.ZERO){
+                ConsumerPoliciesRespDTO data = consumerPoliciesRespDTOResult.getData();
+                loanQueryOrderRespDTO.setResult_code(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(data.getStatus()) ? TradeResultConstant.PAY_SUCCESS : TradeResultConstant.PAY_FAILED);
+
+            } else {
+                return Result.failed(consumerPoliciesRespDTOResult.getMsg());
+            }
+        } else {
+            loanQueryOrderRespDTO.setResult_code(TradeResultConstant.PAY_SUCCESS);
+        }
+        List<LoanOrderDetailsRespDTO> details_dto_list = listLoanOrderDetailsRespDTO(one.getId());
+        loanQueryOrderRespDTO.setDetails_dto_list(details_dto_list);
+        loanQueryOrderRespDTO.setTread_type(PayTypeConstants.PAY_TYPE_LOAN);
+        return Result.ok(loanQueryOrderRespDTO);
     }
 
 

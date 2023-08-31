@@ -131,7 +131,7 @@ public class CustBankInfoController {
             //判断卡号是否存在
             CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(custBankInfo.getBankCardNo(), custBankInfo.getLoanUserId());
             if (bankInfoByBankCardNoAndLoanUserId != null) {
-                if(!custBankInfo.getId().equals(bankInfoByBankCardNoAndLoanUserId.getId())){
+                if (!custBankInfo.getId().equals(bankInfoByBankCardNoAndLoanUserId.getId())) {
                     return Result.failed("该卡号已存在");
                 }
             }
@@ -189,10 +189,10 @@ public class CustBankInfoController {
 
 
     @PostMapping("/unbindSettleAcct")
-    public Result<String> unbindSettleAcct(@RequestBody BankInfoReqDTO bankInfoReqDTO){
+    public Result<String> unbindSettleAcct(@RequestBody BankInfoReqDTO bankInfoReqDTO) {
         try {
             unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
-        }catch (TfException ex){
+        } catch (TfException ex) {
             return Result.failed(ex.getMessage());
         }
         return Result.ok();
@@ -200,12 +200,8 @@ public class CustBankInfoController {
 
 
     @PostMapping("/bindSettleAcct")
-    public Result<String> bindSettleAcct(@RequestBody BankInfoReqDTO bankInfoReqDTO){
-        try {
-            unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
-        }catch (TfException ex){
-            return Result.failed(ex.getMessage());
-        }
+    public Result<String> bindSettleAcct(@RequestBody BankInfoReqDTO bankInfoReqDTO) {
+        unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
         return Result.ok();
     }
 

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.tfjt.tfcommon.validator.group.AddGroup;
+import com.tfjt.tfcommon.validator.group.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -33,12 +35,12 @@ public class LoanUserEntity implements Serializable {
 	/**
 	 * 类型1商家2供应商
 	 */
-	@NotNull(message = "类型不能为空")
+	@NotNull(message = "类型不能为空",groups = {AddGroup.class})
 	private Integer type;
 	/**
 	 * 业务ID
 	 */
-	@NotBlank(message = "业务ID不能为空")
+	@NotBlank(message = "业务ID不能为空",groups = {AddGroup.class})
 	private String busId;
 
 	@TableField(exist=false)
@@ -61,6 +63,7 @@ failed：被驳回
 	/**
 	 * 二级商户ID
 	 */
+	@NotBlank(message = "二级商户ID不能为空",groups = {UpdateGroup.class})
 	private String mchId;
 	/**
 	 * 进件申请通过时间
@@ -90,6 +93,7 @@ failed：被驳回
 	/**
 	 * 平台订单号
 	 */
+	@NotBlank(message = "平台订单号不能为空",groups = {UpdateGroup.class})
 	private String outRequestNo;
 	/**
 	 * 系统订单号
