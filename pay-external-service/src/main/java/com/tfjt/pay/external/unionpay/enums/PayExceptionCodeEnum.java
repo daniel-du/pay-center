@@ -37,7 +37,7 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     SIGN_ERROR(9000008,"验签失败"),
     SAVE_DATA_ERROR(9001000,"保存数据异常"),
     UPDATE_DATA_ERROR(9001001,"更新数据异常"),
-
+    SERVICE_ERROR(9002000,"服务异常"),
 
     /**
      * 贷款用户
