@@ -1,7 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -19,7 +18,6 @@ import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderGoodsEntity;
@@ -33,6 +31,7 @@ import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.InstructIdUtil;
+import com.tfjt.tfcommon.core.util.SpringContextUtils;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -293,7 +292,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         //2.保存订单信息
         LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
         BeanUtil.copyProperties(loanOrderUnifiedorderDTO, loanOrderUnifiedorderReqDTO);
-        LoanOrderBiz bean = SpringUtil.getBean(LoanOrderBiz.class);
+        LoanOrderBiz bean = SpringContextUtils.getBean(this.getClass());
         //3.调用银联接口
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = bean.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO, notifyUrl);
         Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
@@ -326,7 +325,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_TB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
         LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();
         BeanUtil.copyProperties(payTransferDTO, loanTransferRespDTO);
-        LoanOrderBizImpl bean = SpringUtil.getBean(this.getClass());
+        LoanOrderBizImpl bean = SpringContextUtils.getBean(this.getClass());
         bean.transferSaveOrder(loanTransferRespDTO, tradeOrderNo);
         //3.调用银联信息
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
