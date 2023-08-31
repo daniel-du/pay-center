@@ -100,7 +100,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
      *
      * @param loanCallbackEntity
      */
-    public Long treadResult(LoanCallbackEntity loanCallbackEntity) {
+    public Long tradeResult(LoanCallbackEntity loanCallbackEntity) {
         String eventData = loanCallbackEntity.getEventData();
         EventDataDTO eventDataDTO = JSONObject.parseObject(eventData, EventDataDTO.class);
         String tradeType = eventDataDTO.getTradeType().toString();
@@ -218,7 +218,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             balanceIncomeNotice(loanCallbackEntity.getEventData(), loanCallbackEntity.getId(), loanCallbackEntity.getEventType(), loanCallbackEntity.getEventId(), loanCallbackEntity.getCreatedAt());
         } else if (UnionPayEventTypeConstant.TRADE_RESULT.equals(eventType)) {
             //处理交易结果
-            treadResult(loanCallbackEntity);
+            tradeResult(loanCallbackEntity);
         }
     }
 
