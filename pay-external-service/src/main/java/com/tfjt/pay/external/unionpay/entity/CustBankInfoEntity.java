@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.tfjt.pay.external.unionpay.validator.group.VerifyBankInfo;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -49,7 +50,7 @@ public class CustBankInfoEntity implements Serializable {
     /**
      * 手机号
      */
-    @NotBlank(message = "手机号不能为空")
+    @NotBlank(message = "手机号不能为空",groups = {VerifyBankInfo.class})
     private String phone;
     /**
      * 省
@@ -86,7 +87,7 @@ public class CustBankInfoEntity implements Serializable {
     /**
      * 短信验证码
      */
-    @NotBlank(message = "短信验证码不能为空")
+    @NotBlank(message = "短信验证码不能为空",groups = {VerifyBankInfo.class})
     private String smsCode;
     /**
      * 用户id

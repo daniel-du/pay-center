@@ -16,8 +16,11 @@ import com.tfjt.pay.external.unionpay.enums.UnionPayLoanBussCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.MessageDigestUtils;
 import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
+import com.tfjt.pay.external.unionpay.validator.group.VerifyBankInfo;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.validator.ValidatorUtils;
+import com.tfjt.tfcommon.validator.group.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -93,11 +96,11 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#tfLoanUserEntity.busId"}, expire = 3000, acquireTimeout = 4000)
     @Override
-    public LoanUserEntity incoming(LoanUserEntity tfLoanUserEntity,String smsCode) {
+    public LoanUserEntity incoming(LoanUserEntity tfLoanUserEntity, String smsCode) {
         try {
             Date req = new Date();
             //业务参数复制
-            UnionPayLoansIncomingDTO unionPayLoansIncomingDTO = buildYinLianLoansIncoming(tfLoanUserEntity,smsCode);
+            UnionPayLoansIncomingDTO unionPayLoansIncomingDTO = buildYinLianLoansIncoming(tfLoanUserEntity, smsCode);
 
             UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ51_PERSON_APP.getCode(), JSONObject.toJSONString(unionPayLoansIncomingDTO));
 
@@ -113,7 +116,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             addTfLoanBalanceAcct(incomingReturn, tfLoanUserEntity.getId());
         } catch (TfException e) {
             log.error("银联-进件失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
         }
 
         return tfLoanUserEntity;
@@ -128,12 +131,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#tfLoanUserEntity.busId"}, expire = 3000, acquireTimeout = 4000)
     @Override
-    public IncomingReturn twoIncoming(LoanUserEntity tfLoanUserEntity,String smsCode) {
+    public IncomingReturn twoIncoming(LoanUserEntity tfLoanUserEntity, String smsCode) {
         IncomingReturn incomingReturn = new IncomingReturn();
         try {
             Date req = new Date();
             //业务参数复制
-            UnionPayLoansTwoIncomingDTO unionPayLoansTwoIncomingDTO = buildYinLianLoansTwoIncomingDTO(tfLoanUserEntity,smsCode);
+            UnionPayLoansTwoIncomingDTO unionPayLoansTwoIncomingDTO = buildYinLianLoansTwoIncomingDTO(tfLoanUserEntity, smsCode);
 
             UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ56_MCH_APP.getCode(), JSONObject.toJSONString(unionPayLoansTwoIncomingDTO));
 
@@ -147,7 +150,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             updatTwoTfLoanUserEntity(incomingReturn, tfLoanUserEntity);
         } catch (TfException e) {
             log.error("银联-二级进件失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
         }
         return incomingReturn;
     }
@@ -162,11 +165,11 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
         IncomingReturn incomingReturnSel = this.getTwoIncomingInfo(incomingReturn.getOutRequestNo());
         tfLoanUserEntity.setApplicationStatus(incomingReturnSel.getApplicationStatus());
-        if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+        if (ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())) {
             tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
         }
         Integer loanUserType = tfLoanUserEntity.getLoanUserType();
-        if (!"0".equals(loanUserType)) {
+        if (loanUserType != 0) {
             CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
             int settlementType = custBankInfoEntity.getSettlementType();
             if (2 == settlementType) {
@@ -178,14 +181,14 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         loanUserService.asynNotice(tfLoanUserEntity);
     }
 
-    private UnionPayLoansTwoIncomingDTO buildYinLianLoansTwoIncomingDTO(LoanUserEntity tfLoanUserEntity,String smsCode) {
+    private UnionPayLoansTwoIncomingDTO buildYinLianLoansTwoIncomingDTO(LoanUserEntity tfLoanUserEntity, String smsCode) {
         if (StringUtils.isBlank(tfLoanUserEntity.getName())) {
-            throw new TfException(500, "商户简称不能为空");
+            throw new TfException(PayExceptionCodeEnum.NOT_NULL_MERCHANT.getMsg());
         }
         String nonce = UUID.randomUUID().toString().replace("-", "");
         CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
         int settlementType = custBankInfoEntity.getSettlementType();
-        smsCode = handleCode(smsCode,custBankInfoEntity);
+        smsCode = handleCode(smsCode, custBankInfoEntity);
         // 1营业执照
         BusinessLicenseInFoDTO businessLicenseInFoDTO = buildBusinessLicenseDTO(tfLoanUserEntity.getId());
         // 2身份证
@@ -193,9 +196,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         legalPersonIdCard.setType("1");
         // 3银行卡
 
-        if (Objects.isNull(custBankInfoEntity.getSettlementType())) {
-            throw new TfException(501, "绑定账户类型不能为空");
-        }
+
         SettleAcctDTO settleAcctDTO = buildSettleAcctDTO(custBankInfoEntity, custBankInfoEntity.getSettlementType());
         // 4企业信息
         UnionPayLoansHoldingCompany unionPayLoansHoldingCompany = buildYinLianLoansHoldingCompany(tfLoanUserEntity.getId());
@@ -223,7 +224,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     private UnionPayLoansHoldingCompany buildYinLianLoansHoldingCompany(Long id) {
         CustHoldingEntity tfCustHoldingEntity = tfCustHoldingService.getByLoanUserId(id);
         if (tfCustHoldingEntity == null) {
-            throw new TfException(500, "控股信息不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
         }
         UnionPayLoansHoldingCompany unionPayLoansHoldingCompany = new UnionPayLoansHoldingCompany();
         unionPayLoansHoldingCompany.setName(tfCustHoldingEntity.getHoldingName());
@@ -242,7 +243,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     private BusinessLicenseInFoDTO buildBusinessLicenseDTO(Long id) {
         CustBusinessDetailEntity custBusinessDetailEntity = custBusinessDetailService.getByLoanUserId(id);
         if (custBusinessDetailEntity == null) {
-            throw new TfException(500, "营业执照信息不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
         }
         BusinessLicenseInFoDTO businessLicenseInFoDTO = new BusinessLicenseInFoDTO();
         BusinessLicenseDTO businessLicenseDTO = new BusinessLicenseDTO();
@@ -283,7 +284,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
             ResponseEntity<UnionPayLoansBaseReturn> responseEntity = post(unionPayLoansBaseReq);
 
-            log.info("进件修改接口{}", responseEntity.getBody().toString());
+            log.info("进件修改接口{}", responseEntity.getBody());
             incomingReturn = getBaseIncomingReturn(responseEntity, tfLoanUserEntity, req, tfLoanUserEntity.getId());
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
             tfLoanUserEntity.setCusId(incomingReturn.getCusId());
@@ -291,7 +292,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
         } catch (TfException e) {
             log.error("银联-进件-修改失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
 
         }
         return incomingReturn;
@@ -314,14 +315,13 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ59_MCH_APPLICATIONS_RENEW.getCode(), JSON.toJSONString(unionPayLoansTwoIncomingEditDTO));
 
 
-
             ResponseEntity<UnionPayLoansBaseReturn> responseEntity = post(unionPayLoansBaseReq);
 
-            log.info("二级进件修改接口{}", responseEntity.getBody().toString());
+            log.info("二级进件修改接口{}", responseEntity.getBody());
             incomingReturn = getBaseIncomingReturn(responseEntity, tfLoanUserEntity, req, tfLoanUserEntity.getId());
             IncomingReturn incomingReturnSel = this.getTwoIncomingInfo(incomingReturn.getOutRequestNo());
             tfLoanUserEntity.setApplicationStatus(incomingReturnSel.getApplicationStatus());
-            if(ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())){
+            if (ObjectUtil.isNotEmpty(incomingReturn.getFailureMsgs())) {
                 tfLoanUserEntity.setFailureMsgs(incomingReturn.getFailureMsgs());
             }
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
@@ -330,36 +330,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             loanUserService.updateById(tfLoanUserEntity);
         } catch (TfException e) {
             log.error("银联-二级进件-修改失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
 
         }
         return incomingReturn;
     }
 
-    private void judgeIsRepayMen(UnionPayLoansTwoIncomingEditDTO unionPayLoansTwoIncomingEditDTO, LoanUserEntity tfLoanUserEntity) {
-        SettleAcctDTO settleAcct = unionPayLoansTwoIncomingEditDTO.getSettleAcct();
-        String legalPersonMobileNumber = unionPayLoansTwoIncomingEditDTO.getLegalPersonMobileNumber();
-        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = querySettleAcctByOutRequestNo(tfLoanUserEntity.getId(), tfLoanUserEntity.getOutRequestNo());
-        if (null != unionPayLoansSettleAcctDTO) {
-            String name = settleAcct.getName();
-            String bankAcctNo = settleAcct.getBankAcctNo();
-            String bankBranchCode = settleAcct.getBankBranchCode();
-            String type = settleAcct.getType();
-            String nameOld = unionPayLoansSettleAcctDTO.getName();
-            String bankAcctNoOld = unionPayLoansSettleAcctDTO.getBankAcctNo();
-            String bankBranchCodeOld = unionPayLoansSettleAcctDTO.getBankBranchCode();
-            String typeOld = unionPayLoansSettleAcctDTO.getBankAcctType();
-            String mobileNumber = unionPayLoansSettleAcctDTO.getMobileNumber();
-            if (!name.equals(UnionPaySignUtil.SM2(encodedPub, nameOld)) || !bankAcctNo.equals(UnionPaySignUtil.SM2(encodedPub, bankAcctNoOld))
-                    || !bankBranchCodeOld.equals(bankBranchCode) || !typeOld.equals(type) || !legalPersonMobileNumber.equals(mobileNumber)) {
-                Integer loanUserType = tfLoanUserEntity.getLoanUserType();
-                if (!"0".equals(loanUserType)) {
-                    tfLoanUserEntity.setBankCallStatus(1);
-                }
-            }
-        }
-
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -367,7 +343,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount) {
         String settleAcctId = getSettleAcctId(loanUserId);
         if (StringUtils.isBlank(settleAcctId)) {
-            throw new TfException(500, "没有绑定账号不能进行打款");
+            throw new TfException(PayExceptionCodeEnum.NO_SETTLE_ACCT.getMsg());
         }
         //业务参数复制
         Map<String, Object> reqParams = new HashMap<>();
@@ -388,8 +364,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         UnionPayLoansBaseReturn unionPayLoansBaseReturn = responseEntity.getBody();
         unionPayLoanReqLogService.asyncSaveLog(unionPayLoansBaseReturn, reqParams, null, null);
 
-
-        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcct = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), UnionPayLoansSettleAcctDTO.class);
+        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcct = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData(), UnionPayLoansSettleAcctDTO.class);
 
         return unionPayLoansSettleAcct;
     }
@@ -424,22 +399,16 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
      * @return
      */
     private UnionPayLoansTwoIncomingEditDTO buildYinLianLoansTwoIncomingEditDTO(LoanUserEntity tfLoanUserEntity, String smsCode) {
-
-       /* if (Objects.isNull(smsCode)) {
-            throw new TfException(500, "手机验证码不能为空");
-        }*/
-        if (Objects.isNull(tfLoanUserEntity.getMchId())) {
-            throw new TfException(500, "二级商户ID不存在-不能修改");
+        try {
+            ValidatorUtils.validateEntity(tfLoanUserEntity, LoanUserEntity.class, UpdateGroup.class);
+        } catch (Exception ex) {
+            throw new TfException(ex.getMessage());
         }
-        if (Objects.isNull(tfLoanUserEntity.getOutRequestNo())) {
-            throw new TfException(500, "平台订单号-不能修改");
-        }
-
         String nonce = UUID.randomUUID().toString().replace("-", "");
         // 1、银行卡
         CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
         int settlementType = custBankInfoEntity.getSettlementType();
-        smsCode = handleCode(smsCode,custBankInfoEntity);
+        smsCode = handleCode(smsCode, custBankInfoEntity);
 
         // 2、营业执照
         BusinessLicenseInFoDTO businessLicenseInFoDTO = buildBusinessLicenseDTO(tfLoanUserEntity.getId());
@@ -462,7 +431,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
                 .shortName(tfLoanUserEntity.getName())
                 .contactMobileNumber(UnionPaySignUtil.SM2(encodedPub, custBankInfoEntity.getPhone()))
                 .legalPersonMobileNumber(UnionPaySignUtil.SM2(encodedPub, custBankInfoEntity.getPhone()))
-                .contactEmail(UnionPaySignUtil.SM2(encodedPub,businessLicenseInFoDTO.getContactEmail()))
+                .contactEmail(UnionPaySignUtil.SM2(encodedPub, businessLicenseInFoDTO.getContactEmail()))
                 .build();
         //此时需要验证码信息
         if (settlementType == 1) {
@@ -487,19 +456,19 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         //银联贷款返回码
         if (!Objects.equals("LWZ99999", unionPayLoansBaseReturn.getRespCode())) {
             log.error("银联调用失败{}", responseEntity.getBody().toString());
-            throw new TfException(500, unionPayLoansBaseReturn.getRespMsg());
+            throw new TfException(unionPayLoansBaseReturn.getRespMsg());
         }
 
         //银行返回码
         if (Objects.equals("200", unionPayLoansBaseReturn.getRespLwzCode())) {
             IncomingReturn incomingReturn = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), IncomingReturn.class);
             if (Objects.equals(incomingReturn.getApplicationStatus(), "failed")) {
-                throw new TfException(500, getLwzRespData(incomingReturn.getFailureMsgs()));
+                throw new TfException(getLwzRespData(incomingReturn.getFailureMsgs()));
             }
             return incomingReturn;
         } else {
             log.error("银联-银行调用失败{}", responseEntity.getBody().toString());
-            throw new TfException(500, getRespLwzMsgReturnMsg(unionPayLoansBaseReturn.getRespLwzMsg()));
+            throw new TfException(getRespLwzMsgReturnMsg(unionPayLoansBaseReturn.getRespLwzMsg()));
         }
     }
 
@@ -555,12 +524,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         }
         if (!Objects.equals("LWZ99999", unionPayLoansBaseReturn.getRespCode())) {
             log.error("银联调用失败{}", responseEntity.getBody());
-            throw new TfException(500, unionPayLoansBaseReturn.getRespMsg());
+            throw new TfException(unionPayLoansBaseReturn.getRespMsg());
         }
 
         if (!Objects.equals("200", unionPayLoansBaseReturn.getRespLwzCode())) {
             log.error("银联-银行调用失败{}", responseEntity.getBody());
-            throw new TfException(500, getRespLwzMsgReturnMsg(unionPayLoansBaseReturn.getRespLwzMsg()));
+            throw new TfException(getRespLwzMsgReturnMsg(unionPayLoansBaseReturn.getRespLwzMsg()));
         }
     }
 
@@ -596,12 +565,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
      * @param tfLoanUserEntity
      * @return
      */
-    private UnionPayLoansIncomingDTO buildYinLianLoansIncoming(LoanUserEntity tfLoanUserEntity,String smsCode) {
+    private UnionPayLoansIncomingDTO buildYinLianLoansIncoming(LoanUserEntity tfLoanUserEntity, String smsCode) {
         String nonce = UUID.randomUUID().toString().replace("-", "");
         //1 银行卡
         CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
         int settlementType = custBankInfoEntity.getSettlementType();
-        smsCode = handleCode(smsCode,custBankInfoEntity);
+        smsCode = handleCode(smsCode, custBankInfoEntity);
         //2 身份证
         IdCardDTO idCardDTO = buildIdCardDTO(tfLoanUserEntity.getId());
 
@@ -613,7 +582,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
                 .outRequestNo(nonce)
                 .mobileNumber(UnionPaySignUtil.SM2(encodedPub, custBankInfoEntity.getPhone()))
                 .build();
-        if (settlementType == 1){
+        if (settlementType == 1) {
             unionPayLoansIncomingDTO.setSmsCode(smsCode);
         }
 
@@ -647,13 +616,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     private CustBankInfoEntity verifyCustBankInfo(Long loanUserId) {
         CustBankInfoEntity custBankInfoEntity = custBankInfoService.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId));
         if (null == custBankInfoEntity) {
-            throw new TfException(500, "银联信息不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
         }
-        if (StringUtils.isBlank(custBankInfoEntity.getPhone())) {
-            throw new TfException(500, "手机号不能为空");
-        }
-        if (StringUtils.isBlank(custBankInfoEntity.getSmsCode())) {
-            throw new TfException(500, "手机号验证码不能为空");
+        try {
+            ValidatorUtils.validateEntity(custBankInfoEntity, CustBankInfoEntity.class, VerifyBankInfo.class);
+        } catch (Exception ex) {
+            throw new TfException(ex.getMessage());
         }
         return custBankInfoEntity;
     }
@@ -674,7 +642,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         IdCardDTO idCardDTO = new IdCardDTO();
         CustIdcardInfoEntity custIdcardInfoEntity = custIdcardInfoService.getOne(new LambdaQueryWrapper<CustIdcardInfoEntity>().eq(CustIdcardInfoEntity::getLoanUserId, loanUserId));
         if (null == custIdcardInfoEntity) {
-            throw new TfException(500, "身份证信息不存在");
+            throw new TfException(PayExceptionCodeEnum.NO_DATA.getMsg());
         }
         idCardDTO.setCopy(custIdcardInfoEntity.getFrontIdCardUrlMediaId());
         idCardDTO.setNational(custIdcardInfoEntity.getBackIdCardUrlMediaId());
@@ -737,7 +705,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
         } catch (TfException e) {
             log.error("银联-进件-查询失败：param={}", JSON.toJSONString(outRequestNo), e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
         }
 
         return incomingReturn;
@@ -762,7 +730,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             //保存到异常表
         } catch (TfException e) {
             log.error("银联-二级进件-查询失败：param={}", JSON.toJSONString(outRequestNo), e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
         }
 
         return incomingReturn;
@@ -783,7 +751,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         }
         if (!Objects.equals("LWZ99999", unionPayLoansBaseReturn.getRespCode())) {
             log.error("银联调用失败{}", responseEntity.getBody().toString());
-            throw new TfException(500, unionPayLoansBaseReturn.getRespMsg());
+            throw new TfException(unionPayLoansBaseReturn.getRespMsg());
         }
 
         if (Objects.equals("200", unionPayLoansBaseReturn.getRespLwzCode())) {
@@ -794,7 +762,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             return incomingReturn;
         } else {
             log.error("银联-银行调用失败{}", responseEntity.getBody().toString());
-            throw new TfException(500, getRespLwzMsgReturnMsg(unionPayLoansBaseReturn.getRespLwzMsg()));
+            throw new TfException(getRespLwzMsgReturnMsg(unionPayLoansBaseReturn.getRespLwzMsg()));
         }
     }
 
@@ -841,26 +809,23 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             if (StringUtils.isNotBlank(incomingReturn.getMediaId())) {
                 return incomingReturn.getMediaId();
             }
-            throw new TfException(500, "上传图片失败");
+            throw new TfException(PayExceptionCodeEnum.UPLOAD_FILE_ERROR.getMsg());
         } catch (TfException | IOException e) {
             log.error("银联-进件-上传图片失败：param={}", e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
         }
     }
 
     private UnionPayLoansIncomingEditDTO buildEditYinLianLoansIncoming(LoanUserEntity tfLoanUserEntity, String smsCode) {
-
-
-        if (Objects.isNull(tfLoanUserEntity.getCusId())) {
-            throw new TfException(500, "个人用户ID不存在-不能修改");
-        }
-        if (Objects.isNull(tfLoanUserEntity.getOutRequestNo())) {
-            throw new TfException(500, "平台订单号-不能修改");
+        try {
+            ValidatorUtils.validateEntity(tfLoanUserEntity, LoanUserEntity.class, UpdateGroup.class);
+        } catch (Exception e) {
+            throw new TfException(e.getMessage());
         }
         String outRequestNo = UUID.randomUUID().toString().replace("-", "");
         CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
         int settlementType = custBankInfoEntity.getSettlementType();
-        smsCode = handleCode(smsCode,custBankInfoEntity);
+        smsCode = handleCode(smsCode, custBankInfoEntity);
 
         //1 身份证
         IdCardDTO idCardDTO = buildIdCardDTO(tfLoanUserEntity.getId());
@@ -909,7 +874,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     }
 
 
-    private void delSettleAcct(String cusId, String bankCardNo,Integer settlementType,String mchId) {
+    private void delSettleAcct(String cusId, String bankCardNo, Integer settlementType, String mchId) {
         ReqDeleteSettleAcctParams deleteSettleAcctParams = new ReqDeleteSettleAcctParams();
         if (String.valueOf(settlementType).equals(BankTypeEnum.PERSONAL.getCode())) {
             deleteSettleAcctParams.setCusId(cusId);
@@ -923,14 +888,6 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         ResponseEntity<UnionPayLoansBaseReturn> responseEntity = post(unionPayLoansBaseReq);
         UnionPayLoansBaseReturn unionPayLoansBaseReturn = responseEntity.getBody();
         unionPayLoanReqLogService.asyncSaveLog(unionPayLoansBaseReturn, bankCardNo, req, 1L);
-/*
-        log.info("删除账户返回值{}", JSON.toJSONString(unionPayLoansBaseReturn));
-        IncomingReturn incomingReturn = getBaseIncomingReturn(responseEntity, deleteSettleAcctParams, req, 1L);
-        log.info("删除结果{}",incomingReturn);
-        if(incomingReturn.getIsDeleted()==null){
-            return false;
-        }
-        return incomingReturn.getIsDeleted();*/
     }
 
     /**
@@ -1013,7 +970,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         return settleAcctsMxDTO;
     }
 
-    private  ResponseEntity<UnionPayLoansBaseReturn> getUnionPayInfoByUserEntity( Map<String, String> reqParams) {
+    private ResponseEntity<UnionPayLoansBaseReturn> getUnionPayInfoByUserEntity(Map<String, String> reqParams) {
 
         UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ520_SETTLE_ACCTS_QUERY.getCode(), JSON.toJSONString(reqParams));
         //调用银联接口
@@ -1027,11 +984,6 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     public UnionPayLoansSettleAcctDTO querySettleAcctByOutRequestNo(Long loanUserId, String outRequestNo) {
 
         CustBankInfoEntity custBankInfoEntity = custBankInfoService.getByLoanUserId(loanUserId);
-/*        if (Objects.equals(custBankInfoEntity.getVerifyStatus(), "succeeded")) {
-            UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = new UnionPayLoansSettleAcctDTO();
-            unionPayLoansSettleAcctDTO.setVerifyStatus("succeeded");
-            return unionPayLoansSettleAcctDTO;
-        }*/
         //业务参数复制
         Map<String, String> reqParams = new HashMap<>();
         reqParams.put("outRequestNo", outRequestNo);
@@ -1090,14 +1042,14 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             return incomingReturn.getMobileNumber();
         } catch (TfException e) {
             log.error("银联-进件-个人手机号验证失败：param={}", mobileNumber, e);
-            throw new TfException(500, e.getMessage());
+            throw new TfException(e.getMessage());
         }
     }
 
     private void saveRedisSmsCode(String mobileNumber) {
-        String key = RedisConstant.MOBILE_VERIFICATION_CODE +mobileNumber;
+        String key = RedisConstant.MOBILE_VERIFICATION_CODE + mobileNumber;
         String value = "used";
-        redisCache.setCacheObject(key,value,5, TimeUnit.MINUTES);
+        redisCache.setCacheObject(key, value, 5, TimeUnit.MINUTES);
     }
 
     @Override
@@ -1122,7 +1074,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         Long loanUserId = custBankInfo.getLoanUserId();
         LoanUserEntity byId = loanUserService.getById(loanUserId);
         Integer loanUserType = byId.getLoanUserType();
-        if (!"0".equals(loanUserType)) {
+        if (loanUserType != 0) {
             int settlementType = custBankInfo.getSettlementType();
             if (2 == settlementType) {
                 byId.setBankCallStatus(1);
@@ -1133,7 +1085,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         byId.setSettleAcctId(settleAcctId);
         loanUserService.updateById(byId);
         //再删除
-        this.delSettleAcct(loanUerInfo.getCusId(), oldBankCardNo,custBankInfo.getSettlementType(),byId.getMchId());
+        this.delSettleAcct(loanUerInfo.getCusId(), oldBankCardNo, custBankInfo.getSettlementType(), byId.getMchId());
         return unionPayLoansSettleAcctDTO;
     }
 
