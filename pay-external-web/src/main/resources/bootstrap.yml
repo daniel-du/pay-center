@@ -1,5 +1,5 @@
 server:
-  port: 6802
+  port: 7812
   servlet:
     context-path: /tf-pay-external
 spring:
