@@ -216,7 +216,9 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         log.info("银联提现参数:{}", JSON.toJSONString(withdrawalCreateReqDTO));
         Result<WithdrawalCreateRespDTO> withdrawalCreateResp = unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
         WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
+        withdrawalRespDTO.setWithdrawalOrderNo(outOrderNo);
         if (withdrawalCreateResp.getCode() != NumberConstant.ZERO) {
+            log.info("提现异常返回：{}",withdrawalCreateResp);
             return Result.ok(withdrawalRespDTO);
         } else {
             //更新状态
