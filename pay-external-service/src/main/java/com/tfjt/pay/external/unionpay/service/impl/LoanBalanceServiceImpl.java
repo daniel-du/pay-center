@@ -6,6 +6,7 @@ import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.dao.LoanBalanceDao;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanBalanceService;
 import com.tfjt.tfcloud.business.api.TfLoanBalanceRpcService;
 import com.tfjt.pay.external.unionpay.dto.LoanBalanceCreateDto;
@@ -54,7 +55,7 @@ public class LoanBalanceServiceImpl extends BaseServiceImpl<LoanBalanceDao, Loan
         BeanUtil.copyProperties(tfLoanBalanceEntity, tfLoanBalanceCreateDto);
         Long update = loanBalanceRpcService.update(tfLoanBalanceCreateDto);
         if(!b || update == null){
-            throw new TfException(500, "保存贷款信息");
+            throw new TfException(PayExceptionCodeEnum.UPDATE_DATA_ERROR.getMsg());
         }
     }
 }

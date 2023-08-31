@@ -34,6 +34,9 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     REPEAT_OPERATION(9000005,"请勿重复操作"),
     NO_DATA(9000006,"数据不存在"),
     UPLOAD_FILE_ERROR(9000007,"上传文件失败"),
+    SIGN_ERROR(9000008,"验签失败"),
+    SAVE_DATA_ERROR(9001000,"保存数据异常"),
+    UPDATE_DATA_ERROR(9001001,"更新数据异常"),
 
 
     /**
@@ -47,6 +50,10 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     PAYER_NOT_FOUND(9001005,"付款方不存在"),
     PAYER_TOO_MUCH(9001006,"暂不支付多个付款方"),
     PAYEE_NOT_FOUND(9001007,"收款方不存在"),
+    /**
+     * 查询银行编码失败
+     */
+    QUERY_BANK_CODE_FAILED(9001008,"查询银行编码失败"),
 
     /**
      * 银行卡
