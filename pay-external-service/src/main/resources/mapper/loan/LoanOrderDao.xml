@@ -20,11 +20,11 @@
     </resultMap>
     <select id="listNotConfirmOrder" resultType="com.tfjt.pay.external.unionpay.entity.LoanOrderEntity">
         select * from tf_loan_order  o
-            where o.created_at &gt;= #{date}
-            and o.id in (
-                select order_id from tf_loan_order_details where confirm_status = 0
+        where o.create_at &gt;= #{date} and `status`='succeeded'
+          and o.id in (
+            select order_id from tf_loan_order_details where confirm_status = 0
 
-                )
+        )
     </select>
 
 
