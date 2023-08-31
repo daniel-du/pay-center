@@ -82,6 +82,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         LoanCallbackEntity tfLoanCallbackEntity = loanCallbackService.getOne(new LambdaQueryWrapper<LoanCallbackEntity>().eq(LoanCallbackEntity::getEventId, transactionCallBackReqDTO.getEventId()));
         if (tfLoanCallbackEntity != null) {
             log.info("事件回调已添加{}", transactionCallBackReqDTO.getEventId());
+            return "";
         }
         String eventType = transactionCallBackReqDTO.getEventType();
         //进件验证
