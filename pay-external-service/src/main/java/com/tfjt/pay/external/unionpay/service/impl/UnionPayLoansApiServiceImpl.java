@@ -400,7 +400,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
      */
     private UnionPayLoansTwoIncomingEditDTO buildYinLianLoansTwoIncomingEditDTO(LoanUserEntity tfLoanUserEntity, String smsCode) {
         try {
-            ValidatorUtils.validateEntity(tfLoanUserEntity, LoanUserEntity.class, UpdateGroup.class);
+            ValidatorUtils.validateEntity(tfLoanUserEntity, UpdateGroup.class);
         } catch (Exception ex) {
             throw new TfException(ex.getMessage());
         }
@@ -619,7 +619,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
         try {
-            ValidatorUtils.validateEntity(custBankInfoEntity, CustBankInfoEntity.class, VerifyBankInfo.class);
+            ValidatorUtils.validateEntity(custBankInfoEntity, VerifyBankInfo.class);
         } catch (Exception ex) {
             throw new TfException(ex.getMessage());
         }
@@ -818,7 +818,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
     private UnionPayLoansIncomingEditDTO buildEditYinLianLoansIncoming(LoanUserEntity tfLoanUserEntity, String smsCode) {
         try {
-            ValidatorUtils.validateEntity(tfLoanUserEntity, LoanUserEntity.class, UpdateGroup.class);
+            ValidatorUtils.validateEntity(tfLoanUserEntity, UpdateGroup.class);
         } catch (Exception e) {
             throw new TfException(e.getMessage());
         }
