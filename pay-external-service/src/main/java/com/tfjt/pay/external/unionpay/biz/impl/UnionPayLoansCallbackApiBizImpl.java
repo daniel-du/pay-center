@@ -144,7 +144,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     public void confirmOrder(LoanOrderEntity order) {
         log.info("订单确认:{}", JSONObject.toJSONString(order));
         ConsumerPoliciesCheckReqDTO consumerPoliciesCheckReqDTO = new ConsumerPoliciesCheckReqDTO();
-        consumerPoliciesCheckReqDTO.setOutOrderNo(order.getTradeOrderNo());
+
 
         LambdaQueryWrapper<LoanOrderDetailsEntity> detailsQueryWrapper = new LambdaQueryWrapper<>();
         detailsQueryWrapper.eq(LoanOrderDetailsEntity::getOrderId, order.getId())
@@ -167,6 +167,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             extra.put("productInfos", goods);
             consumerPoliciesCheckReqDTO.setExtra(extra);
             consumerPoliciesCheckReqDTO.setGuaranteePaymentId(loanOrderDetailsEntity.getGuaranteePaymentId());
+            consumerPoliciesCheckReqDTO.setOutOrderNo(loanOrderDetailsEntity.getSubBusinessOrderNo());
             try{
                 log.info("订单确认调用银联发送消息>>>>>>>>>>>>>>>{}", JSONObject.toJSONString(consumerPoliciesCheckReqDTO));
                 Result<ConsumerPoliciesCheckRespDTO> consumerPoliciesCheckRespDTOResult = unionPayService.mergeConsumerPoliciesCheck(consumerPoliciesCheckReqDTO);
