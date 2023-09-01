@@ -11,8 +11,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
-import com.tfjt.pay.external.unionpay.dao.LoanOrderDetailsDao;
-import com.tfjt.pay.external.unionpay.dao.PayApplicationCallbackUrlDao;
+import com.tfjt.pay.external.unionpay.dao.*;
+import com.tfjt.pay.external.unionpay.dto.req.DivideNoticeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ShopDivideLogDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanOrderDetailsRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanOrderUnifiedorderResqDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
@@ -22,10 +23,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import com.tfjt.pay.external.unionpay.dao.LoanRequestApplicationRecordDao;
 import com.tfjt.pay.external.unionpay.service.LoanRequestApplicationRecordService;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Slf4j
@@ -43,6 +45,12 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
 
     @Resource
     private PayApplicationCallbackUrlDao payApplicationCallbackUrlDao;
+
+    @Resource
+    private LoanBalanceDivideDetailsDao loanBalanceDivideDetailsDao;
+
+    @Resource
+    private LoanUserDao loanUserDao;
 
 
 
@@ -93,6 +101,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
      * @param id
      * @return
      */
+    @Async
     @Override
     public void noticeWithdrawalNotice(LoanWithdrawalOrderEntity withdrawalOrderEntity, String eventType, Long id) {
         log.info("提现回调");
@@ -102,8 +111,76 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
         sendRequest(withdrawalOrderEntity.getAppId(), JSONObject.toJSONString(params), withdrawalOrderEntity.getWithdrawalOrderNo(), eventType, id);
     }
 
+    @Async
+    @Override
+    public void noticeFmsDivideNotice(LoadBalanceDivideEntity divideEntity, String eventType, Long id) {
+        List<DivideNoticeReqDTO> list = new ArrayList<>();
+        LambdaQueryWrapper<LoanBalanceDivideDetailsEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(LoanBalanceDivideDetailsEntity::getDivideId,divideEntity.getId());
+        List<LoanBalanceDivideDetailsEntity> listDetails = loanBalanceDivideDetailsDao.selectList(queryWrapper);
+        for (LoanBalanceDivideDetailsEntity listDetail : listDetails) {
+            DivideNoticeReqDTO divideNoticeReqDTO = new DivideNoticeReqDTO();
+            divideNoticeReqDTO.setPaySystemId(listDetail.getId());
+            divideNoticeReqDTO.setFinishAt(Objects.isNull(listDetail.getFinishedAt()) ? null : listDetail.getFinishedAt().getTime());
+            divideNoticeReqDTO.setOrderNo(listDetail.getSubBusinessOrderNo());
+            divideNoticeReqDTO.setStatus(listDetail.getStatus());
+            list.add(divideNoticeReqDTO);
+        }
+        sendRequest(divideEntity.getAppId(), JSONObject.toJSONString(list), divideEntity.getTradeOrderNo(), eventType, id);
+    }
 
-    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId) {
+    @Async
+    @Override
+    public void noticeShopDivideNotice(LoadBalanceDivideEntity divideEntity, String eventType, Long id) {
+        LambdaQueryWrapper<LoanBalanceDivideDetailsEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(LoanBalanceDivideDetailsEntity::getDivideId,divideEntity.getId());
+        List<LoanBalanceDivideDetailsEntity> listDetails = loanBalanceDivideDetailsDao.selectList(queryWrapper);
+        List<ShopDivideLogDTO> list = new ArrayList<>(listDetails.size());
+        for (LoanBalanceDivideDetailsEntity listDetail : listDetails) {
+            LoanUserEntity user = loanUserDao.getByBalanceAcctId(listDetail.getRecvBalanceAcctId());
+            ShopDivideLogDTO dto = new ShopDivideLogDTO();
+            dto.setMoney(new BigDecimal(listDetail.getAmount().toString()).divide(new BigDecimal("100"), NumberConstant.TWO, RoundingMode.HALF_UP));
+            dto.setStatus(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(listDetail.getStatus()) ? NumberConstant.ONE : NumberConstant.ZERO);
+            dto.setLogType(user.getType());
+            dto.setShopId(user.getBusId());
+            dto.setType(NumberConstant.THREE);
+            dto.setPayAccountName(divideEntity.getPayBalanceAcctName());
+            dto.setPayBalanceAcctId(divideEntity.getPayBalanceAcctId());
+            dto.setRecvAccountName(listDetail.getRecvBalanceAcctName());
+            dto.setRecvBalanceAcctId(listDetail.getRecvBalanceAcctId());
+            dto.setBusOrderNo(listDetail.getSubBusinessOrderNo());
+            list.add(dto);
+        }
+        sendRequest(shopAppId, JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
+    }
+
+
+    /**
+     * fms系统发送
+     *
+     * @param list 入账信息
+     * @return
+     */
+    @Override
+    public void noticeFmsIncomeNotice(List<LoadBalanceNoticeEntity> list, String eventType, String eventId, Long callbackId) {
+         sendRequest(fmsAppId, JSONObject.toJSONString(list), eventId, eventType, callbackId);
+    }
+
+
+    @Override
+    public void retryNotice(LoanRequestApplicationRecordEntity o) {
+         sendRequest(o.getAppId(), o.getRequestParam(), o.getTradeOrderNo(), o.getTradeType(), o.getCallbackId(), o.getRequestUrl());
+    }
+
+    /**
+     * 发送消息
+     * @param appId appId
+     * @param parameter  参数
+     * @param tradeOrderNo  业务单号
+     * @param eventType  事件类型
+     * @param callbackId  回调id
+     */
+    private void sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId) {
         LambdaQueryWrapper<PayApplicationCallbackUrlEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PayApplicationCallbackUrlEntity::getAppId,appId)
                 .eq(PayApplicationCallbackUrlEntity::getType,eventType);
@@ -112,7 +189,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
         if (Objects.nonNull(payApplicationCallbackUrlEntity)){
             callBackUrl = payApplicationCallbackUrlEntity.getUrl();
         }
-        return sendRequest(appId, parameter, tradeOrderNo, eventType, callbackId, callBackUrl);
+        sendRequest(appId, parameter, tradeOrderNo, eventType, callbackId, callBackUrl);
     }
 
     /**
@@ -124,7 +201,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
      * @param eventType    通知类型
      * @param callbackId   关联银联回调记录表id
      */
-    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId, String callBackUrl) {
+    private void sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId, String callBackUrl) {
 
         LoanRequestApplicationRecordEntity record = builderRecord(appId, parameter, tradeOrderNo, callbackId, callBackUrl, eventType);
         long start = System.currentTimeMillis();
@@ -147,7 +224,6 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
         boolean b = "success".equalsIgnoreCase(result);
         record.setCallbackStatus(b ? NumberConstant.ONE : NumberConstant.ZERO);
         this.asyncSave(record);
-        return b;
     }
 
     /**

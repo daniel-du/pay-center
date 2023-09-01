@@ -126,8 +126,8 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_51.equals(tradeType)) {
             //分账通知
             LoadBalanceDivideEntity divideEntity = loanBalanceDivideService.divideNotice(eventDataDTO);
-            payApplicationCallbackBiz.noticeFmsDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
-            payApplicationCallbackBiz.noticeShopDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
+            loanRequestApplicationRecordService.noticeFmsDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
+            loanRequestApplicationRecordService.noticeShopDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
         }
         return null;
     }
@@ -193,7 +193,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
       List<LoanRequestApplicationRecordEntity> list =   loanRequestApplicationRecordService.listError();
       if(CollectionUtil.isNotEmpty(list)){
           list.forEach(o->{
-              payApplicationCallbackBiz.retryNotice(o);
+              loanRequestApplicationRecordService.retryNotice(o);
           });
       }
 
@@ -233,7 +233,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         log.info(jsonObject.toJSONString());
         UnionPayIncomeDetailsDTO unionPayIncomeDTO = JSONObject.parseObject(eventDataString, UnionPayIncomeDetailsDTO.class);
         List<LoadBalanceNoticeEntity> list = payBalanceNoticeService.saveByEventDate(unionPayIncomeDTO, eventType, eventId, createdAt);
-        payApplicationCallbackBiz.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, eventId, id);
+        loanRequestApplicationRecordService.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, eventId, id);
     }
 
 }
