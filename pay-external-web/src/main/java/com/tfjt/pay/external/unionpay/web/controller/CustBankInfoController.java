@@ -1,10 +1,12 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.CaptchaService;
 import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.tfjt.pay.external.unionpay.utils.DateUtil.timeComparison;
 
@@ -89,6 +92,12 @@ public class CustBankInfoController {
             }
         } catch (Exception ex) {
             return Result.failed(ex.getMessage());
+        }
+        //判断银行卡是否重复
+        long count = custBankInfoService.count(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getBankCardNo,
+                custBankInfo.getBankCardNo()));
+        if (count > 0) {
+            throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD);
         }
         //查询贷款用户类型
         LoanUserEntity loanUerInfo = loanUserService.getById(custBankInfo.getLoanUserId());
