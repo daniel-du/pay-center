@@ -126,21 +126,7 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
         return sendRequest(shopAppId, JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
     }
 
-    /**
-     * 提现回掉通知业务
-     *
-     * @param withdrawalOrderEntity
-     * @param id
-     * @return
-     */
-    @Override
-    public boolean noticeWithdrawalNotice(LoanWithdrawalOrderEntity withdrawalOrderEntity, String eventType, Long id) {
-        log.info("提现回调");
-        Map<String, Object> params = new HashMap<>();
-        params.put("withdrawalOrderNo", withdrawalOrderEntity.getWithdrawalOrderNo());
-        params.put("status", withdrawalOrderEntity.getStatus());
-        return sendRequest(withdrawalOrderEntity.getAppId(), JSONObject.toJSONString(params), withdrawalOrderEntity.getWithdrawalOrderNo(), eventType, id);
-    }
+
 
     @Override
     public boolean retryNotice(LoanRequestApplicationRecordEntity o) {
@@ -148,66 +134,5 @@ public class PayApplicationCallbackBizImpl implements PayApplicationCallbackBiz 
     }
 
 
-    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId) {
-        String callBackUrl = payApplicationCallbackUrlService.getCallBackUrlByTypeAndAppId(eventType, appId);
-        return sendRequest(appId, parameter, tradeOrderNo, eventType, callbackId, callBackUrl);
-    }
 
-    /**
-     * 发送请求并记录请求日志信息
-     *
-     * @param appId        请求的APPid
-     * @param parameter    参数
-     * @param tradeOrderNo 交易单号
-     * @param eventType    通知类型
-     * @param callbackId   关联银联回调记录表id
-     */
-    private boolean sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId, String callBackUrl) {
-
-        LoanRequestApplicationRecordEntity record = builderRecord(appId, parameter, tradeOrderNo, callbackId, callBackUrl, eventType);
-        long start = System.currentTimeMillis();
-        String result = "";
-        try {
-
-            log.info("应用服务发送交易通知>>>>>>>>>>>>>:{},请求参数:{},appId:{}", callBackUrl, parameter, appId);
-            result = HttpUtil.post(callBackUrl, parameter);
-            log.info("接受应用服务发送交易通知<<<<<<<<<<:{}", result);
-            record.setResponseParam(result);
-            record.setResponseCode(HttpStatus.HTTP_OK);
-        } catch (Exception e) {
-            log.error("应用服务发送交易异常<<<<<<<<<<<<<<<:{},请求参数:{},appId:{},e:{}", callBackUrl, parameter, appId, e.getMessage());
-            record.setResponseParam(e.getMessage());
-            record.setResponseCode(HttpStatus.HTTP_INTERNAL_ERROR);
-        }
-        long end = System.currentTimeMillis();
-        record.setResponseTime((int) (end - start));
-        //异步记录请求日志
-        boolean b = "success".equalsIgnoreCase(result);
-        record.setCallbackStatus(b ? NumberConstant.ONE : NumberConstant.ZERO);
-        recordService.asyncSave(record);
-        return b;
-    }
-
-    /**
-     * 构造通知的记录信息
-     *
-     * @param appId        应用APPid
-     * @param parameter    发送参数
-     * @param tradeOrderNo 业务id
-     * @param callbackId   银联通知表id
-     * @param callBackUrl  请求地址
-     * @param eventType    事件类型 同银联回调类型
-     * @return 通知记录信息
-     */
-    private LoanRequestApplicationRecordEntity builderRecord(String appId, String parameter, String tradeOrderNo, Long callbackId, String callBackUrl, String eventType) {
-        LoanRequestApplicationRecordEntity record = new LoanRequestApplicationRecordEntity();
-        record.setAppId(appId);
-        record.setTradeType(eventType);
-        record.setRequestParam(parameter);
-        record.setTradeOrderNo(tradeOrderNo);
-        record.setCreateTime(new Date());
-        record.setCallbackId(callbackId);
-        record.setRequestUrl(callBackUrl);
-        return record;
-    }
 }

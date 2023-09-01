@@ -1,7 +1,9 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanRequestApplicationRecordEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanWithdrawalOrderEntity;
 
 import java.util.List;
 
@@ -25,5 +27,22 @@ public interface LoanRequestApplicationRecordService extends IService<LoanReques
      * @return list
      */
     List<LoanRequestApplicationRecordEntity> listError();
+
+    /**
+     * 回调通知shop服务交易结果
+     *
+     * @param orderEntity     订单信息
+     * @param treadType       回调地址获取type
+     * @param callbackId      银联通知记录表id
+     */
+    void noticeShop(LoanOrderEntity orderEntity, String treadType, Long callbackId);
+
+    /**
+     * 提现业务回调
+     * @param withdrawalOrder
+     * @param tradeType
+     * @param id
+     */
+    void noticeWithdrawalNotice(LoanWithdrawalOrderEntity withdrawalOrder, String tradeType, Long id);
 }
 

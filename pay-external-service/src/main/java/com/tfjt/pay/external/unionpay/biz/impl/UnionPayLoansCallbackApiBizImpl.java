@@ -53,9 +53,6 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     private LoanOrderService loanOrderService;
 
     @Resource
-    private PayApplicationCallbackBiz payApplicationCallbackBiz;
-
-    @Resource
     private LoanOrderDetailsService loanOrderDetailsService;
 
     @Resource
@@ -73,7 +70,6 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
     @Resource
     private LoanRequestApplicationRecordService loanRequestApplicationRecordService;
-
 
     @Lock4j(keys = "#transactionCallBackReqDTO.eventId", expire = 3000, acquireTimeout = 3000)
     @Override
@@ -114,7 +110,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 //订单确认
                 this.confirmOrder(orderEntity);
             }
-            payApplicationCallbackBiz.noticeShop(orderEntity, tradeType, loanCallbackEntity.getId());
+            loanRequestApplicationRecordService.noticeShop(orderEntity, tradeType, loanCallbackEntity.getId());
             return orderEntity.getLoanUserId();
         }
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30.equals(tradeType)) {
@@ -122,7 +118,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             if (withdrawalOrder != null) {
                 withdrawalOrder.setStatus(eventDataDTO.getStatus());
                 withdrawalOrderService.updateById(withdrawalOrder);
-                payApplicationCallbackBiz.noticeWithdrawalNotice(withdrawalOrder, tradeType, loanCallbackEntity.getId());
+                loanRequestApplicationRecordService.noticeWithdrawalNotice(withdrawalOrder, tradeType, loanCallbackEntity.getId());
             }
             return null;
 
@@ -148,6 +144,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
         LambdaQueryWrapper<LoanOrderDetailsEntity> detailsQueryWrapper = new LambdaQueryWrapper<>();
         detailsQueryWrapper.eq(LoanOrderDetailsEntity::getOrderId, order.getId())
+                .gt(LoanOrderDetailsEntity::getAmount,NumberConstant.ZERO)
                 .eq(LoanOrderDetailsEntity::getConfirmedAmount,NumberConstant.ZERO);
         List<LoanOrderDetailsEntity> loanOrderDetailsEntities = this.loanOrderDetailsService.list(detailsQueryWrapper);
         for (LoanOrderDetailsEntity loanOrderDetailsEntity : loanOrderDetailsEntities) {
