@@ -171,7 +171,6 @@ public class UnionPayServiceImpl implements UnionPayService {
     }
 
     @Override
-    @GlobalDubboExceptionCatch
     public Result<UnionPayDivideRespDTO> balanceDivide(UnionPayDivideReqDTO unionPayDivideReqDTO) {
         UnionPayDivideRespDTO unionPayDivideRespDTO = (UnionPayDivideRespDTO)unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ616_ALLOCATIONS.getCode(),
                 JSON.toJSONString(unionPayDivideReqDTO),UnionPayDivideRespDTO.class,unionPayDivideReqDTO.getOutOrderNo());

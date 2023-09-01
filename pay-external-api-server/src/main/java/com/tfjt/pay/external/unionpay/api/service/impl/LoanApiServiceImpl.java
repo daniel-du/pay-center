@@ -1,10 +1,5 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollectionUtil;
-import com.alibaba.fastjson.JSONObject;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
@@ -13,30 +8,14 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
-import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.dao.LoanUserDao;
-import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
-import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.service.*;
-import com.tfjt.tfcommon.core.exception.TfException;
-import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
-import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Lzh
@@ -51,10 +30,6 @@ public class LoanApiServiceImpl  implements LoanApiService {
 
     @Resource
     private LoanUserBizService loanUserBizService;
-
-
-    @Autowired
-    private LoanUserService loanUserService;
 
 
     @Resource
