@@ -12,8 +12,24 @@
         <result property="ceateTime" column="ceate_time"/>
     </resultMap>
     <select id="loadFile">
-        LOAD DATA INFILE #{_parameter} ignore into table tf_loan_unionpay_check_bill_details
-        fields terminated by ',' enclosed by ""
+        LOAD DATA INFILE #{parameter} IGNORE INTO TABLE tf_loan_unionpay_check_bill_details FIELDS TERMINATED BY '`' 	IGNORE 1 LINES
+            SET platform_id = TRIM( TRAILING ',' FROM platform_id ),
+            platform_name = TRIM( TRAILING ',' FROM platform_name ) ,
+            bank_name = TRIM( TRAILING ',' FROM bank_name ) ,
+            bank_org_no = TRIM( TRAILING ',' FROM bank_org_no ) ,
+            bill_date = TRIM( TRAILING ',' FROM bill_date ) ,
+            platform_order_no = TRIM( TRAILING ',' FROM platform_order_no ) ,
+            system_order_no = TRIM( TRAILING ',' FROM system_order_no ) ,
+            tread_type = TRIM( TRAILING ',' FROM tread_type ) ,
+            tread_status = TRIM( TRAILING ',' FROM tread_status ) ,
+            tread_create_time = TRIM( TRAILING ',' FROM tread_create_time ) ,
+            tread_compelete_time = TRIM( TRAILING ',' FROM tread_compelete_time ) ,
+            initiator_name = TRIM( TRAILING ',' FROM initiator_name ) ,
+            initiator_account = TRIM( TRAILING ',' FROM initiator_account ) ,
+            payee_name = TRIM( TRAILING ',' FROM payee_name ) ,
+            payee_account = TRIM( TRAILING ',' FROM payee_account ) ,
+            order_money = TRIM( TRAILING ',' FROM payee_account ) ,
+            platform_fee_money = TRIM( TRAILING ',' FROM platform_fee_money )
     </select>
 
 
