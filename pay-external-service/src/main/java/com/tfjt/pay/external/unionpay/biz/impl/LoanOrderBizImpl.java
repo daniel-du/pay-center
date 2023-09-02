@@ -280,6 +280,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
     @Override
     public Result<MergeConsumerRepDTO> unifiedorder(UnionPayLoanOrderUnifiedorderReqDTO loanOrderUnifiedorderDTO) {
         log.info("下单参数:{}", JSONObject.toJSONString(loanOrderUnifiedorderDTO));
+        ValidatorUtils.validateEntity(loanOrderUnifiedorderDTO);
         //1.判断单号是否存在
         if (this.checkExistBusinessOrderNo(loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId())) {
             log.info("业务单号已存在:{},appId:{}", loanOrderUnifiedorderDTO.getBusinessOrderNo(), loanOrderUnifiedorderDTO.getAppId());

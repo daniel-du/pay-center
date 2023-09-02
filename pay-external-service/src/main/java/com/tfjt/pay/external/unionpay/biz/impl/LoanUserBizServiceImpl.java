@@ -194,26 +194,27 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
 
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
-        try {
-            LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
-            loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
-            loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
-            LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-            // loanBalanceAcctService.get
-            if (Objects.isNull(balanceAcc)) {
-                throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
-            }
-            loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
-            loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getBalanceAcctName());
-            return Result.ok(loanTransferToTfDTO);
-        } catch (TfException e) {
-            log.error("");
-            return Result.failed(e.getMessage());
+        if(StringUtil.isBlank(type) || StringUtil.isBlank(bid)){
+            return Result.failed(PayExceptionCodeEnum.TREAD_PARAMETER_ILLEGAL);
         }
+        LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
+        loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
+        loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
+        LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
+        // loanBalanceAcctService.get
+        if (Objects.isNull(balanceAcc)) {
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+        }
+        loanTransferToTfDTO.setBalanceAcctId(balanceAcc.getBalanceAcctId());
+        loanTransferToTfDTO.setBalanceAcctName(balanceAcc.getBalanceAcctName());
+        return Result.ok(loanTransferToTfDTO);
     }
 
     @Override
     public Result<Map<String, Object>> incomingIsFinish(String type, String bid) {
+        if(StringUtil.isBlank(type) || StringUtil.isBlank(bid)){
+            return Result.failed(PayExceptionCodeEnum.TREAD_PARAMETER_ILLEGAL);
+        }
         Map<String, Object> result = new HashMap<>();
         BigDecimal balance = new BigDecimal("0");
         LoanUserEntity loanUser = this.loanUserService.getOne(new QueryWrapper<LoanUserEntity>()
@@ -244,6 +245,9 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     @Override
     public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
         log.info("listIncomingIsFinish 入参:{}", JSONObject.toJSONString(list));
+        if (CollectionUtil.isEmpty(list)){
+            return Result.failed(PayExceptionCodeEnum.TREAD_PARAMETER_ILLEGAL);
+        }
         try {
             Map<String, List<UnionPayIncomingDTO>> collect = list.stream().collect(Collectors.groupingBy(UnionPayIncomingDTO::getType));
             List<UnionPayIncomingDTO> shops = collect.get(NumberConstant.ONE.toString());
