@@ -6,6 +6,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
+import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -105,4 +106,6 @@ public interface LoanUserBizService {
      * @return  账号信息
      */
     Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type, List<String> busIds);
+
+    LoanUserEntity getById(Long id);
 }

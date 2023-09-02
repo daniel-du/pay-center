@@ -345,6 +345,11 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
         return Result.ok(list);
     }
 
+    @Override
+    public LoanUserEntity getById(Long id) {
+        return loanUserService.getById(id);
+    }
+
 
     private void checkLoanUser(String busId, Integer type) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(busId, type);

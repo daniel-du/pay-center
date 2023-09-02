@@ -35,7 +35,7 @@ public class LoanUserController {
 
     @Resource
     LoanUserService loanUserService;
-    @DubboReference(retries = 1, timeout = 60000, check = false)
+    @DubboReference(retries = 0, timeout = 60000, check = false)
     private TfLoanBalanceRpcService tfLoanBalanceRpcService;
 
     /**
