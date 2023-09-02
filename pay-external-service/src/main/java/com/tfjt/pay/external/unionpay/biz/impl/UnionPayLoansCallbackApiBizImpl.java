@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.tfjt.pay.external.unionpay.biz.PayApplicationCallbackBiz;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
