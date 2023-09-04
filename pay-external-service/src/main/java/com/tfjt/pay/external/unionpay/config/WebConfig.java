@@ -67,17 +67,17 @@ public class WebConfig implements WebMvcConfigurer {
         return new RedisCache();
     }
 
-    /**
-     * 跨域设置
-     * @param registry
-     */
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowCredentials(true)
-                .maxAge(3600)
-                .allowedHeaders("*");
-    }
+//    /**
+//     * 跨域设置
+//     * @param registry
+//     */
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                .allowedOrigins("*")
+//                .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
+//                .allowCredentials(true)
+//                .maxAge(3600)
+//                .allowedHeaders("*");
+//    }
 }
