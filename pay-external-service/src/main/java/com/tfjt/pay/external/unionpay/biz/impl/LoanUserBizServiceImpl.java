@@ -308,12 +308,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
                 return Result.failed(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
             }
             List<BankInfoDTO> bankInfoByBus = custBankInfoService.getBankInfoByBus(loanUser.getId());
-            List<CustBankInfoRespDTO> custBankInfoResp = new ArrayList<>();
-            bankInfoByBus.forEach(bankInfoDTO -> {
-                CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
-                BeanUtil.copyProperties(bankInfoDTO, custBankInfoRespDTO);
-                custBankInfoResp.add(custBankInfoRespDTO);
-            });
+            List<CustBankInfoRespDTO> custBankInfoResp = com.tfjt.tfcommon.core.util.BeanUtils.copyList2Other(CustBankInfoRespDTO.class, bankInfoByBus);
             return Result.ok(custBankInfoResp);
         } catch (TfException ex) {
             return Result.failed(ex.getMessage());
@@ -336,12 +331,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
         if (CollectionUtil.isEmpty(unionPayLoanUserRespDTOS)) {
             return Result.ok(new ArrayList<>());
         }
-        List<BalanceAcctRespDTO> list = new ArrayList<>(unionPayLoanUserRespDTOS.size());
-        for (UnionPayLoanUserRespDTO unionPayLoanUserRespDTO : unionPayLoanUserRespDTOS) {
-            BalanceAcctRespDTO balanceAcctRespDTO = new BalanceAcctRespDTO();
-            BeanUtil.copyProperties(unionPayLoanUserRespDTO, balanceAcctRespDTO);
-            list.add(balanceAcctRespDTO);
-        }
+        List<BalanceAcctRespDTO> list = com.tfjt.tfcommon.core.util.BeanUtils.copyList2Other(BalanceAcctRespDTO.class, unionPayLoanUserRespDTOS);
         return Result.ok(list);
     }
 

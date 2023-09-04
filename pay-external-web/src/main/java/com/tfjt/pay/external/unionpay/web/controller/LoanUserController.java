@@ -3,6 +3,9 @@ package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
+import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
@@ -17,6 +20,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Map;
 
 import static com.tfjt.pay.external.unionpay.utils.DateUtil.timeComparison;
@@ -33,6 +37,9 @@ import static com.tfjt.pay.external.unionpay.utils.DateUtil.timeComparison;
 @RequestMapping("loanuser")
 public class LoanUserController {
 
+
+    @Resource
+    private LoanUserBizService loanUserBizService;
     @Resource
     LoanUserService loanUserService;
     @DubboReference(retries = 0, timeout = 60000, check = false)
@@ -130,7 +137,14 @@ public class LoanUserController {
             if (0 != result.getCode()) {
                 return Result.failed(result.getCode(), result.getMsg());
             }
-            return Result.ok(result.getData());
+            TfLoanBalanceCreateDto data = result.getData();
+            Result<Map<String, Object>> mapResult = loanUserBizService.incomingIsFinish(String.valueOf(data.getType()), busId);
+
+            if(mapResult.getCode() == NumberConstant.ZERO){
+                data.setMoney(new BigDecimal(mapResult.getData().get("settledAmount").toString()).multiply(new BigDecimal("100")).intValue());
+            }
+
+            return Result.ok(data);
             //效验数据
         } catch (TfException e) {
             return Result.failed(e.getCode(), e.getMessage());
