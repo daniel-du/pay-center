@@ -59,6 +59,7 @@ public interface LoanApiService {
 
     /**
      * 业务id获取电子账户信息
+     * @param type 1 商家 2 经销商
      * @param busIds 业务ids
      * @return
      */
