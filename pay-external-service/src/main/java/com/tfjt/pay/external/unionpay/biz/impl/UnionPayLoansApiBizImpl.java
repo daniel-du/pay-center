@@ -1,6 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
-import com.tfjt.pay.external.unionpay.biz.UnionPayLoansApiBiz;
+import com.tfjt.pay.external.unionpay.biz.UnionPayLoansApiBizService;
 import com.tfjt.pay.external.unionpay.dto.IncomingReturn;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
 import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
@@ -10,7 +10,6 @@ import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.UnionPayLoansApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import sun.java2d.cmm.CMSManager;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -21,7 +20,7 @@ import java.io.File;
  */
 @Service
 @Slf4j
-public class UnionPayLoansApiBizImpl implements UnionPayLoansApiBiz {
+public class UnionPayLoansApiBizImpl implements UnionPayLoansApiBizService {
     @Resource
     private UnionPayLoansApiService unionPayLoansApiService;
     @Override
