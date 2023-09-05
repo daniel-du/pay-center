@@ -1,6 +1,5 @@
 package com.tfjt.pay.external.unionpay.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,7 +10,6 @@ import java.io.Serializable;
 @Data
 public class UnionPayLoansImagesDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    @JsonIgnore
     private String file;//	图片;
     private UnionPayLoansMetaDTO meta;//	图片;
 

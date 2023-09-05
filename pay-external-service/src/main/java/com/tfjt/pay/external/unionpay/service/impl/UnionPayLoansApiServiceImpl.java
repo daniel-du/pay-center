@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
@@ -800,12 +801,14 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             UnionPayLoansImagesDTO unionPayLoansIncomingDTO = new UnionPayLoansImagesDTO();
             unionPayLoansIncomingDTO.setFile(Base64.encodeBase64String(Files.toByteArray(file)));
             unionPayLoansIncomingDTO.setMeta(metaDTO);
-            log.info("图片上传入参{}", JSON.toJSONString(unionPayLoansIncomingDTO));
+            SimplePropertyPreFilter filter = new SimplePropertyPreFilter();
+            filter.getExcludes().add("file");
+            log.info("图片上传入参{}", JSON.toJSONString(unionPayLoansIncomingDTO,filter));
 
             UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ526_IMAGES.getCode(), JSON.toJSONString(unionPayLoansIncomingDTO));
 
             ResponseEntity<UnionPayLoansBaseReturn> responseEntity = post(unionPayLoansBaseReq);
-            log.info("图片上传出差{}", responseEntity.getBody().toString());
+            log.info("图片上传出差{}", responseEntity.getBody());
             IncomingReturn incomingReturn = getBaseIncomingReturn(responseEntity, file.getName(), null, null);
             if (StringUtils.isNotBlank(incomingReturn.getMediaId())) {
                 return incomingReturn.getMediaId();
