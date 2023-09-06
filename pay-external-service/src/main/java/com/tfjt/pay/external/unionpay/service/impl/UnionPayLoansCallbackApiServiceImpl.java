@@ -49,6 +49,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
     /**
      * 打款验证通知 settleAcctId 进件新增之后 修改不变
+     *
      * @param eventData
      * @param unionPayLoansBaseCallBackDTO
      * @return
@@ -57,12 +58,9 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         log.info("打款验证通知-平台号{},账号ID{}", outRequestNo, settleAcctId);
         log.info("打款验证通知-回调参数{}", JSONObject.toJSONString(eventData));
         LoanUserEntity tfLoanUserEntity = tfLoanUserService.getOne(new LambdaQueryWrapper<LoanUserEntity>().eq(LoanUserEntity::getOutRequestNo, outRequestNo));
-        if(tfLoanUserEntity != null && StringUtils.isNotBlank(settleAcctId)){
-            if(StringUtils.isBlank(tfLoanUserEntity.getSettleAcctId())){
-                tfLoanUserEntity.setSettleAcctId(settleAcctId);
-                tfLoanUserService.updateById(tfLoanUserEntity);
-            }
-
+        if (tfLoanUserEntity != null && StringUtils.isNotBlank(settleAcctId)) {
+            tfLoanUserEntity.setSettleAcctId(settleAcctId);
+            tfLoanUserService.updateById(tfLoanUserEntity);
         }
         //修改银行是否打款状态1是
 //        updateBankCallStatus(tfLoanUserEntity);
@@ -73,9 +71,9 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateBankCallStatus(LoanUserEntity tfLoanUserEntity ) {
+    public void updateBankCallStatus(LoanUserEntity tfLoanUserEntity) {
         Integer loanUserType = tfLoanUserEntity.getLoanUserType();
-        if (loanUserType!=0) {
+        if (loanUserType != 0) {
             tfLoanUserEntity.setBankCallStatus(1);
         }
         tfLoanUserService.updateById(tfLoanUserEntity);
@@ -89,27 +87,27 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
         Long id = null;
         //1二级进件回调
-        if(Objects.equals("mch_application_finished", unionPayLoansBaseCallBackDTO.getEventType())){
-            TwoIncomingEventDataDTO twoIncomingEventDataDTO  = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), TwoIncomingEventDataDTO.class);
+        if (Objects.equals("mch_application_finished", unionPayLoansBaseCallBackDTO.getEventType())) {
+            TwoIncomingEventDataDTO twoIncomingEventDataDTO = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), TwoIncomingEventDataDTO.class);
             id = twoIncomingCallBack(twoIncomingEventDataDTO);
         }
         //2打款验证
-        if(Objects.equals("settle_acct_pay_amount_validation", unionPayLoansBaseCallBackDTO.getEventType())){
-            SettleAcctsEventDataDTO eventDataDTO  = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), SettleAcctsEventDataDTO.class);
+        if (Objects.equals("settle_acct_pay_amount_validation", unionPayLoansBaseCallBackDTO.getEventType())) {
+            SettleAcctsEventDataDTO eventDataDTO = JSON.parseObject(JSONObject.toJSONString(unionPayLoansBaseCallBackDTO.getEventData()), SettleAcctsEventDataDTO.class);
             id = settleAcctsValidateCallBack(eventDataDTO.getAcctValidationParam(), eventDataDTO.getSettleAcctId(), eventDataDTO.getOutRequestNo());
         }
         return id;
     }
 
-    public Long twoIncomingCallBack(TwoIncomingEventDataDTO twoIncomingEventDataDTO ){
+    public Long twoIncomingCallBack(TwoIncomingEventDataDTO twoIncomingEventDataDTO) {
         log.info("二级商户进件回调结果通知-回调参数{}", JSONObject.toJSONString(twoIncomingEventDataDTO));
         LoanUserEntity tfLoanUserEntity = verifyIncomingCallBack(twoIncomingEventDataDTO);
         //修改货款商户
         updatTfLoanUserEntity(twoIncomingEventDataDTO, tfLoanUserEntity);
 
-        if(Objects.equals("succeeded",twoIncomingEventDataDTO.getApplicationStatus())){
+        if (Objects.equals("succeeded", twoIncomingEventDataDTO.getApplicationStatus())) {
             //添加电子账单
-            addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(),  twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
+            addTfLoanBalanceAcct(twoIncomingEventDataDTO.getRelAcctNo(), twoIncomingEventDataDTO.getBalanceAcctId(), tfLoanUserEntity.getId());
         }
 
         //同步业务用户表
@@ -120,24 +118,26 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     void saveBusData(LoanUserEntity tfLoanUserEntity) {
-        TfLoanUserEntityDTO tfLoanUserEntityDTO =new TfLoanUserEntityDTO();
+        TfLoanUserEntityDTO tfLoanUserEntityDTO = new TfLoanUserEntityDTO();
         BeanUtil.copyProperties(tfLoanUserEntity, tfLoanUserEntityDTO);
         List<TfLoanUserEntityDTO> tfLoanUserEntityDTOList = new ArrayList<>();
         tfLoanUserEntityDTOList.add(tfLoanUserEntityDTO);
         tfLoanUserRpcService.updateBatch(tfLoanUserEntityDTOList);
     }
+
     /**
      * 验证参数
+     *
      * @param twoIncomingEventDataDTO
      * @return
      */
     private LoanUserEntity verifyIncomingCallBack(TwoIncomingEventDataDTO twoIncomingEventDataDTO) {
-        if(twoIncomingEventDataDTO== null || Objects.isNull(twoIncomingEventDataDTO.getMchApplicationId())){
+        if (twoIncomingEventDataDTO == null || Objects.isNull(twoIncomingEventDataDTO.getMchApplicationId())) {
             throw new TfException(ExceptionCodeEnum.NOT_NULL.getCode(), "系统订单号不能为空");
         }
 
         LoanUserEntity tfLoanUserEntity = tfLoanUserService.getOne(new LambdaQueryWrapper<LoanUserEntity>().eq(LoanUserEntity::getMchApplicationId, twoIncomingEventDataDTO.getMchApplicationId()));
-        if(null == tfLoanUserEntity){
+        if (null == tfLoanUserEntity) {
             throw new TfException(ExceptionCodeEnum.NOT_NULL.getCode(), "贷款-用户不存在");
         }
         return tfLoanUserEntity;
@@ -146,7 +146,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     private void addTfLoanBalanceAcct(String relAcctNo, String balanceAcctId, Long loanUserId) {
 
         LoanBalanceAcctEntity one = tfLoanBalanceAcctService.getOne(new LambdaQueryWrapper<LoanBalanceAcctEntity>().eq(LoanBalanceAcctEntity::getLoanUserId, loanUserId));
-        if(one == null){
+        if (one == null) {
             LoanBalanceAcctEntity tfLoanBalanceAcctEntity = new LoanBalanceAcctEntity();
             tfLoanBalanceAcctEntity.setLoanUserId(Integer.valueOf(String.valueOf(loanUserId)));
             if (StringUtils.isNotBlank(relAcctNo)) {
@@ -156,7 +156,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
                 tfLoanBalanceAcctEntity.setBalanceAcctId(balanceAcctId);
             }
             tfLoanBalanceAcctService.save(tfLoanBalanceAcctEntity);
-        }else {
+        } else {
             if (StringUtils.isNotBlank(relAcctNo)) {
                 one.setRelAcctNo(relAcctNo);
             }
@@ -169,6 +169,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
 
     /**
      * 修改用户信息
+     *
      * @param twoIncomingEventDataDTO
      */
     private void updatTfLoanUserEntity(TwoIncomingEventDataDTO twoIncomingEventDataDTO, LoanUserEntity tfLoanUserEntity) {
@@ -177,29 +178,29 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
             tfLoanUserEntity.setOutRequestNo(twoIncomingEventDataDTO.getOutRequestNo());
         }
 
-        if(!Objects.isNull(twoIncomingEventDataDTO.getAuditedAt())){
+        if (!Objects.isNull(twoIncomingEventDataDTO.getAuditedAt())) {
             tfLoanUserEntity.setAuditedAt(twoIncomingEventDataDTO.getAuditedAt());
         }
-        if(Objects.equals("succeeded",twoIncomingEventDataDTO.getApplicationStatus() )){
-            if(!Objects.isNull(twoIncomingEventDataDTO.getSucceededAt())){
+        if (Objects.equals("succeeded", twoIncomingEventDataDTO.getApplicationStatus())) {
+            if (!Objects.isNull(twoIncomingEventDataDTO.getSucceededAt())) {
                 tfLoanUserEntity.setSucceededAt(twoIncomingEventDataDTO.getSucceededAt());
             }
-            if(StringUtils.isNotBlank(twoIncomingEventDataDTO.getMchId())){
+            if (StringUtils.isNotBlank(twoIncomingEventDataDTO.getMchId())) {
                 tfLoanUserEntity.setMchId(twoIncomingEventDataDTO.getMchId());
             }
         }
 
-        if(Objects.equals("failed",twoIncomingEventDataDTO.getApplicationStatus() )){
-            if(!Objects.isNull(twoIncomingEventDataDTO.getFailedAt())){
+        if (Objects.equals("failed", twoIncomingEventDataDTO.getApplicationStatus())) {
+            if (!Objects.isNull(twoIncomingEventDataDTO.getFailedAt())) {
                 tfLoanUserEntity.setFailedAt(twoIncomingEventDataDTO.getFailedAt());
             }
-            if(twoIncomingEventDataDTO.getFailureMsgs()!=null && twoIncomingEventDataDTO.getFailureMsgs().size()>0){
+            if (twoIncomingEventDataDTO.getFailureMsgs() != null && twoIncomingEventDataDTO.getFailureMsgs().size() > 0) {
                 String param = getParam(twoIncomingEventDataDTO.getFailureMsgs());
                 String reason = getReason(twoIncomingEventDataDTO.getFailureMsgs());
-                if(StringUtils.isNotBlank(param)){
+                if (StringUtils.isNotBlank(param)) {
                     tfLoanUserEntity.setFailureMsgsParam(param);
                 }
-                if(StringUtils.isNotBlank(reason)){
+                if (StringUtils.isNotBlank(reason)) {
                     tfLoanUserEntity.setFailureMsgsReason(reason);
                 }
             }
@@ -211,7 +212,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     private String getParam(List<LwzRespReturn> lwzRespReturnList) {
         String msg = "";
         String names = lwzRespReturnList.stream().map(LwzRespReturn::getReason).collect(Collectors.joining(";"));
-        if(StringUtils.isNotBlank(names)){
+        if (StringUtils.isNotBlank(names)) {
             return names;
         }
         return msg;
@@ -220,11 +221,11 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     private String getReason(List<LwzRespReturn> lwzRespReturnList) {
         String msg = "";
         String names = lwzRespReturnList.stream().map(LwzRespReturn::getReason).collect(Collectors.joining(";"));
-        if(StringUtils.isNotBlank(names)){
+        if (StringUtils.isNotBlank(names)) {
             return names;
         }
         return msg;
     }
 
-    }
+}
 
