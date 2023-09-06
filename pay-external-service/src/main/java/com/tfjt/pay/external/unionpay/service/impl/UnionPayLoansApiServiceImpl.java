@@ -1092,15 +1092,13 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         //先绑定
         Long loanUserId = custBankInfo.getLoanUserId();
         LoanUserEntity byId = loanUserService.getById(loanUserId);
-        Integer loanUserType = byId.getLoanUserType();
-        if (loanUserType != 0) {
-            int settlementType = custBankInfo.getSettlementType();
-            if (2 == settlementType) {
-                byId.setBankCallStatus(1);
-            }
-        }
+
         UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = bindAddSettleAcct(custBankInfo);
         String settleAcctId = unionPayLoansSettleAcctDTO.getSettleAcctId();
+        String verifyStatus = unionPayLoansSettleAcctDTO.getVerifyStatus();
+        if ("PROCESSING".equals(verifyStatus.toUpperCase())) {
+            byId.setBankCallStatus(1);
+        }
         byId.setSettleAcctId(settleAcctId);
         loanUserService.updateById(byId);
         //再删除
