@@ -65,6 +65,7 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     BIND_BANK_CARD_FAILED(9002004,"绑定失败"),
     UNBIND_BANK_CARD_FAILED(9002005,"解绑失败"),
     NOT_NULL_MERCHANT(9002006,"商户简称不能为空"),
+    NOT_NULL_MERCHANT_MSG(9002007,"绑定银行账户信息失败"),
 
     /**
      * 银联交易

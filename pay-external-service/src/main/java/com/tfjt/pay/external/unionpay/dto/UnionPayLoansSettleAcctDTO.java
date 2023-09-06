@@ -34,6 +34,8 @@ public class UnionPayLoansSettleAcctDTO implements Serializable {
 
     private String settleAcctId;
 
+    private String acctValidationFailureMsg;
+
     private AcctValidationDTO acctValidation;//账户验证信息
 
 }

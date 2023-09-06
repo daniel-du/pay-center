@@ -16,6 +16,7 @@ import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.UnionPayLoanBussCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.MessageDigestUtils;
+import com.tfjt.pay.external.unionpay.utils.StringUtil;
 import com.tfjt.pay.external.unionpay.utils.UnionPaySignUtil;
 import com.tfjt.pay.external.unionpay.validator.group.VerifyBankInfo;
 import com.tfjt.tfcommon.core.cache.RedisCache;
@@ -378,13 +379,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Override
     public String getSettleAcctId(Long loanUserId) {
         LoanUserEntity tfLoanUserEntity = loanUserService.getById(loanUserId);
-        if (StringUtils.isNotBlank(tfLoanUserEntity.getSettleAcctId())) {
-            return tfLoanUserEntity.getSettleAcctId();
-        }
         if (StringUtils.isNotBlank(tfLoanUserEntity.getOutRequestNo())) {
             IncomingReturn incomingReturn = getTwoIncomingInfo(tfLoanUserEntity.getOutRequestNo());
-            tfLoanUserEntity.setSettleAcctId(incomingReturn.getSettleAcctId());
-            loanUserService.updateById(tfLoanUserEntity);
+            if (!StringUtils.isBlank(incomingReturn.getSettleAcctId())) {
+                tfLoanUserEntity.setSettleAcctId(incomingReturn.getSettleAcctId());
+                loanUserService.updateById(tfLoanUserEntity);
+            }
             return incomingReturn.getSettleAcctId();
         } else {
             return "";
@@ -872,9 +872,24 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         UnionPayLoansSettleAcctDTO unionPayLoansSettleAcct = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData().toString(), UnionPayLoansSettleAcctDTO.class);
         //异常校验
         getBaseIncomingReturnStr(responseEntity, null, null, null);
+        //二次异常校验
+        getBaseIncomingReturnStrTwice(unionPayLoansSettleAcct);
 
         return unionPayLoansSettleAcct;
 
+    }
+
+    //针对新增绑定账户失败进行二次异常校验
+    private void getBaseIncomingReturnStrTwice(UnionPayLoansSettleAcctDTO unionPayLoansSettleAcct ) {
+        String verifyStatus = unionPayLoansSettleAcct.getVerifyStatus();
+        if (StringUtils.isNotBlank(verifyStatus) && "failed".equals(verifyStatus)) {
+            log.error("绑定银行卡信息失败{}", unionPayLoansSettleAcct.toString());
+            String acctValidationFailureMsg = unionPayLoansSettleAcct.getAcctValidationFailureMsg();
+            if (StringUtils.isBlank(acctValidationFailureMsg)) {
+                acctValidationFailureMsg = PayExceptionCodeEnum.BIND_BANK_CARD_FAILED.getMsg();
+            }
+            throw new TfException(acctValidationFailureMsg);
+        }
     }
 
 
