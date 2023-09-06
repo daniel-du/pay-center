@@ -85,7 +85,7 @@ public class UnionPayLoansApiBizImpl implements UnionPayLoansApiBizService {
 
     @Override
     public IncomingReturn twoIncomingEdit(LoanUserEntity tfLoanUserEntity, String smsCode) {
-        return unionPayLoansApiService.twoIncoming(tfLoanUserEntity,smsCode);
+        return unionPayLoansApiService.twoIncomingEdit(tfLoanUserEntity,smsCode);
     }
 
     @Override
