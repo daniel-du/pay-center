@@ -19,11 +19,11 @@ public class BalanceDivideReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 分账系统标识  fms
-     */
     @NotBlank(message = "分账业务系统标识不能为空")
-    private String appId;
+    private String fmsAppId;
+
+    @NotBlank(message = "业务系统标识不能为空")
+    private String shopAppId;
     /**
      * 业务系统唯一标识
      */

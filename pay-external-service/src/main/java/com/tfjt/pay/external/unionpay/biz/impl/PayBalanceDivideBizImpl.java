@@ -84,9 +84,9 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
         payBalanceDivideEntity.setPayBalanceAcctId(accountConfig.getBalanceAcctId());
         payBalanceDivideEntity.setTradeOrderNo(tradeOrderNo);
         payBalanceDivideEntity.setBusinessOrderNo(balanceDivideReqDTO.getBusinessOrderNo());
-        payBalanceDivideEntity.setAppId(balanceDivideReqDTO.getAppId());
+        payBalanceDivideEntity.setShopAppId(balanceDivideReqDTO.getShopAppId());
+        payBalanceDivideEntity.setFmsAppId(balanceDivideReqDTO.getFmsAppId());
         payBalanceDivideEntity.setCreateAt(date);
-        payBalanceDivideEntity.setAppId(balanceDivideReqDTO.getAppId());
         payBalanceDivideEntity.setPayBalanceAcctName(accountConfig.getBalanceAcctName());
         if (!payBalanceDivideService.save(payBalanceDivideEntity)) {
             log.error("保存分账主信息失败:{}", JSONObject.toJSONString(payBalanceDivideEntity));
@@ -125,7 +125,7 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
     @Override
     public void updateByUnionPayDivideReqDTO(UnionPayDivideRespDTO unionPayDivideRespDTO, String appId) {
         LambdaQueryWrapper<LoadBalanceDivideEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(LoadBalanceDivideEntity::getAppId,appId)
+        wrapper.eq(LoadBalanceDivideEntity::getFmsAppId,appId)
                 .eq(LoadBalanceDivideEntity::getTradeOrderNo,unionPayDivideRespDTO.getOutOrderNo());
         LoadBalanceDivideEntity one = this.payBalanceDivideService.getOne(wrapper);
         LoadBalanceDivideEntity update = new LoadBalanceDivideEntity();
@@ -179,7 +179,7 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
             log.error("调用银联分账接口失败");
             return Result.failed(result.getMsg());
         }
-        this.updateByUnionPayDivideReqDTO(result.getData(), balanceDivideReq.getAppId());
+        this.updateByUnionPayDivideReqDTO(result.getData(), balanceDivideReq.getFmsAppId());
         //6.解析返回数据响应给业务系统
         return Result.ok(parseUnionPayDivideReqDTOToMap(result.getData()));
     }
