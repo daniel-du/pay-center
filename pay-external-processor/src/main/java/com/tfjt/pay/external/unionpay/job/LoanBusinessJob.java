@@ -40,7 +40,9 @@ public class LoanBusinessJob {
     public void downloadCheckBill(){
         DateTime yesterday = DateUtil.yesterday();
         log.info("开始执行:{}下载账单下载任务........",yesterday);
+        XxlJobHelper.log("开始执行:{}下载账单下载任务........",yesterday);
         loanUnionPayCheckBillBiz.downloadCheckBill(yesterday);
+        XxlJobHelper.log("结束执行:{}下载账单下载任务........",yesterday);
         log.info("结束执行:{}下载账单下载任务........",yesterday);
     }
     /**
@@ -49,7 +51,9 @@ public class LoanBusinessJob {
     @XxlJob("confirmOrder")
     public void confirmOrder(){
         log.info("开始执行订单确认任务........");
+        XxlJobHelper.log("开始执行订单确认任务.......");
         unionPayLoansCallbackApiBiz.confirmOrder();
+        XxlJobHelper.log("结束执行订单确认任务.......");
         log.info("结束执行订单确认任务........");
     }
     /**
@@ -58,7 +62,9 @@ public class LoanBusinessJob {
     @XxlJob("applicationCallback")
     public void applicationCallback(){
         log.info("开始执行通知失败的任务.......");
+        XxlJobHelper.log("开始执行通知失败的任务.......");
         unionPayLoansCallbackApiBiz.applicationCallback();
+        XxlJobHelper.log("结束执行通知失败的任务.......");
         log.info("结束执行通知失败的任务........");
     }
 
