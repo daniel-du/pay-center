@@ -80,8 +80,6 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     private final static String WITHDRAWAL_IDEMPOTENT_KEY = "idempotent:withdrawal";
 
 
-
-
     /**
      * 解绑银行卡
      *
@@ -93,7 +91,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public void unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
-        if(loanUser == null){
+        if (loanUser == null) {
             throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
         log.info("解绑银行卡参数：{}", bankInfoReqDTO);
@@ -138,7 +136,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
-        if(loanUser == null){
+        if (loanUser == null) {
             throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
         log.info("绑定银行卡参数：{}", bankInfoReqDTO);
@@ -165,7 +163,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO){
+    public Result<WithdrawalRespDTO> withdrawalCreation(WithdrawalReqDTO withdrawalReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(withdrawalReqDTO.getBusId(), withdrawalReqDTO.getType());
         if (loanUser == null) {
             WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
@@ -214,17 +212,19 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         log.info("银联提现参数插入业务表:{}", JSON.toJSONString(loanWithdrawalOrderEntity));
         withdrawalOrderService.save(loanWithdrawalOrderEntity);
         log.info("银联提现参数:{}", JSON.toJSONString(withdrawalCreateReqDTO));
-        Result<WithdrawalCreateRespDTO> withdrawalCreateResp = unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
-        WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
-        withdrawalRespDTO.setWithdrawalOrderNo(outOrderNo);
-        if (withdrawalCreateResp.getCode() != NumberConstant.ZERO) {
-            log.info("提现异常返回：{}",withdrawalCreateResp);
-            return Result.ok(withdrawalRespDTO);
-        } else {
+        Result<WithdrawalCreateRespDTO> withdrawalCreateResp = null;
+        try {
+            withdrawalCreateResp = unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
+            WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
+            withdrawalRespDTO.setWithdrawalOrderNo(outOrderNo);
             //更新状态
             loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
             return Result.ok(withdrawalRespDTO);
+        } catch (TfException e) {
+            log.info("提现失败,错误码:{},错误信息:{}", e.getCode(), e.getMessage());
+            return Result.failed(e.getCode(), e.getMessage());
         }
+
     }
 }
