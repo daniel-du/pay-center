@@ -296,6 +296,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         LoanOrderBiz bean = SpringContextUtils.getBean(this.getClass());
         //3.调用银联接口
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = bean.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO, notifyUrl);
+        log.info("贷款支付参数{}", JSONObject.toJSONString(consumerPoliciesReqDTO));
         Result<ConsumerPoliciesRespDTO> result = unionPayService.mergeConsumerPolicies(consumerPoliciesReqDTO);
         if (result.getCode() == ExceptionCodeEnum.FAIL.getCode()) {
             log.error("调用银联接口失败:{}", result.getMsg());
