@@ -18,6 +18,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.tfcommon.dto.response.Result;
+import com.xxl.job.core.context.XxlJobHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -183,6 +184,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     public void confirmOrder() {
         List<LoanOrderEntity> list = this.loanOrderService.listNotConfirmOrder();
         for (LoanOrderEntity orderEntity : list) {
+            XxlJobHelper.log("未确认的订单:",JSONObject.toJSONString(orderEntity));
             confirmOrder(orderEntity);
         }
     }
@@ -191,7 +193,11 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     public void applicationCallback() {
       List<LoanRequestApplicationRecordEntity> list =   loanRequestApplicationRecordService.listError();
       if(CollectionUtil.isNotEmpty(list)){
+          XxlJobHelper.log("通知失败{}调",list.size());
+      }
+      if(CollectionUtil.isNotEmpty(list)){
           list.forEach(o->{
+              XxlJobHelper.log("重试回掉：{}x",o);
               loanRequestApplicationRecordService.retryNotice(o);
           });
       }
