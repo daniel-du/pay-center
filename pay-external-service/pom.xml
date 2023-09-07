@@ -14,6 +14,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dysmsapi20170525.version>2.0.6</dysmsapi20170525.version>
+        <xxl-job>2.3.0</xxl-job>
     </properties>
     <dependencies>
         <dependency>
@@ -234,6 +235,12 @@
                     <artifactId>tf-monitor-base</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>${xxl-job}</version>
         </dependency>
     </dependencies>
 </project>
