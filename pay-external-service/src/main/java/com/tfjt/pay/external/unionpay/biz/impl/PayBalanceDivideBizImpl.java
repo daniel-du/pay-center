@@ -86,6 +86,7 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
         payBalanceDivideEntity.setBusinessOrderNo(balanceDivideReqDTO.getBusinessOrderNo());
         payBalanceDivideEntity.setAppId(balanceDivideReqDTO.getAppId());
         payBalanceDivideEntity.setCreateAt(date);
+        payBalanceDivideEntity.setAppId(balanceDivideReqDTO.getAppId());
         payBalanceDivideEntity.setPayBalanceAcctName(accountConfig.getBalanceAcctName());
         if (!payBalanceDivideService.save(payBalanceDivideEntity)) {
             log.error("保存分账主信息失败:{}", JSONObject.toJSONString(payBalanceDivideEntity));

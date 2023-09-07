@@ -814,8 +814,8 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
                 return incomingReturn.getMediaId();
             }
             throw new TfException(PayExceptionCodeEnum.UPLOAD_FILE_ERROR);
-        } catch (TfException | IOException e) {
-            log.error("银联-进件-上传图片失败：param={}", e);
+        } catch (Exception e) {
+            log.error("", e);
             throw new TfException(e.getMessage());
         }
     }

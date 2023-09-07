@@ -126,7 +126,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
             divideNoticeReqDTO.setStatus(listDetail.getStatus());
             list.add(divideNoticeReqDTO);
         }
-        sendRequest(divideEntity.getAppId(), JSONObject.toJSONString(list), divideEntity.getTradeOrderNo(), eventType, id);
+        sendRequest(divideEntity.getFmsAppId(), JSONObject.toJSONString(list), divideEntity.getTradeOrderNo(), eventType, id);
     }
 
     @Async
@@ -151,7 +151,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
             dto.setBusOrderNo(listDetail.getSubBusinessOrderNo());
             list.add(dto);
         }
-        sendRequest(shopAppId, JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
+        sendRequest(divideEntity.getShopAppId(), JSONObject.toJSONString(list), divideEntity.getBusinessOrderNo(), eventType, id);
     }
 
 
@@ -181,6 +181,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
      * @param callbackId  回调id
      */
     private void sendRequest(String appId, String parameter, String tradeOrderNo, String eventType, Long callbackId) {
+        log.info("系统发送参数：appId={},parameter={},tradeOrderNo={},eventType={},callbackId={}", appId, parameter, tradeOrderNo, eventType, callbackId);
         LambdaQueryWrapper<PayApplicationCallbackUrlEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PayApplicationCallbackUrlEntity::getAppId,appId)
                 .eq(PayApplicationCallbackUrlEntity::getType,eventType);

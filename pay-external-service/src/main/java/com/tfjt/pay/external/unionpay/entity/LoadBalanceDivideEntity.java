@@ -10,7 +10,7 @@ import lombok.Data;
 
 /**
  * 分账记录表
- * 
+ *
  * @author songx
  * @email 598482054@163.com
  * @date 2023-08-14 16:05:56
@@ -40,7 +40,7 @@ public class LoadBalanceDivideEntity implements Serializable {
 	 */
 	private String remark;
 	/**
-	 * 
+	 *
 	 */
 	private String metadata;
 	/**
@@ -64,10 +64,14 @@ partially_succeeded:部分成功
 	 */
 	private Date finishedAt;
 	/**
-	 * 分账业务系统标识
-
+	 * shop系统标识
 	 */
-	private String appId;
+	private String shopAppId;
+
+	/**
+	 * fms系统标识
+	 */
+	private String fmsAppId;
 	/**
 	 * 分账订单号不能为空
 	 */
