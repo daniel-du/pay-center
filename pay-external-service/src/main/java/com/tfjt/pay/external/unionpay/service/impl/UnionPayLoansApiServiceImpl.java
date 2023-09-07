@@ -40,7 +40,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -85,6 +84,9 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
 
     @Autowired
     private CustHoldingService tfCustHoldingService;
+
+    @Autowired
+    private LoanUserKeyInformationChangeRecordLogService keyInformationChangeRecordLogService;
 
     @Autowired
     private RedisCache redisCache;
@@ -158,6 +160,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     }
 
     private void updatTwoTfLoanUserEntity(IncomingReturn incomingReturn, LoanUserEntity tfLoanUserEntity) {
+        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
         if (StringUtils.isNotBlank(incomingReturn.getOutRequestNo())) {
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
         }
@@ -179,6 +182,8 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             }
         }
         loanUserService.updateById(tfLoanUserEntity);
+        keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),incomingReturn.getOutRequestNo(),
+                incomingReturn.getMchApplicationId(),null,tfLoanUserEntityOld);
         //通知业务
         loanUserService.asynNotice(tfLoanUserEntity);
     }
@@ -277,6 +282,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#tfLoanUserEntity.busId"}, expire = 3000, acquireTimeout = 4000)
     public IncomingReturn incomingEdit(LoanUserEntity tfLoanUserEntity, String smsCode) {
+        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
         IncomingReturn incomingReturn = new IncomingReturn();
         try {
             Date req = new Date();
@@ -291,6 +297,8 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
             tfLoanUserEntity.setCusId(incomingReturn.getCusId());
             loanUserService.updateById(tfLoanUserEntity);
+            keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),tfLoanUserEntity.getOutRequestNo(),
+                    null,null,tfLoanUserEntityOld);
 
         } catch (TfException e) {
             log.error("银联-进件-修改失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
@@ -309,6 +317,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#tfLoanUserEntity.busId"}, expire = 3000, acquireTimeout = 4000)
     public IncomingReturn twoIncomingEdit(LoanUserEntity tfLoanUserEntity, String smsCode) {
+        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
         IncomingReturn incomingReturn = new IncomingReturn();
         try {
             Date req = new Date();
@@ -330,6 +339,8 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             tfLoanUserEntity.setMchApplicationId(incomingReturn.getMchApplicationId());
 
             loanUserService.updateById(tfLoanUserEntity);
+            keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),incomingReturn.getOutRequestNo(),
+                    incomingReturn.getMchApplicationId(),null,tfLoanUserEntityOld);
         } catch (TfException e) {
             log.error("银联-二级进件-修改失败：param={}", JSON.toJSONString(tfLoanUserEntity), e);
             throw new TfException(e.getMessage());
@@ -379,11 +390,14 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Override
     public String getSettleAcctId(Long loanUserId) {
         LoanUserEntity tfLoanUserEntity = loanUserService.getById(loanUserId);
+        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
         if (StringUtils.isNotBlank(tfLoanUserEntity.getOutRequestNo())) {
             IncomingReturn incomingReturn = getTwoIncomingInfo(tfLoanUserEntity.getOutRequestNo());
             if (!StringUtils.isBlank(incomingReturn.getSettleAcctId())) {
                 tfLoanUserEntity.setSettleAcctId(incomingReturn.getSettleAcctId());
                 loanUserService.updateById(tfLoanUserEntity);
+                keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),null,null,
+                        incomingReturn.getSettleAcctId(),tfLoanUserEntityOld);
             }
             return incomingReturn.getSettleAcctId();
         } else {
@@ -405,6 +419,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             ValidatorUtils.validateEntity(tfLoanUserEntity, UpdateGroup.class);
         } catch (Exception ex) {
             throw new TfException(ex.getMessage());
+        }
+        String mchId = tfLoanUserEntity.getMchId();
+        if (StringUtil.isBlank(mchId)) {
+            throw new TfException(PayExceptionCodeEnum.MCHID_NOT_NULL);
         }
         String nonce = UUID.randomUUID().toString().replace("-", "");
         // 1、银行卡
@@ -549,6 +567,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     }
 
     private void updatTfLoanUserEntity(IncomingReturn incomingReturn, LoanUserEntity tfLoanUserEntity) {
+        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
         tfLoanUserEntity.setApplicationStatus(incomingReturn.getApplicationStatus());
         if (StringUtils.isNotBlank(incomingReturn.getCusId())) {
             tfLoanUserEntity.setCusId(incomingReturn.getCusId());
@@ -556,7 +575,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         if (StringUtils.isNotBlank(incomingReturn.getOutRequestNo())) {
             tfLoanUserEntity.setOutRequestNo(incomingReturn.getOutRequestNo());
         }
+        if (StringUtils.isNotBlank(incomingReturn.getSettleAcctId())) {
+            tfLoanUserEntity.setSettleAcctId(incomingReturn.getSettleAcctId());
+        }
         loanUserService.updateById(tfLoanUserEntity);
+        keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),tfLoanUserEntity.getOutRequestNo(),null
+                ,null,tfLoanUserEntityOld);
         //通知业务
         loanUserService.asynNotice(tfLoanUserEntity);
     }
@@ -826,6 +850,9 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         } catch (Exception e) {
             throw new TfException(e.getMessage());
         }
+        if (StringUtil.isBlank(tfLoanUserEntity.getCusId())) {
+            throw new TfException(PayExceptionCodeEnum.CUSID_NOT_NULL);
+        }
         String outRequestNo = UUID.randomUUID().toString().replace("-", "");
         CustBankInfoEntity custBankInfoEntity = verifyCustBankInfo(tfLoanUserEntity.getId());
         int settlementType = custBankInfoEntity.getSettlementType();
@@ -1092,7 +1119,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         //先绑定
         Long loanUserId = custBankInfo.getLoanUserId();
         LoanUserEntity byId = loanUserService.getById(loanUserId);
-
+        LoanUserEntity loanUserEntityOld = byId;
         UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = bindAddSettleAcct(custBankInfo);
         String settleAcctId = unionPayLoansSettleAcctDTO.getSettleAcctId();
         String verifyStatus = unionPayLoansSettleAcctDTO.getVerifyStatus();
@@ -1101,6 +1128,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         }
         byId.setSettleAcctId(settleAcctId);
         loanUserService.updateById(byId);
+        keyInformationChangeRecordLogService.saveLog(byId.getId(),null,null,settleAcctId,loanUserEntityOld);
         //再删除
         this.delSettleAcct(loanUerInfo.getCusId(), oldBankCardNo, custBankInfo.getSettlementType(), byId.getMchId());
         return unionPayLoansSettleAcctDTO;
