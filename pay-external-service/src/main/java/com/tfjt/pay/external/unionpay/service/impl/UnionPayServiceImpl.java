@@ -80,7 +80,7 @@ public class UnionPayServiceImpl implements UnionPayService {
             return Result.ok(withdrawalCreateRespDTO);
         }catch (TfException e){
             log.error("提现创建报错{},{}", JSON.toJSON(withdrawalCreateReqDTO),e);
-            throw new TfException(PayExceptionCodeEnum.UNIONPAY_RESPONSE_ERROR);
+            throw new TfException(e.getMessage());
         }catch (Exception e){
             log.error("提现创建异常{},{}", JSON.toJSON(withdrawalCreateReqDTO),e);
             return Result.failed(e.getMessage());
