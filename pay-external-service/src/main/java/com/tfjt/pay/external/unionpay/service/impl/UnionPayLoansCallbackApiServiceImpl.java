@@ -39,10 +39,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
     private LoanBalanceAcctService tfLoanBalanceAcctService;
 
     @Autowired
-    private LoanCallbackService tfLoanCallbackService;
-
-    @Autowired
-    private CustBankInfoService custBankInfoService;
+    private LoanUserKeyInformationChangeRecordLogService keyInformationChangeRecordLogService;
 
     @DubboReference
     private TfLoanUserRpcService tfLoanUserRpcService;
@@ -59,8 +56,10 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         log.info("打款验证通知-回调参数{}", JSONObject.toJSONString(eventData));
         LoanUserEntity tfLoanUserEntity = tfLoanUserService.getOne(new LambdaQueryWrapper<LoanUserEntity>().eq(LoanUserEntity::getOutRequestNo, outRequestNo));
         if (tfLoanUserEntity != null && StringUtils.isNotBlank(settleAcctId)) {
+            LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
             tfLoanUserEntity.setSettleAcctId(settleAcctId);
             tfLoanUserService.updateById(tfLoanUserEntity);
+            keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),null,null,settleAcctId,tfLoanUserEntityOld);
         }
         //修改银行是否打款状态1是
 //        updateBankCallStatus(tfLoanUserEntity);
@@ -173,6 +172,7 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
      * @param twoIncomingEventDataDTO
      */
     private void updatTfLoanUserEntity(TwoIncomingEventDataDTO twoIncomingEventDataDTO, LoanUserEntity tfLoanUserEntity) {
+        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
         tfLoanUserEntity.setApplicationStatus(twoIncomingEventDataDTO.getApplicationStatus());
         if (StringUtils.isNotBlank(twoIncomingEventDataDTO.getOutRequestNo())) {
             tfLoanUserEntity.setOutRequestNo(twoIncomingEventDataDTO.getOutRequestNo());
@@ -207,6 +207,8 @@ public class UnionPayLoansCallbackApiServiceImpl implements UnionPayLoansCallbac
         }
 
         tfLoanUserService.updateById(tfLoanUserEntity);
+        keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),tfLoanUserEntity.getOutRequestNo(),null
+                ,null,tfLoanUserEntityOld);
     }
 
     private String getParam(List<LwzRespReturn> lwzRespReturnList) {

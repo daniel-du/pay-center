@@ -63,7 +63,6 @@ failed：被驳回
 	/**
 	 * 二级商户ID
 	 */
-	@NotBlank(message = "二级商户ID不能为空",groups = {UpdateGroup.class})
 	private String mchId;
 	/**
 	 * 进件申请通过时间

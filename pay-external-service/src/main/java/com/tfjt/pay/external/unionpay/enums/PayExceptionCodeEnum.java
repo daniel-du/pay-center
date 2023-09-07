@@ -76,6 +76,11 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     TREAD_ORDER_NO_REPEAT(9003004, "业务单号已进行过交易"),
     NO_SETTLE_ACCT(9003006, "没有绑定账号不能进行打款"),
 
+    /**
+     * 进件验证
+     */
+    CUSID_NOT_NULL(9004001,"个人用户ID不能为空"),
+    MCHID_NOT_NULL(9004001,"二级商户ID不能为空")
 
     ;
     private int code;
