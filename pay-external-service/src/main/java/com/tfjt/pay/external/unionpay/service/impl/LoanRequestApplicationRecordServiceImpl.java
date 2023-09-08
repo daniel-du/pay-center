@@ -139,7 +139,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
         for (LoanBalanceDivideDetailsEntity listDetail : listDetails) {
             LoanUserEntity user = loanUserDao.getByBalanceAcctId(listDetail.getRecvBalanceAcctId());
             ShopDivideLogDTO dto = new ShopDivideLogDTO();
-            dto.setMoney(new BigDecimal(listDetail.getAmount().toString()).divide(new BigDecimal("100"), NumberConstant.TWO, RoundingMode.HALF_UP));
+            dto.setMoney(listDetail.getAmount());
             dto.setStatus(TradeResultConstant.UNIONPAY_SUCCEEDED.equals(listDetail.getStatus()) ? NumberConstant.ONE : NumberConstant.ZERO);
             dto.setLogType(user.getType());
             dto.setShopId(user.getBusId());
