@@ -184,7 +184,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
             withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
             withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
-            return Result.ok(withdrawalRespDTO);
+            return Result.failed(withdrawalRespDTO);
         }
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
