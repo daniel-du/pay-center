@@ -224,7 +224,7 @@ public final class DateUtil extends DateUtils {
      * @Param startDate 开始时间
      * @Param endDate 结束时间
      */
-    public static boolean timeComparison(Date startDate, Date endDate) {
+    public static boolean timeComparison(Date startDate, Date endDate, boolean isTest) {
         Date nowDate = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
@@ -240,11 +240,14 @@ public final class DateUtil extends DateUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        if (nowDate.compareTo(startDate) <= 0) {
-            return false;
+        if (isTest) {
+            return true;
+        } else {
+            if (nowDate.compareTo(startDate) <= 0) {
+                return false;
+            }
+            return nowDate.compareTo(endDate) > 0;
         }
-        return nowDate.compareTo(endDate) > 0;
     }
 
     /**

@@ -1,19 +1,19 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.dto.resp.CustBusinessInfoRespDTO;
-import com.tfjt.pay.external.unionpay.service.CustBusinessInfoService;
 import com.tfjt.pay.external.unionpay.entity.CustBusinessAttachInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.CustBusinessInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ImgTypeEnum;
 import com.tfjt.pay.external.unionpay.service.CustBusinessAttachInfoService;
+import com.tfjt.pay.external.unionpay.service.CustBusinessInfoService;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +39,9 @@ public class CustBusinessInfoController {
     private CustBusinessInfoService custBusinessInfoService;
     @Autowired
     private CustBusinessAttachInfoService custBusinessAttachInfoService;
+
+    @Value("${unionPay.isTest:false}")
+    boolean isTest;
 
     /**
      * 列表
@@ -94,7 +97,7 @@ public class CustBusinessInfoController {
     public Result<?> save(@RequestBody CustBusinessInfoRespDTO custBusinessInfo) {
         CustBusinessInfoEntity custBusinessInfoEntity = new CustBusinessInfoEntity();
         try {
-            boolean flag = DateUtil.timeComparison(null,null);
+            boolean flag = DateUtil.timeComparison(null,null, isTest);
             if(!flag){
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }

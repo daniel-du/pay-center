@@ -15,6 +15,7 @@ import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import com.tfjt.tfcommon.dto.response.Result;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -32,6 +33,9 @@ import static com.tfjt.pay.external.unionpay.utils.DateUtil.timeComparison;
 public class CustBusinessDetailController {
     @Resource
     private CustBusinessDetailService custBusinessDetailService;
+
+    @Value("${unionPay.isTest:false}")
+    boolean isTest;
 
     /**
      * 详情
@@ -55,8 +59,8 @@ public class CustBusinessDetailController {
     @ApiOperation("新增营业信息")
     public Result<?> save(@RequestBody CustBusinessCreateDto dto) {
         try {
-            boolean flag = timeComparison(null,null);
-            if(!flag){
+            boolean flag = timeComparison(null, null, isTest);
+            if (!flag) {
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
             ValidatorUtils.validateEntity(dto, AddGroup.class, UpdateGroup.class);
@@ -65,27 +69,27 @@ public class CustBusinessDetailController {
             String effectiveDate = dto.getEffectiveDate();
             Integer isLongTerm = dto.getIsLongTerm();
             //校验身份证期限
-            if(isLongTerm!=null && isLongTerm != 1) {
+            if (isLongTerm != null && isLongTerm != 1) {
                 DateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
-                if(StringUtils.isNullOrEmpty(effectiveDate)){
+                if (StringUtils.isNullOrEmpty(effectiveDate)) {
                     return Result.failed("营业执照生效日期不能为空！");
                 }
-                if(StringUtils.isNullOrEmpty(expiryDate)){
+                if (StringUtils.isNullOrEmpty(expiryDate)) {
                     return Result.failed("营业执照失效日期不能为空！");
                 }
-                Date date =  dft.parse(expiryDate);
+                Date date = dft.parse(expiryDate);
                 long num = DateUtil.differDay(null, date);
                 if (num <= 60) {
                     return Result.failed("营业执照有效期到期时间必须大于60天！");
                 }
-            }else{
+            } else {
                 dto.setExpiryDate("长期");
             }
             //校验营业执照号码是否已存在
-            long num = custBusinessDetailService.count(new QueryWrapper<CustBusinessDetailEntity>().eq("business_num",dto.getBusinessNum()));
-            if(num > 0){
+            long num = custBusinessDetailService.count(new QueryWrapper<CustBusinessDetailEntity>().eq("business_num", dto.getBusinessNum()));
+            if (num > 0) {
                 log.error("新增营业信息异常：param={}", JSONObject.toJSONString(dto));
-                return Result.failed(5001,"营业执照号码已存在！");
+                return Result.failed(5001, "营业执照号码已存在！");
             }
             return custBusinessDetailService.save(dto);
         } catch (TfException e) {
@@ -101,8 +105,8 @@ public class CustBusinessDetailController {
     @ApiOperation("编辑营业信息")
     public Result<?> update(@RequestBody CustBusinessCreateDto dto) {
         try {
-            boolean flag = timeComparison(null,null);
-            if(!flag){
+            boolean flag = timeComparison(null, null, isTest);
+            if (!flag) {
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
             ValidatorUtils.validateEntity(dto, AddGroup.class, UpdateGroup.class);
@@ -111,20 +115,20 @@ public class CustBusinessDetailController {
             String effectiveDate = dto.getEffectiveDate();
             Integer isLongTerm = dto.getIsLongTerm();
             //校验身份证期限
-            if(isLongTerm!=null && isLongTerm != 1) {
+            if (isLongTerm != null && isLongTerm != 1) {
                 DateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
-                if(StringUtils.isNullOrEmpty(effectiveDate)){
+                if (StringUtils.isNullOrEmpty(effectiveDate)) {
                     return Result.failed("营业执照生效日期不能为空！");
                 }
-                if(StringUtils.isNullOrEmpty(expiryDate)){
+                if (StringUtils.isNullOrEmpty(expiryDate)) {
                     return Result.failed("营业执照失效日期不能为空！");
                 }
-                Date date =  dft.parse(expiryDate);
+                Date date = dft.parse(expiryDate);
                 long num = DateUtil.differDay(null, date);
                 if (num <= 60) {
                     return Result.failed("营业执照有效期到期时间必须大于60天！");
                 }
-            }else{
+            } else {
                 dto.setExpiryDate("长期");
             }
 
