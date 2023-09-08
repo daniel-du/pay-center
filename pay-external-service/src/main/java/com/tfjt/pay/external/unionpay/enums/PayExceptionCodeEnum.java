@@ -30,7 +30,7 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     TREAD_PARAMETER_ILLEGAL(9000001,"交易参数异常"),
     DATABASE_SAVE_FAIL(9000002,"数据保存异常"),
     DATABASE_UPDATE_FAIL(9000003,"数据更新异常"),
-    SMSCODE_ERROR(9000004, "验证码失效，请重新填写。"),
+    SMSCODE_ERROR(9000012, "验证码失效，请重新填写。"),
     REPEAT_OPERATION(9000005,"请勿重复操作"),
     NO_DATA(9000006,"数据不存在"),
     UPLOAD_FILE_ERROR(9000007,"上传文件失败"),
