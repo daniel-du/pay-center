@@ -12,7 +12,7 @@
         <result property="ceateTime" column="ceate_time"/>
     </resultMap>
     <select id="loadFile">
-        LOAD DATA INFILE #{parameter} IGNORE INTO TABLE tf_loan_unionpay_check_bill_details FIELDS TERMINATED BY '`' 	IGNORE 1 LINES
+        LOAD DATA LOCAL INFILE #{parameter} IGNORE INTO TABLE tf_loan_unionpay_check_bill_details FIELDS TERMINATED BY '`' 	IGNORE 1 LINES
             SET platform_id = TRIM( TRAILING ',' FROM platform_id ),
             platform_name = TRIM( TRAILING ',' FROM platform_name ) ,
             bank_name = TRIM( TRAILING ',' FROM bank_name ) ,
