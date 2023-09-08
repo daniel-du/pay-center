@@ -22,7 +22,7 @@ public class ShopDivideLogDTO implements Serializable {
     /**
      * 交易金额
      */
-    private BigDecimal money;
+    private Integer money;
     /**
      * 记录类型  1店铺 2经销商
      */
