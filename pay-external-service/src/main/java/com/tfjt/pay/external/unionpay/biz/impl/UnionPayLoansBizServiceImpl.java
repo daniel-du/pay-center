@@ -222,6 +222,8 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
             return Result.ok(withdrawalRespDTO);
         } catch (TfException e) {
+            log.info("提现失败,删除redis:{}",WITHDRAWAL_IDEMPOTENT_KEY);
+            redisCache.deleteObject(WITHDRAWAL_IDEMPOTENT_KEY);
             log.info("提现失败,错误码:{},错误信息:{}", e.getCode(), e.getMessage());
             return Result.failed(e.getCode(), e.getMessage());
         }
