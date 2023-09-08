@@ -12,6 +12,7 @@ import com.tfjt.tfcloud.business.dto.TfLoanUserEntityDTO;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,9 @@ public class CustIdcardInfoController {
     @Lazy
     private LoanUserService loanUserService;
 
+    @Value("${unionPay.isTest:false}")
+    boolean isTest;
+
     /**
      * 列表
      */
@@ -68,7 +72,7 @@ public class CustIdcardInfoController {
     @Lock4j(keys = {"#custIdcardInfo.loanUserId"}, expire = 3000, acquireTimeout = 4000)
     public Result<?> save(@RequestBody CustIdcardInfoEntity custIdcardInfo) {
         try {
-            boolean flag = DateUtil.timeComparison(null,null);
+            boolean flag = DateUtil.timeComparison(null,null, isTest);
             if(!flag){
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
@@ -121,7 +125,7 @@ public class CustIdcardInfoController {
     @Lock4j(keys = {"#custIdcardInfo.id"}, expire = 3000, acquireTimeout = 4000)
     public Result<?> update(@RequestBody CustIdcardInfoEntity custIdcardInfo) {
         try {
-            boolean flag = DateUtil.timeComparison(null,null);
+            boolean flag = DateUtil.timeComparison(null,null ,isTest);
             if(!flag){
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }

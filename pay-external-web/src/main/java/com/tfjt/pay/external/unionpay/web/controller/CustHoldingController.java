@@ -13,6 +13,7 @@ import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -28,6 +29,9 @@ import static com.tfjt.pay.external.unionpay.utils.DateUtil.timeComparison;
 public class CustHoldingController {
     @Resource
     private CustHoldingService tfCustHoldingService;
+
+    @Value("${unionPay.isTest:false}")
+    boolean isTest;
 
     /**
      * 信息
@@ -51,7 +55,7 @@ public class CustHoldingController {
     @ApiOperation("新增控股信息")
     public Result<?> save(@RequestBody CustHoldingCreateDto dto) {
         try {
-            boolean flag = timeComparison(null,null);
+            boolean flag = timeComparison(null,null, isTest);
             if(!flag){
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
@@ -139,7 +143,7 @@ public class CustHoldingController {
     @ApiOperation("编辑控股信息")
     public Result<?> update(@RequestBody CustHoldingCreateDto dto) {
         try {
-            boolean flag = timeComparison(null,null);
+            boolean flag = timeComparison(null,null, isTest);
             if(!flag){
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
