@@ -210,6 +210,7 @@ public class LoanRequestApplicationRecordServiceImpl extends ServiceImpl<LoanReq
         try {
             log.info("应用服务发送交易通知>>>>>>>>>>>>>:{},请求参数:{},appId:{}", callBackUrl, parameter, appId);
             HttpResponse execute = HttpRequest.post(callBackUrl).timeout(5000).body(parameter).execute();
+            log.info("应用服务发送交易通知返回参数>>>>>>>>>>>>>:{},", execute);
             result = execute.body();
             log.info("接受应用服务发送交易通知<<<<<<<<<<:{}",result);
             record.setResponseParam(result);
