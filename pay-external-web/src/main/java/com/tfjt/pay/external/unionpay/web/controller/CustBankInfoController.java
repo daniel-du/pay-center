@@ -17,11 +17,11 @@ import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.List;
 
 import static com.tfjt.pay.external.unionpay.utils.DateUtil.timeComparison;
 
@@ -51,6 +51,8 @@ public class CustBankInfoController {
     @Resource
     UnionPayLoansBizService unionPayLoansBizService;
 
+    @Value("${unionPay.isTest:false}")
+    boolean isTest;
 
     /**
      * 获取用户银行卡信息
@@ -80,7 +82,7 @@ public class CustBankInfoController {
     @PostMapping("/save")
     public Result<?> save(@RequestBody CustBankInfoEntity custBankInfo) {
         try {
-            boolean flag = timeComparison(null, null);
+            boolean flag = timeComparison(null, null, isTest);
             if (!flag) {
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
@@ -127,7 +129,7 @@ public class CustBankInfoController {
     @PutMapping("/update")
     public Result<?> update(@RequestBody CustBankInfoEntity custBankInfo) {
         try {
-            boolean flag = timeComparison(null, null);
+            boolean flag = timeComparison(null, null, isTest);
             if (!flag) {
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }

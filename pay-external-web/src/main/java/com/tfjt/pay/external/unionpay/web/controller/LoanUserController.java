@@ -3,10 +3,8 @@ package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.dto.LoanUserInfoDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.tfcloud.business.api.TfLoanBalanceRpcService;
@@ -16,7 +14,7 @@ import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -42,6 +40,9 @@ public class LoanUserController {
     private LoanUserBizService loanUserBizService;
     @Resource
     LoanUserService loanUserService;
+
+    @Value("${unionPay.isTest:false}")
+    boolean isTest;
     @DubboReference(retries = 0, timeout = 60000, check = false)
     private TfLoanBalanceRpcService tfLoanBalanceRpcService;
 
@@ -52,7 +53,7 @@ public class LoanUserController {
     @PostMapping("/save")
     public Result<?> save(@RequestBody LoanUserEntity loanUserEntity) {
         try {
-            boolean flag = timeComparison(null, null);
+            boolean flag = timeComparison(null, null, isTest);
             if (!flag) {
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
@@ -75,7 +76,7 @@ public class LoanUserController {
     @PostMapping("/updateLoanUser")
     public Result<?> updateLoanUser(@RequestParam(value = "id") Long id, @RequestParam(value = "loanUserType") Integer loanUserType) {
         try {
-            boolean flag = timeComparison(null, null);
+            boolean flag = timeComparison(null, null, isTest);
             if (!flag) {
                 return Result.failed("0点到凌晨04点，不受理申请！");
             }
