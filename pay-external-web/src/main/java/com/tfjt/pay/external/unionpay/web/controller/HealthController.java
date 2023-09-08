@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.baomidou.lock.annotation.Lock4j;
+import com.tfjt.pay.external.unionpay.job.LoanBusinessJob;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HealthController {
 
+    @Autowired
+    private LoanBusinessJob loanBusinessJob;
+
     /**
      * 监控检测
      */
@@ -33,6 +38,16 @@ public class HealthController {
     public Result<?> lock(String key) throws InterruptedException {
         Thread.sleep(4000L);
         return Result.ok(key);
+    }
+
+    @GetMapping("/downloadCheckBill")
+    public void downloadCheckBill(){
+        loanBusinessJob.downloadCheckBill();
+    }
+
+    @GetMapping("/applicationCallback")
+    public void applicationCallback(){
+        loanBusinessJob.applicationCallback();
     }
 
 }
