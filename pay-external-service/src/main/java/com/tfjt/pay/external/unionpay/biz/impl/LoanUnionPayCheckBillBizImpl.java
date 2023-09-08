@@ -73,7 +73,7 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
                 HttpUtil.download(stringResult.getData(), fileOutputStream, true);
                 String absolutePath = cvsFile.getAbsolutePath();
                 log.info("导入文件的CVS地址:{}", absolutePath);
-                loanUnionpayCheckBillService.loadFile(absolutePath);
+//                loanUnionpayCheckBillService.loadFile(absolutePath);
                 UploadPretreatment of = fileStorageService.of(cvsFile);
                 FileInfo upload = of.upload();
                 String url = upload.getUrl();
