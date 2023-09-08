@@ -213,7 +213,7 @@
             <scope>compile</scope>
         </dependency>
 
-<!--        <dependency>
+        <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-shop-api</artifactId>
             <version>1.3.8.1-SNAPSHOT</version>
@@ -235,7 +235,7 @@
                     <artifactId>tf-monitor-base</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>com.xuxueli</groupId>
