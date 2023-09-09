@@ -77,7 +77,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
 
     @Value("${unionPay.loan.notifyUrl}")
     private String notifyUrl;
-    private final static String WITHDRAWAL_IDEMPOTENT_KEY = "idempotent:withdrawal";
+    private final static String WITHDRAWAL_IDEMPOTENT_KEY = "idempotent:withdrawal:";
 
 
     /**
@@ -175,10 +175,10 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
         log.info("防重复提交加密前的M5d值为：{}", md5Str);
         String idempotentMd5 = MD5Util.getMD5String(md5Str);
-        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY);
+        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId() );
         log.info("防重复提交加密后的M5d值为：{}", idempotentMd5);
         if (StringUtils.isEmpty(isIdempotent)) {
-            redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY, idempotentMd5, 60, TimeUnit.MINUTES);
+            redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), idempotentMd5, 60, TimeUnit.MINUTES);
         } else if (idempotentMd5.equals(isIdempotent)) {
             log.info("重复提现了！！！");
             WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
@@ -222,8 +222,8 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
             return Result.ok(withdrawalRespDTO);
         } catch (TfException e) {
-            log.info("提现失败,删除redis:{}",WITHDRAWAL_IDEMPOTENT_KEY);
-            redisCache.deleteObject(WITHDRAWAL_IDEMPOTENT_KEY);
+            log.info("提现失败,删除redis:{}",WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
+            redisCache.deleteObject(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
             log.info("提现失败,错误码:{},错误信息:{}", e.getCode(), e.getMessage());
             return Result.failed(e.getCode(), e.getMessage());
         }
