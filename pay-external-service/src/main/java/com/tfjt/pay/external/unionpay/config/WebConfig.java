@@ -11,6 +11,8 @@ package com.tfjt.pay.external.unionpay.config;
 import com.tfjt.tfcommon.auth.interceptor.AuthInterceptor;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * WebMvc配置
@@ -30,6 +33,9 @@ import javax.annotation.Resource;
 @Configuration
 @Slf4j
 public class WebConfig implements WebMvcConfigurer {
+
+    @Value("${sys.env}")
+    private String env;
 
     @Resource
     InterceptorProperties interceptorProperties;
@@ -67,17 +73,20 @@ public class WebConfig implements WebMvcConfigurer {
         return new RedisCache();
     }
 
-//    /**
-//     * 跨域设置
-//     * @param registry
-//     */
-//    @Override
-//    public void addCorsMappings(CorsRegistry registry) {
-//        registry.addMapping("/**")
-//                .allowedOrigins("*")
-//                .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
-//                .allowCredentials(true)
-//                .maxAge(3600)
-//                .allowedHeaders("*");
-//    }
+    /**
+     * 跨域设置
+     * @param registry
+     */
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        log.info("环境参数变量{}", env);
+        if(Objects.equals(env, "4")){
+            registry.addMapping("/**")
+                    .allowedOrigins("*")
+                    .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowCredentials(true)
+                    .maxAge(3600)
+                    .allowedHeaders("*");
+        }
+    }
 }
