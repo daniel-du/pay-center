@@ -34,9 +34,6 @@ import java.util.Objects;
 @Slf4j
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${sys.env}")
-    private String env;
-
     @Resource
     InterceptorProperties interceptorProperties;
 
@@ -72,11 +69,11 @@ public class WebConfig implements WebMvcConfigurer {
     public RedisCache redisCache() {
         return new RedisCache();
     }
-
-    /**
+/*
+    *//**
      * 跨域设置
      * @param registry
-     */
+     *//*
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         log.info("环境参数变量{}", env);
@@ -88,5 +85,5 @@ public class WebConfig implements WebMvcConfigurer {
                     .maxAge(3600)
                     .allowedHeaders("*");
         }
-    }
+    }*/
 }
