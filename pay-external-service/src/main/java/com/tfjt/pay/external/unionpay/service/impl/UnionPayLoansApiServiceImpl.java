@@ -398,8 +398,11 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
                 loanUserService.updateById(tfLoanUserEntity);
                 keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),null,null,
                         incomingReturn.getSettleAcctId(),tfLoanUserEntityOld);
+                return incomingReturn.getSettleAcctId();
+            }else {
+                return tfLoanUserEntity.getSettleAcctId();
             }
-            return incomingReturn.getSettleAcctId();
+
         } else {
             return "";
         }
