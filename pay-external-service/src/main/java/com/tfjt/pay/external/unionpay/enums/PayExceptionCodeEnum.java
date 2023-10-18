@@ -80,8 +80,12 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
      * 进件验证
      */
     CUSID_NOT_NULL(9004001,"个人用户ID不能为空"),
-    MCHID_NOT_NULL(9004001,"二级商户ID不能为空")
+    MCHID_NOT_NULL(9004001,"二级商户ID不能为空"),
 
+    /**
+     * 结算账户
+     */
+    SETTLE_ACCOUNT_NULL(9005001,"结算账户不存在")
     ;
     private int code;
     private String msg;

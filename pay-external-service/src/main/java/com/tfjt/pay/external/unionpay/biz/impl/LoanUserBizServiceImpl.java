@@ -14,10 +14,12 @@ import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.ParentBalanceRespDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
+import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
@@ -62,6 +64,9 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
 
     @Resource
     private CustBankInfoService custBankInfoService;
+
+    @Resource
+    private UnionPayLoansApiService unionPayLoansApiService;
 
 
     @Override
@@ -163,6 +168,26 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
+    public Result<ParentBalanceRespDTO> currentBalanceInfo() {
+
+        BalanceAcctRespDTO balanceAcctDTOByAccountId = loanUserService.getBalanceAcctDTOByAccountId(accountConfig.getBalanceAcctId());
+        if (Objects.isNull(balanceAcctDTOByAccountId)) {
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+        }
+        log.debug("查询母账户交易余额返回:{}", balanceAcctDTOByAccountId.getSettledAmount());
+        ParentBalanceRespDTO dto = new ParentBalanceRespDTO();
+        dto.setAmount(balanceAcctDTOByAccountId.getSettledAmount());
+        dto.setAccountNo(accountConfig.getBalanceAcctNo());
+        dto.setAccountId(accountConfig.getBalanceAcctId());
+        SettleAcctsMxDTO settleAcctsMxDTO = unionPayLoansApiService.querySettleAcct(-1);
+        if (Objects.isNull(settleAcctsMxDTO)) {
+            throw new TfException(PayExceptionCodeEnum.SETTLE_ACCOUNT_NULL);
+        }
+        dto.setBankCardNo(settleAcctsMxDTO.getBankAcctNo());
+        return Result.ok(dto);
+    }
+
+    @Override
     public Result<BalanceAcctRespDTO> getBalanceByAccountId(String balanceAcctId) {
         log.debug("查询电子账簿id:{}", balanceAcctId);
         if (StringUtil.isBlank(balanceAcctId)) {
@@ -201,7 +226,6 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
         loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
         loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
         LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-        // loanBalanceAcctService.get
         if (Objects.isNull(balanceAcc)) {
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }

@@ -6,6 +6,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.ParentBalanceRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -52,6 +53,7 @@ public interface LoanUserBizService {
      * @return 同福电子账簿信息
      */
     Result<Integer> currentBalance();
+    Result<ParentBalanceRespDTO> currentBalanceInfo();
 
     /**
      * 根据电子账户获取账户信息
