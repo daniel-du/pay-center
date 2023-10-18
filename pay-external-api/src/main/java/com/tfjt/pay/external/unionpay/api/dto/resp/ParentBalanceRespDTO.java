@@ -2,6 +2,9 @@ package com.tfjt.pay.external.unionpay.api.dto.resp;
 
 import lombok.Data;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+
 /**
  * @author tony
  * @version 1.0
@@ -11,9 +14,9 @@ import lombok.Data;
  */
 
 @Data
-public class ParentBalanceRespDTO {
+public class ParentBalanceRespDTO implements Serializable {
     private String accountNo;
     private String accountId;
     private String bankCardNo;
-    private Integer amount;
+    private BigDecimal amount;
 }

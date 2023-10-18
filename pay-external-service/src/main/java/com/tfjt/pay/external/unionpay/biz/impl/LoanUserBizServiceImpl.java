@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -176,7 +177,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
         }
         log.debug("查询母账户交易余额返回:{}", balanceAcctDTOByAccountId.getSettledAmount());
         ParentBalanceRespDTO dto = new ParentBalanceRespDTO();
-        dto.setAmount(balanceAcctDTOByAccountId.getSettledAmount());
+        dto.setAmount(new BigDecimal(balanceAcctDTOByAccountId.getSettledAmount()).divide(new BigDecimal("100"), NumberConstant.TWO, RoundingMode.HALF_UP));
         dto.setAccountNo(accountConfig.getBalanceAcctNo());
         dto.setAccountId(accountConfig.getBalanceAcctId());
         SettleAcctsMxDTO settleAcctsMxDTO = unionPayLoansApiService.querySettleAcct(-1);

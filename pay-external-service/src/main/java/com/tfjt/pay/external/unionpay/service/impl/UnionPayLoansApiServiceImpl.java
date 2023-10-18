@@ -997,7 +997,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             reqParams.put("cusId", tfLoanUserEntity.getCusId());
         }
         if (!Objects.equals(tfLoanUserEntity.getLoanUserType(), 0)) {
-            reqParams.put("mchId", tfLoanUserEntity.getMchApplicationId());
+            reqParams.put("mchId", tfLoanUserEntity.getMchId());
         }
 
         ResponseEntity<UnionPayLoansBaseReturn> responseEntity = getUnionPayInfoByUserEntity(reqParams);
