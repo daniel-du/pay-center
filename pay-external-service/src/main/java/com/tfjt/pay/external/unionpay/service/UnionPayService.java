@@ -81,4 +81,10 @@ public interface UnionPayService {
      * @param format
      */
     Result<String> downloadCheckBill(String format);
+
+
+    Result<DepositRespDTO> deposit(DepositReqDTO depositReqDTO);
+
+    Result<DepositRespDTO> queryDeposit(String outOrderNo);
+
 }

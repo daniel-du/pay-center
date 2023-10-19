@@ -107,4 +107,12 @@ public interface LoanUserBizService {
     Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type, List<String> busIds);
 
     LoanUserEntity getById(Long id);
+
+    /**
+     *
+     * @param amount
+     * @param orderNo
+     * @return
+     */
+    Result<String> deposit(Integer amount,String orderNo);
 }

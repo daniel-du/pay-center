@@ -139,6 +139,12 @@ public interface CommonConstants {
 	String TRANSACTION_TYPE_MK_ORDER_SUB = "LMOS";
 
 
+	/**
+	 * 充值
+	 */
+	String LOAN_DEPOSIT_NO_PREFIX="LODP";
+
+
 
 
 
