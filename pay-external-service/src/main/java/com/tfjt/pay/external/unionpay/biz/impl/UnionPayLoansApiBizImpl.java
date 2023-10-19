@@ -1,10 +1,10 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansApiBizService;
 import com.tfjt.pay.external.unionpay.dto.IncomingReturn;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
 import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
-import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.service.UnionPayLoansApiService;

@@ -19,3 +19,9 @@ INSERT INTO tf_pay.tf_cust_bank_info (front_bank_card_url, account_name, bank_ca
 VALUES (null, '河北同福云商科技有限公司', '6221320406254979', '18737979501', '11', null, '110101', null,
         '313335081005', '313335081005', null, null, '999999', -1, 2, null,
         now(), null, now(), '10200', null, 0);
+
+
+
+alter table tf_cust_bank_info
+    add validate_status int default 0 not null comment '打款验证状态' after verify_status;
+

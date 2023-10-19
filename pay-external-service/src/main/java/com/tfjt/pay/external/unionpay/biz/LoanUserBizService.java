@@ -3,10 +3,7 @@ package com.tfjt.pay.external.unionpay.biz;
 import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.ParentBalanceRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.tfcommon.dto.response.Result;
 

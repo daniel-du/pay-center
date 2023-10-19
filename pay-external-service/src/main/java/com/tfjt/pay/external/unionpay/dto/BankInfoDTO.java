@@ -20,5 +20,15 @@ public class BankInfoDTO {
      */
     private String accountName;
 
+    /**
+     * 结算类型 1个人 2企业
+     */
+    private Integer settlementType;
+
+    /**
+     * 打款验证状态
+     */
+    private Integer validateStatus;
+
 
 }

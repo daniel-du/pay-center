@@ -23,6 +23,7 @@ import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
+import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.PaymentPasswordEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
@@ -76,7 +77,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
-    @Lock4j(keys = {"#paymentPasswordDTO.busId","#paymentPasswordDTO.type","#paymentPasswordDTO.password"}, expire = 3000, acquireTimeout = 4000)
+    @Lock4j(keys = {"#paymentPasswordDTO.busId", "#paymentPasswordDTO.type", "#paymentPasswordDTO.password"}, expire = 3000, acquireTimeout = 4000)
     public Result<String> savePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         checkLoanUser(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
         try {
@@ -95,7 +96,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
-    @Lock4j(keys = {"#paymentPasswordDTO.busId","#paymentPasswordDTO.type","#paymentPasswordDTO.password"}, expire = 3000, acquireTimeout = 4000)
+    @Lock4j(keys = {"#paymentPasswordDTO.busId", "#paymentPasswordDTO.type", "#paymentPasswordDTO.password"}, expire = 3000, acquireTimeout = 4000)
     public Result<String> updatePaymentPassword(PaymentPasswordReqDTO paymentPasswordDTO) {
         checkLoanUser(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
         try {
@@ -220,7 +221,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
 
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
-        if(StringUtil.isBlank(type) || StringUtil.isBlank(bid)){
+        if (StringUtil.isBlank(type) || StringUtil.isBlank(bid)) {
             return Result.failed(PayExceptionCodeEnum.TREAD_PARAMETER_ILLEGAL);
         }
         LoanTransferToTfRespDTO loanTransferToTfDTO = new LoanTransferToTfRespDTO();
@@ -237,7 +238,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
 
     @Override
     public Result<Map<String, Object>> incomingIsFinish(String type, String bid) {
-        if(StringUtil.isBlank(type) || StringUtil.isBlank(bid)){
+        if (StringUtil.isBlank(type) || StringUtil.isBlank(bid)) {
             return Result.failed(PayExceptionCodeEnum.TREAD_PARAMETER_ILLEGAL);
         }
         Map<String, Object> result = new HashMap<>();
@@ -270,7 +271,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     @Override
     public Result<Map<String, Object>> listIncomingIsFinish(List<UnionPayIncomingDTO> list) {
         log.info("listIncomingIsFinish 入参:{}", JSONObject.toJSONString(list));
-        if (CollectionUtil.isEmpty(list)){
+        if (CollectionUtil.isEmpty(list)) {
             return Result.failed(PayExceptionCodeEnum.TREAD_PARAMETER_ILLEGAL);
         }
         try {
@@ -289,27 +290,27 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
             UnionPayIncomingDTO unionPayIncomingDTO = shops.get(NumberConstant.ZERO);
             Map<String, Object> returnMap = new HashMap<>();
             Result<Map<String, Object>> map = incomingIsFinish(unionPayIncomingDTO.getType(), unionPayIncomingDTO.getBid());
-            if(map.getCode()!=NumberConstant.ZERO){
+            if (map.getCode() != NumberConstant.ZERO) {
                 return Result.failed(map.getMsg());
             }
-            returnMap.put("supplierFrozen",false);
-            returnMap.put("supplierIncoming",true);
-            returnMap.put("shopFrozen",map.getData().get("isFrozen"));
-            returnMap.put("shopIncoming",map.getData().get("isIncoming"));
-            returnMap.put("shopSettledAmount",map.getData().get("settledAmount"));
+            returnMap.put("supplierFrozen", false);
+            returnMap.put("supplierIncoming", true);
+            returnMap.put("shopFrozen", map.getData().get("isFrozen"));
+            returnMap.put("shopIncoming", map.getData().get("isIncoming"));
+            returnMap.put("shopSettledAmount", map.getData().get("settledAmount"));
             for (UnionPayIncomingDTO unionPayIncoming : dealers) {
                 Result<Map<String, Object>> mapResult = incomingIsFinish(unionPayIncoming.getType(), unionPayIncoming.getBid());
                 if (mapResult.getCode() == NumberConstant.ZERO) {
                     Map<String, Object> data = mapResult.getData();
-                    if(!Boolean.parseBoolean(data.get("isIncoming").toString())){
-                        returnMap.put("supplierIncoming",false);
+                    if (!Boolean.parseBoolean(data.get("isIncoming").toString())) {
+                        returnMap.put("supplierIncoming", false);
                         return Result.ok(returnMap);
                     }
-                    if(Boolean.parseBoolean(data.get("isFrozen").toString())){
-                        returnMap.put("supplierFrozen",true);
+                    if (Boolean.parseBoolean(data.get("isFrozen").toString())) {
+                        returnMap.put("supplierFrozen", true);
                         return Result.ok(returnMap);
                     }
-                }else{
+                } else {
                     return Result.failed(mapResult.getMsg());
                 }
             }

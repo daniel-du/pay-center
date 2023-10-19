@@ -4,11 +4,9 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dao.CustBankInfoDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
-import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
-import com.tfjt.pay.external.unionpay.entity.BankEntity;
-import com.tfjt.pay.external.unionpay.entity.BankInterbankNumberEntity;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
@@ -35,10 +33,12 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     @Resource
     private UnionPayLoansApiService unionPayLoansApiService;
     @Override
-    public List<BankInfoDTO> getBankInfoByBus(Long loanUserId) {
+    public List<BankInfoDTO>
+    getBankInfoByBus(Long loanUserId) {
         LoanUserEntity one = getTfLoanUserEntity(loanUserId);
+        //按时间倒序
         List<CustBankInfoEntity> list = this.list(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false)
-                .eq(CustBankInfoEntity::getLoanUserId, one.getId()));
+                .eq(CustBankInfoEntity::getLoanUserId, one.getId()).orderByDesc(CustBankInfoEntity::getCreateDate));
         if (CollUtil.isEmpty(list)) {
             return new ArrayList<>();
         }
@@ -51,6 +51,8 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
             bankInfoDTO.setAccountName(custBankInfoEntity.getAccountName());
             bankInfoDTO.setId(custBankInfoEntity.getId());
             bankInfoDTO.setBankCardNo(custBankInfoEntity.getBankCardNo());
+            bankInfoDTO.setSettlementType(custBankInfoEntity.getSettlementType());
+            bankInfoDTO.setValidateStatus(custBankInfoEntity.getValidateStatus());
             return bankInfoDTO;
         }).collect(Collectors.toList());
         return collect;
