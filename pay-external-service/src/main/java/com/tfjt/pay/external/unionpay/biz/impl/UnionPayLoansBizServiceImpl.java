@@ -20,9 +20,7 @@ import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanWithdrawalOrderEntity;
-import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.MD5Util;
@@ -36,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -154,10 +153,29 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
+            updateSettlementData(loanUser, unionPayLoansSettleAcctDTO);
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }
         return custBankInfoService.save(custBankInfoEntity);
+    }
+
+
+    /**
+     * 打款验证成功后更新loanUser的结算id和银行卡的打款验证状态
+     * @param loanUser
+     * @param unionPayLoansSettleAcctDTO
+     */
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void updateSettlementData(LoanUserEntity loanUser, UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO) {
+        if (BankAcctTypeEnum.PUBLIC.getCode().equals(unionPayLoansSettleAcctDTO.getBankAcctType())) {
+            loanUser.setSettleAcctId(unionPayLoansSettleAcctDTO.getSettleAcctId());
+            loanUserService.updateById(loanUser);
+            //更新
+            CustBankInfoEntity bankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(unionPayLoansSettleAcctDTO.getBankAcctNo(), loanUser.getId());
+            bankInfo.setValidateStatus(ValidateStatusEnum.YES.getCode());
+            custBankInfoService.updateById(bankInfo);
+        }
     }
 
     @Override
@@ -174,7 +192,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
         log.info("防重复提交加密前的M5d值为：{}", md5Str);
         String idempotentMd5 = MD5Util.getMD5String(md5Str);
-        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId() );
+        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
         log.info("防重复提交加密后的M5d值为：{}", idempotentMd5);
         if (StringUtils.isEmpty(isIdempotent)) {
             redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), idempotentMd5, 60, TimeUnit.MINUTES);
@@ -221,7 +239,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
             return Result.ok(withdrawalRespDTO);
         } catch (TfException e) {
-            log.info("提现失败,删除redis:{}",WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
+            log.info("提现失败,删除redis:{}", WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
             redisCache.deleteObject(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
             log.info("提现失败,错误码:{},错误信息:{}", e.getCode(), e.getMessage());
             return Result.failed(e.getCode(), e.getMessage());
