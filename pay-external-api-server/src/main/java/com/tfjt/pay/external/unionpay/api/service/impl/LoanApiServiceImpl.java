@@ -124,7 +124,7 @@ public class LoanApiServiceImpl implements LoanApiService {
     }
 
     @Override
-    public Result<String> deposit(Integer amount, String orderNo) {
+    public Result<DepositRespDTO> deposit(Integer amount, String orderNo) {
         return loanUserBizService.deposit(amount, orderNo);
     }
 

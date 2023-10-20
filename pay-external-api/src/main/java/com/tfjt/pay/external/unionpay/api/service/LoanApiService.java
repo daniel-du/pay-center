@@ -99,7 +99,7 @@ public interface LoanApiService {
      */
     Result<String> getAcctValidateStatus(Integer type, String bid);
 
-    Result<String> deposit(Integer amount,String orderNo);
+    Result<DepositRespDTO> deposit(Integer amount,String orderNo);
 
     Result<List<BankCodeRespDTO>> getBankCodeByName(String bankName);
 

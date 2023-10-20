@@ -10,10 +10,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.ParentBalanceRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.CommonConstants;
@@ -24,7 +21,6 @@ import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
 import com.tfjt.pay.external.unionpay.dto.req.DepositExtraReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.DepositReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ProductInfoReqDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.DepositRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
@@ -381,7 +377,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
-    public Result<String> deposit(Integer amount, String orderNo) {
+    public Result<DepositRespDTO> deposit(Integer amount, String orderNo) {
         String isIdempotent = redisCache.getCacheString(DEPOSIT_IDEMPOTENT_KEY);
         log.info("防重复提交的订单号为：{}", isIdempotent);
         if (!orderNo.equals(isIdempotent)) {
@@ -411,7 +407,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
             depositReqDTO.setExtra(extraReqDTO);
             Result<DepositRespDTO> depositResult = unionPayService.deposit(depositReqDTO);
             if(depositResult.getCode() == NumberConstant.ZERO){
-                return Result.ok();
+                return Result.ok(depositResult.getData());
             }else{
                 return Result.failed(depositResult.getMsg());
             }

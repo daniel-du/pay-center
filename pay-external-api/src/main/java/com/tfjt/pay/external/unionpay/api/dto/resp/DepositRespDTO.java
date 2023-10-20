@@ -1,6 +1,5 @@
-package com.tfjt.pay.external.unionpay.dto.resp;
+package com.tfjt.pay.external.unionpay.api.dto.resp;
 
-import com.tfjt.pay.external.unionpay.dto.req.DepositExtraReqDTO;
 import lombok.Data;
 
 import java.util.Map;
@@ -109,7 +108,7 @@ public class DepositRespDTO {
     /**
      * 扩展字段
      */
-    private DepositExtraReqDTO extra;
+    private DepositExtraRespDTO extra;
 
     /**
      * 自定义参数

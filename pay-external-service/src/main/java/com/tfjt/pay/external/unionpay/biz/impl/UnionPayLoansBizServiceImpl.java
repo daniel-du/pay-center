@@ -163,6 +163,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
 
     /**
      * 打款验证成功后更新loanUser的结算id和银行卡的打款验证状态
+     *
      * @param loanUser
      * @param unionPayLoansSettleAcctDTO
      */
@@ -188,21 +189,38 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             withdrawalRespDTO.setReason(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
             return Result.ok(withdrawalRespDTO);
         }
-        String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
-        String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
-        log.info("防重复提交加密前的M5d值为：{}", md5Str);
-        String idempotentMd5 = MD5Util.getMD5String(md5Str);
+        String outOrderNo;
         String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
-        log.info("防重复提交加密后的M5d值为：{}", idempotentMd5);
-        if (StringUtils.isEmpty(isIdempotent)) {
-            redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), idempotentMd5, 60, TimeUnit.MINUTES);
-        } else if (idempotentMd5.equals(isIdempotent)) {
-            log.info("重复提现了！！！");
-            WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
-            withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
-            withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
-            return Result.failed(withdrawalRespDTO);
+
+        if (ObjectUtils.isEmpty(withdrawalReqDTO.getOrderNo())) {
+            outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
+            String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
+            log.info("防重复提交加密前的M5d值为：{}", md5Str);
+            String idempotentMd5 = MD5Util.getMD5String(md5Str);
+            log.info("防重复提交加密后的M5d值为：{}", idempotentMd5);
+            if (StringUtils.isEmpty(isIdempotent)) {
+                redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), idempotentMd5, 60, TimeUnit.MINUTES);
+            } else if (idempotentMd5.equals(isIdempotent)) {
+                log.info("重复提现了！！！");
+                WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
+                withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
+                withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+                return Result.failed(withdrawalRespDTO);
+            }
+        } else {
+            outOrderNo = withdrawalReqDTO.getOrderNo();
+            log.info("防重复值：{}", outOrderNo);
+            if (StringUtils.isEmpty(isIdempotent)) {
+                redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), outOrderNo, 60, TimeUnit.MINUTES);
+            } else if (outOrderNo.equals(isIdempotent)) {
+                log.info("重复提现了！！！");
+                WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
+                withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
+                withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+                return Result.failed(withdrawalRespDTO);
+            }
         }
+
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();

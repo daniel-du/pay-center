@@ -5,10 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.constants.TradeResultConstant;
-import com.tfjt.pay.external.unionpay.constants.UnionPayEventTypeConstant;
-import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
+import com.tfjt.pay.external.unionpay.constants.*;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
@@ -114,12 +111,19 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             return orderEntity.getLoanUserId();
         }
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30.equals(tradeType)) {
-            LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
-            if (withdrawalOrder != null) {
-                withdrawalOrder.setStatus(eventDataDTO.getStatus());
-                withdrawalOrderService.updateById(withdrawalOrder);
-                loanRequestApplicationRecordService.noticeWithdrawalNotice(withdrawalOrder, tradeType, loanCallbackEntity.getId());
+
+            if(eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_WITHDRAW)){
+                //母账户提现
+
+            }else{
+                LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
+                if (withdrawalOrder != null) {
+                    withdrawalOrder.setStatus(eventDataDTO.getStatus());
+                    withdrawalOrderService.updateById(withdrawalOrder);
+                    loanRequestApplicationRecordService.noticeWithdrawalNotice(withdrawalOrder, tradeType, loanCallbackEntity.getId());
+                }
             }
+
             return null;
 
         }
@@ -129,6 +133,15 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             loanRequestApplicationRecordService.noticeFmsDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
             loanRequestApplicationRecordService.noticeShopDivideNotice(divideEntity, tradeType, loanCallbackEntity.getId());
         }
+        if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_20.equals(tradeType)) {
+            //判断母账户
+            if(eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_DEPOSIT)){
+
+            }
+
+        }
+
+
         return null;
     }
 

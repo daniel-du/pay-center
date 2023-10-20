@@ -21,5 +21,7 @@ public class WithdrawalReqDTO extends UserTypeDTO implements Serializable {
 
     private String appId;
 
+    private String orderNo;
+
 
 }
