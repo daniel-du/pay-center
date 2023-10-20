@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -207,6 +209,7 @@ public class UnionPayServiceImpl implements UnionPayService {
     @Override
     public Result<DepositRespDTO> deposit(DepositReqDTO depositReqDTO) {
         try {
+            log.info("调用银联代付接口开始,入参{}", JSON.toJSONString(depositReqDTO));
             DepositRespDTO depositRespDto = (DepositRespDTO) unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ61_DEPOSIT_REQ.getCode(), JSON.toJSONString(depositReqDTO), DepositRespDTO.class, depositReqDTO.getOutOrderNo());
             return Result.ok(depositRespDto);
         } catch (TfException ex) {
@@ -218,7 +221,9 @@ public class UnionPayServiceImpl implements UnionPayService {
     @Override
     public Result<DepositRespDTO> queryDeposit(String outOrderNo) {
         try {
-            DepositRespDTO depositRespDto = (DepositRespDTO) unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ63_DEPOSIT_QRY_REQ.getCode(), JSON.toJSONString(outOrderNo), DepositRespDTO.class, outOrderNo);
+            Map<String,String> param = new HashMap<>();
+            param.put("outOrderNo",outOrderNo);
+            DepositRespDTO depositRespDto = (DepositRespDTO) unionPayBaseBuilderUtils.combination(TransactionCodeEnum.LWZ63_DEPOSIT_QRY_REQ.getCode(), JSON.toJSONString(param), DepositRespDTO.class, outOrderNo);
             return Result.ok(depositRespDto);
         } catch (TfException ex) {
             log.error("调用查询充值Exception{}", outOrderNo, ex);
