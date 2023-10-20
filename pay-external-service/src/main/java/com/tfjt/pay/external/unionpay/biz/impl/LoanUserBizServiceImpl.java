@@ -24,6 +24,7 @@ import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
 import com.tfjt.pay.external.unionpay.dto.req.DepositExtraReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.DepositReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ProductInfoReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.DepositRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
@@ -408,11 +409,15 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
             productInfoReqDTOList.add(productInfoReqDTO);
             extraReqDTO.setProductInfos(productInfoReqDTOList);
             depositReqDTO.setExtra(extraReqDTO);
-            unionPayService.deposit(depositReqDTO);
+            Result<DepositRespDTO> depositResult = unionPayService.deposit(depositReqDTO);
+            if(depositResult.getCode() == NumberConstant.ZERO){
+                return Result.ok();
+            }else{
+                return Result.failed(depositResult.getMsg());
+            }
         } else {
-            throw new TfException(PayExceptionCodeEnum.REPEAT_OPERATION);
+            return Result.failed(PayExceptionCodeEnum.REPEAT_OPERATION);
         }
-        return Result.ok();
     }
 
 
