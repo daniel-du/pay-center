@@ -99,4 +99,6 @@ public interface LoanApiService {
      */
     Result<String> getAcctValidateStatus(Integer type, String bid);
 
+    Result<String> deposit(Integer amount,String orderNo);
+
 }
