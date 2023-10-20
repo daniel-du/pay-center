@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.dto.resp;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ import java.util.List;
  * @create 2023/10/19 13:52
  */
 @Data
-public class DepositExtraRespDTO {
+public class DepositExtraRespDTO implements Serializable {
 
     /**
      * 扩展字段详情

@@ -112,10 +112,10 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         }
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30.equals(tradeType)) {
 
-            if(eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_WITHDRAW)){
+            if (eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_WITHDRAW)) {
                 //母账户提现
-                noticeParent(loanCallbackEntity, eventDataDTO);
-            }else{
+                noticeParent(loanCallbackEntity, eventDataDTO, tradeType);
+            } else {
                 LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
                 if (withdrawalOrder != null) {
                     withdrawalOrder.setStatus(eventDataDTO.getStatus());
@@ -135,9 +135,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         }
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_20.equals(tradeType)) {
             //判断母账户
-            if(eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_DEPOSIT)){
+            if (eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_DEPOSIT)) {
                 //母账户充值
-                noticeParent(loanCallbackEntity, eventDataDTO);
+                noticeParent(loanCallbackEntity, eventDataDTO, tradeType);
 
             }
 
@@ -149,14 +149,17 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
     /**
      * 母账户交易回调状态更新
+     *
      * @param loanCallbackEntity
      * @param eventDataDTO
      */
-    private void noticeParent(LoanCallbackEntity loanCallbackEntity, EventDataDTO eventDataDTO) {
+    private void noticeParent(LoanCallbackEntity loanCallbackEntity, EventDataDTO eventDataDTO, String tradeType) {
         List<LoadBalanceNoticeEntity> list = new ArrayList<>();
         LoadBalanceNoticeEntity loadBalanceNotice = new LoadBalanceNoticeEntity();
         loadBalanceNotice.setTradeId(eventDataDTO.getTradeId());
         loadBalanceNotice.setStatus(eventDataDTO.getStatus());
+        loadBalanceNotice.setId(loanCallbackEntity.getId());
+        loadBalanceNotice.setTradeType(tradeType);
         list.add(loadBalanceNotice);
         loanRequestApplicationRecordService.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, loanCallbackEntity.getEventId(), loanCallbackEntity.getId());
     }
@@ -173,8 +176,8 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
         LambdaQueryWrapper<LoanOrderDetailsEntity> detailsQueryWrapper = new LambdaQueryWrapper<>();
         detailsQueryWrapper.eq(LoanOrderDetailsEntity::getOrderId, order.getId())
-                .gt(LoanOrderDetailsEntity::getAmount,NumberConstant.ZERO)
-                .eq(LoanOrderDetailsEntity::getConfirmedAmount,NumberConstant.ZERO);
+                .gt(LoanOrderDetailsEntity::getAmount, NumberConstant.ZERO)
+                .eq(LoanOrderDetailsEntity::getConfirmedAmount, NumberConstant.ZERO);
         List<LoanOrderDetailsEntity> loanOrderDetailsEntities = this.loanOrderDetailsService.list(detailsQueryWrapper);
         for (LoanOrderDetailsEntity loanOrderDetailsEntity : loanOrderDetailsEntities) {
             List<ExtraDTO> goods = new ArrayList<>();
@@ -194,7 +197,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             consumerPoliciesCheckReqDTO.setExtra(extra);
             consumerPoliciesCheckReqDTO.setGuaranteePaymentId(loanOrderDetailsEntity.getGuaranteePaymentId());
             consumerPoliciesCheckReqDTO.setOutOrderNo(loanOrderDetailsEntity.getSubBusinessOrderNo());
-            try{
+            try {
                 log.info("订单确认调用银联发送消息>>>>>>>>>>>>>>>{}", JSONObject.toJSONString(consumerPoliciesCheckReqDTO));
                 Result<ConsumerPoliciesCheckRespDTO> consumerPoliciesCheckRespDTOResult = unionPayService.mergeConsumerPoliciesCheck(consumerPoliciesCheckReqDTO);
                 log.info("订单确认调用银联接收消息<<<<<<<<<<<<<<<{}", JSONObject.toJSONString(consumerPoliciesCheckRespDTOResult));
@@ -202,7 +205,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                     loanOrderDetailsEntity.setConfirmStatus(NumberConstant.ONE);
                     this.loanOrderDetailsService.updateById(loanOrderDetailsEntity);
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -213,23 +216,23 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     public void confirmOrder() {
         List<LoanOrderEntity> list = this.loanOrderService.listNotConfirmOrder();
         for (LoanOrderEntity orderEntity : list) {
-            XxlJobHelper.log("未确认的订单:",JSONObject.toJSONString(orderEntity));
+            XxlJobHelper.log("未确认的订单:", JSONObject.toJSONString(orderEntity));
             confirmOrder(orderEntity);
         }
     }
 
     @Override
     public void applicationCallback() {
-      List<LoanRequestApplicationRecordEntity> list =   loanRequestApplicationRecordService.listError();
-      if(CollectionUtil.isNotEmpty(list)){
-          XxlJobHelper.log("通知失败{}调",list.size());
-      }
-      if(CollectionUtil.isNotEmpty(list)){
-          list.forEach(o->{
-              XxlJobHelper.log("重试回掉：{}x",o);
-              loanRequestApplicationRecordService.retryNotice(o);
-          });
-      }
+        List<LoanRequestApplicationRecordEntity> list = loanRequestApplicationRecordService.listError();
+        if (CollectionUtil.isNotEmpty(list)) {
+            XxlJobHelper.log("通知失败{}调", list.size());
+        }
+        if (CollectionUtil.isNotEmpty(list)) {
+            list.forEach(o -> {
+                XxlJobHelper.log("重试回掉：{}x", o);
+                loanRequestApplicationRecordService.retryNotice(o);
+            });
+        }
 
     }
 
