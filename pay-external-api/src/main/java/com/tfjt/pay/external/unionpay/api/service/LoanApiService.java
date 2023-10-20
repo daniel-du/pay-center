@@ -101,4 +101,6 @@ public interface LoanApiService {
 
     Result<String> deposit(Integer amount,String orderNo);
 
+    Result<List<BankCodeRespDTO>> getBankCodeByName(String bankName);
+
 }

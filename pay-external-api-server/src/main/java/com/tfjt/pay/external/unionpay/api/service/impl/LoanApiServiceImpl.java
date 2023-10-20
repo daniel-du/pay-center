@@ -128,4 +128,9 @@ public class LoanApiServiceImpl implements LoanApiService {
         return loanUserBizService.deposit(amount, orderNo);
     }
 
+    @Override
+    public Result<List<BankCodeRespDTO>> getBankCodeByName(String bankName) {
+        return unionPayLoansApiBizService.getBankCodeByName(bankName);
+    }
+
 }

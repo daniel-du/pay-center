@@ -20,8 +20,11 @@ VALUES (null, '河北同福云商科技有限公司', '6221320406254979', '18737
         '313335081005', '313335081005', null, null, '999999', -1, 2, null,
         now(), null, now(), '10200', null, 0);
 
+-- 测试环境
+INSERT INTO tf_pay.tf_loan_balance_acct (loan_user_id, balance_acct_id, rel_acct_no) VALUES ( -1, '2008230724456622719', '035030000000485888016');
 
 
 alter table tf_cust_bank_info
     add validate_status int default 0 not null comment '打款验证状态' after verify_status;
+
 
