@@ -1,16 +1,17 @@
 package com.tfjt.pay.external.unionpay.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 入金通知
- * 
+ *
  * @author songx
  * @email 598482054@163.com
  * @date 2023-08-12 16:21:00
@@ -109,5 +110,8 @@ public class LoadBalanceNoticeEntity implements Serializable {
 	 * 创建时间
 	 */
 	private Date createTime;
+
+	@TableField(exist = false)
+	private String status;
 
 }

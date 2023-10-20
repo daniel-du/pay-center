@@ -114,7 +114,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
             if(eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_WITHDRAW)){
                 //母账户提现
-
+                noticeParent(loanCallbackEntity, eventDataDTO);
             }else{
                 LoanWithdrawalOrderEntity withdrawalOrder = withdrawalOrderService.getWithdrawalOrderByNo(eventDataDTO.getOutOrderNo());
                 if (withdrawalOrder != null) {
@@ -136,6 +136,8 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         if (UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_20.equals(tradeType)) {
             //判断母账户
             if(eventDataDTO.getOutOrderNo().contains(CommonConstants.FMS_DEPOSIT)){
+                //母账户充值
+                noticeParent(loanCallbackEntity, eventDataDTO);
 
             }
 
@@ -143,6 +145,20 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
 
 
         return null;
+    }
+
+    /**
+     * 母账户交易回调状态更新
+     * @param loanCallbackEntity
+     * @param eventDataDTO
+     */
+    private void noticeParent(LoanCallbackEntity loanCallbackEntity, EventDataDTO eventDataDTO) {
+        List<LoadBalanceNoticeEntity> list = new ArrayList<>();
+        LoadBalanceNoticeEntity loadBalanceNotice = new LoadBalanceNoticeEntity();
+        loadBalanceNotice.setTradeId(eventDataDTO.getTradeId());
+        loadBalanceNotice.setStatus(eventDataDTO.getStatus());
+        list.add(loadBalanceNotice);
+        loanRequestApplicationRecordService.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, loanCallbackEntity.getEventId(), loanCallbackEntity.getId());
     }
 
     /**
