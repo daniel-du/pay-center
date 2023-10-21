@@ -132,8 +132,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Override
 //    @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
-    public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
-        boolean result = false;
+    public String bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if (loanUser == null) {
             throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
@@ -153,14 +152,16 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             custBankInfoEntity.setSettlementType(Integer.parseInt(bankInfoReqDTO.getSettlementType()));
             custBankInfoEntity.setAccountName(bankInfoReqDTO.getAccountName());
         }
+        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO ;
         try {
-            UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
+            unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }
-        return custBankInfoService.save(custBankInfoEntity);
+        custBankInfoService.save(custBankInfoEntity);
+        return unionPayLoansSettleAcctDTO.getSettleAcctId();
     }
 
     @Override

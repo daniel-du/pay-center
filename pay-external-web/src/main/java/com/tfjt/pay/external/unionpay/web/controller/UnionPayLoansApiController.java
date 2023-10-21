@@ -36,13 +36,13 @@ public class UnionPayLoansApiController {
      * @return
      */
     @PostMapping("incoming")
-        public Result<?> incoming(Long id,String smsCode) {
+    public Result<?> incoming(Long id, String smsCode) {
         try {
             LoanUserEntity loanUserEntity = loanUserBizService.getById(id);
             if (null == loanUserEntity) {
                 Result.failed(500, "贷款商户不存在");
             }
-            unionPayLoansApiBizService.incoming(loanUserEntity,smsCode);
+            unionPayLoansApiBizService.incoming(loanUserEntity, smsCode);
             return Result.ok(loanUserEntity);
         } catch (TfException e) {
             log.error("YinLianLoansApiController.incoming.err:{}", e);
@@ -60,13 +60,13 @@ public class UnionPayLoansApiController {
      * @return
      */
     @PostMapping("twoIncoming")
-    public Result<?> twoIncoming(Long id,String smsCode) {
+    public Result<?> twoIncoming(Long id, String smsCode) {
         try {
             LoanUserEntity LoanUserEntity = loanUserBizService.getById(id);
             if (null == LoanUserEntity) {
                 Result.failed(500, "贷款商户不存在");
             }
-            return Result.ok(unionPayLoansApiBizService.twoIncoming(LoanUserEntity,smsCode));
+            return Result.ok(unionPayLoansApiBizService.twoIncoming(LoanUserEntity, smsCode));
         } catch (TfException e) {
             log.error("YinLianLoansApiController.incoming.err:{}", e);
             return Result.failed(e.getCode(), e.getMessage());
@@ -188,7 +188,7 @@ public class UnionPayLoansApiController {
     @PostMapping("settleAcctsValidate")
     public Result<?> settleAcctsValidate(Long loanUserId, Integer payAmount) {
         try {
-            return Result.ok(unionPayLoansApiBizService.settleAcctsValidate(loanUserId, payAmount));
+            return Result.ok(unionPayLoansApiBizService.settleAcctsValidate(loanUserId, payAmount, null));
         } catch (TfException e) {
             log.error("YinLianLoansApiController.settleAcctsValidate.err:{}", e);
             return Result.failed(e.getCode(), e.getMessage());

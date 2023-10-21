@@ -23,7 +23,7 @@ public interface UnionPayLoansBizService {
      * @param BankInfoReqDTO
      * @return
      */
-    public boolean bindSettleAcct(BankInfoReqDTO  BankInfoReqDTO);
+     String bindSettleAcct(BankInfoReqDTO  BankInfoReqDTO);
 
     /**
      * 提现

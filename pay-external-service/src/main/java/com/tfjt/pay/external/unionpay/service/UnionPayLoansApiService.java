@@ -96,7 +96,7 @@ public interface UnionPayLoansApiService {
      * @param payAmount
      * @return
      */
-    UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount);
+    UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount,String settleAcctId);
 
     /**
      * 获取绑定账户编号

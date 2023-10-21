@@ -352,8 +352,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#loanUserId"}, expire = 3000, acquireTimeout = 4000)
-    public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount) {
-        String settleAcctId = getSettleAcctId(loanUserId);
+    public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount, String settleAcctId) {
+        if(loanUserId != -1){
+            settleAcctId = getSettleAcctId(loanUserId);
+        }
         if (StringUtils.isBlank(settleAcctId)) {
             throw new TfException(PayExceptionCodeEnum.NO_SETTLE_ACCT);
         }

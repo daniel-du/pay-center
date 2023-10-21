@@ -99,8 +99,8 @@ public class UnionPayLoansApiBizImpl implements UnionPayLoansApiBizService {
     }
 
     @Override
-    public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount) {
-        return unionPayLoansApiService.settleAcctsValidate(loanUserId, payAmount);
+    public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount,String settleAcctId) {
+        return unionPayLoansApiService.settleAcctsValidate(loanUserId, payAmount, settleAcctId);
     }
 
     @Override

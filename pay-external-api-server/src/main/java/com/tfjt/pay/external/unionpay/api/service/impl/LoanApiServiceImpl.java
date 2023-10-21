@@ -87,12 +87,8 @@ public class LoanApiServiceImpl implements LoanApiService {
 
     @Override
     public Result<String> bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
-        boolean boundSettleAcct = unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
-        if (boundSettleAcct) {
-            return Result.ok(PayExceptionCodeEnum.BIND_BANK_CARD_SUCCESS.getMsg());
-        } else {
-            return Result.failed(PayExceptionCodeEnum.BIND_BANK_CARD_FAILED.getMsg());
-        }
+        String boundSettleAcctId = unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
+        return Result.ok(boundSettleAcctId);
     }
 
 
@@ -103,7 +99,12 @@ public class LoanApiServiceImpl implements LoanApiService {
 
     @Override
     public Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount) {
-        return Result.ok(unionPayLoansApiBizService.settleAcctsValidate(loanUserId, payAmount));
+        return Result.ok(unionPayLoansApiBizService.settleAcctsValidate(loanUserId, payAmount, null));
+    }
+
+    @Override
+    public Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount, String settleAcctId) {
+        return Result.ok(unionPayLoansApiBizService.settleAcctsValidate(loanUserId, payAmount, settleAcctId));
     }
 
     @Override

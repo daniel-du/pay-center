@@ -91,6 +91,8 @@ public interface LoanApiService {
      */
     Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount);
 
+    Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount,String settleAcctId);
+
     /**
      * 获取验证状态
      * @param type
