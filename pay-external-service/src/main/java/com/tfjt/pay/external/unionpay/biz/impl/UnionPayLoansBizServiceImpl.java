@@ -130,7 +130,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
      * @return
      */
     @Override
-//    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public String bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
