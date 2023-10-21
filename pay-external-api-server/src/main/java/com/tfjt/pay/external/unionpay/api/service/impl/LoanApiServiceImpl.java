@@ -9,6 +9,7 @@ import com.tfjt.pay.external.unionpay.biz.UnionPayLoansApiBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
+import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -94,7 +95,22 @@ public class LoanApiServiceImpl implements LoanApiService {
 
     @Override
     public Result<String> unbindParentSettleAcct(Long loanUserId) {
-        return null;
+        List<CustBankInfoRespDTO> custBankInfoRespDTOList = unionPayLoansBizService.getBankInfoByLoanUserId(-1L);
+        if (custBankInfoRespDTOList != null && custBankInfoRespDTOList.size() == 1) {
+            throw new TfException(PayExceptionCodeEnum.LAST_ONE_BANK_CARD);
+        }
+        if (custBankInfoRespDTOList != null) {
+            BankInfoReqDTO bankInfoReqDTO = new BankInfoReqDTO();
+            CustBankInfoRespDTO custBankInfoRespDTO = custBankInfoRespDTOList.get(0);
+            bankInfoReqDTO.setBankCardNo(custBankInfoRespDTO.getBankCardNo());
+            bankInfoReqDTO.setSettlementType(String.valueOf(custBankInfoRespDTO.getSettlementType()));
+            bankInfoReqDTO.setBankCardNo(bankInfoReqDTO.getBankCardNo());
+            bankInfoReqDTO.setBankCode(bankInfoReqDTO.getBankCode());
+            bankInfoReqDTO.setBankBranchCode(bankInfoReqDTO.getBankBranchCode());
+//            bankInfoReqDTO.setType();
+            unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
+        }
+        return Result.ok();
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.WithdrawalRespDTO;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
@@ -38,10 +39,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -250,5 +248,17 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             return Result.failed(e.getCode(), e.getMessage());
         }
 
+    }
+
+    @Override
+    public List<CustBankInfoRespDTO> getBankInfoByLoanUserId(Long loanUserId) {
+        List<CustBankInfoEntity> list = custBankInfoService.getBankInfoByLoanUserId(loanUserId);
+        List<CustBankInfoRespDTO> custBankInfoRespDTOList = new ArrayList<>();
+        list.forEach(custBankInfoEntity -> {
+            CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
+            BeanUtil.copyProperties(custBankInfoEntity,custBankInfoRespDTO);
+            custBankInfoRespDTOList.add(custBankInfoRespDTO);
+        });
+        return custBankInfoRespDTOList;
     }
 }
