@@ -184,6 +184,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         loadBalanceNotice.setStatus(eventDataDTO.getStatus());
         loadBalanceNotice.setId(loanCallbackEntity.getId());
         loadBalanceNotice.setTradeType(tradeType);
+        loadBalanceNotice.setRecordedAt(loanCallbackEntity.getCreateDate());
         list.add(loadBalanceNotice);
         loanRequestApplicationRecordService.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, loanCallbackEntity.getEventId(), loanCallbackEntity.getId());
     }
