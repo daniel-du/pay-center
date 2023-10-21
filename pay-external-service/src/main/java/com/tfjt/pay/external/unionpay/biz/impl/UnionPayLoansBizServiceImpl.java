@@ -130,9 +130,10 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
     public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
+        boolean result = false;
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if (loanUser == null) {
             throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
@@ -148,35 +149,18 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         if (CollUtil.isNotEmpty(bankInfo)) {
             String career = bankInfo.get(0).getCareer();
             custBankInfoEntity.setCareer(career);
+            custBankInfoEntity.setLoanUserId(loanUser.getId());
+            custBankInfoEntity.setSettlementType(Integer.parseInt(bankInfoReqDTO.getSettlementType()));
+            custBankInfoEntity.setAccountName(bankInfoReqDTO.getAccountName());
         }
         try {
             UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
-            updateSettlementData(loanUser, unionPayLoansSettleAcctDTO);
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }
         return custBankInfoService.save(custBankInfoEntity);
-    }
-
-
-    /**
-     * 打款验证成功后更新loanUser的结算id和银行卡的打款验证状态
-     *
-     * @param loanUser
-     * @param unionPayLoansSettleAcctDTO
-     */
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public void updateSettlementData(LoanUserEntity loanUser, UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO) {
-        if (BankAcctTypeEnum.PUBLIC.getCode().equals(unionPayLoansSettleAcctDTO.getBankAcctType())) {
-            loanUser.setSettleAcctId(unionPayLoansSettleAcctDTO.getSettleAcctId());
-            loanUserService.updateById(loanUser);
-            //更新
-            CustBankInfoEntity bankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(unionPayLoansSettleAcctDTO.getBankAcctNo(), loanUser.getId());
-            bankInfo.setValidateStatus(ValidateStatusEnum.YES.getCode());
-            custBankInfoService.updateById(bankInfo);
-        }
     }
 
     @Override

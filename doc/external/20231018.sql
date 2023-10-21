@@ -27,4 +27,9 @@ INSERT INTO tf_pay.tf_loan_balance_acct (loan_user_id, balance_acct_id, rel_acct
 alter table tf_cust_bank_info
     add validate_status int default 0 not null comment '打款验证状态' after verify_status;
 
+alter table tf_cust_bank_info
+    modify phone varchar(11) null comment '手机号';
+
+
+
 

@@ -39,4 +39,13 @@ public class BankInfoReqDTO extends UserTypeDTO implements Serializable {
      */
     private String bankBranchCode;
 
+    /**
+     *
+     */
+    private String settlementType;
+    /**
+     * 开户行
+     */
+    private String accountName;
+
  }

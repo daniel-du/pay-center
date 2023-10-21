@@ -12,9 +12,7 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.dto.*;
 import com.tfjt.pay.external.unionpay.entity.*;
-import com.tfjt.pay.external.unionpay.enums.BankTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.UnionPayLoanBussCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.MessageDigestUtils;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
@@ -380,9 +378,20 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         loanUserService.updateById(tfLoanUserEntity);
 
 
-
         UnionPayLoansSettleAcctDTO unionPayLoansSettleAcct = JSON.parseObject(unionPayLoansBaseReturn.getLwzRespData(), UnionPayLoansSettleAcctDTO.class);
 
+
+        /**
+         * 打款验证成功后更新loanUser的结算id和银行卡的打款验证状态
+         */
+        if (BankAcctTypeEnum.PUBLIC.getCode().equals(unionPayLoansSettleAcct.getBankAcctType())) {
+            tfLoanUserEntity.setSettleAcctId(unionPayLoansSettleAcct.getSettleAcctId());
+            loanUserService.updateById(tfLoanUserEntity);
+            //更新
+            CustBankInfoEntity bankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(unionPayLoansSettleAcct.getBankAcctNo(), tfLoanUserEntity.getId());
+            bankInfo.setValidateStatus(ValidateStatusEnum.YES.getCode());
+            custBankInfoService.updateById(bankInfo);
+        }
         return unionPayLoansSettleAcct;
     }
 
@@ -970,9 +979,12 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             //profession
             unionPayLoansSettleAcctDTO.setProfession(custBankInfoEntity.getCareer());
 
-            String encPhone = UnionPaySignUtil.SM2(encodedPub, custBankInfoEntity.getPhone());
-            unionPayLoansSettleAcctDTO.setMobileNumber(encPhone);
-            unionPayLoansSettleAcctDTO.setSmsCode(custBankInfoEntity.getSmsCode());
+            if(BankAcctTypeEnum.PRIVATE.getCode().equals(String.valueOf(custBankInfoEntity.getSettlementType()))){
+                String encPhone = UnionPaySignUtil.SM2(encodedPub, custBankInfoEntity.getPhone());
+                unionPayLoansSettleAcctDTO.setMobileNumber(encPhone);
+                unionPayLoansSettleAcctDTO.setSmsCode(custBankInfoEntity.getSmsCode());
+            }
+
         } else {
             throw new TfException(PayExceptionCodeEnum.NO_DATA);
         }
