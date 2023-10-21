@@ -1,10 +1,12 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
+import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.*;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
@@ -22,10 +24,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author songx
@@ -68,6 +67,9 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
     @Resource
     private LoanRequestApplicationRecordService loanRequestApplicationRecordService;
 
+    @Resource
+    TfAccountConfig tfAccountConfig;
+
     @Lock4j(keys = "#transactionCallBackReqDTO.eventId", expire = 3000, acquireTimeout = 3000)
     @Override
     public String commonCallback(UnionPayLoansBaseCallBackDTO transactionCallBackReqDTO) throws ParseException {
@@ -106,6 +108,28 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
             if (TradeResultConstant.UNIONPAY_SUCCEEDED.equals(eventDataDTO.getStatus())) {
                 //订单确认
                 this.confirmOrder(orderEntity);
+                //如果包含服务费则通知母账户
+                LoanOrderEntity serviceFeeOrder = loanOrderService.getServiceFeeOrder(eventDataDTO.getOutOrderNo());
+                if(Objects.nonNull(serviceFeeOrder)){
+                    log.info("服务费通知===========");
+                    //母账户服务费
+                    List<LoadBalanceNoticeEntity> list = new ArrayList<>();
+                    LoadBalanceNoticeEntity loadBalanceNotice = new LoadBalanceNoticeEntity();
+                    loadBalanceNotice.setAmount(serviceFeeOrder.getAmount());
+                    loadBalanceNotice.setBalanceAcctId(tfAccountConfig.getBalanceAcctId());
+                    loadBalanceNotice.setBalanceAcctNo(tfAccountConfig.getBalanceAcctNo());
+                    loadBalanceNotice.setTradeId(serviceFeeOrder.getCombinedGuaranteePaymentId());
+                    loadBalanceNotice.setTradeType(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_99);
+                    loadBalanceNotice.setCreateTime(serviceFeeOrder.getCreateAt());
+                    loadBalanceNotice.setRecordedAt(serviceFeeOrder.getFinishedAt());
+                    loadBalanceNotice.setEventId(loanCallbackEntity.getEventId());
+                    loadBalanceNotice.setId(0L);
+                    loadBalanceNotice.setPayBalanceAcctId(serviceFeeOrder.getPayBalanceAcctId());
+                    loadBalanceNotice.setPayBankAcctName(serviceFeeOrder.getPayBalanceAcctName());
+                    list.add(loadBalanceNotice);
+                    log.info("服务费通知参数{}", JSON.toJSONString(loadBalanceNotice));
+                    loanRequestApplicationRecordService.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, loanCallbackEntity.getEventId(), loanCallbackEntity.getId());
+                }
             }
             loanRequestApplicationRecordService.noticeShop(orderEntity, tradeType, loanCallbackEntity.getId());
             return orderEntity.getLoanUserId();

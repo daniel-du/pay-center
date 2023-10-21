@@ -113,5 +113,10 @@ public class LoadBalanceNoticeEntity implements Serializable {
 
 	@TableField(exist = false)
 	private String status;
+	/**
+	 * 付款方电子账户
+	 */
+	@TableField(exist = false)
+	private String payBalanceAcctId;
 
 }

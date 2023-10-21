@@ -34,5 +34,8 @@ public interface LoanOrderService extends IService<LoanOrderEntity> {
      * @return
      */
     List<LoanOrderEntity> listNotConfirmOrder();
+
+
+    LoanOrderEntity getServiceFeeOrder(String outOrderNo);
 }
 
