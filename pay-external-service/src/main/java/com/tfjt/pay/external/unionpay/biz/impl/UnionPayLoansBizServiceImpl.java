@@ -250,8 +250,10 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         Result<WithdrawalCreateRespDTO> withdrawalCreateResp = null;
         try {
             withdrawalCreateResp = unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
-            WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
+            WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
             withdrawalRespDTO.setWithdrawalOrderNo(outOrderNo);
+            withdrawalRespDTO.setWithdrawalId(withdrawalCreateResp.getData().getWithdrawalId());
+            withdrawalRespDTO.setStatus(withdrawalCreateResp.getData().getStatus());
             //更新状态
             loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
