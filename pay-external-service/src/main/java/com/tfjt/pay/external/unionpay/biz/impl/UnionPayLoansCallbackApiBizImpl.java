@@ -231,7 +231,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                     this.loanOrderDetailsService.updateById(loanOrderDetailsEntity);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.info("",e);
             }
 
         }
