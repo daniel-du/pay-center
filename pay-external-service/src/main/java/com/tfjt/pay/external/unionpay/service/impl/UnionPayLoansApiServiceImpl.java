@@ -363,7 +363,7 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         Map<String, Object> reqParams = new HashMap<>();
         reqParams.put("settleAcctId", settleAcctId);
         reqParams.put("payAmount", payAmount);
-        log.info("打款金额验证电子账号ID{}金额{}", settleAcctId, payAmount);
+        log.info("打款金额验证结算ID：{}金额：{}", settleAcctId, payAmount);
         UnionPayLoansBaseReq unionPayLoansBaseReq = baseBuilder(UnionPayLoanBussCodeEnum.LWZ527_SETTLE_ACCTS_VALIDATE.getCode(), JSON.toJSONString(reqParams));
         //调用银联接口
         ResponseEntity<UnionPayLoansBaseReturn> responseEntity = post(unionPayLoansBaseReq);

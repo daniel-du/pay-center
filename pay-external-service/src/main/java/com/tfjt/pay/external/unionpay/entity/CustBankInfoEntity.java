@@ -137,4 +137,9 @@ public class CustBankInfoEntity implements Serializable {
      */
     private Integer validateStatus;
 
+    /**
+     * 结算ID
+     */
+    private String settleAcctId;
+
  }

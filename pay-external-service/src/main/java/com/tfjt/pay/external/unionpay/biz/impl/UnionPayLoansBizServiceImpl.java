@@ -155,6 +155,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
+            custBankInfoEntity.setSettleAcctId(unionPayLoansSettleAcctDTO.getSettleAcctId());
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }
