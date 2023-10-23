@@ -393,32 +393,10 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
             CustBankInfoEntity bankInfo = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(unionPayLoansSettleAcct.getBankAcctNo(), tfLoanUserEntity.getId());
             bankInfo.setValidateStatus(ValidateStatusEnum.YES.getCode());
             custBankInfoService.updateById(bankInfo);
+            tfLoanUserEntity.setSettleAcctId(bankInfo.getSettleAcctId());
+            loanUserService.updateById(tfLoanUserEntity);
         }
         return unionPayLoansSettleAcct;
-    }
-
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public String getSettleAcctId(Long loanUserId) {
-        LoanUserEntity tfLoanUserEntity = loanUserService.getById(loanUserId);
-        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
-        if (StringUtils.isNotBlank(tfLoanUserEntity.getOutRequestNo())) {
-            IncomingReturn incomingReturn = getTwoIncomingInfo(tfLoanUserEntity.getOutRequestNo());
-            if (!StringUtils.isBlank(incomingReturn.getSettleAcctId())) {
-                tfLoanUserEntity.setSettleAcctId(incomingReturn.getSettleAcctId());
-                loanUserService.updateById(tfLoanUserEntity);
-                keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),null,null,
-                        incomingReturn.getSettleAcctId(),tfLoanUserEntityOld);
-                return incomingReturn.getSettleAcctId();
-            }else {
-                return tfLoanUserEntity.getSettleAcctId();
-            }
-
-        } else {
-            return "";
-        }
-
     }
 
 
