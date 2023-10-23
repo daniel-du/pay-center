@@ -8,6 +8,7 @@ import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansApiBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.enums.BusinessUserTypeEnum;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -107,8 +108,10 @@ public class LoanApiServiceImpl implements LoanApiService {
             bankInfoReqDTO.setBankCardNo(bankInfoReqDTO.getBankCardNo());
             bankInfoReqDTO.setBankCode(bankInfoReqDTO.getBankCode());
             bankInfoReqDTO.setBankBranchCode(bankInfoReqDTO.getBankBranchCode());
-//            bankInfoReqDTO.setType();
+            bankInfoReqDTO.setType(BusinessUserTypeEnum.SUPPLIER.getCode());
+            bankInfoReqDTO.setBusId("0");
             unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
+            log.info("{}解绑成功！",custBankInfoRespDTO.getBankCardNo());
         }
         return Result.ok();
     }
