@@ -256,9 +256,12 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         List<CustBankInfoEntity> list = custBankInfoService.getBankInfoByLoanUserId(loanUserId);
         List<CustBankInfoRespDTO> custBankInfoRespDTOList = new ArrayList<>();
         list.forEach(custBankInfoEntity -> {
-            CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
-            BeanUtil.copyProperties(custBankInfoEntity,custBankInfoRespDTO);
-            custBankInfoRespDTOList.add(custBankInfoRespDTO);
+            //只获取打款验证成功的银行卡
+            if(ValidateStatusEnum.YES.getCode().equals(custBankInfoEntity.getValidateStatus())){
+                CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
+                BeanUtil.copyProperties(custBankInfoEntity,custBankInfoRespDTO);
+                custBankInfoRespDTOList.add(custBankInfoRespDTO);
+            }
         });
         return custBankInfoRespDTOList;
     }
