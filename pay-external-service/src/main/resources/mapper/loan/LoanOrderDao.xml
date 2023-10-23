@@ -32,7 +32,7 @@
                  inner join tf_loan_order_details as d on o.id = d.order_id
                  inner join tf_loan_order_goods as g on d.id = g.details_id
         where g.product_name = '服务费'
-          and o.trade_order_no = ${outOrderNo}
+          and o.trade_order_no = #{outOrderNo}
     </select>
 
 
