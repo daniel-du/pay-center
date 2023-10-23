@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankCodeRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingReturn;
@@ -112,4 +113,6 @@ public interface UnionPayLoansApiBizService {
     Boolean getMobileStatus(String mobile);
 
     Result<List<BankCodeRespDTO>> getBankCodeByName(String bankName);
+
+    Result<BankInfoRespDTO> getSettleAcctValidateInfo(Integer type, String bid);
 }

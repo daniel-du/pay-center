@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankCodeRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansApiBizService;
@@ -9,10 +10,15 @@ import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
 import com.tfjt.pay.external.unionpay.entity.BankInterbankNumberEntity;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.ValidateStatusEnum;
 import com.tfjt.pay.external.unionpay.service.BankInterbankNumberService;
+import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.service.UnionPayLoansApiService;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -32,6 +38,12 @@ public class UnionPayLoansApiBizImpl implements UnionPayLoansApiBizService {
 
     @Resource
     BankInterbankNumberService bankInterbankNumberService;
+
+    @Resource
+    CustBankInfoService custBankInfoService;
+
+    @Resource
+    LoanUserService loanUserService;
 
     @Override
     public LoanUserEntity incoming(LoanUserEntity tfLoanUserEntity, String smsCode) {
@@ -126,5 +138,29 @@ public class UnionPayLoansApiBizImpl implements UnionPayLoansApiBizService {
                 }
         );
         return Result.ok(bankCodeRespDTOList);
+    }
+
+    @Override
+    public Result<BankInfoRespDTO> getSettleAcctValidateInfo(Integer type, String bid) {
+        LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bid, type);
+        if (ObjectUtils.isEmpty(loanUser)) {
+            return Result.failed(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
+        }else{
+            List<CustBankInfoEntity> custBankInfoEntityList = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
+            for (CustBankInfoEntity bankInfo: custBankInfoEntityList) {
+                if(ValidateStatusEnum.NO.getCode().equals(bankInfo.getValidateStatus())){
+                   BankInfoRespDTO bank  = new BankInfoRespDTO();
+                   bank.setBankCardNo(bankInfo.getBankCardNo());
+                   bank.setBankName(bankInfo.getBankName());
+                   bank.setBankCode(bankInfo.getBankCode());
+                   bank.setBankBranchCode(bankInfo.getBankBranchCode());
+                   bank.setId(Long.valueOf(bankInfo.getId()));
+                   bank.setSettlementType(String.valueOf(bankInfo.getSettlementType()));
+                   return Result.ok(bank);
+                }
+            }
+
+        }
+        return null;
     }
 }

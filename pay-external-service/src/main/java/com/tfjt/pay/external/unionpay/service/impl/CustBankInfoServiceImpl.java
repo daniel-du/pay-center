@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dao.CustBankInfoDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
@@ -12,6 +13,7 @@ import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.dto.response.Result;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
@@ -53,6 +55,7 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
             bankInfoDTO.setBankCardNo(custBankInfoEntity.getBankCardNo());
             bankInfoDTO.setSettlementType(custBankInfoEntity.getSettlementType());
             bankInfoDTO.setValidateStatus(custBankInfoEntity.getValidateStatus());
+            bankInfoDTO.setSettleAcctId(custBankInfoEntity.getSettleAcctId());
             return bankInfoDTO;
         }).collect(Collectors.toList());
         return collect;
@@ -136,4 +139,5 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     public List<CustBankInfoEntity> getBankInfoByLoanUserId(Long loanUserId) {
         return this.list(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
     }
+
 }

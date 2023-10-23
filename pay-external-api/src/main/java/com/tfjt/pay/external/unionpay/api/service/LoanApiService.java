@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -99,10 +100,12 @@ public interface LoanApiService {
      * @param bid
      * @return
      */
-    Result<String> getAcctValidateStatus(Integer type, String bid);
+    Result<ValidateStatusRespDTO> getAcctValidateStatus(Integer type, String bid);
 
     Result<DepositRespDTO> deposit(Integer amount,String orderNo);
 
     Result<List<BankCodeRespDTO>> getBankCodeByName(String bankName);
+
+    Result<BankInfoRespDTO> getSettleAcctValidateInfo(Integer type, String bid);
 
 }

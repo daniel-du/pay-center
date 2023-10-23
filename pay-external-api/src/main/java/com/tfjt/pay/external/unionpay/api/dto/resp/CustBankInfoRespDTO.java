@@ -47,4 +47,6 @@ public class CustBankInfoRespDTO implements Serializable {
      */
     private Integer validateStatus;
 
+    private String settleAcctId;
+
 }

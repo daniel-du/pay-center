@@ -30,5 +30,6 @@ public class BankInfoDTO {
      */
     private Integer validateStatus;
 
+    private String settleAcctId;
 
 }
