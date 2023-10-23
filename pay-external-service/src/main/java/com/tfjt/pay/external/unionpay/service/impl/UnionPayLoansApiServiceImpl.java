@@ -353,9 +353,6 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#loanUserId"}, expire = 3000, acquireTimeout = 4000)
     public UnionPayLoansSettleAcctDTO settleAcctsValidate(Long loanUserId, Integer payAmount, String settleAcctId) {
-        if(loanUserId != -1){
-            settleAcctId = getSettleAcctId(loanUserId);
-        }
         if (StringUtils.isBlank(settleAcctId)) {
             throw new TfException(PayExceptionCodeEnum.NO_SETTLE_ACCT);
         }
@@ -399,6 +396,29 @@ public class UnionPayLoansApiServiceImpl implements UnionPayLoansApiService {
         return unionPayLoansSettleAcct;
     }
 
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public String getSettleAcctId(Long loanUserId) {
+        LoanUserEntity tfLoanUserEntity = loanUserService.getById(loanUserId);
+        LoanUserEntity tfLoanUserEntityOld = tfLoanUserEntity;
+        if (StringUtils.isNotBlank(tfLoanUserEntity.getOutRequestNo())) {
+            IncomingReturn incomingReturn = getTwoIncomingInfo(tfLoanUserEntity.getOutRequestNo());
+            if (!StringUtils.isBlank(incomingReturn.getSettleAcctId())) {
+                tfLoanUserEntity.setSettleAcctId(incomingReturn.getSettleAcctId());
+                loanUserService.updateById(tfLoanUserEntity);
+                keyInformationChangeRecordLogService.saveLog(tfLoanUserEntity.getId(),null,null,
+                        incomingReturn.getSettleAcctId(),tfLoanUserEntityOld);
+                return incomingReturn.getSettleAcctId();
+            }else {
+                return tfLoanUserEntity.getSettleAcctId();
+            }
+
+        } else {
+            return "";
+        }
+
+    }
 
     /**
      * 构建二级进件修改参数
