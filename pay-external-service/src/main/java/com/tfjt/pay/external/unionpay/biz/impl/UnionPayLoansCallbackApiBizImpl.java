@@ -111,7 +111,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 //如果包含服务费则通知母账户
                 LoanOrderEntity serviceFeeOrder = loanOrderService.getServiceFeeOrder(eventDataDTO.getOutOrderNo());
                 if(Objects.nonNull(serviceFeeOrder)){
-                    log.info("服务费通知===========");
+                    log.info("服务费通知===========>{}",serviceFeeOrder);
                     //母账户服务费
                     List<LoadBalanceNoticeEntity> list = new ArrayList<>();
                     LoadBalanceNoticeEntity loadBalanceNotice = new LoadBalanceNoticeEntity();
