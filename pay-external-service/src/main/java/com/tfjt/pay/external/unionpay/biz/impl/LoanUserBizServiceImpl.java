@@ -76,6 +76,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
         checkLoanUser(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
         try {
             ValidatorUtils.validateEntity(paymentPasswordDTO);
+            log.info("电子账簿-设置密码参数paymentPasswordDTO：{}", paymentPasswordDTO);
             PaymentPasswordEntity paymentPassword = new PaymentPasswordEntity();
             BeanUtils.copyProperties(paymentPasswordDTO, paymentPassword);
             //验证此用户是否有支付密码
