@@ -218,7 +218,9 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
         withdrawalCreateReqDTO.setBusinessType(UnionPayBusinessTypeEnum.WITHDRAWAL.getCode());
         withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
-        withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
+        if(Objects.nonNull(bankInfo.getPhone())){
+            withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
+        }
         withdrawalCreateReqDTO.setRemark("");
         Map<String, Object> map = new HashMap<>();
         map.put("notifyUrl", notifyUrl);
