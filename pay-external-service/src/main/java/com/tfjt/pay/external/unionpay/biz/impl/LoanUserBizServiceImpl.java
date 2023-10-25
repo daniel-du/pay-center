@@ -377,7 +377,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
-    public Result<DepositRespDTO> deposit(Integer amount, String orderNo) {
+    public Result<DepositRespDTO> deposit(Long amount, String orderNo) {
         String isIdempotent = redisCache.getCacheString(DEPOSIT_IDEMPOTENT_KEY);
         log.info("防重复提交的订单号为：{}", isIdempotent);
         if (!orderNo.equals(isIdempotent)) {
@@ -387,7 +387,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
             depositReqDTO.setSentAt(DateUtil.getByRFC3339(new Date()));
             depositReqDTO.setTotalAmount(amount);
             depositReqDTO.setAmount(amount);
-            depositReqDTO.setDiscountAmount(0);
+            depositReqDTO.setDiscountAmount(0L);
             depositReqDTO.setDepositType(DepositTypeEnum.DEPOSIT.getCode());
             depositReqDTO.setPaymentType(TF_PAY);
             depositReqDTO.setBalanceAcctId(accountConfig.getBalanceAcctId());

@@ -114,5 +114,5 @@ public interface LoanUserBizService {
      * @param orderNo
      * @return
      */
-    Result<DepositRespDTO> deposit(Integer amount, String orderNo);
+    Result<DepositRespDTO> deposit(Long amount, String orderNo);
 }

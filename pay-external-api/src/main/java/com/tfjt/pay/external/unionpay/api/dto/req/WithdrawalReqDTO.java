@@ -15,7 +15,7 @@ import java.io.Serializable;
 
 @Data
 public class WithdrawalReqDTO extends UserTypeDTO implements Serializable {
-    private Integer amount;
+    private Long amount;
 
     private Long bankInfoId;
 

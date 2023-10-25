@@ -27,17 +27,17 @@ public class DepositReqDTO {
     /**
      * 总金额
      */
-    private int totalAmount;
+    private Long totalAmount;
 
     /**
      * 支付金额
      */
-    private int amount;
+    private Long amount;
 
     /**
      * 平台优惠金额
      */
-    private int discountAmount;
+    private Long discountAmount;
 
     /**
      * 电子账簿ID

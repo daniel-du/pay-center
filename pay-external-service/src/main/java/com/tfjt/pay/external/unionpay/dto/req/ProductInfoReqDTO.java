@@ -21,7 +21,7 @@ public class ProductInfoReqDTO {
     /**
      * 订单金额
      */
-    private Integer orderAmount;
+    private Long orderAmount;
 
     /**
      * 商品名称
