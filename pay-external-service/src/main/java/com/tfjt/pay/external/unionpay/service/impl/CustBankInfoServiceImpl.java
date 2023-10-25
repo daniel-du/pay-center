@@ -4,16 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dao.CustBankInfoDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.pay.external.unionpay.enums.ValidateStatusEnum;
+import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
+import com.tfjt.pay.external.unionpay.service.UnionPayLoansApiService;
 import com.tfjt.tfcommon.core.exception.TfException;
-import com.tfjt.tfcommon.dto.response.Result;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
@@ -80,7 +81,7 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
      */
     @Override
     public CustBankInfoEntity getByLoanUserId(Long loanUserId) {
-        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId).eq(CustBankInfoEntity::isDeleted, false).last(" limit 1"));
+        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId).eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getValidateStatus, ValidateStatusEnum.YES.getCode()).last(" limit 1"));
     }
 
     /**
