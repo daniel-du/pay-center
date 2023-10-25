@@ -136,7 +136,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         }
         log.info("绑定银行卡参数：{}", bankInfoReqDTO);
         CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
-        if (bankInfoByBankCardNoAndLoanUserId != null) {
+        if (bankInfoByBankCardNoAndLoanUserId != null && Objects.isNull(bankInfoReqDTO.getId())) {
             throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD);
         }
         List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
@@ -149,13 +149,13 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             custBankInfoEntity.setSettlementType(Integer.parseInt(bankInfoReqDTO.getSettlementType()));
             custBankInfoEntity.setAccountName(bankInfoReqDTO.getAccountName());
         }
-        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO ;
+        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO;
         try {
             unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
 
-            if(BankTypeEnum.PERSONAL.getCode().equals(unionPayLoansSettleAcctDTO.getBankAcctType())){
+            if (BankTypeEnum.PERSONAL.getCode().equals(unionPayLoansSettleAcctDTO.getBankAcctType())) {
                 //对私标记验证通过
                 custBankInfoEntity.setValidateStatus(ValidateStatusEnum.YES.getCode());
             }
@@ -163,7 +163,9 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }
-        custBankInfoEntity.setId(bankInfoReqDTO.getId());
+        if(Objects.nonNull(bankInfoReqDTO.getId())){
+            custBankInfoEntity.setId(bankInfoReqDTO.getId());
+        }
         custBankInfoService.saveOrUpdate(custBankInfoEntity);
         return unionPayLoansSettleAcctDTO.getSettleAcctId();
     }
@@ -221,7 +223,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
         withdrawalCreateReqDTO.setBusinessType(UnionPayBusinessTypeEnum.WITHDRAWAL.getCode());
         withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
-        if(Objects.nonNull(bankInfo.getPhone())){
+        if (Objects.nonNull(bankInfo.getPhone())) {
             withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
         }
         withdrawalCreateReqDTO.setRemark("");
@@ -264,9 +266,9 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         List<CustBankInfoRespDTO> custBankInfoRespDTOList = new ArrayList<>();
         list.forEach(custBankInfoEntity -> {
             //只获取打款验证成功的银行卡
-            if(ValidateStatusEnum.YES.getCode().equals(custBankInfoEntity.getValidateStatus())){
+            if (ValidateStatusEnum.YES.getCode().equals(custBankInfoEntity.getValidateStatus())) {
                 CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
-                BeanUtil.copyProperties(custBankInfoEntity,custBankInfoRespDTO);
+                BeanUtil.copyProperties(custBankInfoEntity, custBankInfoRespDTO);
                 custBankInfoRespDTOList.add(custBankInfoRespDTO);
             }
         });
