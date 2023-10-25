@@ -21,10 +21,7 @@ import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanWithdrawalOrderEntity;
-import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.ValidateStatusEnum;
+import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.MD5Util;
@@ -157,6 +154,11 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
+
+            if(BankTypeEnum.PERSONAL.getCode().equals(unionPayLoansSettleAcctDTO.getBankAcctType())){
+                //对私标记验证通过
+                custBankInfoEntity.setValidateStatus(ValidateStatusEnum.YES.getCode());
+            }
             custBankInfoEntity.setSettleAcctId(unionPayLoansSettleAcctDTO.getSettleAcctId());
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
