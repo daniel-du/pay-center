@@ -263,7 +263,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
             }
             LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcc.getBalanceAcctId());
             if (org.apache.commons.lang3.ObjectUtils.isNotEmpty(loanAccountDTO)) {
-                Integer settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
+                Long settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
                 BigDecimal bigDecimal = new BigDecimal(100);
                 balance = new BigDecimal(settledAmount).divide(bigDecimal);
             }
