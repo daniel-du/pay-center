@@ -14,6 +14,8 @@ import java.io.Serializable;
  */
 @Data
 public class BankInfoReqDTO extends UserTypeDTO implements Serializable {
+
+    private int id;
     /**
      * 银行卡号
      */

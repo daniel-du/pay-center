@@ -163,7 +163,8 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }
-        custBankInfoService.save(custBankInfoEntity);
+        custBankInfoEntity.setId(bankInfoReqDTO.getId());
+        custBankInfoService.saveOrUpdate(custBankInfoEntity);
         return unionPayLoansSettleAcctDTO.getSettleAcctId();
     }
 
