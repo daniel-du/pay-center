@@ -121,7 +121,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                     loadBalanceNotice.setTradeId(serviceFeeOrder.getCombinedGuaranteePaymentId());
                     loadBalanceNotice.setTradeType(UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_99);
                     loadBalanceNotice.setCreateTime(serviceFeeOrder.getCreateAt());
-                    loadBalanceNotice.setRecordedAt(serviceFeeOrder.getFinishedAt());
+                    loadBalanceNotice.setRecordedAt(new Date());
                     loadBalanceNotice.setEventId(loanCallbackEntity.getEventId());
                     loadBalanceNotice.setId(0L);
                     loadBalanceNotice.setPayBalanceAcctId(serviceFeeOrder.getPayBalanceAcctId());
@@ -184,7 +184,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
         loadBalanceNotice.setStatus(eventDataDTO.getStatus());
         loadBalanceNotice.setId(loanCallbackEntity.getId());
         loadBalanceNotice.setTradeType(tradeType);
-        loadBalanceNotice.setRecordedAt(loanCallbackEntity.getCreateDate());
+        loadBalanceNotice.setRecordedAt(new Date());
         list.add(loadBalanceNotice);
         loanRequestApplicationRecordService.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, loanCallbackEntity.getEventId(), loanCallbackEntity.getId());
     }
