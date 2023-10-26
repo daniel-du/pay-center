@@ -15,6 +15,7 @@ import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
+import com.tfjt.pay.external.unionpay.enums.ApplicationStatusEnum;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.tfcommon.dto.response.Result;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -126,6 +127,7 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                     loadBalanceNotice.setId(0L);
                     loadBalanceNotice.setPayBalanceAcctId(serviceFeeOrder.getPayBalanceAcctId());
                     loadBalanceNotice.setPayBankAcctName(serviceFeeOrder.getPayBalanceAcctName());
+                    loadBalanceNotice.setStatus(ApplicationStatusEnum.SUCCEEDED.getCode());
                     list.add(loadBalanceNotice);
                     log.info("服务费通知参数{}", JSON.toJSONString(loadBalanceNotice));
                     loanRequestApplicationRecordService.noticeFmsIncomeNotice(list, UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_10, loanCallbackEntity.getEventId(), loanCallbackEntity.getId());
