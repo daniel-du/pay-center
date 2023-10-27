@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ConsumerPoliciesCheckReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayIncomeDetailsDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesCheckRespDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.ServiceFeeOrderRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.ApplicationStatusEnum;
 import com.tfjt.pay.external.unionpay.service.*;
@@ -110,13 +111,13 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 //订单确认
                 this.confirmOrder(orderEntity);
                 //如果包含服务费则通知母账户
-                LoanOrderEntity serviceFeeOrder = loanOrderService.getServiceFeeOrder(eventDataDTO.getOutOrderNo());
+                ServiceFeeOrderRespDTO serviceFeeOrder = loanOrderService.getServiceFeeOrder(eventDataDTO.getOutOrderNo());
                 if(Objects.nonNull(serviceFeeOrder)){
                     log.info("服务费通知===========>{}",serviceFeeOrder);
                     //母账户服务费
                     List<LoadBalanceNoticeEntity> list = new ArrayList<>();
                     LoadBalanceNoticeEntity loadBalanceNotice = new LoadBalanceNoticeEntity();
-                    loadBalanceNotice.setAmount(serviceFeeOrder.getAmount());
+                    loadBalanceNotice.setAmount(serviceFeeOrder.getProductAmount());
                     loadBalanceNotice.setBalanceAcctId(tfAccountConfig.getBalanceAcctId());
                     loadBalanceNotice.setBalanceAcctNo(tfAccountConfig.getBalanceAcctNo());
                     loadBalanceNotice.setTradeId(serviceFeeOrder.getCombinedGuaranteePaymentId());
