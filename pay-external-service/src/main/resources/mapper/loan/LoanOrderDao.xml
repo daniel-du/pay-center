@@ -26,8 +26,8 @@
 
         )
     </select>
-    <select id="getServiceFeeOrder" resultType="com.tfjt.pay.external.unionpay.entity.LoanOrderEntity">
-        select  distinct o.*
+    <select id="getServiceFeeOrder" resultType="com.tfjt.pay.external.unionpay.dto.resp.ServiceFeeOrderRespDTO">
+        select  distinct o.pay_balance_acct_id,o.pay_balance_acct_name,o.combined_guarantee_payment_id,o.create_at,g.product_amount
         from tf_loan_order as o
                  inner join tf_loan_order_details as d on o.id = d.order_id
                  inner join tf_loan_order_goods as g on d.id = g.details_id
