@@ -76,7 +76,7 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
      */
     @Override
     public CustBankInfoEntity getByLoanUserId(Long loanUserId) {
-        log.info("获取默认卡",loanUserId);
+        log.info("获取默认卡:{}",loanUserId);
         return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId).eq(CustBankInfoEntity::isDeleted, false).last(" limit 1"));
     }
 
