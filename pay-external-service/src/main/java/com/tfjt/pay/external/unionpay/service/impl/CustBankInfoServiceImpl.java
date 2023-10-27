@@ -4,15 +4,16 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dao.CustBankInfoDao;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
-import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
-import com.tfjt.pay.external.unionpay.entity.BankEntity;
-import com.tfjt.pay.external.unionpay.entity.BankInterbankNumberEntity;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.pay.external.unionpay.enums.ValidateStatusEnum;
+import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
+import com.tfjt.pay.external.unionpay.service.LoanUserService;
+import com.tfjt.pay.external.unionpay.service.UnionPayLoansApiService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.apache.commons.lang3.StringUtils;
@@ -35,10 +36,12 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     @Resource
     private UnionPayLoansApiService unionPayLoansApiService;
     @Override
-    public List<BankInfoDTO> getBankInfoByBus(Long loanUserId) {
+    public List<BankInfoDTO>
+    getBankInfoByBus(Long loanUserId) {
         LoanUserEntity one = getTfLoanUserEntity(loanUserId);
+        //按时间倒序
         List<CustBankInfoEntity> list = this.list(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false)
-                .eq(CustBankInfoEntity::getLoanUserId, one.getId()));
+                .eq(CustBankInfoEntity::getLoanUserId, one.getId()).orderByDesc(CustBankInfoEntity::getCreateDate));
         if (CollUtil.isEmpty(list)) {
             return new ArrayList<>();
         }
@@ -51,6 +54,9 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
             bankInfoDTO.setAccountName(custBankInfoEntity.getAccountName());
             bankInfoDTO.setId(custBankInfoEntity.getId());
             bankInfoDTO.setBankCardNo(custBankInfoEntity.getBankCardNo());
+            bankInfoDTO.setSettlementType(custBankInfoEntity.getSettlementType());
+            bankInfoDTO.setValidateStatus(custBankInfoEntity.getValidateStatus());
+            bankInfoDTO.setSettleAcctId(custBankInfoEntity.getSettleAcctId());
             return bankInfoDTO;
         }).collect(Collectors.toList());
         return collect;
@@ -75,7 +81,7 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
      */
     @Override
     public CustBankInfoEntity getByLoanUserId(Long loanUserId) {
-        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId).eq(CustBankInfoEntity::isDeleted, false).last(" limit 1"));
+        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId).eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getValidateStatus, ValidateStatusEnum.YES.getCode()).last(" limit 1"));
     }
 
     /**
@@ -134,4 +140,5 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     public List<CustBankInfoEntity> getBankInfoByLoanUserId(Long loanUserId) {
         return this.list(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
     }
+
 }

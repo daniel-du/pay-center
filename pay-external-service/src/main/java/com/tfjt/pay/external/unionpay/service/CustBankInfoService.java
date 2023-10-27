@@ -2,10 +2,12 @@ package com.tfjt.pay.external.unionpay.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
-import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
 

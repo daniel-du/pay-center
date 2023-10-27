@@ -28,7 +28,7 @@
             initiator_account = TRIM( TRAILING ',' FROM initiator_account ) ,
             payee_name = TRIM( TRAILING ',' FROM payee_name ) ,
             payee_account = TRIM( TRAILING ',' FROM payee_account ) ,
-            order_money = TRIM( TRAILING ',' FROM payee_account ) ,
+            order_money = TRIM( TRAILING ',' FROM order_money ) ,
             platform_fee_money = TRIM( TRAILING ',' FROM platform_fee_money )
     </select>
 

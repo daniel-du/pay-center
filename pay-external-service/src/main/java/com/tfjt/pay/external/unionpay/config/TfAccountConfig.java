@@ -25,4 +25,9 @@ public class TfAccountConfig {
      * 退款通知
      */
     private String notifyUrl;
+
+    /**
+     * 同福电子账簿号
+     */
+    private String balanceAcctNo;
 }

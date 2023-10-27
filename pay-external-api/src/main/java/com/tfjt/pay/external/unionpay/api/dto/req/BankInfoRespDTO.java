@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.unionpay.api.dto.resp;
+package com.tfjt.pay.external.unionpay.api.dto.req;
 
 import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import lombok.Data;
@@ -13,9 +13,9 @@ import java.io.Serializable;
  * @create 2023/8/12 14:21
  */
 @Data
-public class BankInfoReqDTO extends UserTypeDTO implements Serializable {
+public class BankInfoRespDTO extends UserTypeDTO implements Serializable {
 
-    private Integer id;
+    private Long id;
     /**
      * 银行卡号
      */

@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.api.dto.resp;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -9,6 +11,7 @@ import java.io.Serializable;
  * @description
  * @create 2023/8/17 11:26
  */
+@Data
 public class CustBankInfoRespDTO implements Serializable {
     private Integer id;
 
@@ -33,43 +36,17 @@ public class CustBankInfoRespDTO implements Serializable {
      */
     private String accountName;
 
-    public Integer getId() {
-        return id;
-    }
+    /**
+     * 结算类型 1个人 2企业
+     */
+    private Integer settlementType;
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    /**
+     * 打款验证
+     * @return
+     */
+    private Integer validateStatus;
 
-    public String getBankName() {
-        return bankName;
-    }
+    private String settleAcctId;
 
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getBankCardNo() {
-        return bankCardNo;
-    }
-
-    public void setBankCardNo(String bankCardNo) {
-        this.bankCardNo = bankCardNo;
-    }
-
-    public String getBigBankName() {
-        return bigBankName;
-    }
-
-    public void setBigBankName(String bigBankName) {
-        this.bigBankName = bigBankName;
-    }
-
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
-    }
 }

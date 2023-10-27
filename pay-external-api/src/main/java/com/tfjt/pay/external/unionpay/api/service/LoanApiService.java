@@ -1,10 +1,8 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -65,8 +63,49 @@ public interface LoanApiService {
      */
     Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type,List<String> busIds);
 
+    /**
+     * 解除绑定银行卡
+     * @param bankInfoReqDTO
+     * @return
+     */
     Result<String> unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO);
 
+    /**
+     * 绑定结算银行卡
+     * @param bankInfoReqDTO
+     * @return
+     */
     Result<String> bindSettleAcct(BankInfoReqDTO bankInfoReqDTO);
+
+
+    /**
+     * 解绑母账户
+     * @param loanUserId
+     * @return
+     */
+    Result<String> unbindParentSettleAcct(Long loanUserId);
+    /**
+     * 打款验证
+     * @param loanUserId
+     * @param payAmount
+     * @return
+     */
+    Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount);
+
+    Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount,String settleAcctId);
+
+    /**
+     * 获取验证状态
+     * @param type
+     * @param bid
+     * @return
+     */
+    Result<ValidateStatusRespDTO> getAcctValidateStatus(Integer type, String bid);
+
+    Result<DepositRespDTO> deposit(Long amount,String orderNo);
+
+    Result<List<BankCodeRespDTO>> getBankCodeByName(String bankName);
+
+    Result<BankInfoRespDTO> getSettleAcctValidateInfo(Integer type, String bid);
 
 }

@@ -21,6 +21,10 @@ public class WithdrawalRespDTO implements Serializable {
 
     /**原因描述*/
     private String reason;
+    /**
+     * 系统订单号
+     */
+    private String withdrawalId;
 
 
 }

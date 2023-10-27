@@ -1,9 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import com.tfjt.pay.external.unionpay.dto.UnionPayLoansBaseCallBackDTO;
-import com.tfjt.pay.external.unionpay.dto.resp.UnionPayBaseResp;
 
-import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 
 /**

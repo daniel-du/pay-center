@@ -23,7 +23,7 @@ public class WithdrawalCreateReqDTO implements Serializable {
     private String sentAt;
 
     /**金额*/
-    private Integer amount;
+    private Long amount;
 
     /**平台手续费*/
     private Integer serviceFee;

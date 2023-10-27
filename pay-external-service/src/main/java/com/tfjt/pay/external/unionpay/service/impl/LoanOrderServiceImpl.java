@@ -33,6 +33,9 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
     @Resource
     private LoanOrderGoodsDao loanOrderGoodsDao;
 
+    @Resource
+    private LoanOrderDao loanOrderDao;
+
     @Override
     public boolean checkExistBusinessOrderNo(String businessOrderNo, String appId) {
         LambdaQueryWrapper<LoanOrderEntity> queryWrapper = new LambdaQueryWrapper<>();
@@ -77,6 +80,11 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
     public List<LoanOrderEntity> listNotConfirmOrder() {
         DateTime dateTime = cn.hutool.core.date.DateUtil.beginOfDay(cn.hutool.core.date.DateUtil.date());
         return this.getBaseMapper().listNotConfirmOrder(dateTime);
+    }
+
+    @Override
+    public LoanOrderEntity getServiceFeeOrder(String outOrderNo) {
+        return loanOrderDao.getServiceFeeOrder(outOrderNo);
     }
 
 }
