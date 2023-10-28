@@ -6,7 +6,9 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.enums.BankAcctTypeEnum;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.ValidateStatusEnum;
 import com.tfjt.pay.external.unionpay.service.CaptchaService;
 import com.tfjt.pay.external.unionpay.service.CustBankInfoService;
 import com.tfjt.pay.external.unionpay.service.LoanUserService;
@@ -97,7 +99,7 @@ public class CustBankInfoController {
         }
         //判断银行卡是否重复
         long count = custBankInfoService.count(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getBankCardNo,
-                custBankInfo.getBankCardNo()));
+                custBankInfo.getBankCardNo()).eq(CustBankInfoEntity::isDeleted,false));
         if (count > 0) {
             throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD);
         }
@@ -106,15 +108,19 @@ public class CustBankInfoController {
         long loanUserType = loanUerInfo.getLoanUserType();
         int settlementType = custBankInfo.getSettlementType();
         if (loanUserType == 1) {
-
             if (settlementType != 2) {
                 return Result.failed("结算类型错误");
             }
         } else if (loanUserType == 2) {
-            if (settlementType == 0) {
+            if (settlementType == 1) {
                 return Result.failed("结算类型错误");
             }
         }
+        //如果是个人进件直接验证通过
+        if(BankAcctTypeEnum.PRIVATE.getCode().equals(String.valueOf(custBankInfo.getSettlementType()))){
+            custBankInfo.setValidateStatus(ValidateStatusEnum.YES.getCode());
+        }
+
         boolean bool = custBankInfoService.save(custBankInfo);
         if (bool) {
             return Result.ok("保存成功");
