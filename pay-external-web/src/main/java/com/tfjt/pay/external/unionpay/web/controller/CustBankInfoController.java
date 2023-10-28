@@ -74,7 +74,7 @@ public class CustBankInfoController {
      */
     @GetMapping("/info/{loanUserId}")
     public Result<?> info(@PathVariable("loanUserId") Long loanUserId) {
-        CustBankInfoEntity custBankInfo = custBankInfoService.getByLoanUserId(loanUserId);
+        CustBankInfoEntity custBankInfo = custBankInfoService.getDefaultBankInfo(loanUserId);
         return Result.ok(custBankInfo);
     }
 
