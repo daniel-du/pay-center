@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.UnionPayProduct;
 import com.tfjt.pay.external.unionpay.dto.req.BalanceDivideReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.SubBalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.UnionPayDivideSubReq;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayDivideRespDTO;

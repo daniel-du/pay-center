@@ -35,7 +35,7 @@ import java.util.*;
  */
 @Slf4j
 @Component
-public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApiBiz {
+public class UnionPayLoansCallbackApiBizServiceImpl implements UnionPayLoansCallbackApiBiz {
 
     @Autowired
     private LoanBalanceNoticeService payBalanceNoticeService;
