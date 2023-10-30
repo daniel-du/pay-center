@@ -10,7 +10,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Date;
 
 /**
  * @Auther: songx
@@ -26,6 +25,12 @@ public class SendAlarmHandler implements CheckBillHandler {
 
     @Resource
     private DingRobotService dingRobotService;
+
+    /**
+     * 发送钉钉报警
+     * @param checkLoanBillDTO  报警参数
+     * @return 是否后续流程
+     */
     @Override
     public boolean handler(CheckLoanBillDTO checkLoanBillDTO) {
         String envName;
@@ -34,8 +39,7 @@ public class SendAlarmHandler implements CheckBillHandler {
         }else {
             envName = "测试";
         }
-        dingRobotService.send(MarkdownMessage.buildBiz(String.format("【%s】%s",envName, "校验贷款数据对账单"), String.format("贷款对账数据存疑,对账批次号:[%s],请尽快查看",checkLoanBillDTO.getWarnBatchNo())),
-                "ce2af6cff8993d88584620a8149e8678e10ac210a85925ce1c25aaa9546a1b14", true, "SEC1a33971a146d349f962c98110ad1234e4f7cc93dc6dd8e644f6f9a80e732ed61");
+        dingRobotService.send(MarkdownMessage.buildBiz(String.format("【%s】%s",envName, "校验贷款数据对账单"), String.format("贷款对账数据存疑,对账批次号:[%s],请尽快查看",checkLoanBillDTO.getWarnBatchNo())));
         return false;
     }
 }

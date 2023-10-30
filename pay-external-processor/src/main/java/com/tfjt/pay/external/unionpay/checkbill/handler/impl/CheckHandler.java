@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * 核对银联与本地业务数据
  * @Auther: songx
  * @Date: 2023/10/28/09:32
  * @Description:
@@ -37,7 +38,12 @@ public class CheckHandler implements CheckBillHandler {
     @Resource
     private LoanUnionpayCheckBillDetailsServiceBiz loanUnionpayCheckBillDetailsServiceBiz;
 
-
+    /**
+     * 核对银联与本地业务数据是否一致,
+     * 如不一致则将异常数据保存在数据库并进行钉钉报警
+     * @param checkLoanBillDTO 核对参数
+     * @return 是否进行下一个流程
+     */
     @Override
     public boolean handler(CheckLoanBillDTO checkLoanBillDTO) {
         CheckBillTypeEnum[] values = CheckBillTypeEnum.values();
