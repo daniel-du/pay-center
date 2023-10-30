@@ -8,22 +8,20 @@ import com.baomidou.lock.annotation.Lock4j;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.tfjt.pay.external.unionpay.api.dto.req.WithdrawalReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.WithdrawalRespDTO;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
 import com.tfjt.pay.external.unionpay.constants.CommonConstants;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.ReqDeleteSettleAcctParams;
-import com.tfjt.pay.external.unionpay.dto.UnionPayLoansSettleAcctDTO;
 import com.tfjt.pay.external.unionpay.dto.req.WithdrawalCreateReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.WithdrawalCreateRespDTO;
 import com.tfjt.pay.external.unionpay.entity.CustBankInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanBalanceAcctEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanWithdrawalOrderEntity;
-import com.tfjt.pay.external.unionpay.enums.LoanUserTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.MD5Util;
@@ -40,10 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -134,14 +129,14 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Lock4j(keys = {"#bankInfoReqDTO.bankCardNo"}, expire = 3000, acquireTimeout = 4000)
-    public boolean bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
+    public String bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         LoanUserEntity loanUser = loanUserService.getLoanUserByBusIdAndType(bankInfoReqDTO.getBusId(), bankInfoReqDTO.getType());
         if (loanUser == null) {
             throw new TfException(PayExceptionCodeEnum.NO_LOAN_USER);
         }
         log.info("绑定银行卡参数：{}", bankInfoReqDTO);
         CustBankInfoEntity bankInfoByBankCardNoAndLoanUserId = custBankInfoService.getBankInfoByBankCardNoAndLoanUserId(bankInfoReqDTO.getBankCardNo(), loanUser.getId());
-        if (bankInfoByBankCardNoAndLoanUserId != null) {
+        if (bankInfoByBankCardNoAndLoanUserId != null && Objects.isNull(bankInfoReqDTO.getId())) {
             throw new TfException(PayExceptionCodeEnum.EXISTED_BANK_CARD);
         }
         List<CustBankInfoEntity> bankInfo = custBankInfoService.getBankInfoByLoanUserId(loanUser.getId());
@@ -150,15 +145,29 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         if (CollUtil.isNotEmpty(bankInfo)) {
             String career = bankInfo.get(0).getCareer();
             custBankInfoEntity.setCareer(career);
+            custBankInfoEntity.setLoanUserId(loanUser.getId());
+            custBankInfoEntity.setSettlementType(Integer.parseInt(bankInfoReqDTO.getSettlementType()));
+            custBankInfoEntity.setAccountName(bankInfoReqDTO.getAccountName());
         }
+        UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO;
         try {
-            UnionPayLoansSettleAcctDTO unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
+            unionPayLoansSettleAcctDTO = unionPayLoansApiService.bindAddSettleAcct(custBankInfoEntity);
             //银行账号类型
             custBankInfoEntity.setSettlementType(Integer.parseInt(unionPayLoansSettleAcctDTO.getBankAcctType()));
+
+            if (BankTypeEnum.PERSONAL.getCode().equals(unionPayLoansSettleAcctDTO.getBankAcctType())) {
+                //对私标记验证通过
+                custBankInfoEntity.setValidateStatus(ValidateStatusEnum.YES.getCode());
+            }
+            custBankInfoEntity.setSettleAcctId(unionPayLoansSettleAcctDTO.getSettleAcctId());
         } catch (TfException ex) {
             throw new TfException(ex.getCode(), ex.getMessage());
         }
-        return custBankInfoService.save(custBankInfoEntity);
+        if(Objects.nonNull(bankInfoReqDTO.getId())){
+            custBankInfoEntity.setId(bankInfoReqDTO.getId());
+        }
+        custBankInfoService.saveOrUpdate(custBankInfoEntity);
+        return unionPayLoansSettleAcctDTO.getSettleAcctId();
     }
 
     @Override
@@ -171,21 +180,38 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             withdrawalRespDTO.setReason(PayExceptionCodeEnum.NO_LOAN_USER.getMsg());
             return Result.ok(withdrawalRespDTO);
         }
-        String outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
-        String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
-        log.info("防重复提交加密前的M5d值为：{}", md5Str);
-        String idempotentMd5 = MD5Util.getMD5String(md5Str);
-        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId() );
-        log.info("防重复提交加密后的M5d值为：{}", idempotentMd5);
-        if (StringUtils.isEmpty(isIdempotent)) {
-            redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), idempotentMd5, 60, TimeUnit.MINUTES);
-        } else if (idempotentMd5.equals(isIdempotent)) {
-            log.info("重复提现了！！！");
-            WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
-            withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
-            withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
-            return Result.failed(withdrawalRespDTO);
+        String outOrderNo;
+        String isIdempotent = redisCache.getCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
+
+        if (ObjectUtils.isEmpty(withdrawalReqDTO.getOrderNo())) {
+            outOrderNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_REQ_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_30, redisCache);
+            String md5Str = withdrawalReqDTO.getBusId() + ":" + withdrawalReqDTO.getType() + ":" + withdrawalReqDTO.getAmount();
+            log.info("防重复提交加密前的M5d值为：{}", md5Str);
+            String idempotentMd5 = MD5Util.getMD5String(md5Str);
+            log.info("防重复提交加密后的M5d值为：{}", idempotentMd5);
+            if (StringUtils.isEmpty(isIdempotent)) {
+                redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), idempotentMd5, 60, TimeUnit.MINUTES);
+            } else if (idempotentMd5.equals(isIdempotent)) {
+                log.info("重复提现了！！！");
+                WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
+                withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
+                withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+                return Result.failed(withdrawalRespDTO);
+            }
+        } else {
+            outOrderNo = withdrawalReqDTO.getOrderNo();
+            log.info("防重复值：{}", outOrderNo);
+            if (StringUtils.isEmpty(isIdempotent)) {
+                redisCache.setCacheString(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId(), outOrderNo, 60, TimeUnit.MINUTES);
+            } else if (outOrderNo.equals(isIdempotent)) {
+                log.info("重复提现了！！！");
+                WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
+                withdrawalRespDTO.setStatus(String.valueOf(PayExceptionCodeEnum.REPEAT_OPERATION.getCode()));
+                withdrawalRespDTO.setReason(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());
+                return Result.failed(withdrawalRespDTO);
+            }
         }
+
         LoanBalanceAcctEntity accountBook = loanBalanceAcctService.getAccountBookByLoanUserId(loanUser.getId());
         CustBankInfoEntity bankInfo = custBankInfoService.getById(withdrawalReqDTO.getBankInfoId());
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
@@ -197,7 +223,9 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
         withdrawalCreateReqDTO.setBusinessType(UnionPayBusinessTypeEnum.WITHDRAWAL.getCode());
         withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
-        withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
+        if (Objects.nonNull(bankInfo.getPhone())) {
+            withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
+        }
         withdrawalCreateReqDTO.setRemark("");
         Map<String, Object> map = new HashMap<>();
         map.put("notifyUrl", notifyUrl);
@@ -215,18 +243,35 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         Result<WithdrawalCreateRespDTO> withdrawalCreateResp = null;
         try {
             withdrawalCreateResp = unionPayService.withdrawalCreation(withdrawalCreateReqDTO);
-            WithdrawalRespDTO withdrawalRespDTO = BeanUtil.copyProperties(withdrawalCreateResp, WithdrawalRespDTO.class);
+            WithdrawalRespDTO withdrawalRespDTO = new WithdrawalRespDTO();
             withdrawalRespDTO.setWithdrawalOrderNo(outOrderNo);
+            withdrawalRespDTO.setWithdrawalId(withdrawalCreateResp.getData().getWithdrawalId());
+            withdrawalRespDTO.setStatus(withdrawalCreateResp.getData().getStatus());
             //更新状态
             loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
             return Result.ok(withdrawalRespDTO);
         } catch (TfException e) {
-            log.info("提现失败,删除redis:{}",WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
+            log.info("提现失败,删除redis:{}", WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
             redisCache.deleteObject(WITHDRAWAL_IDEMPOTENT_KEY + loanUser.getId());
             log.info("提现失败,错误码:{},错误信息:{}", e.getCode(), e.getMessage());
             return Result.failed(e.getCode(), e.getMessage());
         }
 
+    }
+
+    @Override
+    public List<CustBankInfoRespDTO> getBankInfoByLoanUserId(Long loanUserId) {
+        List<CustBankInfoEntity> list = custBankInfoService.getBankInfoByLoanUserId(loanUserId);
+        List<CustBankInfoRespDTO> custBankInfoRespDTOList = new ArrayList<>();
+        list.forEach(custBankInfoEntity -> {
+            //只获取打款验证成功的银行卡
+            if (ValidateStatusEnum.YES.getCode().equals(custBankInfoEntity.getValidateStatus())) {
+                CustBankInfoRespDTO custBankInfoRespDTO = new CustBankInfoRespDTO();
+                BeanUtil.copyProperties(custBankInfoEntity, custBankInfoRespDTO);
+                custBankInfoRespDTOList.add(custBankInfoRespDTO);
+            }
+        });
+        return custBankInfoRespDTOList;
     }
 }

@@ -30,6 +30,12 @@ public interface UnionPayApiService {
      */
     Result<Integer> currentBalance();
 
+    /**
+     * 获取同福母账户信息
+     * @return
+     */
+    Result<ParentBalanceRespDTO> currentBalanceInfo();
+
 
     /**
      * 获取指定电子账簿id的账户信息
@@ -78,6 +84,8 @@ public interface UnionPayApiService {
      * @return
      */
     Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo,String appId);
+
+
 
 
 }

@@ -25,4 +25,9 @@ public class UnionPayTradeResultCodeConstant {
     public static final String TRADE_RESULT_CODE_67 = "67";//担保支付确认退款;
     public static final String TRADE_RESULT_CODE_73 = "73";//资金调拨;
     public static final String TRADE_RESULT_CODE_74 = "74";//提前入账
+
+    /**
+     * 自定义交易号与银联无关
+     */
+    public static final String TRADE_RESULT_CODE_99 = "99";//服务费入金
 }

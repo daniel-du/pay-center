@@ -1,21 +1,25 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import com.tfjt.pay.external.unionpay.api.dto.req.BankInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BankInfoReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.LoanApiService;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
+import com.tfjt.pay.external.unionpay.biz.UnionPayLoansApiBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansBizService;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.enums.BusinessUserTypeEnum;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.ValidateStatusEnum;
+import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 
-
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Lzh
@@ -26,7 +30,7 @@ import java.util.*;
  */
 @Slf4j
 @DubboService
-public class LoanApiServiceImpl  implements LoanApiService {
+public class LoanApiServiceImpl implements LoanApiService {
 
     @Resource
     private LoanUserBizService loanUserBizService;
@@ -36,14 +40,18 @@ public class LoanApiServiceImpl  implements LoanApiService {
     UnionPayLoansBizService unionPayLoansBizService;
 
 
+    @Resource
+    UnionPayLoansApiBizService unionPayLoansApiBizService;
+
+
     @Override
     public Result<LoanTransferToTfRespDTO> getBalanceAcctId(String type, String bid) {
-        return loanUserBizService.getBalanceAcctId(type,bid);
+        return loanUserBizService.getBalanceAcctId(type, bid);
     }
 
     @Override
     public Result<Map<String, Object>> incomingIsFinish(String type, String bid) {
-        return loanUserBizService.incomingIsFinish(type,bid);
+        return loanUserBizService.incomingIsFinish(type, bid);
     }
 
     @Override
@@ -60,35 +68,104 @@ public class LoanApiServiceImpl  implements LoanApiService {
      */
     @Override
     public Result<List<CustBankInfoRespDTO>> getCustBankInfoList(Integer type, String bid) {
-        return loanUserBizService.getCustBankInfoList(type,bid);
+        return loanUserBizService.getCustBankInfoList(type, bid);
     }
 
 
     @Override
     public Result<BalanceAcctRespDTO> getAccountInfoByBusId(String type, String busId) {
-        return loanUserBizService.getAccountInfoByBusId(type,busId);
+        return loanUserBizService.getAccountInfoByBusId(type, busId);
 
     }
 
     @Override
     public Result<List<BalanceAcctRespDTO>> listAccountInfoByBusId(String type, List<String> busIds) {
-        return loanUserBizService.listAccountInfoByBusId(type,busIds);
+        return loanUserBizService.listAccountInfoByBusId(type, busIds);
     }
 
     @Override
     public Result<String> unbindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
         unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
-        return Result.ok(PayExceptionCodeEnum.BIND_BANK_CARD_FAILED.getMsg());
+        return Result.ok(PayExceptionCodeEnum.UNBIND_BANK_CARD_SUCCESS.getMsg());
     }
 
     @Override
     public Result<String> bindSettleAcct(BankInfoReqDTO bankInfoReqDTO) {
-        boolean boundSettleAcct = unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
-        if (boundSettleAcct) {
-            return Result.ok(PayExceptionCodeEnum.BIND_BANK_CARD_SUCCESS.getMsg());
-        } else {
-            return Result.failed(PayExceptionCodeEnum.BIND_BANK_CARD_FAILED.getMsg());
+        String boundSettleAcctId = unionPayLoansBizService.bindSettleAcct(bankInfoReqDTO);
+        return Result.ok(boundSettleAcctId);
+    }
+
+
+    @Override
+    public Result<String> unbindParentSettleAcct(Long loanUserId) {
+        List<CustBankInfoRespDTO> custBankInfoRespDTOList = unionPayLoansBizService.getBankInfoByLoanUserId(-1L);
+        if (custBankInfoRespDTOList != null && custBankInfoRespDTOList.size() == 1) {
+            throw new TfException(PayExceptionCodeEnum.LAST_ONE_BANK_CARD);
         }
+        if (custBankInfoRespDTOList != null) {
+            BankInfoReqDTO bankInfoReqDTO = new BankInfoReqDTO();
+            CustBankInfoRespDTO custBankInfoRespDTO = custBankInfoRespDTOList.get(0);
+            bankInfoReqDTO.setBankCardNo(custBankInfoRespDTO.getBankCardNo());
+            bankInfoReqDTO.setSettlementType(String.valueOf(custBankInfoRespDTO.getSettlementType()));
+            bankInfoReqDTO.setBankCardNo(bankInfoReqDTO.getBankCardNo());
+            bankInfoReqDTO.setBankCode(bankInfoReqDTO.getBankCode());
+            bankInfoReqDTO.setBankBranchCode(bankInfoReqDTO.getBankBranchCode());
+            bankInfoReqDTO.setType(BusinessUserTypeEnum.SUPPLIER.getCode());
+            bankInfoReqDTO.setBusId("0");
+            unionPayLoansBizService.unbindSettleAcct(bankInfoReqDTO);
+            log.info("{}解绑成功！", custBankInfoRespDTO.getBankCardNo());
+        }
+        return Result.ok();
+    }
+
+    @Override
+    public Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount) {
+        return Result.ok(unionPayLoansApiBizService.settleAcctsValidate(loanUserId, payAmount, null));
+    }
+
+    @Override
+    public Result<UnionPayLoansSettleAcctDTO> settleAcctsValidate(Long loanUserId, Integer payAmount, String settleAcctId) {
+        return Result.ok(unionPayLoansApiBizService.settleAcctsValidate(loanUserId, payAmount, settleAcctId));
+    }
+
+    @Override
+    public Result<ValidateStatusRespDTO> getAcctValidateStatus(Integer type, String bid) {
+        Result<List<CustBankInfoRespDTO>> result = loanUserBizService.getCustBankInfoList(type, bid);
+        if (result.getCode() == NumberConstant.ZERO) {
+            List<CustBankInfoRespDTO> data = result.getData();
+            if (CollUtil.isNotEmpty(data)) {
+                for (CustBankInfoRespDTO bankInfo : data) {
+                    if (ValidateStatusEnum.NO.getCode().equals(bankInfo.getValidateStatus()) && bankInfo.getSettlementType() == 2) {
+                        ValidateStatusRespDTO validateStatusRespDTO = new ValidateStatusRespDTO();
+                        validateStatusRespDTO.setStatus(false);
+                        validateStatusRespDTO.setSettleAcctId(bankInfo.getSettleAcctId());
+                        return Result.ok(validateStatusRespDTO);
+                    }
+
+                }
+                return Result.ok();
+            } else {
+                return Result.failed(PayExceptionCodeEnum.NO_DATA.getMsg());
+            }
+        } else {
+            return Result.failed(PayExceptionCodeEnum.NO_DATA.getMsg());
+        }
+
+    }
+
+    @Override
+    public Result<DepositRespDTO> deposit(Long amount, String orderNo) {
+        return loanUserBizService.deposit(amount, orderNo);
+    }
+
+    @Override
+    public Result<List<BankCodeRespDTO>> getBankCodeByName(String bankName) {
+        return unionPayLoansApiBizService.getBankCodeByName(bankName);
+    }
+
+    @Override
+    public Result<BankInfoRespDTO> getSettleAcctValidateInfo(Integer type, String bid) {
+        return unionPayLoansApiBizService.getSettleAcctValidateInfo(type, bid);
     }
 
 }

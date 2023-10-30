@@ -132,7 +132,7 @@ public class DemoController {
         WithdrawalCreateReqDTO withdrawalCreateReqDTO = new WithdrawalCreateReqDTO();
         withdrawalCreateReqDTO.setOutOrderNo("2008349494890702355");
         withdrawalCreateReqDTO.setSentAt("2023-08-14T11:30:08.647+08:00");
-        withdrawalCreateReqDTO.setAmount(1);
+        withdrawalCreateReqDTO.setAmount(1L);
         withdrawalCreateReqDTO.setServiceFee(null);
         withdrawalCreateReqDTO.setBalanceAcctId("2008362494748960292");//电子账簿ID
         withdrawalCreateReqDTO.setBusinessType("1");

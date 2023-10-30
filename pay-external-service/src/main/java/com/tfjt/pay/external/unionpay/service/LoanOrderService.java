@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.ServiceFeeOrderRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
 
 import java.util.List;
@@ -34,5 +35,8 @@ public interface LoanOrderService extends IService<LoanOrderEntity> {
      * @return
      */
     List<LoanOrderEntity> listNotConfirmOrder();
+
+
+    ServiceFeeOrderRespDTO getServiceFeeOrder(String outOrderNo);
 }
 

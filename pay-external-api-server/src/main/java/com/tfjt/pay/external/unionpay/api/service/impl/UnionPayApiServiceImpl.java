@@ -54,6 +54,11 @@ public class UnionPayApiServiceImpl implements UnionPayApiService {
         return loanUserBizService.currentBalance();
     }
 
+    @Override
+    public Result<ParentBalanceRespDTO> currentBalanceInfo() {
+        return loanUserBizService.currentBalanceInfo();
+    }
+
     /**
      * 获取指定电子账簿的账户信息
      * @param balanceAcctId 电子账簿id

@@ -19,13 +19,13 @@ public class LoanAccountDTO implements Serializable {
     /**电子账簿账簿号*/
     private String relAcctNo;
     /**可提现余额*/
-    private Integer settledAmount;
+    private Long settledAmount;
     /**在途余额*/
-    private Integer pendingAmount;
+    private Long pendingAmount;
     /**不可用余额*/
-    private Integer expensingAmount;
+    private Long expensingAmount;
     /**冻结余额*/
-    private Integer frozenSettledAmount;
+    private Long frozenSettledAmount;
     /**电子账簿类型 电子账簿类型：
      basic:电子账簿
      charge:挂帐账簿

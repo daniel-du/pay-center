@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.dao.LoanOrderDetailsDao;
 import com.tfjt.pay.external.unionpay.dao.LoanOrderGoodsDao;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.ServiceFeeOrderRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -32,6 +33,9 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
 
     @Resource
     private LoanOrderGoodsDao loanOrderGoodsDao;
+
+    @Resource
+    private LoanOrderDao loanOrderDao;
 
     @Override
     public boolean checkExistBusinessOrderNo(String businessOrderNo, String appId) {
@@ -77,6 +81,11 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
     public List<LoanOrderEntity> listNotConfirmOrder() {
         DateTime dateTime = cn.hutool.core.date.DateUtil.beginOfDay(cn.hutool.core.date.DateUtil.date());
         return this.getBaseMapper().listNotConfirmOrder(dateTime);
+    }
+
+    @Override
+    public ServiceFeeOrderRespDTO getServiceFeeOrder(String outOrderNo) {
+        return loanOrderDao.getServiceFeeOrder(outOrderNo);
     }
 
 }

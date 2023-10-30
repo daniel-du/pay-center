@@ -1,6 +1,5 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
@@ -12,22 +11,30 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.api.dto.UserTypeDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.PaymentPasswordReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayIncomingDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BalanceAcctRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.CustBankInfoRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.LoanTransferToTfRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
+import com.tfjt.pay.external.unionpay.constants.CommonConstants;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.constants.UnionPayTradeResultCodeConstant;
 import com.tfjt.pay.external.unionpay.dto.BankInfoDTO;
+import com.tfjt.pay.external.unionpay.dto.SettleAcctsMxDTO;
+import com.tfjt.pay.external.unionpay.dto.req.DepositExtraReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.DepositReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ProductInfoReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanAccountDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.LoanBalanceAcctRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayLoanUserRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
 import com.tfjt.pay.external.unionpay.entity.PaymentPasswordEntity;
+import com.tfjt.pay.external.unionpay.enums.DepositTypeEnum;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.pay.external.unionpay.utils.StringUtil;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.util.InstructIdUtil;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -39,7 +46,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,6 +73,14 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     @Resource
     private CustBankInfoService custBankInfoService;
 
+    @Resource
+    private UnionPayLoansApiService unionPayLoansApiService;
+
+    @Resource
+    RedisCache redisCache;
+
+    private final static String DEPOSIT_IDEMPOTENT_KEY = "idempotent:deposit";
+    private final static String TF_PAY = "TF_PAY";
 
     @Override
     public void applicationStatusUpdateJob(String jobParam) {
@@ -173,6 +190,26 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     }
 
     @Override
+    public Result<ParentBalanceRespDTO> currentBalanceInfo() {
+
+        BalanceAcctRespDTO balanceAcctDTOByAccountId = loanUserService.getBalanceAcctDTOByAccountId(accountConfig.getBalanceAcctId());
+        if (Objects.isNull(balanceAcctDTOByAccountId)) {
+            throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
+        }
+        log.debug("查询母账户交易余额返回:{}", balanceAcctDTOByAccountId.getSettledAmount());
+        ParentBalanceRespDTO dto = new ParentBalanceRespDTO();
+        dto.setAmount(new BigDecimal(balanceAcctDTOByAccountId.getSettledAmount()).divide(new BigDecimal("100"), NumberConstant.TWO, RoundingMode.HALF_UP));
+        dto.setAccountNo(accountConfig.getBalanceAcctNo());
+        dto.setAccountId(accountConfig.getBalanceAcctId());
+        SettleAcctsMxDTO settleAcctsMxDTO = unionPayLoansApiService.querySettleAcct(-1);
+        if (Objects.isNull(settleAcctsMxDTO)) {
+            throw new TfException(PayExceptionCodeEnum.SETTLE_ACCOUNT_NULL);
+        }
+        dto.setBankCardNo(settleAcctsMxDTO.getBankAcctNo());
+        return Result.ok(dto);
+    }
+
+    @Override
     public Result<BalanceAcctRespDTO> getBalanceByAccountId(String balanceAcctId) {
         log.debug("查询电子账簿id:{}", balanceAcctId);
         if (StringUtil.isBlank(balanceAcctId)) {
@@ -211,7 +248,6 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
         loanTransferToTfDTO.setTfBalanceAcctId(accountConfig.getBalanceAcctId());
         loanTransferToTfDTO.setTfBalanceAcctName(accountConfig.getBalanceAcctName());
         LoanBalanceAcctRespDTO balanceAcc = loanBalanceAcctService.getBalanceAcctIdByBidAndType(bid, type);
-        // loanBalanceAcctService.get
         if (Objects.isNull(balanceAcc)) {
             throw new TfException(PayExceptionCodeEnum.BALANCE_ACCOUNT_NOT_FOUND);
         }
@@ -237,7 +273,7 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
             }
             LoanAccountDTO loanAccountDTO = unionPayService.getLoanAccount(balanceAcc.getBalanceAcctId());
             if (org.apache.commons.lang3.ObjectUtils.isNotEmpty(loanAccountDTO)) {
-                Integer settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
+                Long settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
                 BigDecimal bigDecimal = new BigDecimal(100);
                 balance = new BigDecimal(settledAmount).divide(bigDecimal);
             }
@@ -348,6 +384,46 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
     @Override
     public LoanUserEntity getById(Long id) {
         return loanUserService.getById(id);
+    }
+
+    @Override
+    public Result<DepositRespDTO> deposit(Long amount, String orderNo) {
+        String isIdempotent = redisCache.getCacheString(DEPOSIT_IDEMPOTENT_KEY);
+        log.info("防重复提交的订单号为：{}", isIdempotent);
+        if (!orderNo.equals(isIdempotent)) {
+            redisCache.setCacheString(DEPOSIT_IDEMPOTENT_KEY, orderNo, 60, TimeUnit.MINUTES);
+            DepositReqDTO depositReqDTO = new DepositReqDTO();
+            depositReqDTO.setOutOrderNo(orderNo);
+            depositReqDTO.setSentAt(DateUtil.getByRFC3339(new Date()));
+            depositReqDTO.setTotalAmount(amount);
+            depositReqDTO.setAmount(amount);
+            depositReqDTO.setDiscountAmount(0L);
+            depositReqDTO.setDepositType(DepositTypeEnum.DEPOSIT.getCode());
+            depositReqDTO.setPaymentType(TF_PAY);
+            depositReqDTO.setBalanceAcctId(accountConfig.getBalanceAcctId());
+            String tradeNo = InstructIdUtil.getInstructId(CommonConstants.LOAN_DEPOSIT_NO_PREFIX, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_20, redisCache);
+            depositReqDTO.setPaymentTradeNo(tradeNo);
+            depositReqDTO.setPaymentSucceededAt(DateUtil.getByRFC3339(new Date()));
+            DepositExtraReqDTO extraReqDTO = new DepositExtraReqDTO();
+            extraReqDTO.setNotifyUrl(accountConfig.getNotifyUrl());
+            ProductInfoReqDTO productInfoReqDTO = new ProductInfoReqDTO();
+            productInfoReqDTO.setProductCount(1);
+            productInfoReqDTO.setOrderAmount(amount);
+            productInfoReqDTO.setOrderNo(tradeNo);
+            productInfoReqDTO.setProductName("充值");
+            List<ProductInfoReqDTO> productInfoReqDTOList = new ArrayList<>();
+            productInfoReqDTOList.add(productInfoReqDTO);
+            extraReqDTO.setProductInfos(productInfoReqDTOList);
+            depositReqDTO.setExtra(extraReqDTO);
+            Result<DepositRespDTO> depositResult = unionPayService.deposit(depositReqDTO);
+            if(depositResult.getCode() == NumberConstant.ZERO){
+                return Result.ok(depositResult.getData());
+            }else{
+                return Result.failed(depositResult.getMsg());
+            }
+        } else {
+            return Result.failed(PayExceptionCodeEnum.REPEAT_OPERATION);
+        }
     }
 
 

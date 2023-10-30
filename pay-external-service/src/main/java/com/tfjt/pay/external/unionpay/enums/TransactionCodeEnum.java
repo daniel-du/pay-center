@@ -53,7 +53,11 @@ public enum TransactionCodeEnum {
     LWZ91_RECEIPT_QUERY_REQ("LWZ91_RECEIPT_QUERY_REQ","现在电子对账单"),
 
     /**使用“平台订单号”查询提现订单状态*/
-    LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO("LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO","使用“平台订单号”查询提现订单状态");
+    LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO("LWZ66_WITHDRAWALS_BY_OUT_ORDER_NO","使用“平台订单号”查询提现订单状态"),
+
+    LWZ61_DEPOSIT_REQ("LWZ61_DEPOSIT_REQ","支付充值"),
+
+    LWZ63_DEPOSIT_QRY_REQ("LWZ63_DEPOSIT_QRY_REQ","支付充值订单查询(平台订单号)");
     /**
      * code
      */
