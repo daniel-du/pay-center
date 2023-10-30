@@ -6,12 +6,10 @@ import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBiz;
 import com.tfjt.pay.external.unionpay.checkbill.handler.CheckBillHandler;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
-import com.tfjt.tfcommon.dto.response.Result;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Date;
 
 /**
  * @Auther: songx
