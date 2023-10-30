@@ -5,6 +5,7 @@ import com.tfjt.pay.external.unionpay.entity.UnionpayLoanWarningEntity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Auther: songx
@@ -12,7 +13,13 @@ import java.util.List;
  * @Description:
  */
 public interface LoanUnionpayCheckBillDetailsServiceBiz {
-    List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, String typeName);
+    List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, String typeName, List<String> platformOrderNoList);
 
     void saveBatchUnionpayLoanWarningEntity(List<UnionpayLoanWarningEntity> diff);
+
+    Integer countByTradeTypeAndDate(String typeName, Date date, Integer checkStatus);
+
+    List<LoanUnionpayCheckBillDetailsEntity> listByPage(String treadType, Date date,Integer checkStatus, Integer pageNo, Integer pageSize);
+
+    void updateCheckStatus(Set<Long> ids);
 }
