@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.checkbill.handler;
 
-import java.util.Date;
+import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
+
 
 /**
  * @Auther: songx
@@ -9,5 +10,5 @@ import java.util.Date;
  */
 public interface CheckBillHandler {
 
-    boolean handler(Date date);
+    boolean handler(CheckLoanBillDTO checkLoanBillDTO);
 }

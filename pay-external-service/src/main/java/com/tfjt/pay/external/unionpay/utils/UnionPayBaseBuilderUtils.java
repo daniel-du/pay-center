@@ -117,7 +117,12 @@ public class UnionPayBaseBuilderUtils<T> {
         if (Objects.equals("200", unionPayBaseResp.getRespLwzCode())) {
             log.error("银联调用成功{}", unionPayBaseResp.getLwzRespData());
             return (T) JSON.parseObject(unionPayBaseResp.getLwzRespData(), clazz);
-        } else {
+        } else if (StringUtils.isNotBlank(unionPayBaseResp.getRespLwzMsg())) {
+            log.error("银联-银行调用失败{}", responseEntity.getBody().toString());
+            JSONObject jsonObject = JSONObject.parseObject(unionPayBaseResp.getRespLwzMsg());
+            throw new TfException(jsonObject.getInteger("code"),getRespLwzMsgReturnMsg(unionPayBaseResp.getRespLwzMsg()));
+
+        } else{
             log.error("银联-银行调用失败{}", responseEntity.getBody().toString());
             throw new TfException(getRespLwzMsgReturnMsg(unionPayBaseResp.getRespLwzMsg()));
         }

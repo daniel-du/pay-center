@@ -7,6 +7,7 @@ import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
 import com.tfjt.pay.external.unionpay.checkbill.processor.CheckProcessor;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -44,7 +45,7 @@ public class LoanBusinessJob {
         DateTime yesterday = DateUtil.yesterday();
         XxlJobHelper.log("--------------------------开始执行:{}下载账单下载任务----------------------",yesterday);
         XxlJobHelper.log("--------------------------jobParam:{}----------------------",jobParam);
-        checkProcessor.checkBill(yesterday);
+        checkProcessor.checkBill(new CheckLoanBillDTO().setDate(yesterday));
         XxlJobHelper.log("结束执行:{}下载账单下载任务........",yesterday);
     }
     /**

@@ -21,9 +21,15 @@ public interface LoanUnionPayCheckBillBiz {
     LoanUnionpayCheckBillEntity downloadCheckBill(DateTime yesterday);
 
     /**
-     * 下载指定日期的电子对账单
+     * dobbo接口 主要是fms调用下载指定日期的电子对账单
      * @param unionPayCheckBillReqDTO
      * @return 电子对账对下载地址
      */
     Result<String> downloadCheckBill(UnionPayCheckBillReqDTO unionPayCheckBillReqDTO);
+    /**
+     * 下载指定日期的电子对账单,定时任务调用
+     * @param unionPayCheckBillReqDTO
+     * @return 下载账单是否成功
+     */
+   boolean download(UnionPayCheckBillReqDTO unionPayCheckBillReqDTO);
 }

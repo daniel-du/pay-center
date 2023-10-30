@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.checkbill.processor;
 
 import com.tfjt.pay.external.unionpay.checkbill.handler.CheckBillHandler;
+import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -23,7 +24,7 @@ public class CheckProcessor {
      * 银联账单核对
      * @param date 账单日期
      */
-    public void checkBill(Date date) {
+    public void checkBill(CheckLoanBillDTO date) {
         for (CheckBillHandler checkBillHandler : checkBillHandlers) {
             boolean handler = checkBillHandler.handler(date);
             if (!handler){

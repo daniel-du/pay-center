@@ -108,4 +108,14 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
         return Result.failed(byDateAndAccountId.getReason());
     }
 
+    @Override
+    public boolean download(UnionPayCheckBillReqDTO unionPayCheckBillReqDTO) {
+        LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(unionPayCheckBillReqDTO.getDate(), tfAccountConfig.getBalanceAcctId());
+        if (Objects.isNull(byDateAndAccountId) || byDateAndAccountId.getStatus().equals(NumberConstant.ZERO)) {
+            LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = downloadCheckBill(DateUtil.parseDate(unionPayCheckBillReqDTO.getDate()));
+            return Objects.equals(loanUnionpayCheckBillEntity.getStatus(), NumberConstant.ONE) || Objects.equals(loanUnionpayCheckBillEntity.getStatus(), NumberConstant.TWO);
+        }
+        return Objects.equals(NumberConstant.ONE, byDateAndAccountId.getStatus()) || Objects.equals(byDateAndAccountId.getStatus(), NumberConstant.TWO);
+    }
+
 }
