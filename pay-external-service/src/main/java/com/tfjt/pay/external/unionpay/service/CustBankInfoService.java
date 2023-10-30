@@ -40,5 +40,6 @@ public interface CustBankInfoService extends IService<CustBankInfoEntity> {
 
     List<CustBankInfoEntity> getBankInfoByLoanUserId(Long loanUserId);
 
+    CustBankInfoEntity getDefaultBankInfo(Long loanUserId);
 }
 

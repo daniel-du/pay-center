@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
@@ -92,9 +93,18 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
         checkLoanUser(paymentPasswordDTO.getBusId(), paymentPasswordDTO.getType());
         try {
             ValidatorUtils.validateEntity(paymentPasswordDTO);
+            log.info("电子账簿-设置密码参数paymentPasswordDTO：{}", paymentPasswordDTO);
             PaymentPasswordEntity paymentPassword = new PaymentPasswordEntity();
             BeanUtils.copyProperties(paymentPasswordDTO, paymentPassword);
-            paymentPasswordService.save(paymentPassword);
+            //验证此用户是否有支付密码
+            PaymentPasswordEntity ppeEntity = paymentPasswordService.getOne(new LambdaQueryWrapper<PaymentPasswordEntity>()
+                    .eq(PaymentPasswordEntity::getType, paymentPasswordDTO.getType())
+                    .eq(PaymentPasswordEntity::getBusId, paymentPasswordDTO.getBusId()));
+            if (ppeEntity == null) {
+                paymentPasswordService.save(paymentPassword);
+            } else {
+                this.updatePaymentPassword(paymentPasswordDTO);
+            }
         } catch (Exception ex) {
             if (ex instanceof DuplicateKeyException) {
                 return Result.failed(PayExceptionCodeEnum.REPEAT_OPERATION.getMsg());

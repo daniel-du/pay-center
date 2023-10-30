@@ -16,6 +16,7 @@ import com.tfjt.pay.external.unionpay.service.LoanUserService;
 import com.tfjt.pay.external.unionpay.service.UnionPayLoansApiService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, CustBankInfoEntity> implements CustBankInfoService {
     @Resource
@@ -139,6 +140,11 @@ public class CustBankInfoServiceImpl extends BaseServiceImpl<CustBankInfoDao, Cu
     @Override
     public List<CustBankInfoEntity> getBankInfoByLoanUserId(Long loanUserId) {
         return this.list(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::isDeleted, false).eq(CustBankInfoEntity::getLoanUserId, loanUserId));
+    }
+
+    @Override
+    public CustBankInfoEntity getDefaultBankInfo(Long loanUserId) {
+        return this.getOne(new LambdaQueryWrapper<CustBankInfoEntity>().eq(CustBankInfoEntity::getLoanUserId, loanUserId).eq(CustBankInfoEntity::isDeleted, false).last(" limit 1"));
     }
 
 }
