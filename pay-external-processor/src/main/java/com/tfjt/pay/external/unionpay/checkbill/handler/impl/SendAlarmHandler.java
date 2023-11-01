@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  * @Date: 2023/10/28/09:34
  * @Description:
  */
-@Order(NumberConstant.TWO)
+@Order(2)
 @Component
 public class SendAlarmHandler implements CheckBillHandler {
 

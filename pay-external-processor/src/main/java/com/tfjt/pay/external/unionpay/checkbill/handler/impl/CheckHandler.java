@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @Date: 2023/10/28/09:32
  * @Description:
  */
-@Order(NumberConstant.ONE)
+@Order(1)
 @Component
 public class CheckHandler implements CheckBillHandler {
     @Resource

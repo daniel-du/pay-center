@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  * @Date: 2023/10/28/09:26
  * @Description:
  */
-@Order(NumberConstant.ZERO)
+@Order(0)
 @Component
 public class DownloadHandler implements CheckBillHandler {
     @Resource
