@@ -4,11 +4,13 @@ import cn.hutool.core.date.DateTime;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tfjt.pay.external.unionpay.dao.LoanOrderDetailsDao;
 import com.tfjt.pay.external.unionpay.dao.LoanOrderGoodsDao;
 import com.tfjt.pay.external.unionpay.dto.EventDataDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ServiceFeeOrderRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity;
 import com.tfjt.pay.external.unionpay.utils.DateUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
@@ -86,6 +88,18 @@ public class LoanOrderServiceImpl extends ServiceImpl<LoanOrderDao, LoanOrderEnt
     @Override
     public ServiceFeeOrderRespDTO getServiceFeeOrder(String outOrderNo) {
         return loanOrderDao.getServiceFeeOrder(outOrderNo);
+    }
+
+    @Override
+    public List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, Integer pageNo, Integer pageSize) {
+        Page<LoanUnionpayCheckBillDetailsEntity> page = Page.of(pageNo, pageSize);
+        Page<LoanUnionpayCheckBillDetailsEntity> result = loanOrderDao.listUnCheckBill(date,page);
+        return result.getRecords();
+    }
+
+    @Override
+    public Integer countUnCheckBill(Date date) {
+        return loanOrderDao.countUnCheckBill(date);
     }
 
 }

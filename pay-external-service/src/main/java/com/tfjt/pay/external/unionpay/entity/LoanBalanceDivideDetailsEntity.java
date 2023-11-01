@@ -85,4 +85,9 @@ public class LoanBalanceDivideDetailsEntity implements Serializable {
 	 * */
 	private Long loanUserId;
 
+	/**
+	 * 银联系统唯一值
+	 */
+	private String transferId;
+
 }

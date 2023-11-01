@@ -22,5 +22,21 @@
         <result property="subBusinessOrderNo" column="sub_business_order_no"/>
     </resultMap>
 
-
+    <select id="listUnCheckBill" resultType="com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity">
+        select
+         de.id,
+         d.trade_order_no as platformOrderNo,
+         de.transfer_id as systemOrderNo,
+         de.amount/100 as orderMoney
+        from tf_loan_balance_divide d
+        left join tf_loan_balance_divide_details de on d.id=de.divide_id
+        where FROM_UNIXTIME(d.finished_at)=#{date} and d.status='succeeded'
+    </select>
+    <select id="countUnCheckBill" resultType="java.lang.Integer">
+        select
+            count(1)
+        from tf_loan_balance_divide d
+        left join tf_loan_balance_divide_details de on d.id=de.divide_id
+        where FROM_UNIXTIME(d.finished_at)=#{date} and d.status='succeeded'
+    </select>
 </mapper>

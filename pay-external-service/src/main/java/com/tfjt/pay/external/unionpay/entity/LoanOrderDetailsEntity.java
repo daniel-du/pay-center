@@ -103,4 +103,8 @@ public class LoanOrderDetailsEntity implements Serializable {
 
 	private Integer confirmStatus;
 
+	private String confirmId;
+
+	private Date confirmTime;
+
 }

@@ -249,6 +249,7 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
             withdrawalRespDTO.setStatus(withdrawalCreateResp.getData().getStatus());
             //更新状态
             loanWithdrawalOrderEntity.setStatus(withdrawalRespDTO.getStatus());
+            loanWithdrawalOrderEntity.setWithdrawalId(withdrawalRespDTO.getWithdrawalId());
             withdrawalOrderService.updateById(loanWithdrawalOrderEntity);
             return Result.ok(withdrawalRespDTO);
         } catch (TfException e) {

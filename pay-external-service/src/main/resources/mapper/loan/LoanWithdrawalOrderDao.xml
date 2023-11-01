@@ -3,5 +3,18 @@
 
 <mapper namespace="com.tfjt.pay.external.unionpay.dao.LoanWithdrawalOrderDao">
 
+    <select id="listUnCheckBill" resultType="com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity">
+        select
+            d.id,
+            o.withdrawal_order_no as platformOrderNo,
+            d.withdrawal_id as systemOrderNo,
+            d.amount/100 as orderMoney
+        from tf_loan_withdrawal_order d  where   FROM_UNIXTIME(d.update_time)=#{date} and d.status='succeeded'
+    </select>
 
+    <select id="countUnCheckBill" resultType="java.lang.Integer">
+        select
+            count(1)
+        from tf_loan_withdrawal_order d  where   FROM_UNIXTIME(d.update_time)=#{date} and d.status='succeeded'
+    </select>
 </mapper>

@@ -36,6 +36,11 @@ public class CheckHandler implements CheckBillHandler {
     private LoanUnionpayCheckBillDetailsServiceBiz loanUnionpayCheckBillDetailsServiceBiz;
 
     /**
+     * 分页查询每页查询数量
+     */
+    private final Integer pageSize = 500;
+
+    /**
      * 核对银联与本地业务数据是否一致,
      * 如不一致则将异常数据保存在数据库并进行钉钉报警
      *
@@ -64,7 +69,6 @@ public class CheckHandler implements CheckBillHandler {
                 continue;
             }
             // 计算总页数
-            int pageSize = 500;
             int totalPages = (count + pageSize - 1) / pageSize;
             for (int i = 0; i <= totalPages; i++) {
                 //业务待核对数据
@@ -93,7 +97,6 @@ public class CheckHandler implements CheckBillHandler {
         if (count == NumberConstant.ZERO) {
             return;
         }
-        int pageSize = 500;
         int totalPages = (count + pageSize - 1) / pageSize;
         for (int i = 0; i <= totalPages; i++) {
             List<LoanUnionpayCheckBillDetailsEntity> list = loanUnionpayCheckBillDetailsServiceBiz.listByPage(typeName,date,checkStatus,i,pageSize);
@@ -174,7 +177,8 @@ public class CheckHandler implements CheckBillHandler {
                 while (unCheckIterator.hasNext()) {
                     LoanUnionpayCheckBillDetailsEntity check = unCheckIterator.next();
                     //业务单号不一致跳过当前循环
-                    if (!check.getPlatformOrderNo().equals(unionPay.getPlatformOrderNo())) {
+                    if (!check.getPlatformOrderNo().equals(unionPay.getPlatformOrderNo())
+                        || !check.getSystemOrderNo().equals(unionPay.getSystemOrderNo())) {
                         continue;
                     }
                     ids.add(unionPay.getId());

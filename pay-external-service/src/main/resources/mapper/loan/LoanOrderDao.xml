@@ -35,5 +35,18 @@
           and o.trade_order_no = #{outOrderNo}
     </select>
 
+    <select id="listUnCheckBill" resultType="com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity">
+        select
+            o.id,
+            o.trade_order_no as platformOrderNo,
+            d.guarantee_payment_id as systemOrderNo,
+            d.amount/100 as orderMoney
+        from  tf_loan_order o left join tf_loan_order_details d on d.order_id=o.id where   FROM_UNIXTIME(o.finished_at)=#{date} and o.status='succeeded'
+    </select>
 
+    <select id="countUnCheckBill" resultType="java.lang.Integer">
+        select
+            count(1)
+        from  tf_loan_order o left join tf_loan_order_details d on d.order_id=o.id where   FROM_UNIXTIME(o.finished_at)=#{date} and o.status='succeeded'
+    </select>
 </mapper>

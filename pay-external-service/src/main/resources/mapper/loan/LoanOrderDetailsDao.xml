@@ -20,8 +20,17 @@
         <result property="createdAt" column="created_at"/>
         <result property="finishedAt" column="finished_at"/>
         <result property="metadata" column="metadata"/>
-        <result property="appid" column="appid"/>
     </resultMap>
 
+    <select id="listUnCheckBill" resultType="com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity">
+        select
+        d.id,
+        o.sub_business_order_no as platformOrderNo,
+        d.confirm_id as systemOrderNo,
+        d.amount/100 as orderMoney
+        from tf_loan_order_details d  where   FROM_UNIXTIME(d.confirm_time)=#{date}
+    </select>
 
+    <select id="countUnCheckBill" resultType="java.lang.Integer">
+    </select>
 </mapper>
