@@ -77,8 +77,9 @@ public class CheckHandler implements CheckBillHandler {
                 //业务待核对数据
                 List<LoanUnionpayCheckBillDetailsEntity> unCheckList = unCheckList(bean, clazz, checkLoanBillDTO.getDate(), i, pageSize);
                 List<String> platformOrderNoList = unCheckList.stream().map(LoanUnionpayCheckBillDetailsEntity::getPlatformOrderNo).collect(Collectors.toList());
+                List<String> systemOrderNo = unCheckList.stream().map(LoanUnionpayCheckBillDetailsEntity::getSystemOrderNo).collect(Collectors.toList());
                 //银联未核对数据list
-                List<LoanUnionpayCheckBillDetailsEntity> unionpayList = loanUnionpayCheckBillDetailsServiceBiz.listUnCheckBill(checkLoanBillDTO.getDate(), value.getTypeName(), platformOrderNoList);
+                List<LoanUnionpayCheckBillDetailsEntity> unionpayList = loanUnionpayCheckBillDetailsServiceBiz.listUnCheckBill(checkLoanBillDTO.getDate(), value.getTypeName(), platformOrderNoList,systemOrderNo);
                 if (CollectionUtil.isEmpty(unionpayList)) {
                     //业务表中存在数据,银联账单中未查到,记录错误信息
                     if(checkList(null, unCheckList, value.getTypeName(), tableName, warnBatchNo)){
@@ -161,7 +162,7 @@ public class CheckHandler implements CheckBillHandler {
     private List<LoanUnionpayCheckBillDetailsEntity> unCheckList(Object bean, Class<?> clazz, Date date, int pageNo, int pageSize) {
         try {
             Method method = clazz.getMethod("listUnCheckBill", Date.class, Integer.class, Integer.class);
-            Object invoke = method.invoke(bean, date);
+            Object invoke = method.invoke(bean, date,pageNo,pageSize);
             return (List<LoanUnionpayCheckBillDetailsEntity>) invoke;
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -182,10 +183,10 @@ public class CheckHandler implements CheckBillHandler {
         Set<Long> ids = new HashSet<>();
         if (CollectionUtil.isNotEmpty(unionpayList) && CollectionUtil.isNotEmpty(unCheckList)) {
             Iterator<LoanUnionpayCheckBillDetailsEntity> unionPayIterator = unionpayList.iterator();
-            Iterator<LoanUnionpayCheckBillDetailsEntity> unCheckIterator = unCheckList.iterator();
             //2.逐条对比数据
             while (unionPayIterator.hasNext()) {
                 LoanUnionpayCheckBillDetailsEntity unionPay = unionPayIterator.next();
+                Iterator<LoanUnionpayCheckBillDetailsEntity> unCheckIterator = unCheckList.iterator();
                 while (unCheckIterator.hasNext()) {
                     LoanUnionpayCheckBillDetailsEntity check = unCheckIterator.next();
                     //业务单号不一致跳过当前循环
@@ -203,6 +204,7 @@ public class CheckHandler implements CheckBillHandler {
                     }
                     unCheckIterator.remove();
                     unionPayIterator.remove();
+                    break;
                 }
             }
         }

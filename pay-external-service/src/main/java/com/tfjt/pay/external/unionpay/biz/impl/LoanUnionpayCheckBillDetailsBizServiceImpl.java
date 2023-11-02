@@ -32,10 +32,11 @@ public class LoanUnionpayCheckBillDetailsBizServiceImpl implements LoanUnionpayC
     private UnionpayLoanWarningService unionpayLoanWarningService;
 
     @Override
-    public List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, String treadType, List<String> platformOrderNoList) {
+    public List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, String treadType, List<String> platformOrderNoList, List<String> systemOrderNo) {
         return loanUnionpayCheckBillDetailsService.list(Wrappers.<LoanUnionpayCheckBillDetailsEntity>lambdaQuery()
                 .eq(LoanUnionpayCheckBillDetailsEntity::getTreadType, treadType).eq(LoanUnionpayCheckBillDetailsEntity::getBillDate, date)
-                .in(LoanUnionpayCheckBillDetailsEntity::getPlatformOrderNo,platformOrderNoList));
+                .in(LoanUnionpayCheckBillDetailsEntity::getPlatformOrderNo,platformOrderNoList)
+                .in(LoanUnionpayCheckBillDetailsEntity::getSystemOrderNo,systemOrderNo));
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.Set;
  * @Description:
  */
 public interface LoanUnionpayCheckBillDetailsServiceBiz {
-    List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, String typeName, List<String> platformOrderNoList);
+    List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, String typeName, List<String> platformOrderNoList, List<String> systemOrderNo);
 
     void saveBatchUnionpayLoanWarningEntity(List<UnionpayLoanWarningEntity> diff);
 
