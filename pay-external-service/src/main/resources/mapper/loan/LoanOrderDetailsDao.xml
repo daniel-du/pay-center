@@ -28,7 +28,7 @@
         o.sub_business_order_no as platformOrderNo,
         d.confirm_id as systemOrderNo,
         d.amount/100 as orderMoney
-        from tf_loan_order_details d  where   FROM_UNIXTIME(d.confirm_time)=#{date}
+        from tf_loan_order_details d  where   DATE(d.confirm_time)=#{date}
     </select>
 
     <select id="countUnCheckBill" resultType="java.lang.Integer">

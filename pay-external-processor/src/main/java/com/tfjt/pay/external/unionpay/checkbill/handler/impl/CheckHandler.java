@@ -12,6 +12,7 @@ import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.UnionpayLoanWarningEntity;
 import com.tfjt.pay.external.unionpay.enums.CheckBillTypeEnum;
+import com.tfjt.tfcommon.core.util.SpringContextUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -58,19 +59,21 @@ public class CheckHandler implements CheckBillHandler {
         //遍历每一种业务类型按照业务类型逐一核对
         for (CheckBillTypeEnum value : values) {
             Class<?> clazz = value.getClazz();
-            Object bean = SpringUtil.getBean(clazz);
+            Object bean = SpringContextUtils.getBean(clazz);
             //业务对应的数据库表名称,记录到报警表中`
             String tableName = getTableName(bean);
             //业务表待核对数量
             int count = unCheckCount(bean, clazz, checkLoanBillDTO.getDate());
             if (count == NumberConstant.ZERO) {
                 //业务表数据不存在,判断银联表中是否存在相同的数据,如果不存在则不需处理,否则银联所有的数据都为本地业务不存在的异常数据
-                checkUnionPay(value.getTypeName(), checkLoanBillDTO.getDate(),tableName,warnBatchNo,null);
+                if (checkUnionPay(value.getTypeName(), checkLoanBillDTO.getDate(),tableName,warnBatchNo,null)){
+                    result = true;
+                }
                 continue;
             }
             // 计算总页数
             int totalPages = (count + pageSize - 1) / pageSize;
-            for (int i = 0; i <= totalPages; i++) {
+            for (int i = 1; i <= totalPages; i++) {
                 //业务待核对数据
                 List<LoanUnionpayCheckBillDetailsEntity> unCheckList = unCheckList(bean, clazz, checkLoanBillDTO.getDate(), i, pageSize);
                 List<String> platformOrderNoList = unCheckList.stream().map(LoanUnionpayCheckBillDetailsEntity::getPlatformOrderNo).collect(Collectors.toList());
@@ -78,7 +81,9 @@ public class CheckHandler implements CheckBillHandler {
                 List<LoanUnionpayCheckBillDetailsEntity> unionpayList = loanUnionpayCheckBillDetailsServiceBiz.listUnCheckBill(checkLoanBillDTO.getDate(), value.getTypeName(), platformOrderNoList);
                 if (CollectionUtil.isEmpty(unionpayList)) {
                     //业务表中存在数据,银联账单中未查到,记录错误信息
-                    checkList(null, unCheckList, value.getTypeName(), tableName, warnBatchNo);
+                    if(checkList(null, unCheckList, value.getTypeName(), tableName, warnBatchNo)){
+                        result = true;
+                    }
                     continue;
                 }
                 //都存在,逐条核对数据,并记录错误信息
@@ -87,21 +92,28 @@ public class CheckHandler implements CheckBillHandler {
                 }
             }
             //验证是否有未核对,未打标记的银联数据,如果有则是全部为业务表中的没有的数据,记录异常信息
-            checkUnionPay(value.getTypeName(), checkLoanBillDTO.getDate(),tableName,warnBatchNo,NumberConstant.ZERO);
+            if(checkUnionPay(value.getTypeName(), checkLoanBillDTO.getDate(),tableName,warnBatchNo,NumberConstant.ZERO)){
+                result = true;
+            }
         }
         return result;
     }
 
-    private void checkUnionPay(String typeName, Date date,String tableName,String warnBatchNo,Integer checkStatus) {
+    private boolean checkUnionPay(String typeName, Date date,String tableName,String warnBatchNo,Integer checkStatus) {
         int count = loanUnionpayCheckBillDetailsServiceBiz.countByTradeTypeAndDate(typeName, date,checkStatus);
         if (count == NumberConstant.ZERO) {
-            return;
+            return false;
         }
+
+        boolean result  = false;
         int totalPages = (count + pageSize - 1) / pageSize;
-        for (int i = 0; i <= totalPages; i++) {
+        for (int i = 1; i <= totalPages; i++) {
             List<LoanUnionpayCheckBillDetailsEntity> list = loanUnionpayCheckBillDetailsServiceBiz.listByPage(typeName,date,checkStatus,i,pageSize);
-            checkList(list,null,typeName,tableName,warnBatchNo);
+            if(checkList(list,null,typeName,tableName,warnBatchNo)){
+                result = true;
+            }
         }
+        return result;
     }
 
     /**
@@ -197,6 +209,7 @@ public class CheckHandler implements CheckBillHandler {
         //银联数据不为空,表示银联数据多,剩余数据进行报警
         if (CollectionUtil.isNotEmpty(unionpayList)) {
             for (LoanUnionpayCheckBillDetailsEntity entity : unionpayList) {
+                ids.add(entity.getId());
                 String cause = String.format("银联存在该业务,单号:[%s],交易金额:[%s],业务数据未找到该单号!", entity.getPlatformOrderNo(), entity.getOrderMoney());
                 diff.add(buildeUnionpayLoanWarningEntity(entity.getPlatformOrderNo(), entity.getOrderMoney().multiply(new BigDecimal("100")).longValue(), null, typeName, tableName, cause, warnBatchNo));
             }
@@ -214,6 +227,7 @@ public class CheckHandler implements CheckBillHandler {
         }
         if (CollectionUtil.isNotEmpty(diff)) {
             loanUnionpayCheckBillDetailsServiceBiz.saveBatchUnionpayLoanWarningEntity(diff);
+
             return true;
         }
         return false;

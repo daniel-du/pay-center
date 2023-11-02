@@ -30,13 +30,13 @@
          de.amount/100 as orderMoney
         from tf_loan_balance_divide d
         left join tf_loan_balance_divide_details de on d.id=de.divide_id
-        where FROM_UNIXTIME(d.finished_at)=#{date} and d.status='succeeded'
+        where DATE(d.finished_at)=#{date} and d.status='succeeded'
     </select>
     <select id="countUnCheckBill" resultType="java.lang.Integer">
         select
             count(1)
         from tf_loan_balance_divide d
         left join tf_loan_balance_divide_details de on d.id=de.divide_id
-        where FROM_UNIXTIME(d.finished_at)=#{date} and d.status='succeeded'
+        where DATE(d.finished_at)=#{date} and d.status='succeeded'
     </select>
 </mapper>
