@@ -100,6 +100,15 @@ public class CheckHandler implements CheckBillHandler {
         return result;
     }
 
+    /**
+     * 核验银联日志数据
+     * @param typeName     交易类型
+     * @param date         交易日期
+     * @param tableName    对应数据库表名称
+     * @param warnBatchNo  报警信息批次号
+     * @param checkStatus  核对状态 null 全部  0 待核对  1 已核对
+     * @return 是否进行钉钉报警 true 报警
+     */
     private boolean checkUnionPay(String typeName, Date date,String tableName,String warnBatchNo,Integer checkStatus) {
         int count = loanUnionpayCheckBillDetailsServiceBiz.countByTradeTypeAndDate(typeName, date,checkStatus);
         if (count == NumberConstant.ZERO) {

@@ -222,12 +222,14 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
                 orderGoodsEntity.setPayLoanUserId(orderDetailsEntity.getPayLoanUserId());
                 orderGoodsEntity.setRecvLoanUserId(orderDetailsEntity.getRecvLoanUserId());
                 orderGoodsEntity.setCreateAt(date);
-                ExtraDTO extraDTO = new ExtraDTO();
-                extraDTO.setOrderNo(orderGoodsEntity.getOrderBusinessOrderNo());
-                extraDTO.setOrderAmount(String.valueOf(orderGoodsEntity.getProductAmount()));
-                extraDTO.setProductName(orderGoodsEntity.getProductName());
-                extraDTO.setProductCount(String.valueOf(orderGoodsEntity.getProductCount()));
-                listGoods.add(extraDTO);
+                if (orderGoodsEntity.getProductAmount()>NumberConstant.ZERO){
+                    ExtraDTO extraDTO = new ExtraDTO();
+                    extraDTO.setOrderNo(orderGoodsEntity.getOrderBusinessOrderNo());
+                    extraDTO.setOrderAmount(String.valueOf(orderGoodsEntity.getProductAmount()));
+                    extraDTO.setProductName(orderGoodsEntity.getProductName());
+                    extraDTO.setProductCount(String.valueOf(orderGoodsEntity.getProductCount()));
+                    listGoods.add(extraDTO);
+                }
                 if (!this.loanOrderGoodsService.save(orderGoodsEntity)) {
                     log.error("保存贷款订单商品信息失败:{}", JSONObject.toJSONString(orderGoodsEntity));
                     throw new TfException(ExceptionCodeEnum.FAIL);
