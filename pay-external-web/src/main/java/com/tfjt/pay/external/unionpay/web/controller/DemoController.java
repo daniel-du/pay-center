@@ -181,15 +181,6 @@ public class DemoController {
 
         return  unionPayService.getWithdrawal(outOrderNo);
     }
-    /**
-     * 接收回调
-     */
-    @RequestMapping("/withdrawalCallback")
-    public Result<ConsumerPoliciesRespDTO> withdrawalCallback(@RequestBody TransactionCallBackReqDTO transactionCallBackReqDTO){
-       log.info("交易类回调参数:{}",JSONObject.toJSONString(transactionCallBackReqDTO));
-
-        return  Result.ok();
-    }
 
 
     /**
