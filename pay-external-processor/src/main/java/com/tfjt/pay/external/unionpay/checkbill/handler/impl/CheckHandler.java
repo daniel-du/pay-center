@@ -2,7 +2,6 @@ package com.tfjt.pay.external.unionpay.checkbill.handler.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tfjt.pay.external.unionpay.biz.LoanUnionpayCheckBillDetailsServiceBiz;
@@ -26,6 +25,7 @@ import java.util.stream.Collectors;
 /**
  * 核对银联与本地业务数据
  *
+ * @author songx
  * @Auther: songx
  * @Date: 2023/10/28/09:32
  * @Description:

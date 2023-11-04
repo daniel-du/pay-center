@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * @Auther: songx
+ * @author songx
  * @Date: 2023/10/28/09:34
  * @Description:
  */
