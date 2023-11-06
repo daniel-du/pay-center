@@ -22,6 +22,7 @@ import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -81,7 +82,14 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
                 loanUnionpayCheckBillEntity.setStatus(NumberConstant.ONE);
                 cvsFile.delete();
             }
-        } catch (Exception e) {
+        }catch (TfException e) {
+            log.error("现在电子对账失败:",e);
+            if (e.getCode()==510002){
+                loanUnionpayCheckBillEntity.setStatus(NumberConstant.TWO);
+            }
+            loanUnionpayCheckBillEntity.setReason(e.getMessage());
+        }
+        catch (Exception e) {
             log.error("下载对账单失败");
             loanUnionpayCheckBillEntity.setReason(e.getMessage());
             loanUnionpayCheckBillEntity.setStatus(NumberConstant.ZERO);
