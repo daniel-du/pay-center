@@ -1,6 +1,6 @@
-package com.tfjt.pay.external.unionpay.checkbill.processor;
+package com.tfjt.pay.external.unionpay.job.checkbill.processor;
 
-import com.tfjt.pay.external.unionpay.checkbill.handler.CheckBillHandler;
+import com.tfjt.pay.external.unionpay.job.checkbill.handler.CheckBillHandler;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import org.springframework.stereotype.Component;
 

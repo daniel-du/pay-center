@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayBalanceDivideReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.SubBalanceDivideRespDTO;
-import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBiz;
+import com.tfjt.pay.external.unionpay.biz.PayBalanceDivideBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.CommonConstants;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -52,7 +52,7 @@ import java.util.*;
  */
 @Slf4j
 @Component
-public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
+public class PayBalanceDivideBizServiceImpl implements PayBalanceDivideBizService {
 
     @Resource
     private TfAccountConfig accountConfig;
@@ -169,7 +169,7 @@ public class PayBalanceDivideBizImpl implements PayBalanceDivideBiz {
         List<LoanBalanceDivideDetailsEntity> saveList = new ArrayList<>();
         BalanceDivideReqDTO balanceDivideReqDTO = new BalanceDivideReqDTO();
         BeanUtil.copyProperties(balanceDivideReq, balanceDivideReqDTO);
-        PayBalanceDivideBizImpl bean = SpringContextUtils.getBean(this.getClass());
+        PayBalanceDivideBizServiceImpl bean = SpringContextUtils.getBean(this.getClass());
         bean.saveDivide(tradeOrderNo, saveList, balanceDivideReqDTO);
         UnionPayDivideReqDTO unionPayDivideReqDTO = buildBalanceDivideUnionPayParam(saveList, tradeOrderNo);
         //5.调用银联接口

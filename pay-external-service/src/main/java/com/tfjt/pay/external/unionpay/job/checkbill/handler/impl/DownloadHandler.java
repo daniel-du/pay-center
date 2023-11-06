@@ -1,10 +1,9 @@
-package com.tfjt.pay.external.unionpay.checkbill.handler.impl;
+package com.tfjt.pay.external.unionpay.job.checkbill.handler.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayCheckBillReqDTO;
-import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBiz;
-import com.tfjt.pay.external.unionpay.checkbill.handler.CheckBillHandler;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBizService;
+import com.tfjt.pay.external.unionpay.job.checkbill.handler.CheckBillHandler;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,7 @@ import javax.annotation.Resource;
 @Component
 public class DownloadHandler implements CheckBillHandler {
     @Resource
-    private LoanUnionPayCheckBillBiz loanUnionPayCheckBillBiz;
+    private LoanUnionPayCheckBillBizService loanUnionPayCheckBillBiz;
 
     /**
      * 调用银联接口下载电子对账单

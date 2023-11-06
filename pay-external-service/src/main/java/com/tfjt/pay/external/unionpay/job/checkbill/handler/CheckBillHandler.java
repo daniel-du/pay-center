@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.unionpay.checkbill.handler;
+package com.tfjt.pay.external.unionpay.job.checkbill.handler;
 
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 

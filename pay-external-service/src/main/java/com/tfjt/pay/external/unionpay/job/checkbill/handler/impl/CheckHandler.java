@@ -1,23 +1,18 @@
-package com.tfjt.pay.external.unionpay.checkbill.handler.impl;
+package com.tfjt.pay.external.unionpay.job.checkbill.handler.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.IdUtil;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.tfjt.pay.external.unionpay.biz.LoanUnionpayCheckBillDetailsServiceBiz;
-import com.tfjt.pay.external.unionpay.checkbill.handler.CheckBillHandler;
+import com.tfjt.pay.external.unionpay.biz.LoanUnionpayCheckBillDetailsBizService;
+import com.tfjt.pay.external.unionpay.job.checkbill.strategy.CheckBillBaseStrategy;
+import com.tfjt.pay.external.unionpay.job.checkbill.handler.CheckBillHandler;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.UnionpayLoanWarningEntity;
-import com.tfjt.pay.external.unionpay.enums.CheckBillTypeEnum;
-import com.tfjt.tfcommon.core.util.SpringContextUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +29,10 @@ import java.util.stream.Collectors;
 @Component
 public class CheckHandler implements CheckBillHandler {
     @Resource
-    private LoanUnionpayCheckBillDetailsServiceBiz loanUnionpayCheckBillDetailsServiceBiz;
+    private LoanUnionpayCheckBillDetailsBizService loanUnionpayCheckBillDetailsServiceBiz;
+
+    @Resource
+    private List<CheckBillBaseStrategy> billBaseBusinessList;
 
     /**
      * 分页查询每页查询数量
@@ -50,23 +48,19 @@ public class CheckHandler implements CheckBillHandler {
      */
     @Override
     public boolean handler(CheckLoanBillDTO checkLoanBillDTO) {
-        //需要核对的业务类型信息
-        CheckBillTypeEnum[] values = CheckBillTypeEnum.values();
         boolean result = false;
         //异常批次号
         String warnBatchNo = IdUtil.fastSimpleUUID();
         checkLoanBillDTO.setWarnBatchNo(warnBatchNo);
-        //遍历每一种业务类型按照业务类型逐一核对
-        for (CheckBillTypeEnum value : values) {
-            Class<?> clazz = value.getClazz();
-            Object bean = SpringContextUtils.getBean(clazz);
+        for (CheckBillBaseStrategy checkBillBaseBusiness : billBaseBusinessList) {
+            String typeName = checkBillBaseBusiness.getTypeName();
             //业务对应的数据库表名称,记录到报警表中`
-            String tableName = getTableName(bean);
+            String tableName = checkBillBaseBusiness.getTableName();
             //业务表待核对数量
-            int count = unCheckCount(bean, clazz, checkLoanBillDTO.getDate());
+            int count = checkBillBaseBusiness.unCheckCount(checkLoanBillDTO.getDate());
             if (count == NumberConstant.ZERO) {
                 //业务表数据不存在,判断银联表中是否存在相同的数据,如果不存在则不需处理,否则银联所有的数据都为本地业务不存在的异常数据
-                if (checkUnionPay(value.getTypeName(), checkLoanBillDTO.getDate(),tableName,warnBatchNo,null)){
+                if (checkUnionPay(typeName, checkLoanBillDTO.getDate(),tableName,warnBatchNo,null)){
                     result = true;
                 }
                 continue;
@@ -75,26 +69,26 @@ public class CheckHandler implements CheckBillHandler {
             int totalPages = (count + pageSize - 1) / pageSize;
             for (int i = 1; i <= totalPages; i++) {
                 //业务待核对数据
-                List<LoanUnionpayCheckBillDetailsEntity> unCheckList = unCheckList(bean, clazz, checkLoanBillDTO.getDate(), i, pageSize);
+                List<LoanUnionpayCheckBillDetailsEntity> unCheckList = checkBillBaseBusiness.listUnCheckBill(checkLoanBillDTO.getDate(), i, pageSize);
                 List<String> platformOrderNoList = unCheckList.stream().map(LoanUnionpayCheckBillDetailsEntity::getPlatformOrderNo).collect(Collectors.toList());
                 List<String> systemOrderNo = unCheckList.stream().map(LoanUnionpayCheckBillDetailsEntity::getSystemOrderNo).collect(Collectors.toList());
                 //银联未核对数据list
-                List<LoanUnionpayCheckBillDetailsEntity> unionpayList = loanUnionpayCheckBillDetailsServiceBiz.listUnCheckBill(checkLoanBillDTO.getDate(), value.getTypeName(), platformOrderNoList,systemOrderNo);
+                List<LoanUnionpayCheckBillDetailsEntity> unionpayList = loanUnionpayCheckBillDetailsServiceBiz.listUnCheckBill(checkLoanBillDTO.getDate(), typeName, platformOrderNoList,systemOrderNo);
                 if (CollectionUtil.isEmpty(unionpayList)) {
                     //业务表中存在数据,银联账单中未查到,记录错误信息
-                    if(checkList(null, unCheckList, value.getTypeName(), tableName, warnBatchNo)){
+                    if(checkList(null, unCheckList, typeName, tableName, warnBatchNo)){
                         result = true;
                     }
                     continue;
                 }
                 //都存在,逐条核对数据,并记录错误信息
-                if (checkList(unionpayList, unCheckList, value.getTypeName(), tableName, warnBatchNo)) {
+                if (checkList(unionpayList, unCheckList,typeName, tableName, warnBatchNo)) {
                     result = true;
                 }
-            }
-            //验证是否有未核对,未打标记的银联数据,如果有则是全部为业务表中的没有的数据,记录异常信息
-            if(checkUnionPay(value.getTypeName(), checkLoanBillDTO.getDate(),tableName,warnBatchNo,NumberConstant.ZERO)){
-                result = true;
+                //验证是否有未核对,未打标记的银联数据,如果有则是全部为业务表中的没有的数据,记录异常信息
+                if(checkUnionPay(typeName, checkLoanBillDTO.getDate(),tableName,warnBatchNo,NumberConstant.ZERO)){
+                    result = true;
+                }
             }
         }
         return result;
@@ -114,7 +108,6 @@ public class CheckHandler implements CheckBillHandler {
         if (count == NumberConstant.ZERO) {
             return false;
         }
-
         boolean result  = false;
         int totalPages = (count + pageSize - 1) / pageSize;
         for (int i = 1; i <= totalPages; i++) {
@@ -125,59 +118,6 @@ public class CheckHandler implements CheckBillHandler {
         }
         return result;
     }
-
-    /**
-     * 获取业务所在的表的表名称
-     *
-     * @param bean 表对应service
-     * @return 表名称
-     */
-    @SuppressWarnings("all")
-    private String getTableName(Object bean) {
-        IService<?> iService = (IService) bean;
-        Class<?> entityClass = iService.getEntityClass();
-        TableName annotation = entityClass.getAnnotation(TableName.class);
-        return annotation.value();
-    }
-
-    /**
-     * 反射查询业务表为指定日期需要核对的数据总量
-     *
-     * @param bean  业务service
-     * @param clazz service对应的class
-     * @param date  日期
-     * @return 待核对的数据条数
-     */
-    @SuppressWarnings("all")
-    private int unCheckCount(Object bean, Class<?> clazz, Date date) {
-        try {
-            Method method = clazz.getMethod("countUnCheckBill", Date.class);
-            Object invoke = method.invoke(bean, date);
-            return (Integer) invoke;
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * 反射查询业务表为指定日期需要核对的数据
-     *
-     * @param bean  业务service
-     * @param clazz service对应的class
-     * @param date  日期
-     * @return 待核对的数据列表
-     */
-    @SuppressWarnings("all")
-    private List<LoanUnionpayCheckBillDetailsEntity> unCheckList(Object bean, Class<?> clazz, Date date, int pageNo, int pageSize) {
-        try {
-            Method method = clazz.getMethod("listUnCheckBill", Date.class, Integer.class, Integer.class);
-            Object invoke = method.invoke(bean, date,pageNo,pageSize);
-            return (List<LoanUnionpayCheckBillDetailsEntity>) invoke;
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * 核对银联和业务数据
      *
@@ -238,7 +178,6 @@ public class CheckHandler implements CheckBillHandler {
         }
         if (CollectionUtil.isNotEmpty(diff)) {
             loanUnionpayCheckBillDetailsServiceBiz.saveBatchUnionpayLoanWarningEntity(diff);
-
             return true;
         }
         return false;

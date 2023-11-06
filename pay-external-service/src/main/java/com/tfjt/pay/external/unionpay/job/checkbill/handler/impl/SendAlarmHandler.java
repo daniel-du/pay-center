@@ -1,7 +1,6 @@
-package com.tfjt.pay.external.unionpay.checkbill.handler.impl;
+package com.tfjt.pay.external.unionpay.job.checkbill.handler.impl;
 
-import com.tfjt.pay.external.unionpay.checkbill.handler.CheckBillHandler;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.job.checkbill.handler.CheckBillHandler;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.tfjt.robot.common.message.ding.MarkdownMessage;
 import com.tfjt.robot.service.dingtalk.DingRobotService;

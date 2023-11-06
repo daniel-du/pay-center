@@ -4,7 +4,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
-import com.tfjt.pay.external.unionpay.checkbill.processor.CheckProcessor;
+import com.tfjt.pay.external.unionpay.job.checkbill.processor.CheckProcessor;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -29,7 +29,6 @@ public class LoanBusinessJob {
 
     @Resource
     private LoanUserBizService loanUserBizService;
-
 
     @Resource
     private CheckProcessor checkProcessor;

@@ -15,7 +15,7 @@ import java.util.Map;
  * @date 2023-08-22 09:09
  * @email 598482054@qq.com
  */
-public interface PayBalanceDivideBiz {
+public interface PayBalanceDivideBizService {
     /**
      * 保存分账信息
      *

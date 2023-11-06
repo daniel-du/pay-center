@@ -3,7 +3,7 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.tfjt.pay.external.unionpay.biz.LoanUnionpayCheckBillDetailsServiceBiz;
+import com.tfjt.pay.external.unionpay.biz.LoanUnionpayCheckBillDetailsBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.UnionpayLoanWarningEntity;
@@ -23,7 +23,7 @@ import java.util.Set;
  * @Description:
  */
 @Component
-public class LoanUnionpayCheckBillDetailsBizServiceImpl implements LoanUnionpayCheckBillDetailsServiceBiz {
+public class LoanUnionpayCheckBillDetailsBizServiceImpl implements LoanUnionpayCheckBillDetailsBizService {
 
     @Resource
     private LoanUnionpayCheckBillDetailsService loanUnionpayCheckBillDetailsService;

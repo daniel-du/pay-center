@@ -5,14 +5,12 @@ import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayCheckBillReqDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillEntity;
 import com.tfjt.tfcommon.dto.response.Result;
 
-import java.io.FileNotFoundException;
-
 /**
  * @author songx
  * @date 2023-08-18 21:33
  * @email 598482054@qq.com
  */
-public interface LoanUnionPayCheckBillBiz {
+public interface LoanUnionPayCheckBillBizService {
     /**
      * 下载指定日期的银联对账单
      *
