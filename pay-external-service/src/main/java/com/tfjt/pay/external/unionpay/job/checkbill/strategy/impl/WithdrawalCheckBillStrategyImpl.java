@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.job.checkbill.strategy.impl;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tfjt.pay.external.unionpay.dao.LoanOrderDao;
+import com.tfjt.pay.external.unionpay.dao.LoanWithdrawalOrderDao;
 import com.tfjt.pay.external.unionpay.entity.LoanWithdrawalOrderEntity;
 import com.tfjt.pay.external.unionpay.enums.CheckBillTypeEnum;
 import com.tfjt.pay.external.unionpay.job.checkbill.strategy.CheckBillBaseStrategy;
@@ -22,17 +23,17 @@ import java.util.List;
 public class WithdrawalCheckBillStrategyImpl implements CheckBillBaseStrategy {
 
     @Resource
-    private LoanOrderDao loanOrderDao;
+    private LoanWithdrawalOrderDao loanWithdrawalOrderDao;
 
     @Override
     public Integer unCheckCount(Date date) {
-        return loanOrderDao.countUnCheckBill(date);
+        return loanWithdrawalOrderDao.countUnCheckBill(date);
     }
 
     @Override
     public List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, Integer pageNo, Integer pageSize) {
         Page<LoanUnionpayCheckBillDetailsEntity> page = Page.of(pageNo, pageSize);
-        Page<LoanUnionpayCheckBillDetailsEntity> result = loanOrderDao.listUnCheckBill(date,page);
+        Page<LoanUnionpayCheckBillDetailsEntity> result = loanWithdrawalOrderDao.listUnCheckBill(date,page);
         return result.getRecords();
     }
 
