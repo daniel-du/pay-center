@@ -83,5 +83,8 @@ public class LoanWithdrawalOrderEntity implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 
+    @ApiModelProperty(value = "银联提现id")
+    private String withdrawalId;
+
 
 }

@@ -11,17 +11,14 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.LoanOrderDetailsRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.LoanQueryOrderRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.MergeConsumerRepDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.UnionPayTransferRespDTO;
-import com.tfjt.pay.external.unionpay.biz.LoanOrderBiz;
+import com.tfjt.pay.external.unionpay.biz.LoanOrderBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.*;
 import com.tfjt.pay.external.unionpay.dto.ExtraDTO;
 import com.tfjt.pay.external.unionpay.dto.GuaranteePaymentDTO;
 import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
-import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanOrderGoodsEntity;
-import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
+import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.TransactionStatusEnum;
 import com.tfjt.pay.external.unionpay.enums.UnionPayBusinessTypeEnum;
@@ -37,7 +34,7 @@ import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +42,6 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.*;
 
 /**
  * @author songx
@@ -53,8 +49,8 @@ import java.util.*;
  * @email 598482054@qq.com
  */
 @Slf4j
-@Service
-public class LoanOrderBizImpl implements LoanOrderBiz {
+@Component
+public class LoanOrderBizServiceImpl implements LoanOrderBizService {
 
     @Resource
     private LoanOrderService orderService;
@@ -222,12 +218,14 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
                 orderGoodsEntity.setPayLoanUserId(orderDetailsEntity.getPayLoanUserId());
                 orderGoodsEntity.setRecvLoanUserId(orderDetailsEntity.getRecvLoanUserId());
                 orderGoodsEntity.setCreateAt(date);
-                ExtraDTO extraDTO = new ExtraDTO();
-                extraDTO.setOrderNo(orderGoodsEntity.getOrderBusinessOrderNo());
-                extraDTO.setOrderAmount(String.valueOf(orderGoodsEntity.getProductAmount()));
-                extraDTO.setProductName(orderGoodsEntity.getProductName());
-                extraDTO.setProductCount(String.valueOf(orderGoodsEntity.getProductCount()));
-                listGoods.add(extraDTO);
+                if (orderGoodsEntity.getProductAmount()>NumberConstant.ZERO){
+                    ExtraDTO extraDTO = new ExtraDTO();
+                    extraDTO.setOrderNo(orderGoodsEntity.getOrderBusinessOrderNo());
+                    extraDTO.setOrderAmount(String.valueOf(orderGoodsEntity.getProductAmount()));
+                    extraDTO.setProductName(orderGoodsEntity.getProductName());
+                    extraDTO.setProductCount(String.valueOf(orderGoodsEntity.getProductCount()));
+                    listGoods.add(extraDTO);
+                }
                 if (!this.loanOrderGoodsService.save(orderGoodsEntity)) {
                     log.error("保存贷款订单商品信息失败:{}", JSONObject.toJSONString(orderGoodsEntity));
                     throw new TfException(ExceptionCodeEnum.FAIL);
@@ -293,7 +291,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         //2.保存订单信息
         LoanOrderUnifiedorderReqDTO loanOrderUnifiedorderReqDTO = new LoanOrderUnifiedorderReqDTO();
         BeanUtil.copyProperties(loanOrderUnifiedorderDTO, loanOrderUnifiedorderReqDTO);
-        LoanOrderBiz bean = SpringContextUtils.getBean(this.getClass());
+        LoanOrderBizService bean = SpringContextUtils.getBean(this.getClass());
         //3.调用银联接口
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = bean.unifiedorderSaveOrderAndBuildUnionPayParam(loanOrderUnifiedorderReqDTO, notifyUrl);
         log.info("贷款支付参数{}", JSONObject.toJSONString(consumerPoliciesReqDTO));
@@ -327,7 +325,7 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         String tradeOrderNo = InstructIdUtil.getInstructId(CommonConstants.TRANSACTION_TYPE_TB, new Date(), UnionPayTradeResultCodeConstant.TRADE_RESULT_CODE_60, redisCache);
         LoanTransferRespDTO loanTransferRespDTO = new LoanTransferRespDTO();
         BeanUtil.copyProperties(payTransferDTO, loanTransferRespDTO);
-        LoanOrderBizImpl bean = SpringContextUtils.getBean(this.getClass());
+        LoanOrderBizServiceImpl bean = SpringContextUtils.getBean(this.getClass());
         bean.transferSaveOrder(loanTransferRespDTO, tradeOrderNo);
         //3.调用银联信息
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = buildTransferUnionPayParam(payTransferDTO, tradeOrderNo);
@@ -374,6 +372,26 @@ public class LoanOrderBizImpl implements LoanOrderBiz {
         loanQueryOrderRespDTO.setDetails_dto_list(details_dto_list);
         loanQueryOrderRespDTO.setTread_type(PayTypeConstants.PAY_TYPE_LOAN);
         return Result.ok(loanQueryOrderRespDTO);
+    }
+
+    @Override
+    public Integer unCheckCount(Date date) {
+        return orderService.countUnCheckBill(date);
+    }
+
+    @Override
+    public List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, Integer pageNo, Integer pageSize) {
+        return orderService.listUnCheckBill(date,pageNo,pageSize);
+    }
+
+    @Override
+    public List<LoanUnionpayCheckBillDetailsEntity> listDetailsUnCheckBill(Date date, Integer pageNo, Integer pageSize) {
+        return loanOrderDetailsService.listUnCheckBill(date,pageNo,pageSize);
+    }
+
+    @Override
+    public Integer unDetailsCheckCount(Date date) {
+        return loanOrderDetailsService.countUnCheckBill(date);
     }
 
 

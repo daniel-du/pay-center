@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
@@ -35,7 +36,7 @@ import java.util.*;
  */
 @Slf4j
 @Component
-public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApiBiz {
+public class UnionPayLoansCallbackApiBizServiceImpl implements UnionPayLoansCallbackApiBiz {
 
     @Autowired
     private LoanBalanceNoticeService payBalanceNoticeService;
@@ -231,6 +232,8 @@ public class UnionPayLoansCallbackApiBizImpl implements UnionPayLoansCallbackApi
                 log.info("订单确认调用银联接收消息<<<<<<<<<<<<<<<{}", JSONObject.toJSONString(consumerPoliciesCheckRespDTOResult));
                 if (consumerPoliciesCheckRespDTOResult.getCode() == NumberConstant.ZERO) {
                     loanOrderDetailsEntity.setConfirmStatus(NumberConstant.ONE);
+                    loanOrderDetailsEntity.setConfirmTime(DateUtil.date());
+                    loanOrderDetailsEntity.setConfirmId(consumerPoliciesCheckRespDTOResult.getData().getCombinedGuaranteeConfirmId());
                     this.loanOrderDetailsService.updateById(loanOrderDetailsEntity);
                 }
             } catch (Exception e) {

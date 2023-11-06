@@ -4,8 +4,6 @@ import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.UnionPayApiService;
 import com.tfjt.pay.external.unionpay.biz.*;
-import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
-import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -24,11 +22,11 @@ import java.util.*;
 @DubboService
 public class UnionPayApiServiceImpl implements UnionPayApiService {
     @Resource
-    private LoanUnionPayCheckBillBiz loanUnionPayCheckBillBiz;
+    private LoanUnionPayCheckBillBizService loanUnionPayCheckBillBiz;
     @Resource
-    private LoanOrderBiz loanOrderBiz;
+    private LoanOrderBizService loanOrderBiz;
     @Resource
-    private PayBalanceDivideBiz payBalanceDivideBiz;
+    private PayBalanceDivideBizService payBalanceDivideBiz;
 
     @Resource
     private LoanUserBizService loanUserBizService;

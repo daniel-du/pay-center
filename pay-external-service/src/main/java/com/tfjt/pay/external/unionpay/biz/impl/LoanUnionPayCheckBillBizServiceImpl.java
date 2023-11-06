@@ -5,29 +5,23 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpUtil;
 import cn.xuyanwu.spring.file.storage.FileInfo;
-import cn.xuyanwu.spring.file.storage.FileStorageProperties;
 import cn.xuyanwu.spring.file.storage.FileStorageService;
 import cn.xuyanwu.spring.file.storage.UploadPretreatment;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayCheckBillReqDTO;
-import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBiz;
+import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBizService;
 import com.tfjt.pay.external.unionpay.config.TfAccountConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillEntity;
-import com.tfjt.pay.external.unionpay.enums.PayExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.LoanUnionpayCheckBillService;
 import com.tfjt.pay.external.unionpay.service.UnionPayService;
 import com.tfjt.tfcommon.core.exception.TfException;
-import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.Objects;
@@ -39,7 +33,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Component
-public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
+public class LoanUnionPayCheckBillBizServiceImpl implements LoanUnionPayCheckBillBizService {
 
     @Resource
     private TfAccountConfig tfAccountConfig;
@@ -81,7 +75,14 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
                 loanUnionpayCheckBillEntity.setStatus(NumberConstant.ONE);
                 cvsFile.delete();
             }
-        } catch (Exception e) {
+        }catch (TfException e) {
+            log.error("现在电子对账失败:",e);
+            if (e.getCode()==510002){
+                loanUnionpayCheckBillEntity.setStatus(NumberConstant.TWO);
+            }
+            loanUnionpayCheckBillEntity.setReason(e.getMessage());
+        }
+        catch (Exception e) {
             log.error("下载对账单失败");
             loanUnionpayCheckBillEntity.setReason(e.getMessage());
             loanUnionpayCheckBillEntity.setStatus(NumberConstant.ZERO);
@@ -106,6 +107,16 @@ public class LoanUnionPayCheckBillBizImpl implements LoanUnionPayCheckBillBiz {
             return Result.ok(byDateAndAccountId.getUrl());
         }
         return Result.failed(byDateAndAccountId.getReason());
+    }
+
+    @Override
+    public boolean download(UnionPayCheckBillReqDTO unionPayCheckBillReqDTO) {
+        LoanUnionpayCheckBillEntity byDateAndAccountId = loanUnionpayCheckBillService.getByDateAndAccountId(unionPayCheckBillReqDTO.getDate(), tfAccountConfig.getBalanceAcctId());
+        if (Objects.isNull(byDateAndAccountId) || byDateAndAccountId.getStatus().equals(NumberConstant.ZERO)) {
+            LoanUnionpayCheckBillEntity loanUnionpayCheckBillEntity = downloadCheckBill(DateUtil.parseDate(unionPayCheckBillReqDTO.getDate()));
+            return Objects.equals(loanUnionpayCheckBillEntity.getStatus(), NumberConstant.ONE) || Objects.equals(loanUnionpayCheckBillEntity.getStatus(), NumberConstant.TWO);
+        }
+        return Objects.equals(NumberConstant.ONE, byDateAndAccountId.getStatus()) || Objects.equals(byDateAndAccountId.getStatus(), NumberConstant.TWO);
     }
 
 }

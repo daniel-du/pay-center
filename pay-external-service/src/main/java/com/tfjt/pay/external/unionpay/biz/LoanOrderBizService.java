@@ -11,8 +11,11 @@ import com.tfjt.pay.external.unionpay.dto.req.LoanTransferRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.ConsumerPoliciesRespDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.LoanOrderEntity;
+import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -20,8 +23,7 @@ import java.util.List;
  * @date 2023-08-21 18:49
  * @email 598482054@qq.com
  */
-@Service
-public interface LoanOrderBiz {
+public interface LoanOrderBizService {
     /**
      * 保存转账参数
      * @param loanTransferRespDTO
@@ -92,4 +94,35 @@ public interface LoanOrderBiz {
      * @return                交易结果
      */
     Result<LoanQueryOrderRespDTO> orderQuery(String businessOrderNo, String appId);
+
+    /**
+     * 下单未核对数量
+     * @param date 核对日期
+     * @return 数量
+     */
+    Integer unCheckCount(Date date);
+
+    /**
+     * 订单未核对列表
+     * @param date 核对日期
+     * @param pageNo 页数
+     * @param pageSize 每页显示数量
+     * @return 分页数据
+     */
+    List<LoanUnionpayCheckBillDetailsEntity> listUnCheckBill(Date date, Integer pageNo, Integer pageSize);
+
+    /**
+     * 订单确认未核对列表
+     * @param date 核对日期
+     * @param pageNo 页数
+     * @param pageSize 每页显示数量
+     * @return 分页数据
+     */
+    List<LoanUnionpayCheckBillDetailsEntity> listDetailsUnCheckBill(Date date, Integer pageNo, Integer pageSize);
+    /**
+     * 订单确认未核对数量
+     * @param date 核对日期
+     * @return 数量
+     */
+    Integer unDetailsCheckCount(Date date);
 }

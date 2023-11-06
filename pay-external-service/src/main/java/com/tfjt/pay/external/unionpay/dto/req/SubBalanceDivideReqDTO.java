@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.unionpay.biz.impl;
+package com.tfjt.pay.external.unionpay.dto.req;
 
 import lombok.Data;
 

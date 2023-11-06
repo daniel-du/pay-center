@@ -2,10 +2,10 @@ package com.tfjt.pay.external.unionpay.job;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBiz;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.job.checkbill.processor.CheckProcessor;
+import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -25,47 +25,43 @@ import javax.annotation.Resource;
 public class LoanBusinessJob {
 
     @Resource
-    private LoanUnionPayCheckBillBiz loanUnionPayCheckBillBiz;
-
-    @Resource
     private UnionPayLoansCallbackApiBiz unionPayLoansCallbackApiBiz;
 
     @Resource
     private LoanUserBizService loanUserBizService;
+
+    @Resource
+    private CheckProcessor checkProcessor;
 
     /**
      * 下载昨日对账单
      */
     @XxlJob("downloadCheckBill")
     public void downloadCheckBill(){
+        String jobParam = XxlJobHelper.getJobParam();
         DateTime yesterday = DateUtil.yesterday();
-        log.info("开始执行:{}下载账单下载任务........",yesterday);
-        XxlJobHelper.log("开始执行:{}下载账单下载任务........",yesterday);
-        loanUnionPayCheckBillBiz.downloadCheckBill(yesterday);
+        XxlJobHelper.log("--------------------------开始执行:{}下载账单下载任务----------------------",yesterday);
+        XxlJobHelper.log("--------------------------jobParam:{}----------------------",jobParam);
+        checkProcessor.checkBill(new CheckLoanBillDTO().setDate(yesterday));
         XxlJobHelper.log("结束执行:{}下载账单下载任务........",yesterday);
-        log.info("结束执行:{}下载账单下载任务........",yesterday);
     }
     /**
      * 定时扫描未确认的订单信息
      */
     @XxlJob("confirmOrder")
     public void confirmOrder(){
-        log.info("开始执行订单确认任务........");
         XxlJobHelper.log("开始执行订单确认任务.......");
         unionPayLoansCallbackApiBiz.confirmOrder();
         XxlJobHelper.log("结束执行订单确认任务.......");
-        log.info("结束执行订单确认任务........");
     }
     /**
      * 通知失败的任务
      */
     @XxlJob("applicationCallback")
     public void applicationCallback(){
-        log.info("开始执行通知失败的任务.......");
         XxlJobHelper.log("开始执行通知失败的任务.......");
         unionPayLoansCallbackApiBiz.applicationCallback();
         XxlJobHelper.log("结束执行通知失败的任务.......");
-        log.info("结束执行通知失败的任务........");
     }
 
 
