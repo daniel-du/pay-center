@@ -4,6 +4,7 @@ import com.tfjt.pay.external.unionpay.job.checkbill.handler.CheckBillHandler;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.tfjt.robot.common.message.ding.MarkdownMessage;
 import com.tfjt.robot.service.dingtalk.DingRobotService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import javax.annotation.Resource;
  * @Date: 2023/10/28/09:34
  * @Description:
  */
+@Slf4j
 @Order(2)
 @Component
 public class SendAlarmHandler implements CheckBillHandler {
@@ -32,6 +34,7 @@ public class SendAlarmHandler implements CheckBillHandler {
      */
     @Override
     public boolean handler(CheckLoanBillDTO checkLoanBillDTO) {
+        log.info("执行钉钉报警.......");
         String envName;
         if (("prod").equals(env) || ("pre").equals(env)){
             envName = "生产";
