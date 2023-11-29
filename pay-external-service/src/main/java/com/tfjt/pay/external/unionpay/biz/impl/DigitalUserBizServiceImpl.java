@@ -33,10 +33,10 @@ import java.util.Objects;
 @Component
 public class DigitalUserBizServiceImpl implements DigitalUserBizService {
 
-    @Value("${digital:union-pay-public-key}")
+    @Value("${digital.union-pay-public-key}")
     private String unionPayPublicKey;
 
-    @Value("${digital:pay-private-key}")
+    @Value("${digital.pay-private-key}")
     private String payPrivateKey;
 
     @Resource
@@ -100,7 +100,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     private String decryptStr(String content) {
         RSA rsa = new RSA(payPrivateKey, null);
         log.info("数字人民币需要解密的密文:{}", content);
-        String message = rsa.decryptStr(content, KeyType.PublicKey);
+        String message = rsa.decryptStr(content, KeyType.PrivateKey);
         log.info("数字人民币解密之后的明文:{}", message);
         return message;
     }
@@ -114,7 +114,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     private String encryptBase64(String content) {
         RSA rsa = new RSA(null, unionPayPublicKey);
         log.info("数字人民币加密之前的明文:{}", content);
-        String message = rsa.encryptBase64(content, KeyType.PrivateKey);
+        String message = rsa.encryptBase64(content, KeyType.PublicKey);
         log.info("数字人民币加密之后的密文:{}", message);
         return message;
     }
