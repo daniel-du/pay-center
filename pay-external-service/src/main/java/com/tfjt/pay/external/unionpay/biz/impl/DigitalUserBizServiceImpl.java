@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.lock.annotation.Lock4j;
 import com.tfjt.api.TfSupplierApiService;
 import com.tfjt.pay.external.unionpay.biz.DigitalUserBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -65,20 +66,24 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         return Result.ok(new DigitalRespDTO(result?DigitalTransactionStatusEnum.DIGITAL_SUCCESS:DigitalTransactionStatusEnum.DIGITAL_FAILED));
     }
 
+    @Lock4j(keys = "#digitalUserEntity.signContract",expire = 3000)
     @Override
     public Result<DigitalRespDTO> bindWallet(DigitalUserEntity digitalUserEntity) {
         String verifyType = digitalUserEntity.getVerifyType();
         //切换账号
         boolean isUpdate = DigitalCodeEnum.VT02.getCode().equals(verifyType);
         Long id = null;
+        DigitalUserEntity old = digitalUserService.selectUserBySignContract(digitalUserEntity.getSignContract());
         if (isUpdate) {
-            DigitalUserEntity old = digitalUserService.selectUserBySignContract(digitalUserEntity.getSignContract());
             log.info("数字人民币修改之前数据:{}",JSONObject.toJSONString(old));
             //用户不存在
             if (Objects.isNull(old)) {
                 return Result.ok(new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_FAILED));
             }
             id = old.getId();
+        }else if (Objects.nonNull(old)){
+            //如果之前有记录则不再更新
+            return Result.ok(new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS));
         }
         digitalUserEntity.setMchntSideAccount(decryptStr(digitalUserEntity.getMchntSideAccount()));
         DigitalBankCodeEnum bank = DigitalBankCodeEnum.getByCode(digitalUserEntity.getOperatorId());
