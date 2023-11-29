@@ -52,7 +52,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         boolean exit = tfSupplierApiService.isExists(new SupplierAddDTO().setMobile(account));
         DigitalRespDTO respDTO = new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS);
         respDTO.setQueryType(digitalSelectReqDTO.getQueryType());
-        respDTO.setMchntSideRegisterFlag(exit ? DigitalCodeEnum.EFO0.getCode() : DigitalCodeEnum.EFO1.getCode());
+        respDTO.setMchntSideRegisterFlag(exit ? DigitalCodeEnum.EF00.getCode() : DigitalCodeEnum.EF01.getCode());
         return Result.ok(respDTO);
     }
 

@@ -20,9 +20,9 @@ public enum DigitalCodeEnum {
     VT04("VT04","支付并推送"),
 
     /**已注册*/
-    EFO0("EFO0","已注册"),
+    EF00("EF00","已注册"),
     /**未注册*/
-    EFO1("EFO1","未注册"),
+    EF01("EF01","未注册"),
 
  ;
     private String code;

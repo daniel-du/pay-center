@@ -12,15 +12,15 @@ public enum DigitalTransactionStatusEnum {
     /**
      * 数字人民币响应成功
      */
-    DIGITAL_SUCCESS("PROO","成功"),
+    DIGITAL_SUCCESS("PR00","成功"),
     /**
      * 数字人民币响应失败
      */
-    DIGITAL_FAILED("PRO1","失败"),
+    DIGITAL_FAILED("PR01","失败"),
     /**
      * 数字人民币响应处理中
      */
-    DIGITAL_PROCESSING("PRO2","处理中");
+    DIGITAL_PROCESSING("PR01","处理中");
 
     private String code;
 
