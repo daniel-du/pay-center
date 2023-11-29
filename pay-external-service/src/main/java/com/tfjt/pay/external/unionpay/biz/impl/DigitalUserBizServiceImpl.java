@@ -13,6 +13,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.DigitalRespDTO;
 import com.tfjt.pay.external.unionpay.entity.DigitalUserEntity;
 import com.tfjt.pay.external.unionpay.enums.digital.DigitalBankCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.digital.DigitalCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.digital.DigitalErrorCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.digital.DigitalTransactionStatusEnum;
 import com.tfjt.pay.external.unionpay.service.DigitalUserService;
 import com.tfjt.supplier.dto.SupplierAddDTO;
@@ -60,6 +61,9 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     @Override
     public Result<DigitalRespDTO> unbindWallet(DigitalUserEntity digitalUserEntity) {
         DigitalUserEntity old = digitalUserService.selectUserBySignContract(digitalUserEntity.getSignContract());
+        if (Objects.isNull(old)){
+            return Result.ok(new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_FAILED, DigitalErrorCodeEnum.R021));
+        }
         old.setUnbindTime(DateUtil.date());
         old.setStatus(NumberConstant.ZERO);
         boolean result = digitalUserService.updateById(old);

@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.dto.resp;
 
+import com.tfjt.pay.external.unionpay.enums.digital.DigitalCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.digital.DigitalErrorCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.digital.DigitalTransactionStatusEnum;
 import lombok.Data;
 
@@ -29,6 +31,11 @@ public class DigitalRespDTO implements Serializable {
 
     public DigitalRespDTO(DigitalTransactionStatusEnum digitalTransactionStatusEnum){
         this.bussReceiptStat = digitalTransactionStatusEnum.getCode();
+    }
+    public DigitalRespDTO(DigitalTransactionStatusEnum digitalTransactionStatusEnum, DigitalErrorCodeEnum digitalCodeEnum){
+        this.bussReceiptStat = digitalTransactionStatusEnum.getCode();
+        this.bussReceiptCode = digitalCodeEnum.getCode();
+        this.bussReceiptDesc = digitalCodeEnum.getDesc();
     }
 
 }
