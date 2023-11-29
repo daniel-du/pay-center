@@ -19,7 +19,7 @@ spring:
   profiles:
     active: local
 log:
-  path: /data/logs/tf-cloud-pay-external
+  path: ./data/logs/tf-cloud-pay-external
   console.out: true
 logging:
   level:
