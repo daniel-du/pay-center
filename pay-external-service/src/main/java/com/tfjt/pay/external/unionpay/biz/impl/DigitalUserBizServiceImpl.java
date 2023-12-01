@@ -111,6 +111,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         digitalUserEntity.setMchntSideAccount(decryptStr(digitalUserEntity.getMchntSideAccount()));
         DigitalBankCodeEnum bank = DigitalBankCodeEnum.getByCode(digitalUserEntity.getOperatorId());
         digitalUserEntity.setOperatorName(Objects.isNull(bank) ? null : bank.getDesc());
+        digitalUserEntity.setOperatorIcon(Objects.isNull(bank) ? null : bank.getIcon());
         digitalUserEntity.setCreateTime(DateUtil.date());
         digitalUserEntity.setUpdateTime(DateUtil.date());
         digitalUserEntity.setStatus(NumberConstant.ONE);

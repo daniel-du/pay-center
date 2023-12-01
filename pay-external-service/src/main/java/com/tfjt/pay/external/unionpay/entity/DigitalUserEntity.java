@@ -54,6 +54,10 @@ public class DigitalUserEntity implements Serializable {
 	 */
 	private String operatorName;
 	/**
+	 * 运营机构图标
+	 */
+	private String operatorIcon;
+	/**
 	 * 协议信息
 	 */
 	private String protocollInfo;
