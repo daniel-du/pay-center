@@ -5,6 +5,7 @@ import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
+import com.tfjt.api.CheckUserPhoneRpcService;
 import com.tfjt.api.TfSupplierApiService;
 import com.tfjt.pay.external.unionpay.biz.DigitalUserBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -47,6 +48,9 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     @DubboReference(retries = 1, timeout = 3000, check = false)
     private TfSupplierApiService tfSupplierApiService;
 
+    @DubboReference(retries = 1, timeout = 3000, check = false)
+    private CheckUserPhoneRpcService checkUserPhoneRpcService;
+
     @Override
     public Result<DigitalRespDTO> selectByAccount(DigitalSelectReqDTO digitalSelectReqDTO) {
         String account = decryptStr(digitalSelectReqDTO.getMchntSideAccount());
@@ -54,6 +58,21 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         boolean exit = tfSupplierApiService.isExists(new SupplierAddDTO().setMobile(account));
         DigitalRespDTO respDTO = new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS);
         respDTO.setQueryType(digitalSelectReqDTO.getQueryType());
+        //供应商没有注册,查询是否商家是否注册,如果有有一个注册就返回银联成功状态
+        if(!exit){
+            try {
+                com.tfjt.tfcommon.core.util.Result<Boolean> result = checkUserPhoneRpcService.checkUserPhone(account);
+                log.info("调用接口查询数字人民币账户信息返回:{}",JSONObject.toJSONString(result));
+                if (result.getCode()==0){
+                    exit= result.getData();
+                }
+            }catch (Exception e){
+                log.error("查询手机是否注册dubbo异常:",e);
+                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_FAILED.getCode());
+                return Result.ok(respDTO);
+            }
+        }
+
         respDTO.setMchntSideRegisterFlag(exit ? DigitalCodeEnum.EF00.getCode() : DigitalCodeEnum.EF01.getCode());
         return Result.ok(respDTO);
     }
