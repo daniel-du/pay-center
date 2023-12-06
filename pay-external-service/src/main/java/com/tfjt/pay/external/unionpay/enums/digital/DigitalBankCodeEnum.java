@@ -15,7 +15,7 @@ public enum DigitalBankCodeEnum {
     /**农行*/
     DCRI_ABC("DCRI_ABC","农行",""),
     /**中行*/
-    DCRI_BOC("DCRI_BOC","中行",""),
+    DCRI_BOC("DCRI_BOC","中行","https://qiniu.tongfuyouxuan.com/shop/231205141354-ohk3UC.png"),
     /**建行*/
     DCRI_CCB("DCRI_CCB","建行",""),
     /**交行*/
