@@ -1,0 +1,41 @@
+package com.tfjt.pay.external.unionpay.service.impl;
+
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.dto.req.InComingBinkCardReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.InComingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
+import com.tfjt.pay.external.unionpay.service.IncomingBindCardService;
+import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * @author Du Penglun
+ * @version 1.0
+ * @date 2023/12/6 21:00
+ * @description 平安普通进件对公结算服务
+ */
+@Service("pingan_common_corporate")
+public class IncomingBindCardPnCorporateServiceImpl implements IncomingBindCardService {
+
+    @Autowired
+    TfIncomingInfoService tfIncomingInfoService;
+    
+    @Override
+    public boolean binkCard(InComingBinkCardReqDTO inComingBinkCardReqDTO) {
+        //判断开户状态
+        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(inComingBinkCardReqDTO.getIncomingId());
+        if (NumberConstant.ONE.equals(tfIncomingInfoEntity.getAccessStatus())) {
+            //调用平安6248-开户接口
+        }
+        //调用平安6240接口
+
+        return false;
+    }
+
+    @Override
+    public boolean checkCode(InComingCheckCodeReqDTO inComingCheckCodeReqDTO) {
+        //调用平安6241接口
+        return false;
+    }
+}
