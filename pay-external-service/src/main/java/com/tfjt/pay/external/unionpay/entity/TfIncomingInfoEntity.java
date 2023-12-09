@@ -49,12 +49,12 @@ public class TfIncomingInfoEntity implements Serializable {
     /**
      * 入网渠道类型（1：平安，2：银联）
      */
-    private Byte accessChannelType;
+    private Integer accessChannelType;
 
     /**
      * 入网类型（1：贷款，2：商户入网）
      */
-    private Byte accessType;
+    private Integer accessType;
 
     /**
      * 平安：子账号、银联：商户ID
@@ -69,7 +69,7 @@ public class TfIncomingInfoEntity implements Serializable {
     /**
      * 入网主体类型（1：个人，2：企业）
      */
-    private Boolean accessMainType;
+    private Integer accessMainType;
 
     /**
      * 入网时间
@@ -79,7 +79,7 @@ public class TfIncomingInfoEntity implements Serializable {
     /**
      * 入网状态（1：信息填写，2：入网中，3：入网成果，4：入网失败）
      */
-    private Boolean accessStatus;
+    private Integer accessStatus;
 
     /**
      * 数据有效状态（0：有效，1：无效）

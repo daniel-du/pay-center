@@ -1,7 +1,7 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import com.tfjt.pay.external.unionpay.dao.TfIncomingIdcardInfoDao;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingIdcardInfoEntity;
-import com.tfjt.pay.external.unionpay.mapper.TfIncomingIdcardInfoMapper;
 import com.tfjt.pay.external.unionpay.service.TfIncomingIdcardInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2023-12-07
  */
 @Service
-public class TfIncomingIdcardInfoServiceImpl extends ServiceImpl<TfIncomingIdcardInfoMapper, TfIncomingIdcardInfoEntity> implements TfIncomingIdcardInfoService {
+public class TfIncomingIdcardInfoServiceImpl extends ServiceImpl<TfIncomingIdcardInfoDao, TfIncomingIdcardInfoEntity> implements TfIncomingIdcardInfoService {
 
 }

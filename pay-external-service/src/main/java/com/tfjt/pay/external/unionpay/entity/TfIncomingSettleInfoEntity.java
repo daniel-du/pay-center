@@ -36,7 +36,7 @@ public class TfIncomingSettleInfoEntity implements Serializable {
     /**
      * 结算账户类型
      */
-    private Boolean settlementAccountType;
+    private Integer settlementAccountType;
 
     /**
      * 开户名称

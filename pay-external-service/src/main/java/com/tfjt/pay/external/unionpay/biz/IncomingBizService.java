@@ -21,5 +21,5 @@ public interface IncomingBizService {
      * 保存结算信息并回填校验验证码、打款金额
      * @return
      */
-    boolean saveIncomingSettle(InComingCheckCodeReqDTO inComingCheckCodeReqDTO);
+    boolean checkCode(InComingCheckCodeReqDTO inComingCheckCodeReqDTO);
 }
