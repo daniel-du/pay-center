@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.PabcPubPayCityDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.PabcPubPayCityEntity" id="PabcPubPayCityMap">
+        <result property="cityAreacode" column="city_areacode"/>
+        <result property="cityAreaname" column="city_areaname"/>
+        <result property="cityAreatype" column="city_areatype"/>
+        <result property="cityNodecode" column="city_nodecode"/>
+        <result property="cityTopareacode1" column="city_topareacode1"/>
+        <result property="cityTopareacode2" column="city_topareacode2"/>
+        <result property="cityTopareacode3" column="city_topareacode3"/>
+        <result property="cityOraareacode" column="city_oraareacode"/>
+    </resultMap>
+
+
+</mapper>

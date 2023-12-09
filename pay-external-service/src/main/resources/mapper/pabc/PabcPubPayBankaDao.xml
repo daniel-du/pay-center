@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.PabcPubPayBankaDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.PabcPubPayBankaEntity" id="PabcPubPayBankaMap">
+        <result property="bankBnkcode" column="bank_bnkcode"/>
+        <result property="bankStatus" column="bank_status"/>
+        <result property="bankClscode" column="bank_clscode"/>
+        <result property="bankDreccode" column="bank_dreccode"/>
+        <result property="bankNodecode" column="bank_nodecode"/>
+        <result property="bankCitycode" column="bank_citycode"/>
+        <result property="bankLname" column="bank_lname"/>
+    </resultMap>
+
+
+</mapper>
