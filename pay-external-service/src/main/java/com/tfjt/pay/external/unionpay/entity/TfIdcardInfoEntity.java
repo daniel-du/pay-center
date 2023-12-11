@@ -12,16 +12,16 @@ import lombok.Setter;
 
 /**
  * <p>
- * 银行入网-结算信息
+ * 证件信息
  * </p>
  *
  * @author Du Penglun
- * @since 2023-12-07
+ * @since 2023-12-11
  */
 @Getter
 @Setter
-@TableName("tf_incoming_settle_info")
-public class TfIncomingSettleInfoEntity implements Serializable {
+@TableName("tf_idcard_info")
+public class TfIdcardInfoEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -29,49 +29,64 @@ public class TfIncomingSettleInfoEntity implements Serializable {
     private Long id;
 
     /**
-     * 进件主表id
+     * 证件正面照片
      */
-    private Long incomingId;
+    private String frontIdCardUrl;
 
     /**
-     * 结算账户类型
+     * 证件反面照片
      */
-    private Integer settlementAccountType;
+    private String backIdCardUrl;
 
     /**
-     * 银行卡信息id
+     * 证件手持照片
      */
-    private Long bankCardId;
+    private String holdIdCardUrl;
 
     /**
-     * 职业
+     * 姓名
      */
-    private String occupation;
+    private String name;
 
     /**
-     * 是否默认（1：是，0：否）
+     * 性别
      */
-    private Byte defaultFlag;
+    private Boolean sex;
 
     /**
-     * 绑定状态（1：绑定，0：解绑）
+     * 法人证件类型
      */
-    private Byte bindStatus;
+    private Integer idType;
 
     /**
-     * 失败原因
+     * 法人证件号码
      */
-    private String failReason;
+    private String idNo;
 
     /**
-     * 结算id
+     * 法人国籍
      */
-    private String settlementId;
+    private String nationality;
 
     /**
-     * 标记删除（0：有效，1：无效）
+     * 证件有效起始日期
      */
-    private Byte isDeleted;
+    private String idEffectiveDate;
+
+    /**
+     * 证件有效截止日期
+     */
+    private String idExpiryDate;
+
+    /**
+     * 证件是否长期（0否，1是）
+     */
+    private Boolean isLongTerm;
+
+    /**
+     * 数据有效状态（0：有效，1：无效）
+     */
+    private Boolean isDeleted;
 
     /**
      * 创建时间

@@ -4,6 +4,7 @@ import com.tfjt.pay.external.unionpay.dao.TfIncomingSettleInfoDao;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
 import com.tfjt.pay.external.unionpay.service.TfIncomingSettleInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +16,10 @@ import org.springframework.stereotype.Service;
  * @since 2023-12-07
  */
 @Service
-public class TfIncomingSettleInfoServiceImpl extends ServiceImpl<TfIncomingSettleInfoDao, TfIncomingSettleInfoEntity> implements TfIncomingSettleInfoService {
+public class TfIncomingSettleInfoServiceImpl extends BaseServiceImpl<TfIncomingSettleInfoDao, TfIncomingSettleInfoEntity> implements TfIncomingSettleInfoService {
 
+    @Override
+    public TfIncomingSettleInfoEntity querySettleInfoByIncomingId(Long incomingId) {
+        return null;
+    }
 }

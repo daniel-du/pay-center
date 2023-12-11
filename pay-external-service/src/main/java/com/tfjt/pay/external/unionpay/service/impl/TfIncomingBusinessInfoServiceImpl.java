@@ -4,6 +4,7 @@ import com.tfjt.pay.external.unionpay.dao.TfIncomingBusinessInfoDao;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingBusinessInfoEntity;
 import com.tfjt.pay.external.unionpay.service.TfIncomingBusinessInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +16,6 @@ import org.springframework.stereotype.Service;
  * @since 2023-12-07
  */
 @Service
-public class TfIncomingBusinessInfoServiceImpl extends ServiceImpl<TfIncomingBusinessInfoDao, TfIncomingBusinessInfoEntity> implements TfIncomingBusinessInfoService {
+public class TfIncomingBusinessInfoServiceImpl extends BaseServiceImpl<TfIncomingBusinessInfoDao, TfIncomingBusinessInfoEntity> implements TfIncomingBusinessInfoService {
 
 }

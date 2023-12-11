@@ -12,16 +12,16 @@ import lombok.Setter;
 
 /**
  * <p>
- * 银行入网-营业信息
+ * 银行入网-商户信息
  * </p>
  *
  * @author Du Penglun
- * @since 2023-12-07
+ * @since 2023-12-11
  */
 @Getter
 @Setter
-@TableName("tf_incoming_business_info")
-public class TfIncomingBusinessInfoEntity implements Serializable {
+@TableName("tf_incoming_merchant_info")
+public class TfIncomingMerchantInfoEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -34,19 +34,34 @@ public class TfIncomingBusinessInfoEntity implements Serializable {
     private Long incomingId;
 
     /**
-     * 营业执照信息
+     * 商户简称
      */
-    private Long businessLicenseId;
+    private String shopShortName;
 
     /**
-     * 联系邮箱
+     * 法人证件信息
      */
-    private String email;
+    private Long legalIdCard;
+
+    /**
+     * 法人手机号
+     */
+    private String legalMobile;
+
+    /**
+     * 经办人证件信息
+     */
+    private Long agentIdCard;
+
+    /**
+     * 经办人手机
+     */
+    private String agentMobile;
 
     /**
      * 数据有效状态（0：有效，1：无效）
      */
-    private Integer isDeleted;
+    private Boolean isDeleted;
 
     /**
      * 创建时间
@@ -55,7 +70,7 @@ public class TfIncomingBusinessInfoEntity implements Serializable {
     private LocalDateTime createTime;
 
     /**
-     * 修改时间
+     * 更新时间
      */
     private LocalDateTime updateTime;
 }

@@ -77,14 +77,14 @@ public class TfIncomingInfoEntity implements Serializable {
     private LocalDateTime accessTime;
 
     /**
-     * 入网状态（1：信息填写，2：入网中，3：入网成果，4：入网失败）
+     * 入网状态（1：信息填写，2：入网中，3：入网成功，4：入网失败）
      */
     private Integer accessStatus;
 
     /**
      * 数据有效状态（0：有效，1：无效）
      */
-    private Boolean isDeleted;
+    private Integer isDeleted;
 
     /**
      * 创建时间
