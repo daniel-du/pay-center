@@ -1,7 +1,7 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import com.tfjt.pay.external.unionpay.dao.TfIncomingMerchantInfoDao;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingMerchantInfoEntity;
-import com.tfjt.pay.external.unionpay.mapper.TfIncomingMerchantInfoMapper;
 import com.tfjt.pay.external.unionpay.service.ITfIncomingMerchantInfoService;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2023-12-11
  */
 @Service
-public class TfIncomingMerchantInfoServiceImpl extends BaseServiceImpl<TfIncomingMerchantInfoMapper, TfIncomingMerchantInfoEntity> implements ITfIncomingMerchantInfoService {
+public class TfIncomingMerchantInfoServiceImpl extends BaseServiceImpl<TfIncomingMerchantInfoDao, TfIncomingMerchantInfoEntity> implements ITfIncomingMerchantInfoService {
 
 }

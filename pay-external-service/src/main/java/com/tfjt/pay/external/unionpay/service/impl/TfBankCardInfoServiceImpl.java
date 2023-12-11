@@ -1,7 +1,7 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import com.tfjt.pay.external.unionpay.dao.TfBankCardInfoDao;
 import com.tfjt.pay.external.unionpay.entity.TfBankCardInfoEntity;
-import com.tfjt.pay.external.unionpay.mapper.TfBankCardInfoMapper;
 import com.tfjt.pay.external.unionpay.service.ITfBankCardInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
@@ -16,6 +16,6 @@ import org.springframework.stereotype.Service;
  * @since 2023-12-11
  */
 @Service
-public class TfBankCardInfoServiceImpl extends BaseServiceImpl<TfBankCardInfoMapper, TfBankCardInfoEntity> implements ITfBankCardInfoService {
+public class TfBankCardInfoServiceImpl extends BaseServiceImpl<TfBankCardInfoDao, TfBankCardInfoEntity> implements ITfBankCardInfoService {
 
 }
