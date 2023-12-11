@@ -1,37 +1,54 @@
-package com.tfjt.pay.external.unionpay.entity;
+package com.tfjt.pay.external.unionpay.dto.req;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
- * <p>
- * 银行入网-身份信息
- * </p>
- *
  * @author Du Penglun
- * @since 2023-12-07
+ * @version 1.0
+ * @date 2023/12/11 9:43
+ * @description 进件-保存商户身份信息入参
  */
-@Getter
-@Setter
-@TableName("tf_incoming_idcard_info")
-public class TfIncomingIdcardInfoEntity implements Serializable {
+@Data
+public class TfIncomingMerchantReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    /**
+     * 商户信息id
+     */
     private Long id;
 
     /**
-     * 入网id
+     * 进件id
      */
     private Long incomingId;
+
+    /**
+     * 经销商/供应商id/店铺id
+     */
+    private Long businessId;
+
+    /**
+     * 系统来源
+     */
+    private Byte businessType;
+
+    /**
+     * 入网渠道类型（1：平安，2：银联）
+     */
+    private Integer accessChannelType;
+
+    /**
+     * 入网类型（1：贷款，2：商户入网）
+     */
+    private Integer accessType;
+
+    /**
+     * 入网主体类型（1：个人，2：企业）
+     */
+    private Integer accessMainType;
 
     /**
      * 商户简称
@@ -39,113 +56,78 @@ public class TfIncomingIdcardInfoEntity implements Serializable {
     private String shopShortName;
 
     /**
-     * 法人身份证正面照片
-     */
-    private String legalFrontIdCardUrl;
-
-    /**
      * 法人身份证反面照片
      */
     private String legalBackIdCardUrl;
-
+    /**
+     * 法人身份证正面照片
+     */
+    private String legalFrontIdCardUrl;
     /**
      * 法人身份证手持照片
      */
     private String legalHoldIdCardUrl;
-
-    /**
-     * 法人姓名
-     */
-    private String legalName;
-
-    /**
-     * 法人性别
-     */
-    private Boolean legalSex;
-
-    /**
-     * 法人手机号
-     */
-    private String legalMobile;
-
-    /**
-     * 法人证件类型
-     */
-    private Boolean legalIdType;
-
-    /**
-     * 法人证件号码
-     */
-    private String legalIdNo;
-
-    /**
-     * 法人国籍
-     */
-    private String legalNationality;
-
     /**
      * 法人身份证有效起始日期
      */
     private String legalIdEffectiveDate;
-
     /**
      * 法人身份证有效截止日期
      */
     private String legalIdExpiryDate;
-
     /**
-     * 法人身份证是否长期（0否，1是）
+     * 法人身份证是否长期，0否，1是
      */
-    private Boolean legalIdIsLongTerm;
-
+    private long legalIdIsLongTerm;
     /**
-     * 经办人姓名
+     * 法人证件号码
      */
-    private String agentName;
-
+    private String legalIdNo;
     /**
-     * 经办人手机
+     * 法人手机号
      */
-    private String agentMobile;
-
+    private String legalMobile;
     /**
-     * 经办人证件类型
+     * 法人姓名
      */
-    private Boolean agentIdType;
-
+    private String legalName;
     /**
-     * 经办人证件号码
+     * 法人国籍
      */
-    private String agentIdNo;
+    private String legalNationality;
+    /**
+     * 法人性别
+     */
+    private long legalSex;
 
     /**
      * 经办人身份证有效起始日期
      */
     private String agentIdEffectiveDate;
-
     /**
      * 经办人身份证有效截止日期
      */
     private String agentIdExpiryDate;
-
     /**
-     * 经办人身份证是否长期（0否，1是）
+     * 经办人身份证是否长期，0否，1是
      */
-    private Boolean agentIdIsLongTerm;
-
+    private String agentIdIsLongTerm;
     /**
-     * 数据有效状态（0：有效，1：无效）
+     * 经办人证件号码
      */
-    private Boolean isDeleted;
-
+    private String agentIdNo;
     /**
-     * 创建时间
+     * 经办人同法人，0否，1是
      */
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
+    private long agentIsLegal;
     /**
-     * 更新时间
+     * 经办人手机
      */
-    private LocalDateTime updateTime;
+    private String agentMobile;
+    /**
+     * 经办人姓名
+     */
+    private String agentName;
+
+
 }
