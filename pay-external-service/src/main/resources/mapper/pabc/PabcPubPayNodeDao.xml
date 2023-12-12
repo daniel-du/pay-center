@@ -9,5 +9,12 @@
         <result property="nodeNodename" column="node_nodename"/>
     </resultMap>
 
-
+    <select id="getProvinceList" resultType="com.tfjt.pay.external.unionpay.dto.resp.PabcProvinceInfoRespDTO">
+        select node_nodecode as provinceCode ,node_nodename as  provinceName from tf_pabc_pub_pay_node
+        <where>
+            <if test="name!=null and name != ''">
+                and node_nodename like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
 </mapper>

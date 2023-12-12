@@ -38,6 +38,8 @@ public enum PayExceptionCodeEnum  implements ExceptionCode {
     SAVE_DATA_ERROR(9001000,"保存数据异常"),
     UPDATE_DATA_ERROR(9001001,"更新数据异常"),
     SERVICE_ERROR(9002000,"服务异常"),
+    QUERY_PARAM_IS_NOT_NULL(9000004,"查询参数不能为空"),
+    QUERY_PARAM_ERROR(9000005,"查询参数异常"),
 
     /**
      * 贷款用户

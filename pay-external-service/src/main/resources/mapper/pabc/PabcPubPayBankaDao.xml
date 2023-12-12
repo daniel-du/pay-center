@@ -14,5 +14,19 @@
         <result property="bankLname" column="bank_lname"/>
     </resultMap>
 
-
+    <select id="getBranchBankInfo" resultType="com.tfjt.pay.external.unionpay.dto.resp.PabcBranchBankInfoRespDTO">
+        SELECT
+            bank_bnkcode,
+            bank_dreccode,
+            bank_lname
+        FROM
+        tf_pabc_pub_pay_banka
+            <where>
+                bank_clscode = #{bankCode}
+                AND bank_citycode = substr( #{cityCode}, 1, 4 )
+                <if test="branchBankName != null and branchBankName != ''">
+                    AND bank_lname LIKE concat('%',#{branchBankName},'%')
+                </if>
+            </where>
+    </select>
 </mapper>

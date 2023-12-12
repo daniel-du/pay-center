@@ -15,5 +15,15 @@
         <result property="cityOraareacode" column="city_oraareacode"/>
     </resultMap>
 
-
+    <select id="getCityList" resultType="com.tfjt.pay.external.unionpay.dto.resp.PabcCityInfoRespDTO">
+        select city_areacode cityCode,
+               city_areaname cityName
+        from tf_pabc_pub_pay_city
+        where city_nodecode =
+              #{provinceCode}
+          and city_oraareacode in (select bank_citycode
+                                   from tf_pabc_pub_pay_banka
+                                   where bank_clscode =
+                                         #{bankCode})
+    </select>
 </mapper>
