@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,8 +21,8 @@ import lombok.Setter;
  * @author Du Penglun
  * @since 2023-12-07
  */
-@Getter
-@Setter
+@Data
+@Builder
 @TableName("tf_incoming_business_info")
 public class TfIncomingBusinessInfoEntity implements Serializable {
 

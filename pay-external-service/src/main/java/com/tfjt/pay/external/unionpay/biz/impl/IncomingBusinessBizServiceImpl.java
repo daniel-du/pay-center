@@ -1,0 +1,97 @@
+package com.tfjt.pay.external.unionpay.biz.impl;
+
+import com.alibaba.fastjson.JSONObject;
+import com.tfjt.pay.external.unionpay.biz.IncomingBusinessBizService;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingBusinessReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
+import com.tfjt.pay.external.unionpay.entity.TfBusinessLicenseInfoEntity;
+import com.tfjt.pay.external.unionpay.entity.TfIncomingBusinessInfoEntity;
+import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.service.TfBusinessLicenseInfoService;
+import com.tfjt.pay.external.unionpay.service.TfIncomingBusinessInfoService;
+import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.util.BeanUtils;
+import com.tfjt.tfcommon.core.util.ObjectUtil;
+import com.tfjt.tfcommon.core.validator.ValidatorUtils;
+import com.tfjt.tfcommon.dto.response.Result;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author Du Penglun
+ * @version 1.0
+ * @date 2023/12/12 9:14
+ * @description 进件-商户营业信息服务
+ */
+@Slf4j
+@Service
+public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizService {
+
+    @Autowired
+    private TfIncomingBusinessInfoService tfIncomingBusinessInfoService;
+
+    @Autowired
+    private TfBusinessLicenseInfoService tfBusinessLicenseInfoService;
+
+    @Override
+    public Result<IncomingBusinessRespDTO> getById(Long id) {
+        log.info("IncomingBusinessBizServiceImpl---getById, id:{}", id);
+        IncomingBusinessRespDTO incomingBusinessRespDTO = tfIncomingBusinessInfoService.queryBusinessById(id);
+        log.info("IncomingBusinessBizServiceImpl---getById, incomingBusinessRespDTO:{}", JSONObject.toJSONString(incomingBusinessRespDTO));
+        return Result.ok(incomingBusinessRespDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = {TfException.class, Exception.class})
+    public Result save(IncomingBusinessReqDTO incomingBusinessReqDTO) {
+        log.info("IncomingBusinessBizServiceImpl---save, incomingBusinessReqDTO:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
+        ValidatorUtils.validateEntity(incomingBusinessReqDTO);
+        TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
+        BeanUtils.copyProperties(incomingBusinessReqDTO, tfBusinessLicenseInfoEntity);
+        if (!tfBusinessLicenseInfoService.save(tfBusinessLicenseInfoEntity)) {
+            log.error("保存营业执照信息失败:{}", JSONObject.toJSONString(tfBusinessLicenseInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = TfIncomingBusinessInfoEntity.builder().
+                incomingId(incomingBusinessReqDTO.getIncomingId()).
+                businessLicenseId(tfBusinessLicenseInfoEntity.getId()).
+                email(incomingBusinessReqDTO.getEmail()).build();
+        if (!tfIncomingBusinessInfoService.save(tfIncomingBusinessInfoEntity)) {
+            log.error("保存营业信息失败:{}", JSONObject.toJSONString(tfIncomingBusinessInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        return Result.ok();
+    }
+
+    /**
+     * 修改商户营业信息
+     * @param incomingBusinessReqDTO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = {TfException.class, Exception.class})
+    public Result update(IncomingBusinessReqDTO incomingBusinessReqDTO) {
+        log.info("IncomingBusinessBizServiceImpl---update, incomingBusinessReqDTO:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
+        ValidatorUtils.validateEntity(incomingBusinessReqDTO);
+        if (incomingBusinessReqDTO.getId() == null || incomingBusinessReqDTO.getBusinessLicenseId() == null) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_BUSINESS_ID_IS_NULL);
+        }
+        TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
+        BeanUtils.copyProperties(incomingBusinessReqDTO, tfBusinessLicenseInfoEntity);
+        tfBusinessLicenseInfoEntity.setId(incomingBusinessReqDTO.getBusinessLicenseId());
+        if (!tfBusinessLicenseInfoService.updateById(tfBusinessLicenseInfoEntity)) {
+            log.error("修改营业执照信息失败:{}", JSONObject.toJSONString(tfBusinessLicenseInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = TfIncomingBusinessInfoEntity.builder().
+                id(incomingBusinessReqDTO.getId()).
+                email(incomingBusinessReqDTO.getEmail()).build();
+        if (!tfIncomingBusinessInfoService.updateById(tfIncomingBusinessInfoEntity)) {
+            log.error("修改营业信息失败:{}", JSONObject.toJSONString(tfIncomingBusinessInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        return Result.ok();
+    }
+}

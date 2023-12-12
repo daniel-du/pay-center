@@ -38,7 +38,7 @@ public class IncomingMerchantController {
      */
     @PostMapping("/save")
     public Result save(@RequestBody IncomingMerchantReqDTO incomingMerchantReqDTO) {
-        return Result.ok();
+        return incomingMerchantBizService.save(incomingMerchantReqDTO);
     }
 
     /**
@@ -48,6 +48,6 @@ public class IncomingMerchantController {
      */
     @PostMapping("/update")
     public Result update(@RequestBody IncomingMerchantReqDTO incomingMerchantReqDTO) {
-        return Result.ok();
+        return incomingMerchantBizService.update(incomingMerchantReqDTO);
     }
 }

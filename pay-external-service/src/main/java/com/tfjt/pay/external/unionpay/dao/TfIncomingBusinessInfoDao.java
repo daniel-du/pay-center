@@ -1,7 +1,10 @@
 package com.tfjt.pay.external.unionpay.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingBusinessInfoEntity;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -11,6 +14,8 @@ import com.tfjt.pay.external.unionpay.entity.TfIncomingBusinessInfoEntity;
  * @author Du Penglun
  * @since 2023-12-07
  */
+@Mapper
 public interface TfIncomingBusinessInfoDao extends BaseMapper<TfIncomingBusinessInfoEntity> {
 
+    IncomingBusinessRespDTO queryBusinessById(@Param("id") Long id);
 }

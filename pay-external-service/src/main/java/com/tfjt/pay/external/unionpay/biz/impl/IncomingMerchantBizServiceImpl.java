@@ -8,12 +8,13 @@ import com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIdcardInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingMerchantInfoEntity;
+import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIdcardInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
-import com.tfjt.tfcommon.dto.enums.ExceptionCodeEnum;
+import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +79,8 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result save(IncomingMerchantReqDTO incomingMerchantReqDTO) {
         try {
+            log.info("IncomingMerchantBizServiceImpl---save, incomingMerchantReqDTO:{}", JSONObject.toJSONString(incomingMerchantReqDTO));
+            ValidatorUtils.validateEntity(incomingMerchantReqDTO);
             //保存进件主表信息
             TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
             BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingInfoEntity);
@@ -121,6 +124,12 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     @Override
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result update(IncomingMerchantReqDTO incomingMerchantReqDTO) {
+        log.info("IncomingMerchantBizServiceImpl---update, incomingMerchantReqDTO:{}", JSONObject.toJSONString(incomingMerchantReqDTO));
+        ValidatorUtils.validateEntity(incomingMerchantReqDTO);
+        if (incomingMerchantReqDTO.getId() == null || incomingMerchantReqDTO.getLegalIdCard() == null ||
+                incomingMerchantReqDTO.getAgentIdCard() == null) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_MERCHANT_ID_IS_NULL);
+        }
         TfIncomingMerchantInfoEntity originMerchantInfoEntity = tfIncomingMerchantInfoService.getById(incomingMerchantReqDTO.getId());
         //保存商户身份信息
         TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = TfIncomingMerchantInfoEntity.builder().
@@ -209,7 +218,13 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         return agentIdcardInfoEntity;
     }
 
+    /**
+     * 创建信息保存时校验参数
+     * @param incomingMerchantReqDTO
+     */
+    private void validateEntity(IncomingMerchantReqDTO incomingMerchantReqDTO) {
 
+    }
 
 
 }

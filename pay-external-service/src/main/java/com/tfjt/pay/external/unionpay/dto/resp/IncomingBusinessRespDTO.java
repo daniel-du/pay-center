@@ -26,6 +26,11 @@ public class IncomingBusinessRespDTO implements Serializable {
     private Long incomingId;
 
     /**
+     * 营业执照信息id
+     */
+    private Long businessLicenseId;
+
+    /**
      * 营业名称
      */
     private String businessName;

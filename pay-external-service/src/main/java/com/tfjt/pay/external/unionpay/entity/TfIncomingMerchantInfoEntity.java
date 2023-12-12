@@ -8,10 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * <p>
@@ -23,14 +20,12 @@ import lombok.Setter;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("tf_incoming_merchant_info")
 public class TfIncomingMerchantInfoEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    public TfIncomingMerchantInfoEntity() {
-
-    }
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;

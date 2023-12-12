@@ -21,31 +21,31 @@ spring:
 log:
   path: /data/logs/tf-cloud-pay-external
   console.out: true
-logging:
-  level:
-    org.springframework: INFO
-    com.hospital: DEBUG
-    com.zaxxer.hikari: DEBUG
-    com.tfjt: DEBUG
-mybatis-plus:
-  global-config:
-    db-config:
-      logic-delete-value: 1
-      logic-not-delete-value: 0
-
-  mapper-locations: classpath:/mapper/*/*Dao.xml
-  configuration:
-    map-underscore-to-camel-case: true
-    cache-enabled: false
-    # 开发模式控制台打印日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-#分布式锁
-lock4j:
-  acquire-timeout: 3000 #默认值3s，可不设置
-  expire: 30000 #默认值30s，可不设置
-  primary-executor: com.baomidou.lock.executor.RedisTemplateLockExecutor #默认redisson>redisTemplate>zookeeper，可不设置
-  lock-key-prefix: lock4j #锁key前缀, 默认值lock4j，可不设置
-
+#logging:
+#  level:
+#    org.springframework: INFO
+#    com.hospital: DEBUG
+#    com.zaxxer.hikari: DEBUG
+#    com.tfjt: DEBUG
+#mybatis-plus:
+#  global-config:
+#    db-config:
+#      logic-delete-value: 1
+#      logic-not-delete-value: 0
+#
+#  mapper-locations: classpath:/mapper/*/*Dao.xml
+#  configuration:
+#    map-underscore-to-camel-case: true
+#    cache-enabled: false
+#    # 开发模式控制台打印日志
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+##分布式锁
+#lock4j:
+#  acquire-timeout: 3000 #默认值3s，可不设置
+#  expire: 30000 #默认值30s，可不设置
+#  primary-executor: com.baomidou.lock.executor.RedisTemplateLockExecutor #默认redisson>redisTemplate>zookeeper，可不设置
+#  lock-key-prefix: lock4j #锁key前缀, 默认值lock4j，可不设置
+#
 xxl:
   job:
     admin:
