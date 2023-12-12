@@ -21,6 +21,7 @@ import lombok.*;
 @Data
 @Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @TableName("tf_business_license_info")
 public class TfBusinessLicenseInfoEntity implements Serializable {
 
