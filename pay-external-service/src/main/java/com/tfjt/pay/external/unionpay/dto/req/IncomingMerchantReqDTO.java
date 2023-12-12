@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @description 进件-保存商户身份信息入参
  */
 @Data
-public class TfIncomingMerchantReqDTO implements Serializable {
+public class IncomingMerchantReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -38,22 +38,27 @@ public class TfIncomingMerchantReqDTO implements Serializable {
     /**
      * 入网渠道类型（1：平安，2：银联）
      */
-    private Integer accessChannelType;
+    private Byte accessChannelType;
 
     /**
      * 入网类型（1：贷款，2：商户入网）
      */
-    private Integer accessType;
+    private Byte accessType;
 
     /**
      * 入网主体类型（1：个人，2：企业）
      */
-    private Integer accessMainType;
+    private Byte accessMainType;
 
     /**
      * 商户简称
      */
     private String shopShortName;
+
+    /**
+     * 法人身份证信息id
+     */
+    private Long legalIdCard;
 
     /**
      * 法人身份证反面照片
@@ -78,7 +83,7 @@ public class TfIncomingMerchantReqDTO implements Serializable {
     /**
      * 法人身份证是否长期，0否，1是
      */
-    private long legalIdIsLongTerm;
+    private Byte legalIdIsLongTerm;
     /**
      * 法人证件号码
      */
@@ -98,7 +103,12 @@ public class TfIncomingMerchantReqDTO implements Serializable {
     /**
      * 法人性别
      */
-    private long legalSex;
+    private Byte legalSex;
+
+    /**
+     * 经办人身份证信息id
+     */
+    private Long agentIdCard;
 
     /**
      * 经办人身份证有效起始日期
@@ -111,7 +121,7 @@ public class TfIncomingMerchantReqDTO implements Serializable {
     /**
      * 经办人身份证是否长期，0否，1是
      */
-    private String agentIdIsLongTerm;
+    private Byte agentIdIsLongTerm;
     /**
      * 经办人证件号码
      */
@@ -119,7 +129,7 @@ public class TfIncomingMerchantReqDTO implements Serializable {
     /**
      * 经办人同法人，0否，1是
      */
-    private long agentIsLegal;
+    private Byte agentIsLegal;
     /**
      * 经办人手机
      */

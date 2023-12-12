@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @description 进件-保存商户结算信息入参
  */
 @Data
-public class TfIncomingSettleReqDTO implements Serializable {
+public class IncomingSettleReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

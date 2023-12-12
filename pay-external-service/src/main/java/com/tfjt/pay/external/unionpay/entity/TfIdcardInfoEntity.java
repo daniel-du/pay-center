@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,12 +21,16 @@ import lombok.Setter;
  * @author Du Penglun
  * @since 2023-12-11
  */
-@Getter
-@Setter
+@Data
+@Builder
 @TableName("tf_idcard_info")
 public class TfIdcardInfoEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    public TfIdcardInfoEntity() {
+
+    }
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -51,7 +58,7 @@ public class TfIdcardInfoEntity implements Serializable {
     /**
      * 性别
      */
-    private Boolean sex;
+    private Byte sex;
 
     /**
      * 法人证件类型
@@ -81,12 +88,12 @@ public class TfIdcardInfoEntity implements Serializable {
     /**
      * 证件是否长期（0否，1是）
      */
-    private Boolean isLongTerm;
+    private Byte isLongTerm;
 
     /**
      * 数据有效状态（0：有效，1：无效）
      */
-    private Boolean isDeleted;
+    private Byte isDeleted;
 
     /**
      * 创建时间

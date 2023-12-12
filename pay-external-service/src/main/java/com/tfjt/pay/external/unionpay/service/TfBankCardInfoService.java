@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author Du Penglun
  * @since 2023-12-11
  */
-public interface ITfBankCardInfoService extends IService<TfBankCardInfoEntity> {
+public interface TfBankCardInfoService extends IService<TfBankCardInfoEntity> {
 
 }

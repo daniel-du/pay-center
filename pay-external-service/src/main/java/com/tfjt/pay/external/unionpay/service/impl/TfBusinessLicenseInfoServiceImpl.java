@@ -2,8 +2,7 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 import com.tfjt.pay.external.unionpay.dao.TfBusinessLicenseInfoDao;
 import com.tfjt.pay.external.unionpay.entity.TfBusinessLicenseInfoEntity;
-import com.tfjt.pay.external.unionpay.service.ITfBusinessLicenseInfoService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.tfjt.pay.external.unionpay.service.TfBusinessLicenseInfoService;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2023-12-11
  */
 @Service
-public class TfBusinessLicenseInfoServiceImpl extends BaseServiceImpl<TfBusinessLicenseInfoDao, TfBusinessLicenseInfoEntity> implements ITfBusinessLicenseInfoService {
+public class TfBusinessLicenseInfoServiceImpl extends BaseServiceImpl<TfBusinessLicenseInfoDao, TfBusinessLicenseInfoEntity> implements TfBusinessLicenseInfoService {
 
 }

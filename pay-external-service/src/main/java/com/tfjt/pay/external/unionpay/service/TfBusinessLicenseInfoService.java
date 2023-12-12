@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author Du Penglun
  * @since 2023-12-11
  */
-public interface ITfBusinessLicenseInfoService extends IService<TfBusinessLicenseInfoEntity> {
+public interface TfBusinessLicenseInfoService extends IService<TfBusinessLicenseInfoEntity> {
 
 }

@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,12 +21,16 @@ import lombok.Setter;
  * @author Du Penglun
  * @since 2023-12-11
  */
-@Getter
-@Setter
+@Data
+@Builder
 @TableName("tf_incoming_merchant_info")
 public class TfIncomingMerchantInfoEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    public TfIncomingMerchantInfoEntity() {
+
+    }
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -47,6 +54,11 @@ public class TfIncomingMerchantInfoEntity implements Serializable {
      * 法人手机号
      */
     private String legalMobile;
+
+    /**
+     * 经办人同法人 0：否，1：是
+     */
+    private Byte agentIsLegal;
 
     /**
      * 经办人证件信息

@@ -6,6 +6,7 @@ import com.tfjt.pay.external.unionpay.enums.IncomingSettleTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @author Du Penglun
@@ -24,20 +25,12 @@ public class InComingCheckCodeReqDTO implements Serializable {
     private Long incomingId;
 
     /**
-     * 入网渠道
-     * @see IncomingAccessChannelTypeEnum
+     * 短信验证码
      */
-    private Integer accessChannelType;
+    private String messageCheckCode;
 
     /**
-     * 入网类型
-     * @see IncomingAccessTypeEnum
+     * 打款金额
      */
-    private Integer accessType;
-
-    /**
-     * 结算账户类型
-     * @see IncomingSettleTypeEnum
-     */
-    private Integer settelAccountType;
+    private BigDecimal authAmt;
 }
