@@ -1,7 +1,9 @@
 package com.tfjt.pay.external.unionpay.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -13,4 +15,5 @@ import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
  */
 public interface TfIncomingSettleInfoDao extends BaseMapper<TfIncomingSettleInfoEntity> {
 
+    IncomingSettleRespDTO querySettleById(@Param("id") Long id);
 }

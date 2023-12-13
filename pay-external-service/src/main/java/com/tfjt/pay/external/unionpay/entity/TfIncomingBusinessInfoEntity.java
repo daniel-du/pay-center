@@ -60,5 +60,6 @@ public class TfIncomingBusinessInfoEntity implements Serializable {
     /**
      * 修改时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }

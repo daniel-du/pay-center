@@ -31,6 +31,11 @@ public class IncomingSettleRespDTO implements Serializable {
     private Byte settlementAccountType;
 
     /**
+     * 银行卡id
+     */
+    private Long bankCardId;
+
+    /**
      * 开户名称
      */
     private String bankAccountName;

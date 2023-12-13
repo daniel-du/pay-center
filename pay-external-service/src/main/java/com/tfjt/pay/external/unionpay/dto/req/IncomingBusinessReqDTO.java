@@ -1,8 +1,11 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.tfcommon.core.validator.group.AddGroup;
+import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -19,89 +22,91 @@ public class IncomingBusinessReqDTO implements Serializable {
     /**
      * 营业信息id
      */
+    @NotNull(message = "商户身份id不能为空", groups = {UpdateGroup.class})
     private Long id;
 
     /**
      * 进件id
      */
-    @NotBlank(message = "进件id不能为空")
+    @NotNull(message = "进件id不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Long incomingId;
 
     /**
      * 营业执照信息id
      */
+    @NotNull(message = "营业执照id不能为空", groups = {UpdateGroup.class})
     private Long businessLicenseId;
 
     /**
      * 营业名称
      */
-    @NotBlank(message = "营业名称不能为空")
+    @NotBlank(message = "营业名称不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessName;
     /**
      * 详细地址
      */
-    @NotBlank(message = "详细地址不能为空")
+    @NotBlank(message = "详细地址不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String address;
     /**
      * 营业地区-省code
      */
-    @NotBlank(message = "营业地区-省code不能为空")
+    @NotBlank(message = "营业地区-省code不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessProvince;
     /**
      * 营业地区-省名称
      */
-    @NotBlank(message = "营业地区-省名称不能为空")
+    @NotBlank(message = "营业地区-省名称不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessProvinceName;
     /**
      * 营业地区-市code
      */
-    @NotBlank(message = "营业地区-市code不能为空")
+    @NotBlank(message = "营业地区-市code不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessCity;
     /**
      * 营业地区-市名称
      */
-    @NotBlank(message = "营业地区-市名称不能为空")
+    @NotBlank(message = "营业地区-市名称不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessCityName;
     /**
      * 营业地区-区code
      */
-    @NotBlank(message = "营业地区-区code不能为空")
+    @NotBlank(message = "营业地区-区code不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessDistrict;
     /**
      * 营业地区-区名称
      */
-    @NotBlank(message = "营业地区-区名称不能为空")
+    @NotBlank(message = "营业地区-区名称不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessDistrictName;
     /**
      * 营业执照号码
      */
-    @NotBlank(message = "营业执照号码不能为空")
+    @NotBlank(message = "营业执照号码不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessLicenseNo;
     /**
      * 营业执照照片
      */
-    @NotBlank(message = "营业执照照片不能为空")
+    @NotBlank(message = "营业执照照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessLicenseUrl;
     /**
      * 营业执照有效起始日期
      */
-    @NotBlank(message = "营业执照有效起始日期不能为空")
+    @NotBlank(message = "营业执照有效起始日期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessLicenseEffectiveDate;
     /**
      * 营业执照有效截止日期
      */
-    @NotBlank(message = "营业执照有效截止日期不能为空")
+    @NotBlank(message = "营业执照有效截止日期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessLicenseExpireDate;
     /**
      * 营业执照是否长期，0否，1是
      */
-    @NotBlank(message = "营业执照是否长期不能为空")
+    @NotNull(message = "营业执照是否长期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Integer businessLicenseIsLongTerm;
 
     /**
      * 联系邮箱
      */
-    @NotBlank(message = "联系邮箱不能为空")
+    @NotBlank(message = "联系邮箱不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String email;
 
 

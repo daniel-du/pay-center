@@ -1,8 +1,11 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.tfcommon.core.validator.group.AddGroup;
+import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -19,6 +22,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 商户信息id
      */
+    @NotNull(message = "商户身份id不能为空", groups = {UpdateGroup.class})
     private Long id;
 
     /**
@@ -29,26 +33,31 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 经销商/供应商id/店铺id
      */
+    @NotNull(message = "商户id不能为空", groups = {AddGroup.class})
     private Long businessId;
 
     /**
      * 系统来源
      */
+    @NotNull(message = "系统来源不能为空", groups = {AddGroup.class})
     private Byte businessType;
 
     /**
      * 入网渠道类型（1：平安，2：银联）
      */
+    @NotNull(message = "入网渠道类型不能为空", groups = {AddGroup.class})
     private Byte accessChannelType;
 
     /**
      * 入网类型（1：贷款，2：商户入网）
      */
+    @NotNull(message = "入网类型不能为空", groups = {AddGroup.class})
     private Byte accessType;
 
     /**
      * 入网主体类型（1：个人，2：企业）
      */
+    @NotNull(message = "入网主体类型不能为空", groups = {AddGroup.class})
     private Byte accessMainType;
 
     /**
@@ -60,62 +69,63 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 法人身份证信息id
      */
+    @NotNull(message = "商户身份id不能为空", groups = {UpdateGroup.class})
     private Long legalIdCard;
 
     /**
      * 法人身份证反面照片
      */
-    @NotBlank(message = "法人身份证反面照片不能为空")
+    @NotBlank(message = "法人身份证反面照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalBackIdCardUrl;
     /**
      * 法人身份证正面照片
      */
-    @NotBlank(message = "法人身份证正面照片不能为空")
+    @NotBlank(message = "法人身份证正面照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalFrontIdCardUrl;
     /**
      * 法人身份证手持照片
      */
-    @NotBlank(message = "法人身份证手持照片不能为空")
+    @NotBlank(message = "法人身份证手持照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalHoldIdCardUrl;
     /**
      * 法人身份证有效起始日期
      */
-    @NotBlank(message = "法人身份证有效起始日期不能为空")
+    @NotBlank(message = "法人身份证有效起始日期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalIdEffectiveDate;
     /**
      * 法人身份证有效截止日期
      */
-    @NotBlank(message = "法人身份证有效截止日期不能为空")
+    @NotBlank(message = "法人身份证有效截止日期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalIdExpiryDate;
     /**
      * 法人身份证是否长期，0否，1是
      */
-    @NotBlank(message = "法人身份证是否长期不能为空")
+    @NotNull(message = "法人身份证是否长期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Byte legalIdIsLongTerm;
     /**
      * 法人证件号码
      */
-    @NotBlank(message = "法人证件号码不能为空")
+    @NotBlank(message = "法人证件号码不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalIdNo;
     /**
      * 法人手机号
      */
-    @NotBlank(message = "法人手机号不能为空")
+    @NotBlank(message = "法人手机号不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalMobile;
     /**
      * 法人姓名
      */
-    @NotBlank(message = "法人姓名不能为空")
+    @NotBlank(message = "法人姓名不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalName;
     /**
      * 法人国籍
      */
-    @NotBlank(message = "法人国籍不能为空")
+    @NotBlank(message = "法人国籍不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalNationality;
     /**
      * 法人性别
      */
-    @NotBlank(message = "法人性别不能为空")
+    @NotNull(message = "法人性别不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Byte legalSex;
 
     /**
@@ -142,6 +152,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 经办人同法人，0否，1是
      */
+    @NotNull(message = "经办人同法人标识不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Byte agentIsLegal;
     /**
      * 经办人手机

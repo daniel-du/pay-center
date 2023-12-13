@@ -71,9 +71,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity =
                 tfIncomingSettleInfoService.querySettleInfoByIncomingId(incomingId);
         //根据进件信息类型数据获取对应实现
-        String bindServiceName = IncomingAccessChannelTypeEnum.getNameFromCode(tfIncomingInfoEntity.getAccessChannelType()) +
-                "_" + IncomingAccessTypeEnum.getNameFromCode(tfIncomingInfoEntity.getAccessType()) +
-                "_" + IncomingSettleTypeEnum.getNameFromCode(tfIncomingSettleInfoEntity.getSettlementAccountType());
+        String bindServiceName = IncomingAccessChannelTypeEnum.getNameFromCode(tfIncomingInfoEntity.getAccessChannelType().intValue()) +
+                "_" + IncomingAccessTypeEnum.getNameFromCode(tfIncomingInfoEntity.getAccessType().intValue()) +
+                "_" + IncomingSettleTypeEnum.getNameFromCode(tfIncomingSettleInfoEntity.getSettlementAccountType().intValue());
 
         return bindServiceName;
     }

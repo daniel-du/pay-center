@@ -13,6 +13,8 @@ import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
 import com.tfjt.tfcommon.core.util.ObjectUtil;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
+import com.tfjt.tfcommon.core.validator.group.AddGroup;
+import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +49,7 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result save(IncomingBusinessReqDTO incomingBusinessReqDTO) {
         log.info("IncomingBusinessBizServiceImpl---save, incomingBusinessReqDTO:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
-        ValidatorUtils.validateEntity(incomingBusinessReqDTO);
+        ValidatorUtils.validateEntity(incomingBusinessReqDTO, AddGroup.class);
         TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
         BeanUtils.copyProperties(incomingBusinessReqDTO, tfBusinessLicenseInfoEntity);
         if (!tfBusinessLicenseInfoService.save(tfBusinessLicenseInfoEntity)) {
@@ -74,7 +76,7 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result update(IncomingBusinessReqDTO incomingBusinessReqDTO) {
         log.info("IncomingBusinessBizServiceImpl---update, incomingBusinessReqDTO:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
-        ValidatorUtils.validateEntity(incomingBusinessReqDTO);
+        ValidatorUtils.validateEntity(incomingBusinessReqDTO, UpdateGroup.class);
         if (incomingBusinessReqDTO.getId() == null || incomingBusinessReqDTO.getBusinessLicenseId() == null) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BUSINESS_ID_IS_NULL);
         }

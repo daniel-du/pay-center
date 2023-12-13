@@ -53,6 +53,12 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     DATA_LIMIT_31(2000001,"最多只能导出31天的数据!"),
     INCOMING_BUSINESS_ID_IS_NULL(2000002,"营业信息id或营业执照id不能为空!"),
     INCOMING_MERCHANT_ID_IS_NULL(2000003,"商户身份信息id或证件id不能为空!"),
+    INCOMING_AGENT_NAME_IS_NULL(2000004,"经办人姓名不能为空!"),
+    INCOMING_AGENT_MOBILE_IS_NULL(2000005,"经办人手机号不能为空!"),
+    INCOMING_AGENT_ID_NO_IS_NULL(2000006,"经办人证件号码不能为空!"),
+    INCOMING_AGENT_EFFECTIVE_IS_NULL(2000007,"经办人证件有效起始日期不能为空!"),
+    INCOMING_AGENT_EXPIRE_IS_NULL(2000008,"经办人证件有效截止日期不能为空!"),
+    INCOMING_AGENT_IS_LONG_TERM_IS_NULL(2000009,"经办人证件是否长期不能为空!"),
     ;
     private int code;
     private String msg;

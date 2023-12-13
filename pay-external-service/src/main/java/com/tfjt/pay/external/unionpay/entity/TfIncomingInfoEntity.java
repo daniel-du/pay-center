@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -49,12 +51,12 @@ public class TfIncomingInfoEntity implements Serializable {
     /**
      * 入网渠道类型（1：平安，2：银联）
      */
-    private Integer accessChannelType;
+    private Byte accessChannelType;
 
     /**
      * 入网类型（1：贷款，2：商户入网）
      */
-    private Integer accessType;
+    private Byte accessType;
 
     /**
      * 平安：子账号、银联：商户ID
@@ -69,7 +71,7 @@ public class TfIncomingInfoEntity implements Serializable {
     /**
      * 入网主体类型（1：个人，2：企业）
      */
-    private Integer accessMainType;
+    private Byte accessMainType;
 
     /**
      * 入网时间
@@ -95,6 +97,7 @@ public class TfIncomingInfoEntity implements Serializable {
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
     /**

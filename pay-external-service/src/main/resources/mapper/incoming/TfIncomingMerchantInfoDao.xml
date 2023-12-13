@@ -6,7 +6,8 @@
 
     <select id="queryMerchantById"
             resultType="com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO">
-        select a.id,a.incoming_id,a.shop_short_name,a.legal_mobile,a.agent_mobile, c.`name` legalName,c.sex legalSex,
+        select a.id,a.incoming_id,a.shop_short_name,a.legal_mobile,a.agent_mobile,
+         a.legal_id_card,a.agent_id_card,c.`name` legalName,c.sex legalSex,
         c.nationality legalNationality,c.id_no legalIdNo,c.front_id_card_url legalFrontIdCardUrl,c.back_id_card_url legalBackIdCardUrl,
         c.hold_id_card_url legalHoldIdCardUrl,c.id_effective_date legalIdEffectiveDate,c.id_expiry_date legalIdExpiryDate,
         c.is_long_term legalIdIsLongTerm,d.`name` agentName,d.id_no agentIdNo,d.id_effective_date agentIdEffectiveDate,
