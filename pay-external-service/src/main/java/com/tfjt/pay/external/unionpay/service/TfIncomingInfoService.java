@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.service;
 
+import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -14,5 +15,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     TfIncomingInfoEntity queryIncomingInfoById(Long id);
+
+    /**
+     * 根据id查询进件提交所需信息
+     * @param id
+     * @return
+     */
+    IncomingSubmitMessageDTO queryIncomingMessage(Long id);
 
 }

@@ -1,8 +1,9 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
-import com.tfjt.pay.external.unionpay.dto.req.InComingBinkCardReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.InComingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.IncomingAccessChannelTypeEnum;
@@ -11,6 +12,7 @@ import com.tfjt.pay.external.unionpay.enums.IncomingSettleTypeEnum;
 import com.tfjt.pay.external.unionpay.service.IncomingBindCardService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingSettleInfoService;
+import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,45 +38,46 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private TfIncomingSettleInfoService tfIncomingSettleInfoService;
 
+
     @Override
-    public boolean binkCard(InComingBinkCardReqDTO inComingBinkCardReqDTO) {
-        //根据参数类型获取实现类 pingan_common_corporate
-        String bindServiceName = getServiceName(inComingBinkCardReqDTO.getIncomingId());
+    public Result submitMessage(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
+        //查询提交进件申请所需信息
+        IncomingSubmitMessageDTO incomingSubmitMessageDTO =
+                tfIncomingInfoService.queryIncomingMessage(incomingSubmitMessageReqDTO.getIncomingId());
+        //根据参数类型获取实现类
+        String bindServiceName = getServiceName(incomingSubmitMessageDTO);
+
         IncomingBindCardService incomingBindCardService = incomingBindCardServiceMap.get(bindServiceName);
         //调用实现类方法
-        incomingBindCardService.binkCard(inComingBinkCardReqDTO);
+        incomingBindCardService.binkCard(incomingSubmitMessageReqDTO);
         //更新进件信息
 
-        return false;
+        return Result.ok();
     }
 
     @Override
-    public boolean checkCode(InComingCheckCodeReqDTO inComingCheckCodeReqDTO) {
+    public Result checkCode(IncomingCheckCodeReqDTO inComingCheckCodeReqDTO) {
+        IncomingSubmitMessageDTO incomingSubmitMessageDTO =
+                tfIncomingInfoService.queryIncomingMessage(inComingCheckCodeReqDTO.getIncomingId());
         //根据进件信息类型数据获取对应实现
-        String bindServiceName = getServiceName(inComingCheckCodeReqDTO.getIncomingId());
+        String bindServiceName = getServiceName(incomingSubmitMessageDTO);
         IncomingBindCardService incomingBindCardService = incomingBindCardServiceMap.get(bindServiceName);
         //调用实现类方法
         incomingBindCardService.checkCode(inComingCheckCodeReqDTO);
         //更新进件信息
-        return false;
+        return Result.ok();
     }
 
     /**
      * 根据进行信息获取实现类name
-     * @param incomingId
+     * @param incomingSubmitMessageDTO
      * @return
      */
-    private String getServiceName(Long incomingId) {
-        //根据参数查询进件信息
-        TfIncomingInfoEntity  tfIncomingInfoEntity =
-                tfIncomingInfoService.queryIncomingInfoById(incomingId);
-        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity =
-                tfIncomingSettleInfoService.querySettleInfoByIncomingId(incomingId);
+    private String getServiceName(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
         //根据进件信息类型数据获取对应实现
-        String bindServiceName = IncomingAccessChannelTypeEnum.getNameFromCode(tfIncomingInfoEntity.getAccessChannelType().intValue()) +
-                "_" + IncomingAccessTypeEnum.getNameFromCode(tfIncomingInfoEntity.getAccessType().intValue()) +
-                "_" + IncomingSettleTypeEnum.getNameFromCode(tfIncomingSettleInfoEntity.getSettlementAccountType().intValue());
-
+        String bindServiceName = IncomingAccessChannelTypeEnum.getNameFromCode(incomingSubmitMessageDTO.getAccessChannelType()) +
+                "_" + IncomingAccessTypeEnum.getNameFromCode(incomingSubmitMessageDTO.getAccessType()) +
+                "_" + IncomingSettleTypeEnum.getNameFromCode(incomingSubmitMessageDTO.getSettlementAccountType());
         return bindServiceName;
     }
 }

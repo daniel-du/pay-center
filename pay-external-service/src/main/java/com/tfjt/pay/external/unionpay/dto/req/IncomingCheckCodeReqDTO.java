@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  * @description 进件绑定银行卡请求参数
  */
 @Data
-public class InComingCheckCodeReqDTO implements Serializable {
+public class IncomingCheckCodeReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

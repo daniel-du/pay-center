@@ -1,7 +1,8 @@
 package com.tfjt.pay.external.unionpay.biz;
 
-import com.tfjt.pay.external.unionpay.dto.req.InComingBinkCardReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.InComingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.tfcommon.dto.response.Result;
 
 /**
  * @author Du Penglun
@@ -12,14 +13,14 @@ import com.tfjt.pay.external.unionpay.dto.req.InComingCheckCodeReqDTO;
 public interface IncomingBizService {
 
     /**
-     * 绑定银行卡、获取验证码
+     * 提交基本信息、获取验证码
      * @return
      */
-    boolean binkCard(InComingBinkCardReqDTO inComingBinkCardReqDTO);
+    Result submitMessage(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO);
 
     /**
      * 保存结算信息并回填校验验证码、打款金额
      * @return
      */
-    boolean checkCode(InComingCheckCodeReqDTO inComingCheckCodeReqDTO);
+    Result checkCode(IncomingCheckCodeReqDTO inComingCheckCodeReqDTO);
 }

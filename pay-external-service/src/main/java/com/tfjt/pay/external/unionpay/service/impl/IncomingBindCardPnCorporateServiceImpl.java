@@ -1,8 +1,8 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.dto.req.InComingBinkCardReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.InComingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.service.IncomingBindCardService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
@@ -22,9 +22,9 @@ public class IncomingBindCardPnCorporateServiceImpl implements IncomingBindCardS
     TfIncomingInfoService tfIncomingInfoService;
     
     @Override
-    public boolean binkCard(InComingBinkCardReqDTO inComingBinkCardReqDTO) {
+    public boolean binkCard(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
         //判断开户状态
-        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(inComingBinkCardReqDTO.getIncomingId());
+        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingSubmitMessageReqDTO.getIncomingId());
         if (NumberConstant.ONE.equals(tfIncomingInfoEntity.getAccessStatus())) {
             //调用平安6248-开户接口
         }
@@ -34,7 +34,7 @@ public class IncomingBindCardPnCorporateServiceImpl implements IncomingBindCardS
     }
 
     @Override
-    public boolean checkCode(InComingCheckCodeReqDTO inComingCheckCodeReqDTO) {
+    public boolean checkCode(IncomingCheckCodeReqDTO inComingCheckCodeReqDTO) {
         //调用平安6241接口
         return false;
     }

@@ -84,6 +84,11 @@ public class TfBankCardInfoEntity implements Serializable {
     private String bankBranchCode;
 
     /**
+     * 超级网银号
+     */
+    private String eiconBankBranch;
+
+    /**
      * 开户银行编码
      */
     private String bankCode;

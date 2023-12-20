@@ -16,7 +16,7 @@ public class IncomingSettleRespDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 营业信息id
+     * 结算信息id
      */
     private Long id;
 
