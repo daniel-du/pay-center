@@ -59,6 +59,8 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_AGENT_EFFECTIVE_IS_NULL(2000007,"经办人证件有效起始日期不能为空!"),
     INCOMING_AGENT_EXPIRE_IS_NULL(2000008,"经办人证件有效截止日期不能为空!"),
     INCOMING_AGENT_IS_LONG_TERM_IS_NULL(2000009,"经办人证件是否长期不能为空!"),
+
+    PN_API_ERROR(2000010, "调用开户API失败!"),
     ;
     private int code;
     private String msg;

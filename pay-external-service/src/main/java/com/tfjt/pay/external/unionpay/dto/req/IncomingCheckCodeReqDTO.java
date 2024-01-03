@@ -33,4 +33,15 @@ public class IncomingCheckCodeReqDTO implements Serializable {
      * 打款金额
      */
     private BigDecimal authAmt;
+
+    /**
+     * IP地址
+     */
+    private String ipAddress;
+
+    /**
+     * MAC地址
+     */
+    private String macAddress;
+
 }

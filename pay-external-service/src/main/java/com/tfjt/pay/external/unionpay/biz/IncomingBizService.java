@@ -16,7 +16,7 @@ public interface IncomingBizService {
      * 提交基本信息、获取验证码
      * @return
      */
-    Result submitMessage(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO);
+    Result incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO);
 
     /**
      * 保存结算信息并回填校验验证码、打款金额

@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
@@ -40,7 +41,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
 
     @Override
-    public Result submitMessage(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
+    public Result incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
         //查询提交进件申请所需信息
         IncomingSubmitMessageDTO incomingSubmitMessageDTO =
                 tfIncomingInfoService.queryIncomingMessage(incomingSubmitMessageReqDTO.getIncomingId());
@@ -49,7 +50,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
         IncomingBindCardService incomingBindCardService = incomingBindCardServiceMap.get(bindServiceName);
         //调用实现类方法
-        incomingBindCardService.binkCard(incomingSubmitMessageReqDTO);
+        incomingBindCardService.incomingSubmit(incomingSubmitMessageDTO);
         //更新进件信息
 
         return Result.ok();
@@ -63,7 +64,16 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
         IncomingBindCardService incomingBindCardService = incomingBindCardServiceMap.get(bindServiceName);
         //调用实现类方法
-        incomingBindCardService.checkCode(inComingCheckCodeReqDTO);
+        CheckCodeMessageDTO checkCodeMessageDTO = CheckCodeMessageDTO.builder()
+                .id(incomingSubmitMessageDTO.getId())
+                .memberId(incomingSubmitMessageDTO.getMemberId())
+                .accountNo(incomingSubmitMessageDTO.getAccountNo())
+                .bankCardNo(incomingSubmitMessageDTO.getBankCardNo())
+                .authAmt(inComingCheckCodeReqDTO.getAuthAmt())
+                .messageCheckCode(inComingCheckCodeReqDTO.getMessageCheckCode())
+                .ipAddress(inComingCheckCodeReqDTO.getIpAddress())
+                .macAddress(inComingCheckCodeReqDTO.getMacAddress()).build();
+        incomingBindCardService.checkCode(checkCodeMessageDTO);
         //更新进件信息
         return Result.ok();
     }

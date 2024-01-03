@@ -14,7 +14,8 @@ import lombok.Getter;
 public enum IdTypeEnum {
 
     ID_CARD(1, "身份证"),
-    GANG_AO_RETURN_PERMITS(3, "港澳回乡证");
+    GANG_AO_RETURN_PERMITS(3, "港澳回乡证"),
+    SOCIAL_CREDIT_CODE(73, "统一社会信用代码");
 
     private final Integer code;
     private final String name;

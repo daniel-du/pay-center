@@ -10,9 +10,11 @@ import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingMerchantInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
 import com.tfjt.pay.external.unionpay.service.TfIdcardInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
@@ -24,6 +26,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Du Penglun
@@ -53,7 +59,12 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     @Autowired
     private TfIdcardInfoService tfIdcardInfoService;
 
+    @Autowired
+    private RedisCache redisCache;
+
     private final static Byte AGENT_IS_LEGAL = 1;
+
+    private final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 
 
 
@@ -91,6 +102,8 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             //保存进件主表信息
             TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
             BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingInfoEntity);
+            tfIncomingInfoEntity.setMemberId(generateMemberId());
+            tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
             if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
                 log.error("保存进件主表信息失败:{}", JSONObject.toJSONString(tfIncomingInfoEntity));
                 throw new TfException(ExceptionCodeEnum.FAIL);
@@ -253,5 +266,16 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         }
     }
 
+    /**
+     * 生成同福会员号
+     * @return
+     */
+    private String generateMemberId() {
+        String prefix = "TF" + FORMAT.format(new Date());
+        Long incr = redisCache.incr(prefix);
+        redisCache.expire(prefix, 1, TimeUnit.DAYS);
+        String str = String.format("%04d", incr);
+        return prefix + str;
+    }
 
 }

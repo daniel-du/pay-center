@@ -17,4 +17,6 @@ public interface TfIncomingInfoDao extends BaseMapper<TfIncomingInfoEntity> {
 
     IncomingSubmitMessageDTO queryIncomingMessage(@Param("id") Long id);
 
+
+
 }

@@ -5,7 +5,8 @@
 
 
     <select id="queryIncomingMessage" resultType="com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO">
-        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,b.shop_short_name,
+        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
+        a.access_status,a.business_id,a.account_no,a.sign_channel,b.shop_short_name,
         b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
         d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,
 		g.settlement_account_type, g.occupation, h.bank_account_name, h.bank_card_no,
@@ -18,6 +19,6 @@
         left join tf_business_license_info f on e.business_license_id = f.id
 		left join tf_incoming_settle_info g on g.incoming_id = a.id
         left join tf_bank_card_info h on g.bank_card_id = h.id
-		where a.id = 9
+		where a.id = #{id}
     </select>
 </mapper>

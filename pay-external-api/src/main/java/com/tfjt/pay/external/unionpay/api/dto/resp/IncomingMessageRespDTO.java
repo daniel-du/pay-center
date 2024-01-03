@@ -1,30 +1,19 @@
-package com.tfjt.pay.external.unionpay.dto;
-
-import lombok.Data;
+package com.tfjt.pay.external.unionpay.api.dto.resp;
 
 import java.io.Serializable;
 
 /**
  * @author Du Penglun
  * @version 1.0
- * @date 2023/12/13 9:43
- * @description 进件-提交银行基础信息
+ * @date 2023/12/25 15:28
+ * @description 查询进件信息出参
  */
-@Data
-public class IncomingSubmitMessageDTO implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * 商户信息id
-     */
-    private Long id;
+public class IncomingMessageRespDTO implements Serializable {
 
     /**
      * 进件id
      */
-    private Long incomingId;
-
+    private Long id;
 
     /**
      * 入网主体类型（1：个体工商户，2：企业）
@@ -42,29 +31,19 @@ public class IncomingSubmitMessageDTO implements Serializable {
     private Integer accessChannelType;
 
     /**
-     * 入网状态
-     */
-    private Integer accessStatus;
-
-    /**
-     * 经销商/云商id
-     */
-    private Long businessId;
-
-    /**
      * 子账户号
      */
     private String accountNo;
 
     /**
-     * 商户简称
-     */
-    private String shopShortName;
-
-    /**
      * 会员id
      */
     private String memberId;
+
+    /**
+     * 会员名称
+     */
+    private String memberName;
 
 
     /**
@@ -79,21 +58,6 @@ public class IncomingSubmitMessageDTO implements Serializable {
      * 法人姓名
      */
     private String legalName;
-
-
-    /**
-     * 经办人证件号码
-     */
-    private String agentIdNo;
-
-    /**
-     * 经办人手机
-     */
-    private String agentMobile;
-    /**
-     * 经办人姓名
-     */
-    private String agentName;
 
     /**
      * 营业名称
@@ -115,10 +79,6 @@ public class IncomingSubmitMessageDTO implements Serializable {
      */
     private String bankAccountName;
     /**
-     * 联行号
-     */
-    private String bankBranchCode;
-    /**
      * 银行预留手机号
      */
     private String bankCardMobile;
@@ -126,19 +86,4 @@ public class IncomingSubmitMessageDTO implements Serializable {
      * 银行卡号
      */
     private String bankCardNo;
-
-    /**
-     * 开户总行名称
-     */
-    private String bankName;
-    /**
-     * 开户支行名称
-     */
-    private String bankSubBranchName;
-    /**
-     * 超级网银号
-     */
-    private String eiconBankBranch;
-
-
 }

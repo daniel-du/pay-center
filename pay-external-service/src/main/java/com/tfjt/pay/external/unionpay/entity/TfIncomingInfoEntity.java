@@ -84,6 +84,11 @@ public class TfIncomingInfoEntity implements Serializable {
     private Integer accessStatus;
 
     /**
+     * 签约渠道
+     */
+    private Byte signChannel;
+
+    /**
      * 数据有效状态（0：有效，1：无效）
      */
     private Integer isDeleted;
