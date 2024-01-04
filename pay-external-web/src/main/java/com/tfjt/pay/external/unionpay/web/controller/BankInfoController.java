@@ -75,5 +75,24 @@ public class BankInfoController {
         return pabcBizService.getNetworkStatus(queryAccessBankStatueReqDTO);
     }
 
+    /**
+     * 根据区域判断进件入网类型
+     * @param code  地区code
+     * @return
+     */
+    @GetMapping("/getNetworkTypeByAreaCode")
+    public Result<Integer> getNetworkTypeByAreaCode(String code){
+        return pabcBizService.getNetworkTypeByAreaCode(code);
+    }
+
+    /**
+     * 查询模块完成状态（身份信息、营业信息、结算信息）
+     * @param incomingId  入网id
+     */
+    @GetMapping("/getModuleStatus")
+    public Result<MoudleStatusRespDTO> getModuleStatus(Long incomingId){
+        return pabcBizService.getModuleStatus(incomingId);
+    }
+
 
 }

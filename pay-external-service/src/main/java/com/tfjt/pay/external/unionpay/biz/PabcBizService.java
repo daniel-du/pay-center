@@ -21,4 +21,7 @@ public interface PabcBizService {
 
     Result<List<QueryAccessBankStatueRespDTO>> getNetworkStatus(QueryAccessBankStatueReqDTO queryAccessBankStatueReqDTO);
 
+    Result<Integer> getNetworkTypeByAreaCode(String code);
+
+    Result<MoudleStatusRespDTO> getModuleStatus(Long incomingId);
 }

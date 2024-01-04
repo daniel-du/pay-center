@@ -7,12 +7,10 @@ import com.tfjt.fms.data.insight.api.service.SupplierApiService;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
-import com.tfjt.pay.external.unionpay.entity.LoanUserEntity;
-import com.tfjt.pay.external.unionpay.entity.PabcSuperbankcodeEntity;
-import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
-import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
+import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -48,8 +46,20 @@ public class PabcBizServiceImpl implements PabcBizService {
     private TfIncomingInfoService tfIncomingInfoService;
     @Autowired
     private LoanUserService loanUserService;
+    @Autowired
+    private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
+    @Autowired
+    private TfIdcardInfoService tfIdcardInfoService;
+    @Autowired
+    private TfIncomingMerchantInfoService tfIncomingMerchantInfoService;
+    @Autowired
+    private TfIncomingSettleInfoService tfIncomingSettleInfoService;
+    @Autowired
+    private RedisCache redisCache;
     @DubboReference
     private SupplierApiService supplierApiService;
+
+    Map<String, String> areaChannelMap;
 
     @Override
     public Result<List<PabcBankNameAndCodeRespDTO>> getBankInfoByName(String name) {
@@ -68,7 +78,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (StringUtils.isBlank(provinceCode) || StringUtils.isBlank(bankCode)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
-        List<PabcCityInfoRespDTO> list = pabcPubPayCityService.getCityList(provinceCode,bankCode);
+        List<PabcCityInfoRespDTO> list = pabcPubPayCityService.getCityList(provinceCode, bankCode);
         return Result.ok(list);
     }
 
@@ -77,7 +87,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (StringUtils.isBlank(bankCode) || StringUtils.isBlank(cityCode)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
-        List<PabcBranchBankInfoRespDTO> list = pabcPubPayBankaService.getBranchBankInfo(bankCode,cityCode,branchBankName);
+        List<PabcBranchBankInfoRespDTO> list = pabcPubPayBankaService.getBranchBankInfo(bankCode, cityCode, branchBankName);
         List<String> collect = list.stream().map(PabcBranchBankInfoRespDTO::getBankDreccode).collect(Collectors.toList());
         List<PabcSuperbankcodeEntity> superbankcodeEntityList = pabcSuperbankcodeService.list(new LambdaQueryWrapper<PabcSuperbankcodeEntity>().in(PabcSuperbankcodeEntity::getAgentbankcode, collect));
         Map<String, List<PabcSuperbankcodeEntity>> map = superbankcodeEntityList.stream().collect(Collectors.groupingBy(PabcSuperbankcodeEntity::getAgentbankcode));
@@ -107,21 +117,10 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (ObjectUtil.isNull(networkType) || ObjectUtil.isNull(businessType) || StringUtils.isBlank(businessId)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
-
-        if (BusinessUserTypeEnum.BUSINESS.getCode().equals(businessType)) {
-
-        }
-        if (BusinessUserTypeEnum.SUPPLIER.getCode().equals(businessType)) {
-
-        }
-        if (BusinessUserTypeEnum.DEALER.getCode().equals(businessType)) {
-
-        }
-
         //商户进件查询
         if (IncomingAccessTypeEnum.COMMON.getCode().equals(networkType)) {
             //银联进件查询
-            QueryAccessBankStatueRespDTO unionIncoming = getUnionIncoming(businessType,businessId);
+            QueryAccessBankStatueRespDTO unionIncoming = getUnionIncoming(businessType, businessId);
             //平安进件查询
             QueryAccessBankStatueRespDTO pabcIncoming = getPabcIncoming(businessId);
             list.add(unionIncoming);
@@ -130,11 +129,72 @@ public class PabcBizServiceImpl implements PabcBizService {
         //贷款进件查询
         if (IncomingAccessTypeEnum.LOAN.getCode().equals(networkType)) {
             //银联贷款进件查询(目前只有银联有贷款进件)
-            QueryAccessBankStatueRespDTO unionLoanIncoming = getUnionLoanIncoming(businessType,businessId);
+            QueryAccessBankStatueRespDTO unionLoanIncoming = getUnionLoanIncoming(businessType, businessId);
             list.add(unionLoanIncoming);
         }
         return Result.ok(list);
     }
+
+    @Override
+    public Result<Integer> getNetworkTypeByAreaCode(String code) {
+        int status;
+        if (this.areaChannelMap == null) {
+            List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
+            this.areaChannelMap = list.stream().collect(Collectors.toMap(SalesAreaIncomingChannelEntity::getDistrictsCode, SalesAreaIncomingChannelEntity::getDistricts));
+        }
+        String districts = this.areaChannelMap.get(code);
+        if (StringUtils.isNotBlank(districts)) {
+            status = 2;
+        } else {
+            status = 1;
+        }
+        return Result.ok(status);
+    }
+
+    @Override
+    public Result<MoudleStatusRespDTO> getModuleStatus(Long incomingId) {
+        //创建返回对象
+        MoudleStatusRespDTO moudleStatusRespDTO = new MoudleStatusRespDTO();
+        //根据入网id查询身份信息、营业信息、结算信息
+        if (ObjectUtil.isNotNull(incomingId)) {
+            throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
+        }
+        // 创建IdcardInfo实体查询对象
+        LambdaQueryWrapper<TfIdcardInfoEntity> idcardInfoEntityQueryWrapper = new LambdaQueryWrapper<>();
+        // 创建MerchantInfo实体查询对象
+        LambdaQueryWrapper<TfIncomingMerchantInfoEntity> merchantInfoEntityQueryWrapper = new LambdaQueryWrapper<>();
+        // 创建SettleInfo实体查询对象
+        LambdaQueryWrapper<TfIncomingSettleInfoEntity> settleInfoEntityQueryWrapper = new LambdaQueryWrapper<>();
+
+        // 根据incomingId和未删除状态筛选IdcardInfo实体
+        idcardInfoEntityQueryWrapper.eq(TfIdcardInfoEntity::getId, incomingId).eq(TfIdcardInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        // 根据incomingId和未删除状态筛选MerchantInfo实体
+        merchantInfoEntityQueryWrapper.eq(TfIncomingMerchantInfoEntity::getId, incomingId).eq(TfIncomingMerchantInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        // 根据incomingId和未删除状态筛选SettleInfo实体
+        settleInfoEntityQueryWrapper.eq(TfIncomingSettleInfoEntity::getId, incomingId).eq(TfIncomingSettleInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        // 通过IdcardInfo服务查询IdcardInfo实体
+        TfIdcardInfoEntity tfIdcardInfoEntity = tfIdcardInfoService.getOne(idcardInfoEntityQueryWrapper);
+        // 通过MerchantInfo服务查询MerchantInfo实体
+        TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = tfIncomingMerchantInfoService.getOne(merchantInfoEntityQueryWrapper);
+        // 通过SettleInfo服务查询SettleInfo实体
+        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = tfIncomingSettleInfoService.getOne(settleInfoEntityQueryWrapper);
+
+        // 如果查询到IdcardInfo实体，则设置模块状态响应DTO的cardId
+        if (null != tfIdcardInfoEntity) {
+            moudleStatusRespDTO.setCardId(tfIdcardInfoEntity.getId());
+        }
+        // 如果查询到MerchantInfo实体，则设置模块状态响应DTO的merchantId
+        if (null != tfIncomingMerchantInfoEntity) {
+            moudleStatusRespDTO.setMerchantId(tfIncomingMerchantInfoEntity.getId());
+        }
+        // 如果查询到SettleInfo实体，则设置模块状态响应DTO的settleId
+        if (null != tfIncomingSettleInfoEntity) {
+            moudleStatusRespDTO.setSettleId(tfIncomingSettleInfoEntity.getId());
+        }
+
+        return Result.ok(moudleStatusRespDTO);
+    }
+
 
     private QueryAccessBankStatueRespDTO getUnionLoanIncoming(Integer businessType, String businessId) {
         QueryAccessBankStatueRespDTO queryAccessBankStatueRespDTO = new QueryAccessBankStatueRespDTO();
@@ -152,7 +212,7 @@ public class PabcBizServiceImpl implements PabcBizService {
                 if (StringUtils.isNotBlank(supplierId)) {
                     wrapper.eq(LoanUserEntity::getCusId, supplierId).eq(LoanUserEntity::getType, BusinessUserTypeEnum.SUPPLIER.getCode());
                 }
-            }else {
+            } else {
                 throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_ERROR);
             }
         }
@@ -161,7 +221,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (null != loanUser) {
             queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.INCOMING.getCode());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY_LOAN.getName());
-        }else {
+        } else {
             queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.NOT_INCOMING.getCode());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY_LOAN.getName());
         }
@@ -172,7 +232,8 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     /**
      * 查询平安进件信息
-     * @param businessId    经销商/供应商id/店铺id
+     *
+     * @param businessId 经销商/供应商id/店铺id
      * @return
      */
     private QueryAccessBankStatueRespDTO getPabcIncoming(String businessId) {
@@ -181,7 +242,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (null != one) {
             queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.INCOMING.getCode());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.PINGAN.getName());
-        }else {
+        } else {
             queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.NOT_INCOMING.getCode());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.PINGAN.getName());
         }
@@ -190,26 +251,29 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     /**
      * 查询银联进件信息
-     * @param businessType  经销商/供应商id/店铺id
-     * @param businessId    判断查询参数是否为空
+     *
+     * @param businessType 经销商/供应商id/店铺id
+     * @param businessId   判断查询参数是否为空
      * @return
      */
     private QueryAccessBankStatueRespDTO getUnionIncoming(Integer businessType, String businessId) {
         QueryAccessBankStatueRespDTO queryAccessBankStatueRespDTO = new QueryAccessBankStatueRespDTO();
         String buisnessNo = businessId;
         if (BusinessUserTypeEnum.BUSINESS.getCode().equals(businessType)) {
-            buisnessNo = "tfys"+businessId;
+            buisnessNo = "tfys" + businessId;
         }
         SelfSignEntity one = selfSignService.getOne(new LambdaQueryWrapper<SelfSignEntity>().eq(SelfSignEntity::getAccesserAcct, buisnessNo));
         if (null != one) {
             queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.INCOMING.getCode());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY.getName());
-        }else {
+        } else {
             queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.NOT_INCOMING.getCode());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY.getName());
         }
         return queryAccessBankStatueRespDTO;
     }
+
+
 
 
 }
