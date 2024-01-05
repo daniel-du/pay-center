@@ -32,6 +32,9 @@ public abstract class IncomingBindCardService {
     @Autowired
     TfIncomingInfoService tfIncomingInfoService;
 
+    @Autowired
+    PnHeadUtils pnHeadUtils;
+
     /**
      * 绑定银行卡、获取验证码
      * @return
@@ -52,7 +55,7 @@ public abstract class IncomingBindCardService {
     public String openAccount(TfIncomingInfoEntity tfIncomingInfoEntity, JSONObject json) {
         try {
             //调用平安6248-开户接口
-            JSONObject resultJson = PnHeadUtils.send(json,
+            JSONObject resultJson = pnHeadUtils.send(json,
                     PnApiEnum.OPEN_ACCOUNT.getServiceCode(), PnApiEnum.OPEN_ACCOUNT.getServiceId());
             //平安api返回标识非成功
             if (!PnSdkConstant.API_SUCCESS_CODE.equals(resultJson.getString(PnSdkConstant.RESULT_CODE_FIELD))) {
@@ -87,7 +90,7 @@ public abstract class IncomingBindCardService {
     public void confirmAgreement(CheckCodeMessageDTO checkCodeMessageDTO) {
         try {
             //调用平安6248-开户接口
-            JSONObject resultJson = PnHeadUtils.send(covertConfirmAgreementJson(checkCodeMessageDTO),
+            JSONObject resultJson = pnHeadUtils.send(covertConfirmAgreementJson(checkCodeMessageDTO),
                     PnApiEnum.REGISTER_BEHAVIOR.getServiceCode(), PnApiEnum.REGISTER_BEHAVIOR.getServiceId());
             //平安api返回标识非成功
             if (!PnSdkConstant.API_SUCCESS_CODE.equals(resultJson.getString(PnSdkConstant.RESULT_CODE_FIELD))) {

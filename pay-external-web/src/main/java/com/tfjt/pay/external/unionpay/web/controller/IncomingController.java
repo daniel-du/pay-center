@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +27,11 @@ public class IncomingController {
 
     @PostMapping("/submitMessage")
     public Result submitMessage(@RequestBody IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
-        return incomingBizService.submitMessage(incomingSubmitMessageReqDTO);
+        return incomingBizService.incomingSubmit(incomingSubmitMessageReqDTO);
     }
 
     @PostMapping("/checkCode")
-    public Result checkCode(@RequestBody IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
-        return incomingBizService.submitMessage(incomingSubmitMessageReqDTO);
+    public Result checkCode(@RequestBody IncomingCheckCodeReqDTO incomingCheckCodeReqDTO) {
+        return incomingBizService.checkCode(incomingCheckCodeReqDTO);
     }
 }

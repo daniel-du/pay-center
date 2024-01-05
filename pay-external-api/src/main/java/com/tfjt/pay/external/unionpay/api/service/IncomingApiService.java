@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.tfcommon.dto.response.Result;
 
 /**
  * @author Du Penglun
@@ -16,5 +17,5 @@ public interface IncomingApiService {
      * @param incomingMessageReqDTO
      * @return
      */
-    IncomingMessageRespDTO queryIncomingMessage(IncomingMessageReqDTO incomingMessageReqDTO);
+    Result<IncomingMessageRespDTO> queryIncomingMessage(IncomingMessageReqDTO incomingMessageReqDTO);
 }

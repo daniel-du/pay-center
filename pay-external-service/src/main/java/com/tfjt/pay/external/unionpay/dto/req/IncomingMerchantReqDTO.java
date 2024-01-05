@@ -3,9 +3,11 @@ package com.tfjt.pay.external.unionpay.dto.req;
 import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 /**
@@ -106,11 +108,14 @@ public class IncomingMerchantReqDTO implements Serializable {
      * 法人证件号码
      */
     @NotBlank(message = "法人证件号码不能为空", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=15,max = 18, groups = { AddGroup.class, UpdateGroup.class })
     private String legalIdNo;
     /**
      * 法人手机号
      */
     @NotBlank(message = "法人手机号不能为空", groups = { AddGroup.class, UpdateGroup.class })
+    @Pattern(regexp = "/1\\d{10}/", message = "法人手机号格式错误", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=11,max = 11, groups = { AddGroup.class, UpdateGroup.class })
     private String legalMobile;
     /**
      * 法人姓名
@@ -152,7 +157,6 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 经办人同法人，0否，1是
      */
-    @NotNull(message = "经办人同法人标识不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Byte agentIsLegal;
     /**
      * 经办人手机

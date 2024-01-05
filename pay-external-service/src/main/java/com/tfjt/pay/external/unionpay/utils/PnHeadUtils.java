@@ -8,14 +8,21 @@ import com.pingan.openbank.api.sdk.common.http.HttpResult;
 import com.pingan.openbank.api.sdk.entity.SdkRequest;
 import com.pingan.openbank.api.sdk.exception.OpenBankSdkException;
 import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
+import com.tfjt.pay.external.unionpay.entity.TfIncomingApiLogEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.service.TfIncomingApiLogService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Random;
 
@@ -26,7 +33,12 @@ import java.util.Random;
  * @description 平安api报文头
  */
 @Slf4j
+@Component
 public class PnHeadUtils {
+
+    @Autowired
+    private TfIncomingApiLogService incomingApiLogService;
+
     protected static String MrchCode="5655";
 
     /**
@@ -69,9 +81,10 @@ public class PnHeadUtils {
 
 
 
-    public static JSONObject send(JSONObject jsonObject, String txnCode, String serviceId) throws OpenBankSdkException {
+    public JSONObject send(JSONObject jsonObject, String txnCode, String serviceId) throws OpenBankSdkException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyyMMddHHmmss");
+        StopWatch sw = new StopWatch();
         Random random = new Random();
         String seq = simpleDateFormat.format(new Date()) + "" + random.nextInt(99999999);
         //交易流水号:系统流水号，建议规范：用户短号（6位）+日期（6位）+随机编号（10位）例：C256341801183669951236平台也可自行定义，满足长度即可
@@ -90,9 +103,11 @@ public class PnHeadUtils {
         SdkRequest sdkRequest = new SdkRequest();
         sdkRequest.setInterfaceName(serviceId);
         sdkRequest.setBody(jsonObject);
+        sw.start();
         log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, jsonObject:{}", txnCode, serviceId, jsonObject.toJSONString());
         HttpResult httpResult = apiClient.invoke(sdkRequest);
         log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, httpResult:{}", txnCode, serviceId, httpResult.toString());
+        sw.stop();
         //http响应为空
         if (ObjectUtils.isEmpty(httpResult)) {
 
@@ -114,6 +129,7 @@ public class PnHeadUtils {
         if (!API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
 //            throw new TfException(errorProcess(resultJson));
         }
+
         JSONObject dataJson = resultJson.getJSONObject("Data");
         log.info("PnHeadUtils---send, dataJson:{}", dataJson.toJSONString());
         return resultJson;
@@ -128,5 +144,17 @@ public class PnHeadUtils {
         JSONObject extendJson = resultJson.getJSONObject("ExtendData");
         System.out.println("extendJson=" + JSONArray.toJSONString(extendJson));
         return errorJson;
+    }
+
+    @Async
+    public void logProcess(JSONObject jsonObject, String txnCode, HttpResult httpResult, LocalDateTime reqTime,
+                           LocalDateTime respTime, Long comsumingTime) {
+        TfIncomingApiLogEntity incomingApiLogEntity = new TfIncomingApiLogEntity();
+//        incomingApiLogEntity.setUrl();
+        incomingApiLogEntity.setApiCode(txnCode);
+        incomingApiLogEntity.setRequestTime(reqTime);
+        incomingApiLogEntity.setResponseTime(respTime);
+        incomingApiLogEntity.setRequestParam(jsonObject.toJSONString());
+        incomingApiLogEntity.setResponseBody(JSONObject.toJSONString(httpResult));
     }
 }

@@ -35,6 +35,9 @@ public abstract class IncomingBindCardPnPersonalServiceImpl extends IncomingBind
     @Autowired
     TfIncomingInfoService tfIncomingInfoService;
 
+    @Autowired
+    PnHeadUtils pnHeadUtils;
+
     /**
      * 进件开户
      * @param incomingSubmitMessageDTO
@@ -79,7 +82,7 @@ public abstract class IncomingBindCardPnPersonalServiceImpl extends IncomingBind
         jsonObject.put("MessageCheckCode", checkCodeMessageDTO.getMessageCheckCode());
         try {
             //调用回填验证码接口
-            JSONObject resultJson = PnHeadUtils.send(jsonObject,
+            JSONObject resultJson = pnHeadUtils.send(jsonObject,
                     PnApiEnum.CHECK_CODE_PERSONAL.getServiceCode(), PnApiEnum.CHECK_CODE_PERSONAL.getServiceId());
             if (!PnSdkConstant.API_SUCCESS_CODE.equals(resultJson.getString(PnSdkConstant.RESULT_CODE_FIELD))) {
                 //记录错误原因
@@ -107,7 +110,7 @@ public abstract class IncomingBindCardPnPersonalServiceImpl extends IncomingBind
     private void binkCard(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
         try {
             //调用平安6248-开户接口
-            JSONObject resultJson = PnHeadUtils.send(covertBinkCardJson(incomingSubmitMessageDTO),
+            JSONObject resultJson = pnHeadUtils.send(covertBinkCardJson(incomingSubmitMessageDTO),
                     PnApiEnum.BIND_CARD_PERSONAL.getServiceCode(), PnApiEnum.BIND_CARD_PERSONAL.getServiceId());
             //平安api返回标识非成功
             if (!PnSdkConstant.API_SUCCESS_CODE.equals(resultJson.getString(PnSdkConstant.RESULT_CODE_FIELD))) {

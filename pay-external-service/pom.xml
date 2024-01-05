@@ -273,10 +273,22 @@
             <artifactId>fms-data-insight-api</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+        <!--平安api-->
         <dependency>
             <groupId>com.tfjt.pabank</groupId>
             <artifactId>tf-pabank</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <!--消息异步补偿-->
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-async-job-retry</artifactId>
+            <version>1.0.7-RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun.openservices</groupId>
+            <artifactId>ons-client</artifactId>
+            <version>1.8.8.8.Final</version>
         </dependency>
     </dependencies>
 </project>

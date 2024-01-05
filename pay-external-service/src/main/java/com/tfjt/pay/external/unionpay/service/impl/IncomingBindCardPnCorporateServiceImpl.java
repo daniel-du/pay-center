@@ -38,6 +38,9 @@ public class IncomingBindCardPnCorporateServiceImpl extends IncomingBindCardServ
     @Autowired
     TfIncomingInfoService tfIncomingInfoService;
 
+    @Autowired
+    PnHeadUtils pnHeadUtils;
+
     /**
      * 默认币种，人民币
      */
@@ -88,7 +91,7 @@ public class IncomingBindCardPnCorporateServiceImpl extends IncomingBindCardServ
         jsonObject.put("OrderNo", checkCodeMessageDTO.getMessageCheckCode());
         jsonObject.put("Ccy", DEFAULT_CCY);
         try {
-            JSONObject resultJson = PnHeadUtils.send(jsonObject,
+            JSONObject resultJson = pnHeadUtils.send(jsonObject,
                     PnApiEnum.CHECK_CODE_CORPORATE.getServiceCode(), PnApiEnum.CHECK_CODE_CORPORATE.getServiceId());
             if (!PnSdkConstant.API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
                 //记录错误原因
@@ -120,7 +123,7 @@ public class IncomingBindCardPnCorporateServiceImpl extends IncomingBindCardServ
     private void binkCard(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
         try {
             //调用平安6248-开户接口
-            JSONObject resultJson = PnHeadUtils.send(covertBinkCardJson(incomingSubmitMessageDTO),
+            JSONObject resultJson = pnHeadUtils.send(covertBinkCardJson(incomingSubmitMessageDTO),
                     PnApiEnum.BIND_CARD_CORPORATE.getServiceCode(), PnApiEnum.BIND_CARD_CORPORATE.getServiceId());
             //平安api返回标识非成功
             if (!PnSdkConstant.API_SUCCESS_CODE.equals(resultJson.getString(PnSdkConstant.RESULT_CODE_FIELD))) {

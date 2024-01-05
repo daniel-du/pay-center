@@ -59,6 +59,13 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_AGENT_EFFECTIVE_IS_NULL(2000007,"经办人证件有效起始日期不能为空!"),
     INCOMING_AGENT_EXPIRE_IS_NULL(2000008,"经办人证件有效截止日期不能为空!"),
     INCOMING_AGENT_IS_LONG_TERM_IS_NULL(2000009,"经办人证件是否长期不能为空!"),
+    INCOMING_AGENT_IS_LEGAL_IS_NULL(2000010,"经办人同法人标识不能为空!"),
+    INCOMING_AGENT_MOBILE_FORMAT_ERROR(2000011,"经办人手机号格式错误!"),
+    INCOMING_AGENT_ID_NO_FORMAT_ERROR(2000012,"经办人证件号码格式错误!"),
+    INCOMING_EMAIL_FORMAT_ERROR(2000013,"邮箱格式错误!"),
+    INCOMING_BANK_CARD_ACCOUNT_ERROR(2000014,"开户名称必须与法人姓名一致!"),
+    INCOMING_BUSINESS_LICENSE_NO_REPEAT(2000015,"营业执照号码重复!"),
+    INCOMING_LEGAL_ID_NO_FORMAT_ERROR(2000012,"法人证件号码格式错误!"),
 
     PN_API_ERROR(2000010, "调用开户API失败!"),
     ;

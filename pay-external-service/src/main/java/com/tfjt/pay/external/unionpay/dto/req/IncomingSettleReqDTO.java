@@ -1,11 +1,14 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.pay.external.unionpay.constants.RegularConstants;
 import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 /**
@@ -47,6 +50,7 @@ public class IncomingSettleReqDTO implements Serializable {
      * 开户名称
      */
     @NotBlank(message = "开户名称不能为空", groups = {AddGroup.class, UpdateGroup.class})
+    @Length(min=1, max = 20, message ="开户名称最大长度为20", groups = { AddGroup.class, UpdateGroup.class })
     private String bankAccountName;
     /**
      * 联行号
@@ -57,11 +61,15 @@ public class IncomingSettleReqDTO implements Serializable {
      * 银行预留手机号
      */
     @NotBlank(message = "银行预留手机号不能为空", groups = {AddGroup.class, UpdateGroup.class})
+    @Pattern(regexp = RegularConstants.MOBILE, message = "银行预留手机号格式错误", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=11, max = 11, message ="预留手机号长度不正确", groups = { AddGroup.class, UpdateGroup.class })
     private String bankCardMobile;
     /**
      * 银行卡号
      */
     @NotBlank(message = "银行卡号不能为空", groups = {AddGroup.class, UpdateGroup.class})
+    @Pattern(regexp = "^[0-9]+$", message = "银行卡号格式错误", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min = 6,max = 34, message ="银行卡号长度不正确", groups = { AddGroup.class, UpdateGroup.class })
     private String bankCardNo;
     /**
      * 银行卡照片

@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.biz.IncomingMerchantBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.constants.RegularConstants;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIdcardInfoEntity;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * @author Du Penglun
@@ -62,9 +64,25 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     @Autowired
     private RedisCache redisCache;
 
+    /**
+     * 经办人同法人标识
+     */
     private final static Byte AGENT_IS_LEGAL = 1;
 
     private final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
+
+    /**
+     * 手机号验证格式
+     */
+    private final Pattern MOBILE_REGEXP = Pattern.compile(RegularConstants.MOBILE);
+    /**
+     * 18位身份证号验证格式
+     */
+    private final Pattern ID_NEW_REGEXP = Pattern.compile(RegularConstants.ID_CARD_NEW);
+    /**
+     * 15位身份证号验证格式
+     */
+    private final Pattern ID_OLD_REGEXP = Pattern.compile(RegularConstants.ID_CARD_OLD);
 
 
 
@@ -98,7 +116,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         try {
             log.info("IncomingMerchantBizServiceImpl---save, incomingMerchantReqDTO:{}", JSONObject.toJSONString(incomingMerchantReqDTO));
             ValidatorUtils.validateEntity(incomingMerchantReqDTO, AddGroup.class);
-            validateAgentEntity(incomingMerchantReqDTO);
+            validateMerchantEntity(incomingMerchantReqDTO);
             //保存进件主表信息
             TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
             BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingInfoEntity);
@@ -147,7 +165,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     public Result update(IncomingMerchantReqDTO incomingMerchantReqDTO) {
         log.info("IncomingMerchantBizServiceImpl---update, incomingMerchantReqDTO:{}", JSONObject.toJSONString(incomingMerchantReqDTO));
         ValidatorUtils.validateEntity(incomingMerchantReqDTO, UpdateGroup.class);
-        validateAgentEntity(incomingMerchantReqDTO);
+        validateMerchantEntity(incomingMerchantReqDTO);
         TfIncomingMerchantInfoEntity originMerchantInfoEntity = tfIncomingMerchantInfoService.getById(incomingMerchantReqDTO.getId());
         //保存商户身份信息
         TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = TfIncomingMerchantInfoEntity.builder().
@@ -241,10 +259,16 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
      * 信息保存时校验经办人参数
      * @param incomingMerchantReqDTO
      */
-    private void validateAgentEntity(IncomingMerchantReqDTO incomingMerchantReqDTO) {
-        //入网主体非企业时，不做校验
+    private void validateMerchantEntity(IncomingMerchantReqDTO incomingMerchantReqDTO) {
+        if (!ID_NEW_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches() || !ID_OLD_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches()) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_LEGAL_ID_NO_FORMAT_ERROR);
+        }
+        //入网主体非企业时，经办人信息不做校验
         if (NumberConstant.ONE.equals(incomingMerchantReqDTO.getAccessMainType())) {
             return;
+        }
+        if (incomingMerchantReqDTO.getAgentIsLegal() == null) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_IS_LEGAL_IS_NULL);
         }
         if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentName())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_NAME_IS_NULL);
@@ -264,6 +288,13 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         if (incomingMerchantReqDTO.getAgentIdIsLongTerm() == null) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_IS_LONG_TERM_IS_NULL);
         }
+        if (!MOBILE_REGEXP.matcher(incomingMerchantReqDTO.getAgentMobile()).matches()) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_MOBILE_FORMAT_ERROR);
+        }
+        if (!ID_NEW_REGEXP.matcher(incomingMerchantReqDTO.getAgentIdNo()).matches() || !ID_OLD_REGEXP.matcher(incomingMerchantReqDTO.getAgentIdNo()).matches()) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_ID_NO_FORMAT_ERROR);
+        }
+
     }
 
     /**

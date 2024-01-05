@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -23,4 +25,11 @@ public interface IncomingBizService {
      * @return
      */
     Result checkCode(IncomingCheckCodeReqDTO inComingCheckCodeReqDTO);
+
+    /**
+     * 根据商户信息查询进件信息
+     * @param incomingMessageReqDTO
+     * @return
+     */
+    Result<IncomingMessageRespDTO> queryIncomingMessage(IncomingMessageReqDTO incomingMessageReqDTO);
 }

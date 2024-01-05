@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingInfoDao;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
@@ -33,5 +35,15 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     @Override
     public IncomingSubmitMessageDTO queryIncomingMessage(Long id) {
         return this.baseMapper.queryIncomingMessage(id);
+    }
+
+    /**
+     * 根据商户信息查询进件信息
+     * @param incomingMessageReqDTO
+     * @return
+     */
+    @Override
+    public IncomingMessageRespDTO queryIncomingMessageByMerchant(IncomingMessageReqDTO incomingMessageReqDTO) {
+        return this.baseMapper.queryIncomingMessageByMerchant(incomingMessageReqDTO);
     }
 }

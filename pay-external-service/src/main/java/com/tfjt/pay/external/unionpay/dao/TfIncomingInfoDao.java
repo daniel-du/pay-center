@@ -1,6 +1,8 @@
 package com.tfjt.pay.external.unionpay.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import org.apache.ibatis.annotations.Param;
@@ -17,6 +19,6 @@ public interface TfIncomingInfoDao extends BaseMapper<TfIncomingInfoEntity> {
 
     IncomingSubmitMessageDTO queryIncomingMessage(@Param("id") Long id);
 
-
+    IncomingMessageRespDTO queryIncomingMessageByMerchant(@Param("param") IncomingMessageReqDTO incomingMessageReqDTO);
 
 }

@@ -1,7 +1,9 @@
 package com.tfjt.pay.external.unionpay.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingBusinessReqDTO;
 import com.tfjt.pay.external.unionpay.entity.TfBusinessLicenseInfoEntity;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -13,4 +15,5 @@ import com.tfjt.pay.external.unionpay.entity.TfBusinessLicenseInfoEntity;
  */
 public interface TfBusinessLicenseInfoDao extends BaseMapper<TfBusinessLicenseInfoEntity> {
 
+    int queryCountByLicenseNo(@Param("incomingBusiness")IncomingBusinessReqDTO incomingBusinessReqDTO);
 }

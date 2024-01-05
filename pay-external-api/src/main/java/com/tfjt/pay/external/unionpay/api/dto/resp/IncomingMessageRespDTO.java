@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.api.dto.resp;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -8,6 +10,7 @@ import java.io.Serializable;
  * @date 2023/12/25 15:28
  * @description 查询进件信息出参
  */
+@Data
 public class IncomingMessageRespDTO implements Serializable {
 
     /**

@@ -3,11 +3,14 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.biz.IncomingSettleBizService;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSettleReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfBankCardInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingSettleTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfBankCardInfoService;
+import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingSettleInfoService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
@@ -36,6 +39,9 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
     @Autowired
     private TfBankCardInfoService tfBankCardInfoService;
 
+    @Autowired
+    private TfIncomingMerchantInfoService tfIncomingMerchantInfoService;
+
     @Override
     public Result<IncomingSettleRespDTO> getById(Long id) {
         log.info("IncomingSettleBizServiceImpl---getById, id:{}", id);
@@ -57,8 +63,10 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
     public Result save(IncomingSettleReqDTO incomingSettleReqDTO) {
         log.info("IncomingSettleBizServiceImpl---save, incomingSettleReqDTO:{}", JSONObject.toJSONString(incomingSettleReqDTO));
         ValidatorUtils.validateEntity(incomingSettleReqDTO, AddGroup.class);
+        validateSettltEntity(incomingSettleReqDTO);
         TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
         BeanUtils.copyProperties(incomingSettleReqDTO, tfBankCardInfoEntity);
+        //保存银行卡表信息
         if (!tfBankCardInfoService.save(tfBankCardInfoEntity)) {
             log.error("保存结算银行卡信息失败:{}", JSONObject.toJSONString(tfBankCardInfoEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -68,6 +76,7 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
                 settlementAccountType(incomingSettleReqDTO.getSettlementAccountType()).
                 bankCardId(tfBankCardInfoEntity.getId()).
                 occupation(incomingSettleReqDTO.getOccupation()).build();
+        //保存结算表信息
         if (!tfIncomingSettleInfoService.save(tfIncomingSettleInfoEntity)) {
             log.error("保存结算信息失败:{}", JSONObject.toJSONString(tfIncomingSettleInfoEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -80,6 +89,7 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
     public Result update(IncomingSettleReqDTO incomingSettleReqDTO) {
         log.info("IncomingSettleBizServiceImpl---save, incomingSettleReqDTO:{}", JSONObject.toJSONString(incomingSettleReqDTO));
         ValidatorUtils.validateEntity(incomingSettleReqDTO, UpdateGroup.class);
+        validateSettltEntity(incomingSettleReqDTO);
         TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
         BeanUtils.copyProperties(incomingSettleReqDTO, tfBankCardInfoEntity);
         tfBankCardInfoEntity.setId(incomingSettleReqDTO.getBankCardId());
@@ -96,5 +106,20 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
         return Result.ok();
+    }
+
+    /**
+     * 信息保存时校验参数
+     * @param incomingSettleReqDTO
+     */
+    private void validateSettltEntity(IncomingSettleReqDTO incomingSettleReqDTO) {
+        if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingSettleReqDTO.getSettlementAccountType())) {
+            return;
+        }
+        //如果是“对私”结算类型，开户名称需要与法人姓名一致
+        IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantById(incomingSettleReqDTO.getIncomingId());
+        if (!incomingSettleReqDTO.equals(incomingMerchantRespDTO.getLegalName())) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_ACCOUNT_ERROR);
+        }
     }
 }

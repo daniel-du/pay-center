@@ -1,11 +1,14 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.pay.external.unionpay.constants.RegularConstants;
 import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 /**
@@ -41,11 +44,13 @@ public class IncomingBusinessReqDTO implements Serializable {
      * 营业名称
      */
     @NotBlank(message = "营业名称不能为空", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=1,max = 50)
     private String businessName;
     /**
      * 详细地址
      */
     @NotBlank(message = "详细地址不能为空", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=1,max = 100, message ="详细地址最长为100字符", groups = { AddGroup.class, UpdateGroup.class })
     private String address;
     /**
      * 营业地区-省code
@@ -81,6 +86,8 @@ public class IncomingBusinessReqDTO implements Serializable {
      * 营业执照号码
      */
     @NotBlank(message = "营业执照号码不能为空", groups = { AddGroup.class, UpdateGroup.class })
+    @Pattern(regexp = RegularConstants.SOCIAL_CREDIT_CODE, message = "营业执照号码格式错误", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=18,max = 18, message ="详细地址最长为100字符", groups = { AddGroup.class, UpdateGroup.class })
     private String businessLicenseNo;
     /**
      * 营业执照照片
@@ -106,7 +113,6 @@ public class IncomingBusinessReqDTO implements Serializable {
     /**
      * 联系邮箱
      */
-    @NotBlank(message = "联系邮箱不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String email;
 
 

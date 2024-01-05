@@ -21,4 +21,23 @@
         left join tf_bank_card_info h on g.bank_card_id = h.id
 		where a.id = #{id}
     </select>
+    <select id="queryIncomingMessageByMerchant"
+            resultType="com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO">
+        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
+        a.access_status,a.account_no,
+        b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
+        d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,
+		g.settlement_account_type, h.bank_account_name, h.bank_card_no,
+        h.bank_card_mobile, h.bank_name, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
+        from  tf_incoming_info a
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id
+        left join tf_idcard_info c on b.legal_id_card = c.id
+        left join tf_idcard_info d on b.agent_id_card= d.id
+		left join tf_incoming_business_info e on e.incoming_id = a.id
+        left join tf_business_license_info f on e.business_license_id = f.id
+		left join tf_incoming_settle_info g on g.incoming_id = a.id
+        left join tf_bank_card_info h on g.bank_card_id = h.id
+		where a.business_id = #{param.busineeeId} and a.business_type = #{param.businessType}
+		and a.access_channel_type = #{param.accessChannelType} and a.access_status = 6
+    </select>
 </mapper>
