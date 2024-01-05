@@ -62,22 +62,23 @@ public class PnHeadUtils {
 
     protected static String fundSummaryAcctNo;
 
-    @Value("${pnIncoming.confPath}")
-    private void setConfPath(String confPath) {
-        this.confPath = confPath;
-    }
+//    @Value("${pnIncoming.confPath}")
+//    private void setConfPath(String confPath) {
+//        this.confPath = confPath;
+//    }
+//
+//    @Value("${pnIncoming.txnClientNo}")
+//    private void setTxnClientNo(String txnClientNo) {
+//        this.txnClientNo = txnClientNo;
+//    }
+//
+//    @Value("${pnIncoming.fundSummaryAcctNo}")
+//    private void setFundSummaryAcctNo(String fundSummaryAcctNo) {
+//        this.fundSummaryAcctNo = fundSummaryAcctNo;
+//    }
 
-    @Value("${pnIncoming.txnClientNo}")
-    private void setTxnClientNo(String txnClientNo) {
-        this.txnClientNo = txnClientNo;
-    }
-
-    @Value("${pnIncoming.fundSummaryAcctNo}")
-    private void setFundSummaryAcctNo(String fundSummaryAcctNo) {
-        this.fundSummaryAcctNo = fundSummaryAcctNo;
-    }
-
-    protected static ApiClient apiClient = ApiClient.getInstance(confPath);
+//    protected static ApiClient apiClient = ApiClient.getInstance(confPath);
+    protected static ApiClient apiClient = ApiClient.getInstance("pnconf/config-fat007.properties");
 
 
 
@@ -103,11 +104,11 @@ public class PnHeadUtils {
         SdkRequest sdkRequest = new SdkRequest();
         sdkRequest.setInterfaceName(serviceId);
         sdkRequest.setBody(jsonObject);
-        sw.start();
         log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, jsonObject:{}", txnCode, serviceId, jsonObject.toJSONString());
+        sw.start();
         HttpResult httpResult = apiClient.invoke(sdkRequest);
-        log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, httpResult:{}", txnCode, serviceId, httpResult.toString());
         sw.stop();
+        log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, sw:{}, httpResult:{}", txnCode, serviceId, sw.getLastTaskTimeMillis(), httpResult.toString());
         //httpÏìÓ¦Îª¿Õ
         if (ObjectUtils.isEmpty(httpResult)) {
 
