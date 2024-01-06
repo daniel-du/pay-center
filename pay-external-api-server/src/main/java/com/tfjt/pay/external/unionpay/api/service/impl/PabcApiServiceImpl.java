@@ -2,12 +2,13 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BusinessChangeRecodRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BusinessInfoRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.PabcApiService;
+import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.tfcommon.dto.response.Paged;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @Author zxy
@@ -17,17 +18,10 @@ import org.apache.dubbo.config.annotation.DubboService;
 @DubboService
 public class PabcApiServiceImpl implements PabcApiService {
 
-    /**
-     * 查询商户信息详情
-     * @param businessInfoReqDTO 查询入参
-     * @return
-     */
-    @Override
-    public Result<BusinessInfoRespDTO> getBusinessInfo(BusinessInfoReqDTO businessInfoReqDTO) {
-        String buisnessId = businessInfoReqDTO.getBuisnessId();
-        String businessType = businessInfoReqDTO.getBusinessType();
-        return null;
-    }
+    @Autowired
+    private PabcBizService pabcBizService;
+
+
 
     /**
      * 查询变更信息
@@ -41,6 +35,6 @@ public class PabcApiServiceImpl implements PabcApiService {
 
     @Override
     public Result<Integer> getNetworkTypeByAreaCode(String code) {
-        return null;
+        return pabcBizService.getNetworkTypeByAreaCode(code);
     }
 }

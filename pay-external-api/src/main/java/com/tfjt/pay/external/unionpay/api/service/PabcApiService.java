@@ -2,7 +2,6 @@ package com.tfjt.pay.external.unionpay.api.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.BusinessChangeRecodRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BusinessInfoRespDTO;
 import com.tfjt.tfcommon.dto.response.Paged;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -14,8 +13,6 @@ public interface PabcApiService {
     /**
      * 查询商户信息详情
      */
-    Result<BusinessInfoRespDTO> getBusinessInfo(BusinessInfoReqDTO businessInfoReqDTO);
-
     Result<Paged<BusinessChangeRecodRespDTO>> getChangeRecord(BusinessInfoReqDTO businessInfoReqDTO);
 
 
