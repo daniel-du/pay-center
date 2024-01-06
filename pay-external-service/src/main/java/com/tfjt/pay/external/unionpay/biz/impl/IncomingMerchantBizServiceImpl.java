@@ -12,6 +12,7 @@ import com.tfjt.pay.external.unionpay.entity.TfIncomingMerchantInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
 import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingAccessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIdcardInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
@@ -68,6 +69,11 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
      * 经办人同法人标识
      */
     private final static Byte AGENT_IS_LEGAL = 1;
+
+    /**
+     * 进件主体类型-企业
+     */
+    private final static Byte ACCESS_MAIN_TYPE_COMPANY = 2;
 
     private final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 
@@ -133,6 +139,14 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             //保存商户身份-法人信息
             TfIdcardInfoEntity legalIdcardInfoEntity = saveLegal(incomingMerchantReqDTO);
             tfIncomingMerchantInfoEntity.setLegalIdCard(legalIdcardInfoEntity.getId());
+            //进件主体类型非企业时，无需处理经办人信息
+            if (!ACCESS_MAIN_TYPE_COMPANY.equals(incomingMerchantReqDTO.getAccessMainType())) {
+                if (!tfIncomingMerchantInfoService.save(tfIncomingMerchantInfoEntity)) {
+                    log.error("保存商户身份信息失败:{}", JSONObject.toJSONString(tfIncomingMerchantInfoEntity));
+                    throw new TfException(ExceptionCodeEnum.FAIL);
+                }
+                return Result.ok();
+            }
             //判断经办人信息是否同法人，如不同则单独处理
             if (!AGENT_IS_LEGAL.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
                 //保存商户身份-经办人信息
@@ -179,6 +193,10 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         }
         //保存商户身份-法人信息
         TfIdcardInfoEntity legalIdcardInfoEntity = saveLegal(incomingMerchantReqDTO);
+        //入网主体非企业时，不需要保存经办人信息
+        if (!ACCESS_MAIN_TYPE_COMPANY.equals(incomingMerchantReqDTO.getAccessMainType())) {
+            return Result.ok();
+        }
         //原经办人与变更后经办人都同法人
         if (NumberConstant.ONE.equals(originMerchantInfoEntity.getAgentIsLegal()) && NumberConstant.ONE.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
             return Result.ok();
@@ -264,7 +282,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             throw new TfException(ExceptionCodeEnum.INCOMING_LEGAL_ID_NO_FORMAT_ERROR);
         }
         //入网主体非企业时，经办人信息不做校验
-        if (NumberConstant.ONE.equals(incomingMerchantReqDTO.getAccessMainType())) {
+        if (!ACCESS_MAIN_TYPE_COMPANY.equals(incomingMerchantReqDTO.getAccessMainType())) {
             return;
         }
         if (incomingMerchantReqDTO.getAgentIsLegal() == null) {

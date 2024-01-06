@@ -74,7 +74,7 @@ public class TfIncomingApiLogEntity implements Serializable {
     /**
      * 状态;0: 初始化 1: 成功 2:失败
      */
-    private String status;
+    private Integer status;
 
     /**
      * 入网渠道类型（1：平安，2：银联）

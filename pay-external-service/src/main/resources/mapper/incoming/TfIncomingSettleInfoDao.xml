@@ -11,7 +11,7 @@
         b.open_account_province, b.open_account_province_name, b.open_account_city, b.open_account_city_name,
         b.open_account_district, b.open_account_district_name
         from tf_incoming_settle_info a
-        left join tf_bank_card_info b on a.bank_card_id = b.id
-        where a.id = #{id};
+        left join tf_bank_card_info b on a.bank_card_id = b.id  and b.is_deleted = 0
+        where a.id = #{id}  and a.is_deleted = 0;
     </select>
 </mapper>

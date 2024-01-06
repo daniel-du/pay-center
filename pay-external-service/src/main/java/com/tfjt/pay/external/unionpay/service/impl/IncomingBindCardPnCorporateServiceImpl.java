@@ -232,12 +232,14 @@ public class IncomingBindCardPnCorporateServiceImpl extends IncomingBindCardServ
         jsonObject.put("ReprName", incomingSubmitMessageDTO.getLegalName());
         jsonObject.put("ReprGlobalType", IdTypeEnum.ID_CARD);
         jsonObject.put("ReprGlobalId", incomingSubmitMessageDTO.getLegalIdNo());
-
-        jsonObject.put("AgencyClientFlag", "1");
-        jsonObject.put("AgencyClientName", incomingSubmitMessageDTO.getAgentName());
-        jsonObject.put("AgencyClientGlobalType", IdTypeEnum.ID_CARD);
-        jsonObject.put("AgencyClientGlobalId", incomingSubmitMessageDTO.getAgentIdNo());
-        jsonObject.put("AgencyClientMobile", incomingSubmitMessageDTO.getAgentMobile());
+        //进件主体为企业时，必须有经办人信息
+        if (NumberConstant.TWO.equals(incomingSubmitMessageDTO.getAccessMainType())) {
+            jsonObject.put("AgencyClientFlag", "1");
+            jsonObject.put("AgencyClientName", incomingSubmitMessageDTO.getAgentName());
+            jsonObject.put("AgencyClientGlobalType", IdTypeEnum.ID_CARD);
+            jsonObject.put("AgencyClientGlobalId", incomingSubmitMessageDTO.getAgentIdNo());
+            jsonObject.put("AgencyClientMobile", incomingSubmitMessageDTO.getAgentMobile());
+        }
         return jsonObject;
     }
 }

@@ -1,15 +1,19 @@
 package com.tfjt.pay.external.unionpay.utils;
 
 
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.pingan.openbank.api.sdk.client.ApiClient;
 import com.pingan.openbank.api.sdk.common.http.HttpResult;
 import com.pingan.openbank.api.sdk.entity.SdkRequest;
 import com.pingan.openbank.api.sdk.exception.OpenBankSdkException;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingApiLogEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingAccessChannelTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingAccessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingApiLogService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -50,6 +55,8 @@ public class PnHeadUtils {
      * 平安api成功标识
      */
     public static final String API_SUCCESS_CODE = "000000";
+
+    private static final String REQUEST_TYPE = "POST";
 
 //    protected static ApiClient apiClient = ApiClient.getInstance("conf/config-fat007.properties");
 //
@@ -104,35 +111,37 @@ public class PnHeadUtils {
         SdkRequest sdkRequest = new SdkRequest();
         sdkRequest.setInterfaceName(serviceId);
         sdkRequest.setBody(jsonObject);
-        log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, jsonObject:{}", txnCode, serviceId, jsonObject.toJSONString());
+        log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, requestBody:{}", txnCode, serviceId, jsonObject.toJSONString());
+        LocalDateTime reqTime = LocalDateTime.now();
         sw.start();
         HttpResult httpResult = apiClient.invoke(sdkRequest);
         sw.stop();
-        log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, sw:{}, httpResult:{}", txnCode, serviceId, sw.getLastTaskTimeMillis(), httpResult.toString());
+        LocalDateTime respTime = LocalDateTime.now();
+        log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, sw:{}, responseBody:{}", txnCode, serviceId, sw.getLastTaskTimeMillis(), httpResult.toString());
+        //异步保存调用日志
+        logProcessAsync(jsonObject, serviceId, httpResult, reqTime, respTime, sw.getLastTaskTimeMillis());
         //http响应为空
         if (ObjectUtils.isEmpty(httpResult)) {
-
+            throw new TfException(ExceptionCodeEnum.PN_API_RESULT_IS_NULL);
         }
         //http响应失败
         if (!HTTP_SUCCESS_CODE.equals(httpResult.getCode())) {
-
+            throw new TfException(ExceptionCodeEnum.PN_API_ERROR);
         }
         String resultMessage = httpResult.getData();
-        System.out.println("requestBody=" + jsonObject);
-        System.out.println("responseBody" + httpResult.getData());
         //接口返回结果为空，抛出异常
         if (StringUtils.isBlank(resultMessage)) {
-            throw new TfException(ExceptionCodeEnum.ACCOUNT_DISABLE);
+            throw new TfException(ExceptionCodeEnum.PN_API_RESULT_IS_NULL);
         }
         JSONObject resultJson = JSONObject.parseObject(resultMessage);
         log.info("PnHeadUtils---send, resultJson:{}", resultJson.toJSONString());
-        //平安api返回标识非成功
-        if (!API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
-//            throw new TfException(errorProcess(resultJson));
-        }
-
-        JSONObject dataJson = resultJson.getJSONObject("Data");
-        log.info("PnHeadUtils---send, dataJson:{}", dataJson.toJSONString());
+//        //平安api返回标识非成功
+//        if (!API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
+////            throw new TfException(errorProcess(resultJson));
+//        }
+//
+//        JSONObject dataJson = resultJson.getJSONObject("Data");
+//        log.info("PnHeadUtils---send, dataJson:{}", dataJson.toJSONString());
         return resultJson;
     }
 
@@ -147,15 +156,37 @@ public class PnHeadUtils {
         return errorJson;
     }
 
+    /**
+     * 异步保存调用日志
+     * @param jsonObject
+     * @param serviceId
+     * @param httpResult
+     * @param reqTime
+     * @param respTime
+     * @param comsumingTime
+     */
     @Async
-    public void logProcess(JSONObject jsonObject, String txnCode, HttpResult httpResult, LocalDateTime reqTime,
+    public void logProcessAsync(JSONObject jsonObject, String serviceId, HttpResult httpResult, LocalDateTime reqTime,
                            LocalDateTime respTime, Long comsumingTime) {
         TfIncomingApiLogEntity incomingApiLogEntity = new TfIncomingApiLogEntity();
-//        incomingApiLogEntity.setUrl();
-        incomingApiLogEntity.setApiCode(txnCode);
+        incomingApiLogEntity.setUrl(serviceId);
+        incomingApiLogEntity.setApiCode(jsonObject.getString("TxnCode"));
+        incomingApiLogEntity.setRequestType(REQUEST_TYPE);
         incomingApiLogEntity.setRequestTime(reqTime);
         incomingApiLogEntity.setResponseTime(respTime);
         incomingApiLogEntity.setRequestParam(jsonObject.toJSONString());
         incomingApiLogEntity.setResponseBody(JSONObject.toJSONString(httpResult));
+        incomingApiLogEntity.setConsumeTime(comsumingTime.intValue());
+        incomingApiLogEntity.setStatus(NumberConstant.ONE);
+        incomingApiLogEntity.setAccessChannelType(IncomingAccessChannelTypeEnum.PINGAN.getCode().byteValue());
+        incomingApiLogEntity.setAccessType(IncomingAccessTypeEnum.COMMON.getCode().byteValue());
+        if (!HTTP_SUCCESS_CODE.equals(httpResult.getCode())) {
+            incomingApiLogEntity.setStatus(NumberConstant.TWO);
+        }
+        JSONObject resultJson = JSONObject.parseObject(httpResult.getData());
+        if (!API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
+            incomingApiLogEntity.setStatus(NumberConstant.TWO);
+        }
+        incomingApiLogService.save(incomingApiLogEntity);
     }
 }

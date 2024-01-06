@@ -19,6 +19,16 @@ public class IncomingMessageRespDTO implements Serializable {
     private Long id;
 
     /**
+     * 商户id
+     */
+    private Long businessId;
+
+    /**
+     * 商户类型, 1：供应商、经销商  2：云商
+     */
+    private Integer businessType;
+
+    /**
      * 入网主体类型（1：个体工商户，2：企业）
      */
     private Integer accessMainType;

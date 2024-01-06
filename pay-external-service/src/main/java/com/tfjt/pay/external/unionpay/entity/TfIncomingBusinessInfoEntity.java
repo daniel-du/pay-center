@@ -49,7 +49,7 @@ public class TfIncomingBusinessInfoEntity implements Serializable {
     /**
      * 数据有效状态（0：有效，1：无效）
      */
-    private Integer isDeleted;
+    private Byte isDeleted;
 
     /**
      * 创建时间

@@ -8,22 +8,21 @@ import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
+import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
-import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
-import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
-import com.tfjt.pay.external.unionpay.enums.IncomingAccessChannelTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.IncomingAccessTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.IncomingSettleTypeEnum;
-import com.tfjt.pay.external.unionpay.service.IncomingBindCardService;
-import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
-import com.tfjt.pay.external.unionpay.service.TfIncomingSettleInfoService;
+import com.tfjt.pay.external.unionpay.entity.*;
+import com.tfjt.pay.external.unionpay.enums.*;
+import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
+import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,13 +55,29 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     private TfIncomingInfoService tfIncomingInfoService;
 
     @Autowired
-    private TfIncomingSettleInfoService tfIncomingSettleInfoService;
-
-    @Autowired
     private ProducerMessageApi producerMessageApi;
 
     @Autowired
     private AsyncMessageService asyncMessageService;
+
+    @Autowired
+    private TfIncomingMerchantInfoService tfIncomingMerchantInfoService;
+
+    @Autowired
+    private TfIdcardInfoService tfIdcardInfoService;
+
+    @Autowired
+    private TfIncomingBusinessInfoService tfIncomingBusinessInfoService;
+
+    @Autowired
+    private TfBusinessLicenseInfoService tfBusinessLicenseInfoService;
+
+    @Autowired
+    private TfIncomingSettleInfoService tfIncomingSettleInfoService;
+
+    @Autowired
+    private TfBankCardInfoService tfBankCardInfoService;
+
 
 
     @Value("")
@@ -135,6 +154,68 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     }
 
     /**
+     * 根据多个商户信息批量查询进件信息
+     * @param incomingMessageReqs
+     * @return
+     */
+    @Override
+    public Result<Map<String, IncomingMessageRespDTO>> queryIncomingMessages(List<IncomingMessageReqDTO> incomingMessageReqs) {
+        log.info("IncomingBizServiceImpl--queryIncomingMessages, incomingMessageReqDTO:{}", JSONObject.toJSONString(incomingMessageReqs));
+        if (incomingMessageReqs.isEmpty()) {
+            return Result.failed(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
+        }
+        List<IncomingMessageRespDTO>  incomingMessageRespDTOS = tfIncomingInfoService.queryIncomingMessagesByMerchantList(incomingMessageReqs);
+        log.info("IncomingBizServiceImpl--queryIncomingMessages, incomingMessageRespDTOS:{}", JSONObject.toJSONString(incomingMessageRespDTOS));
+        if (CollectionUtils.isEmpty(incomingMessageRespDTOS)) {
+            return Result.failed(ExceptionCodeEnum.IS_NULL);
+        }
+        Map<String, IncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
+        //将查询到的数据集合，以“入网渠道”-“商户类型”-“商户id”为key放入map
+        incomingMessageRespDTOS.forEach(incomingMessage -> {
+            String key = incomingMessage.getAccessChannelType() + "-" + incomingMessage.getBusinessType() + incomingMessage.getBusinessId();
+            incomingMessageMap.put(key, incomingMessage);
+        });
+        return Result.ok(incomingMessageMap);
+    }
+
+    /**
+     * 变更进件主体类型
+     * @param changeAccessMainTypeReqDTO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = {TfException.class, Exception.class})
+    public Result changeAccessMainType(IncomingChangeAccessMainTypeReqDTO changeAccessMainTypeReqDTO) {
+        log.error("IncomingBizServiceImpl--changeAccessMainType, changeAccessMainTypeReqDTO:{}", JSONObject.toJSONString(changeAccessMainTypeReqDTO));
+        ValidatorUtils.validateEntity(changeAccessMainTypeReqDTO);
+        //判断入参中主体类型是否与枚举中类型匹配
+        if (ObjectUtils.isEmpty(IncomingAccessMainTypeEnum.fromCode(changeAccessMainTypeReqDTO.getAccessMainType()))) {
+            return Result.failed(ExceptionCodeEnum.INCOMING_CHANGE_MAIN_TYPE_CODE_ERROR);
+        }
+        //根据进件id查询相关表id
+        IncomingDataIdDTO incomingDataIdDTO = tfIncomingInfoService.queryIncomingDataId(changeAccessMainTypeReqDTO.getId());
+        log.error("IncomingBizServiceImpl--changeAccessMainType, incomingDataIdDTO:{}", JSONObject.toJSONString(incomingDataIdDTO));
+        if (ObjectUtils.isEmpty(incomingDataIdDTO)) {
+            return Result.failed(ExceptionCodeEnum.IS_NULL);
+        }
+        TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
+        tfIncomingInfoEntity.setId(changeAccessMainTypeReqDTO.getId());
+        tfIncomingInfoEntity.setAccessMainType(changeAccessMainTypeReqDTO.getAccessMainType().byteValue());
+        //变更主表进件主体类型
+        if (!tfIncomingInfoService.updateById(tfIncomingInfoEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, incomingId:{}", changeAccessMainTypeReqDTO.getId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        //清除身份信息
+        clearMerchantInfo(incomingDataIdDTO);
+        //清除营业信息
+        clearBusinessInfo(incomingDataIdDTO);
+        //清除结算信息
+        clearSettleInfo(incomingDataIdDTO);
+        return Result.ok();
+    }
+
+    /**
      * 根据进行信息获取实现类name
      * @param incomingSubmitMessageDTO
      * @return
@@ -187,5 +268,94 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         //更新状态为成功
         messageEntity.setStatus(result ? MessageStatusEnum.SUCCESS.getCode() : MessageStatusEnum.FAILED.getCode());
         asyncMessageService.updateMessageStatus(messageEntity);
+    }
+
+    /**
+     * 清除身份信息
+     * @param incomingDataIdDTO
+     */
+    private void clearMerchantInfo(IncomingDataIdDTO incomingDataIdDTO) {
+        if (ObjectUtils.isEmpty(incomingDataIdDTO.getMerchantInfoId())) {
+            return;
+        }
+        TfIncomingMerchantInfoEntity incomingMerchantInfoEntity = new TfIncomingMerchantInfoEntity();
+        incomingMerchantInfoEntity.setId(incomingDataIdDTO.getMerchantInfoId());
+        incomingMerchantInfoEntity.setIsDeleted(NumberConstant.ONE.byteValue());
+        //清除商户身份信息表数据
+        if (!tfIncomingMerchantInfoService.updateById(incomingMerchantInfoEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, merchantInfoId:{}", incomingDataIdDTO.getMerchantInfoId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfIdcardInfoEntity legalIdEntity = new TfIdcardInfoEntity();
+        legalIdEntity.setId(incomingDataIdDTO.getLegalId());
+        legalIdEntity.setIsDeleted(NumberConstant.ONE.byteValue());
+        //清除法人证件信息表数据
+        if (!tfIdcardInfoService.updateById(legalIdEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, legalId:{}", incomingDataIdDTO.getLegalId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        if (ObjectUtils.isEmpty(incomingDataIdDTO.getAgentId())) {
+            return;
+        }
+        TfIdcardInfoEntity agentIdEntity = new TfIdcardInfoEntity();
+        agentIdEntity.setId(incomingDataIdDTO.getAgentId());
+        agentIdEntity.setIsDeleted(NumberConstant.ONE.byteValue());
+        //清除经办人证件信息表数据
+        if (!tfIdcardInfoService.updateById(agentIdEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, agentId:{}", incomingDataIdDTO.getAgentId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+    }
+
+    /**
+     * 清除营业信息
+     * @param incomingDataIdDTO
+     */
+    private void clearBusinessInfo(IncomingDataIdDTO incomingDataIdDTO) {
+        if (ObjectUtils.isEmpty(incomingDataIdDTO.getBusinessInfoId())) {
+            return;
+        }
+        TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = TfIncomingBusinessInfoEntity.builder()
+                .id(incomingDataIdDTO.getBusinessInfoId())
+                .isDeleted(NumberConstant.ONE.byteValue()).build();
+        //清除营业信息表数据
+        if (!tfIncomingBusinessInfoService.updateById(tfIncomingBusinessInfoEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, businessInfoId:{}", incomingDataIdDTO.getBusinessInfoId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
+        tfBusinessLicenseInfoEntity.setId(incomingDataIdDTO.getBusinessLicenseId());
+        tfBusinessLicenseInfoEntity.setIsDeleted(NumberConstant.ONE.byteValue());
+        //清除营业执照信息表数据
+        if (!tfBusinessLicenseInfoService.updateById(tfBusinessLicenseInfoEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, businessLicenseId:{}", incomingDataIdDTO.getBusinessLicenseId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+    }
+
+    /**
+     * 清除结算信息
+     * @param incomingDataIdDTO
+     */
+    private void clearSettleInfo(IncomingDataIdDTO incomingDataIdDTO) {
+        if (ObjectUtils.isEmpty(incomingDataIdDTO.getSetleInfoId())) {
+            return;
+        }
+        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = new TfIncomingSettleInfoEntity();
+        tfIncomingSettleInfoEntity.setId(incomingDataIdDTO.getSetleInfoId());
+        tfIncomingSettleInfoEntity.setIsDeleted(NumberConstant.ONE.byteValue());
+        //清除结算信息表数据
+        if (!tfIncomingSettleInfoService.updateById(tfIncomingSettleInfoEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, settleInfoId:{}", incomingDataIdDTO.getSetleInfoId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
+        tfBankCardInfoEntity.setId(incomingDataIdDTO.getBankCardId());
+        tfBankCardInfoEntity.setIsDeleted(NumberConstant.ONE.byteValue());
+        //清除结算银行卡信息表数据
+        if (!tfBankCardInfoService.updateById(tfBankCardInfoEntity)) {
+            log.error("IncomingBizServiceImpl--changeAccessMainType, bankCardId:{}", incomingDataIdDTO.getBankCardId());
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
     }
 }

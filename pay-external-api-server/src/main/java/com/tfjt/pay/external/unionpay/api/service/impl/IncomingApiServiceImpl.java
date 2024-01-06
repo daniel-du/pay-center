@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author Du Penglun
  * @version 1.0
@@ -29,5 +32,10 @@ public class IncomingApiServiceImpl implements IncomingApiService {
     @Override
     public Result<IncomingMessageRespDTO> queryIncomingMessage(IncomingMessageReqDTO incomingMessageReqDTO) {
         return incomingBizService.queryIncomingMessage(incomingMessageReqDTO);
+    }
+
+    @Override
+    public Result<Map<String, IncomingMessageRespDTO>> queryIncomingMessages(List<IncomingMessageReqDTO> incomingMessageReqs) {
+        return incomingBizService.queryIncomingMessages(incomingMessageReqs);
     }
 }

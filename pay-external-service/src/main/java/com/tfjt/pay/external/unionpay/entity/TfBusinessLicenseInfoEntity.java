@@ -98,7 +98,7 @@ public class TfBusinessLicenseInfoEntity implements Serializable {
     /**
      * 数据有效状态（0：有效，1：无效）
      */
-    private Boolean isDeleted;
+    private Byte isDeleted;
 
     /**
      * 创建时间

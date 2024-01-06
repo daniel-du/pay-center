@@ -65,9 +65,12 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_EMAIL_FORMAT_ERROR(2000013,"邮箱格式错误!"),
     INCOMING_BANK_CARD_ACCOUNT_ERROR(2000014,"开户名称必须与法人姓名一致!"),
     INCOMING_BUSINESS_LICENSE_NO_REPEAT(2000015,"营业执照号码重复!"),
-    INCOMING_LEGAL_ID_NO_FORMAT_ERROR(2000012,"法人证件号码格式错误!"),
+    INCOMING_LEGAL_ID_NO_FORMAT_ERROR(2000016,"法人证件号码格式错误!"),
+    INCOMING_CHANGE_MAIN_TYPE_CODE_ERROR(2000016,"入网主体不允许变更为该类型!"),
 
-    PN_API_ERROR(2000010, "调用开户API失败!"),
+
+    PN_API_ERROR(3000010, "调用平安API失败!"),
+    PN_API_RESULT_IS_NULL(3000011, "平安api返回结果为空!"),
     ;
     private int code;
     private String msg;

@@ -15,7 +15,7 @@ import java.io.Serializable;
 public class IncomingMessageReqDTO  implements Serializable {
 
     /**
-     * 商户类型，1：经销商  2：云商
+     * 商户类型，1：供应商、经销商  2：云商
      */
     @NotNull(message = "商户类型不能为空")
     private Integer businessType;

@@ -4,8 +4,10 @@ import cn.hutool.json.JSONUtil;
 import com.aliyun.openservices.ons.api.*;
 import com.tfjt.consumer.SingleConsumerRetryJob;
 import com.tfjt.entity.AsyncMessageEntity;
+import com.tfjt.pay.external.unionpay.config.ALiYunRocketMQConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -23,12 +25,12 @@ import java.util.Properties;
 @Slf4j
 public class MqConfig implements ApplicationContextAware {
 
-    @Value("${rocketmq.accessKey}")
-    private String accessKey;
-    @Value("${rocketmq.accessSecret}")
-    private String accessSecret;
-    @Value("${rocketmq.endpoints}")
-    private String endpoints;
+//    @Value("${rocketmq.accessKey}")
+//    private String accessKey;
+//    @Value("${rocketmq.accessSecret}")
+//    private String accessSecret;
+//    @Value("${rocketmq.endpoints}")
+//    private String endpoints;
     @Value("${rocketmq.topic.dealerChange}")
     private String dealerChangeTopic;
     @Value("${rocketmq.group.consumer.dealerChange}")
@@ -39,16 +41,19 @@ public class MqConfig implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
+    @Autowired
+    private ALiYunRocketMQConfig aLiYunRocketMQConfig;
+
 
     @PostConstruct
     void consumer() {
         log.info("---------------mq消费啦！！！！！！！！！");
         Properties properties = new Properties();
-        properties.put(PropertyKeyConst.AccessKey, accessKey);
-        properties.put(PropertyKeyConst.SecretKey, accessSecret);
-        properties.put(PropertyKeyConst.NAMESRV_ADDR, endpoints);
+//        properties.put(PropertyKeyConst.AccessKey, accessKey);
+//        properties.put(PropertyKeyConst.SecretKey, accessSecret);
+//        properties.put(PropertyKeyConst.NAMESRV_ADDR, endpoints);
         // 消费下单数据
-        consumeOrder(properties);
+        consumeOrder(aLiYunRocketMQConfig.getMqPropertie());
     }
 
 
