@@ -8,6 +8,8 @@ import com.pingan.openbank.api.sdk.client.ApiClient;
 import com.pingan.openbank.api.sdk.common.http.HttpResult;
 import com.pingan.openbank.api.sdk.entity.SdkRequest;
 import com.pingan.openbank.api.sdk.exception.OpenBankSdkException;
+import com.tfjt.pay.external.unionpay.config.ALiYunRocketMQConfig;
+import com.tfjt.pay.external.unionpay.config.PnClientConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingApiLogEntity;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -44,6 +47,12 @@ public class PnHeadUtils {
     @Autowired
     private TfIncomingApiLogService incomingApiLogService;
 
+    @Autowired
+    private PnClientConfig pnClientConfig;
+
+    @Autowired
+    private ALiYunRocketMQConfig aLiYunRocketMQConfig;
+
     protected static String MrchCode="5655";
 
     /**
@@ -58,35 +67,30 @@ public class PnHeadUtils {
 
     private static final String REQUEST_TYPE = "POST";
 
-//    protected static ApiClient apiClient = ApiClient.getInstance("conf/config-fat007.properties");
-//
-//    protected static String TxnClientNo="680001343736";
+//    @Value("${pnclient.confPath}")
+//    private String confPathValue;
+
+    @Value("${pnclient.txnClientNo}")
+    private String txnClientNoValue;
+
+    @Value("${pnclient.fundSummaryAcctNo}")
+    private String fundSummaryAcctNoValue;
 
 
-    protected static String confPath;
 
     protected static String txnClientNo;
 
     protected static String fundSummaryAcctNo;
 
-//    @Value("${pnIncoming.confPath}")
-//    private void setConfPath(String confPath) {
-//        this.confPath = confPath;
-//    }
-//
-//    @Value("${pnIncoming.txnClientNo}")
-//    private void setTxnClientNo(String txnClientNo) {
-//        this.txnClientNo = txnClientNo;
-//    }
-//
-//    @Value("${pnIncoming.fundSummaryAcctNo}")
-//    private void setFundSummaryAcctNo(String fundSummaryAcctNo) {
-//        this.fundSummaryAcctNo = fundSummaryAcctNo;
-//    }
+    protected static ApiClient apiClient;
 
-//    protected static ApiClient apiClient = ApiClient.getInstance(confPath);
-    protected static ApiClient apiClient = ApiClient.getInstance("pnconf/config-fat007.properties");
-
+    @PostConstruct
+    public void init() {
+        aLiYunRocketMQConfig.getMqPropertie();
+        apiClient = ApiClient.getInstance(pnClientConfig.getClientPropertie());
+        txnClientNo = txnClientNoValue;
+        fundSummaryAcctNo = fundSummaryAcctNoValue;
+    }
 
 
     public JSONObject send(JSONObject jsonObject, String txnCode, String serviceId) throws OpenBankSdkException {

@@ -9,10 +9,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIdcardInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingMerchantInfoEntity;
-import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
-import com.tfjt.pay.external.unionpay.enums.IncomingAccessTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.TfIdcardInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
@@ -126,7 +123,9 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             //保存进件主表信息
             TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
             BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingInfoEntity);
-            tfIncomingInfoEntity.setMemberId(generateMemberId());
+            String memberId = IncomingMemberBusinessTypeEnum.fromCode(incomingMerchantReqDTO.getBusinessType().intValue()).getMemberPrefix()
+                    + incomingMerchantReqDTO.getBusinessId();
+            tfIncomingInfoEntity.setMemberId(memberId);
             tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
             if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
                 log.error("保存进件主表信息失败:{}", JSONObject.toJSONString(tfIncomingInfoEntity));
@@ -222,7 +221,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     private TfIdcardInfoEntity saveLegal(IncomingMerchantReqDTO incomingMerchantReqDTO) {
         TfIdcardInfoEntity legalIdcardInfoEntity = TfIdcardInfoEntity.builder().
                 id(incomingMerchantReqDTO.getLegalIdCard()).idType(IdTypeEnum.ID_CARD.getCode()).
-                idNo(incomingMerchantReqDTO.getAgentIdNo()).name(incomingMerchantReqDTO.getLegalName()).
+                idNo(incomingMerchantReqDTO.getLegalIdNo()).name(incomingMerchantReqDTO.getLegalName()).
                 sex(incomingMerchantReqDTO.getLegalSex()).nationality(incomingMerchantReqDTO.getLegalNationality()).
                 frontIdCardUrl(incomingMerchantReqDTO.getLegalFrontIdCardUrl()).
                 backIdCardUrl(incomingMerchantReqDTO.getLegalBackIdCardUrl()).
@@ -315,16 +314,5 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
 
     }
 
-    /**
-     * 生成同福会员号
-     * @return
-     */
-    private String generateMemberId() {
-        String prefix = "TF" + FORMAT.format(new Date());
-        Long incr = redisCache.incr(prefix);
-        redisCache.expire(prefix, 1, TimeUnit.DAYS);
-        String str = String.format("%04d", incr);
-        return prefix + str;
-    }
 
 }

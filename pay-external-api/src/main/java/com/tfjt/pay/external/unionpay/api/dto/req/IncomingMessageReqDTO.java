@@ -29,6 +29,10 @@ public class IncomingMessageReqDTO  implements Serializable {
     /**
      * 入网渠道类型，1：平安  2：银联
      */
-    @NotNull(message = "入网渠道不能为空")
     private Integer accessChannelType;
+
+    /**
+     * 商户所属区域
+     */
+    private String areaCode;
 }

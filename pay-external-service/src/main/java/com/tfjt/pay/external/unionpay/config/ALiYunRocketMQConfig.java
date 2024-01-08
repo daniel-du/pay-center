@@ -9,7 +9,7 @@ import java.util.Properties;
 /**
  * @author Du Penglun
  * @version 1.0
- * @date 2022/12/29 10:07
+ * @date 2024/1/7 10:07
  * @description 阿里云rocket配置类
  */
 @Configuration

@@ -16,6 +16,7 @@ import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -27,6 +28,8 @@ import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -37,6 +40,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Du Penglun
@@ -78,6 +82,13 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private TfBankCardInfoService tfBankCardInfoService;
 
+    @Autowired
+    private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
+
+    @Autowired
+    private ITfIncomingImportService tfIncomingImportService;
+
+    Map<String, String> areaChannelMap;
 
 
     @Value("")
@@ -140,6 +151,14 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     public Result<IncomingMessageRespDTO> queryIncomingMessage(IncomingMessageReqDTO incomingMessageReqDTO) {
         log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMessageReqDTO:{}", JSONObject.toJSONString(incomingMessageReqDTO));
         ValidatorUtils.validateEntity(incomingMessageReqDTO);
+        //入参中“渠道类型”与“区域code”不能同时为空
+        if (ObjectUtils.isEmpty(incomingMessageReqDTO.getAccessChannelType()) && StringUtils.isBlank(incomingMessageReqDTO.getAreaCode())) {
+            return Result.failed(ExceptionCodeEnum.QUERY_INCOMING_MSG_ILLEGAL_ARGUMENT);
+        }
+        //入参“渠道类型”为空时，根据区域code获取
+        if (ObjectUtils.isEmpty(incomingMessageReqDTO.getAccessChannelType())) {
+            incomingMessageReqDTO.setAccessChannelType(getAccessChannelType(incomingMessageReqDTO.getAreaCode()));
+        }
         IncomingMessageRespDTO incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
         if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
             return Result.ok();
@@ -186,7 +205,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Override
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result changeAccessMainType(IncomingChangeAccessMainTypeReqDTO changeAccessMainTypeReqDTO) {
-        log.error("IncomingBizServiceImpl--changeAccessMainType, changeAccessMainTypeReqDTO:{}", JSONObject.toJSONString(changeAccessMainTypeReqDTO));
+        log.info("IncomingBizServiceImpl--changeAccessMainType, changeAccessMainTypeReqDTO:{}", JSONObject.toJSONString(changeAccessMainTypeReqDTO));
         ValidatorUtils.validateEntity(changeAccessMainTypeReqDTO);
         //判断入参中主体类型是否与枚举中类型匹配
         if (ObjectUtils.isEmpty(IncomingAccessMainTypeEnum.fromCode(changeAccessMainTypeReqDTO.getAccessMainType()))) {
@@ -194,7 +213,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         //根据进件id查询相关表id
         IncomingDataIdDTO incomingDataIdDTO = tfIncomingInfoService.queryIncomingDataId(changeAccessMainTypeReqDTO.getId());
-        log.error("IncomingBizServiceImpl--changeAccessMainType, incomingDataIdDTO:{}", JSONObject.toJSONString(incomingDataIdDTO));
+        log.info("IncomingBizServiceImpl--changeAccessMainType, incomingDataIdDTO:{}", JSONObject.toJSONString(incomingDataIdDTO));
         if (ObjectUtils.isEmpty(incomingDataIdDTO)) {
             return Result.failed(ExceptionCodeEnum.IS_NULL);
         }
@@ -213,6 +232,36 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         //清除结算信息
         clearSettleInfo(incomingDataIdDTO);
         return Result.ok();
+    }
+
+    /**
+     * 银联入网数据抽取
+     * @return
+     */
+    @Override
+    public Result unionpayDataExtract() {
+        log.info("IncomingBizServiceImpl--unionpayDataExtract, start");
+        TfIncomingImportEntity tfIncomingImportStart = tfIncomingImportService.queryNotSubmitMinIdData();
+        log.info("IncomingBizServiceImpl--unionpayDataExtract, tfIncomingImportStart:{}", JSONObject.toJSONString(tfIncomingImportStart));
+        if (ObjectUtils.isEmpty(tfIncomingImportStart)) {
+            log.warn("IncomingBizServiceImpl--unionpayDataExtract, tfIncomingImportStart isEmpty");
+            return Result.ok();
+        }
+        boolean extractFlag = true;
+        long startId = tfIncomingImportStart.getId();
+        while(extractFlag) {
+            List<TfIncomingImportEntity> importEntityList = tfIncomingImportService.queryListByStartId(startId);
+            importEntityList.forEach(importEntity -> {
+                incomingMessageWrite(importEntity);
+            });
+
+            startId = importEntityList.get(importEntityList.size() - 1).getId();
+            if (importEntityList.size() < 100) {
+                extractFlag = false;
+            }
+        }
+        log.info("IncomingBizServiceImpl--unionpayDataExtract, end");
+        return null;
     }
 
     /**
@@ -357,5 +406,135 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             log.error("IncomingBizServiceImpl--changeAccessMainType, bankCardId:{}", incomingDataIdDTO.getBankCardId());
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
+    }
+
+    /**
+     * 根据商户所属区域获取进件渠道
+     * @param areaCode
+     * @return
+     */
+    private Integer getAccessChannelType(String areaCode) {
+        if (this.areaChannelMap == null) {
+            List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
+            this.areaChannelMap = list.stream().collect(Collectors.toMap(SalesAreaIncomingChannelEntity::getDistrictsCode, SalesAreaIncomingChannelEntity::getDistricts));
+        }
+        String districts = this.areaChannelMap.get(areaCode);
+        if (StringUtils.isNotBlank(districts)) {
+            //新城
+            return IncomingAccessChannelTypeEnum.PINGAN.getCode();
+        } else {
+            //老城
+            return IncomingAccessChannelTypeEnum.UNIONPAY.getCode();
+        }
+    }
+
+    /**
+     * 写入进件信息
+     */
+    @Transactional(rollbackFor = {TfException.class, Exception.class})
+    public void incomingMessageWrite(TfIncomingImportEntity tfIncomingImportEntity) {
+        TfIncomingInfoEntity incomingInfoEntity = new TfIncomingInfoEntity();
+        BeanUtils.copyProperties(tfIncomingImportEntity, incomingInfoEntity);
+        incomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.IMPORTS_CLOSURE.getCode());
+        String memberId = IncomingMemberBusinessTypeEnum.fromCode(tfIncomingImportEntity.getBusinessType().intValue()).getMemberPrefix()
+                + tfIncomingImportEntity.getBusinessId();
+        incomingInfoEntity.setMemberId(memberId);
+        if (!tfIncomingInfoService.save(incomingInfoEntity)) {
+            log.error("保存进件主表信息失败:{}", JSONObject.toJSONString(incomingInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        //保存商户身份信息
+        TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = new TfIncomingMerchantInfoEntity();
+        BeanUtils.copyProperties(tfIncomingImportEntity, tfIncomingMerchantInfoEntity);
+        tfIncomingMerchantInfoEntity.setIncomingId(incomingInfoEntity.getId());
+        //保存商户身份-法人信息
+        TfIdcardInfoEntity legalIdcardInfoEntity = saveLegal(tfIncomingImportEntity);
+        tfIncomingMerchantInfoEntity.setLegalIdCard(legalIdcardInfoEntity.getId());
+        //进件主体类型非企业时，无需处理经办人信息
+        if (IncomingAccessMainTypeEnum.COMPANY.getCode().equals(tfIncomingImportEntity.getAccessMainType())) {
+            TfIdcardInfoEntity agentIdcardInfoEntity = saveAgent(tfIncomingImportEntity);
+            tfIncomingMerchantInfoEntity.setAgentIdCard(agentIdcardInfoEntity.getId());
+        }
+        if (!tfIncomingMerchantInfoService.save(tfIncomingMerchantInfoEntity)) {
+            log.error("保存商户身份信息失败:{}", JSONObject.toJSONString(tfIncomingMerchantInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+
+
+        TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
+        BeanUtils.copyProperties(tfIncomingImportEntity, tfBusinessLicenseInfoEntity);
+        //保存营业执照信息表
+        if (!tfBusinessLicenseInfoService.save(tfBusinessLicenseInfoEntity)) {
+            log.error("保存营业执照信息失败:{}", JSONObject.toJSONString(tfBusinessLicenseInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = TfIncomingBusinessInfoEntity.builder().
+                incomingId(incomingInfoEntity.getId()).
+                businessLicenseId(tfBusinessLicenseInfoEntity.getId()).
+                build();
+        //保存营业信息表
+        if (!tfIncomingBusinessInfoService.save(tfIncomingBusinessInfoEntity)) {
+            log.error("保存营业信息失败:{}", JSONObject.toJSONString(tfIncomingBusinessInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+
+        TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
+        BeanUtils.copyProperties(tfIncomingImportEntity, tfBankCardInfoEntity);
+        //保存银行卡表信息
+        if (!tfBankCardInfoService.save(tfBankCardInfoEntity)) {
+            log.error("保存结算银行卡信息失败:{}", JSONObject.toJSONString(tfBankCardInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = TfIncomingSettleInfoEntity.builder().
+                incomingId(incomingInfoEntity.getId()).
+                settlementAccountType(tfIncomingImportEntity.getSettleAccountType()).
+                bankCardId(tfBankCardInfoEntity.getId()).
+                build();
+        //保存结算表信息
+        if (!tfIncomingSettleInfoService.save(tfIncomingSettleInfoEntity)) {
+            log.error("保存结算信息失败:{}", JSONObject.toJSONString(tfIncomingSettleInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+    }
+
+    /**
+     * 保存法人身份信息
+     * @param tfIncomingImportEntity
+     * @return
+     */
+    private TfIdcardInfoEntity saveLegal(TfIncomingImportEntity tfIncomingImportEntity) {
+        TfIdcardInfoEntity legalIdcardInfoEntity = TfIdcardInfoEntity.builder().
+                idType(IdTypeEnum.ID_CARD.getCode()).
+                idNo(tfIncomingImportEntity.getLegalIdNo()).name(tfIncomingImportEntity.getLegalName()).
+                nationality(tfIncomingImportEntity.getLegalNationality()).
+                frontIdCardUrl(tfIncomingImportEntity.getLegalFrontIdCardUrl()).
+                backIdCardUrl(tfIncomingImportEntity.getLegalBackIdCardUrl()).
+                holdIdCardUrl(tfIncomingImportEntity.getLegalHoldIdCardUrl()).
+                idEffectiveDate(tfIncomingImportEntity.getLegalIdEffectiveDate()).
+                idExpiryDate(tfIncomingImportEntity.getLegalIdExpiryDate()).
+                isLongTerm(tfIncomingImportEntity.getLegalIdIsLongTerm()).build();
+        if (!tfIdcardInfoService.saveOrUpdate(legalIdcardInfoEntity)) {
+            log.error("保存法人身份信息失败:{}", JSONObject.toJSONString(legalIdcardInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        return legalIdcardInfoEntity;
+    }
+
+    /**
+     * 保存经办人身份信息
+     * @param tfIncomingImportEntity
+     * @return
+     */
+    private TfIdcardInfoEntity saveAgent(TfIncomingImportEntity tfIncomingImportEntity) {
+        TfIdcardInfoEntity agentIdcardInfoEntity = TfIdcardInfoEntity.builder().idType(IdTypeEnum.ID_CARD.getCode()).
+                idNo(tfIncomingImportEntity.getAgentIdNo()).name(tfIncomingImportEntity.getLegalName()).
+                idEffectiveDate(tfIncomingImportEntity.getLegalIdEffectiveDate()).
+                idExpiryDate(tfIncomingImportEntity.getLegalIdExpiryDate()).
+                isLongTerm(tfIncomingImportEntity.getLegalIdIsLongTerm()).build();
+        if (!tfIdcardInfoService.save(agentIdcardInfoEntity)) {
+            log.error("保存经办人身份信息失败:{}", JSONObject.toJSONString(agentIdcardInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        return agentIdcardInfoEntity;
     }
 }

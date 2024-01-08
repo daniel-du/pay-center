@@ -41,6 +41,14 @@ public class ProducerClient {
         return producer;
     }
 
+    /**
+     * 发送普通消息
+     * @param topic
+     * @param msg
+     * @param msgKey
+     * @param tag
+     * @return
+     */
     public SendResult sendMessage(String topic, String msg, String msgKey, String tag){
         Message message = new Message(topic, tag, msgKey, msg.getBytes());
         return buildProducer().send(message);

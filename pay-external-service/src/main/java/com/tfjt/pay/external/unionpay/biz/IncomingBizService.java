@@ -50,4 +50,10 @@ public interface IncomingBizService {
      * @return
      */
     Result changeAccessMainType(IncomingChangeAccessMainTypeReqDTO changeAccessMainTypeReqDTO);
+
+    /**
+     * 银联入网数据抽取
+     * @return
+     */
+    Result unionpayDataExtract();
 }
