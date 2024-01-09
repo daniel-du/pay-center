@@ -88,10 +88,13 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private ITfIncomingImportService tfIncomingImportService;
 
+    @Autowired
+    private IdentifierGenerator identifierGenerator;
+
     Map<String, String> areaChannelMap;
 
 
-    @Value("")
+    @Value("${rocketmq.topic.incomingFinish}")
     private String incomingFinishTopic;
 
     private static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
@@ -308,7 +311,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 .accessMainType(incomingMessage.getAccessMainType())
                 .accountNo(incomingMessage.getAccountNo()).build();
         // 创建消息
-        AsyncMessageEntity messageEntity = createMessage(RetryMessageConstant.INCOMING_FINISH, JSONObject.toJSONString(incomingFinishDTO), null);
+        AsyncMessageEntity messageEntity = createMessage(RetryMessageConstant.INCOMING_FINISH,
+                JSONObject.toJSONString(incomingFinishDTO), identifierGenerator.nextId(AsyncMessageEntity.class).toString());
         // 调用jar包中保存消息到数据库的方法
         asyncMessageService.saveMessage(messageEntity);
         // rocketMQ发送消息自行实现
@@ -387,15 +391,15 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      * @param incomingDataIdDTO
      */
     private void clearSettleInfo(IncomingDataIdDTO incomingDataIdDTO) {
-        if (ObjectUtils.isEmpty(incomingDataIdDTO.getSetleInfoId())) {
+        if (ObjectUtils.isEmpty(incomingDataIdDTO.getSettleInfoId())) {
             return;
         }
         TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = new TfIncomingSettleInfoEntity();
-        tfIncomingSettleInfoEntity.setId(incomingDataIdDTO.getSetleInfoId());
+        tfIncomingSettleInfoEntity.setId(incomingDataIdDTO.getSettleInfoId());
         tfIncomingSettleInfoEntity.setIsDeleted(NumberConstant.ONE.byteValue());
         //清除结算信息表数据
         if (!tfIncomingSettleInfoService.updateById(tfIncomingSettleInfoEntity)) {
-            log.error("IncomingBizServiceImpl--changeAccessMainType, settleInfoId:{}", incomingDataIdDTO.getSetleInfoId());
+            log.error("IncomingBizServiceImpl--changeAccessMainType, settleInfoId:{}", incomingDataIdDTO.getSettleInfoId());
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
         TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();

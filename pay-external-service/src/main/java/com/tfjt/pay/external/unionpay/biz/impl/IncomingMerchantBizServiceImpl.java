@@ -81,7 +81,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     /**
      * 18位身份证号验证格式
      */
-    private final Pattern ID_NEW_REGEXP = Pattern.compile(RegularConstants.ID_CARD_NEW);
+    private final Pattern ID_NEW_REGEXP = Pattern.compile(RegularConstants.IDCARD_CHECK);
     /**
      * 15位身份证号验证格式
      */
@@ -277,7 +277,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
      * @param incomingMerchantReqDTO
      */
     private void validateMerchantEntity(IncomingMerchantReqDTO incomingMerchantReqDTO) {
-        if (!ID_NEW_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches() || !ID_OLD_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches()) {
+        if (!ID_NEW_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches() && !ID_OLD_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches()) {
             throw new TfException(ExceptionCodeEnum.INCOMING_LEGAL_ID_NO_FORMAT_ERROR);
         }
         //入网主体非企业时，经办人信息不做校验
@@ -308,10 +308,19 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         if (!MOBILE_REGEXP.matcher(incomingMerchantReqDTO.getAgentMobile()).matches()) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_MOBILE_FORMAT_ERROR);
         }
-        if (!ID_NEW_REGEXP.matcher(incomingMerchantReqDTO.getAgentIdNo()).matches() || !ID_OLD_REGEXP.matcher(incomingMerchantReqDTO.getAgentIdNo()).matches()) {
+        if (!ID_NEW_REGEXP.matcher(incomingMerchantReqDTO.getAgentIdNo()).matches() && !ID_OLD_REGEXP.matcher(incomingMerchantReqDTO.getAgentIdNo()).matches()) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_ID_NO_FORMAT_ERROR);
         }
 
+    }
+
+    public static void main(String[] args) {
+        String mobile = "13522221111";
+        boolean match = Pattern.compile("^[1][2,3,4,5,6,7,8,9][0-9]{9}$").matcher(mobile).matches();
+        System.out.println("match:" + match);
+        String id = "142326199308223010";
+        boolean idmatch = Pattern.compile(RegularConstants.IDCARD_CHECK).matcher(id).matches();
+        System.out.println("idmatch:" + idmatch);
     }
 
 

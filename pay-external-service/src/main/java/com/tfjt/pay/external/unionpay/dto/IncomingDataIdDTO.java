@@ -43,7 +43,7 @@ public class IncomingDataIdDTO implements Serializable {
     /**
      * 结算信息id
      */
-    private Long setleInfoId;
+    private Long settleInfoId;
 
     /**
      * 结算银行卡信息id

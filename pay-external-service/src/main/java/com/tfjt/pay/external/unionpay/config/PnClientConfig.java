@@ -13,7 +13,7 @@ import java.util.Properties;
  * @description 平安apiclient配置类
  */
 @Configuration
-@ConfigurationProperties(prefix = "pnclient",ignoreInvalidFields = false)
+@ConfigurationProperties(prefix = "pnclient")
 public class PnClientConfig {
 
     private String appPrivateKey;

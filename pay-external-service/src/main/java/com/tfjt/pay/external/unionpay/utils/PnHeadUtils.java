@@ -50,9 +50,6 @@ public class PnHeadUtils {
     @Autowired
     private PnClientConfig pnClientConfig;
 
-    @Autowired
-    private ALiYunRocketMQConfig aLiYunRocketMQConfig;
-
     protected static String MrchCode="5655";
 
     /**
@@ -67,15 +64,11 @@ public class PnHeadUtils {
 
     private static final String REQUEST_TYPE = "POST";
 
-//    @Value("${pnclient.confPath}")
-//    private String confPathValue;
-
     @Value("${pnclient.txnClientNo}")
     private String txnClientNoValue;
 
     @Value("${pnclient.fundSummaryAcctNo}")
     private String fundSummaryAcctNoValue;
-
 
 
     protected static String txnClientNo;
@@ -86,7 +79,6 @@ public class PnHeadUtils {
 
     @PostConstruct
     public void init() {
-        aLiYunRocketMQConfig.getMqPropertie();
         apiClient = ApiClient.getInstance(pnClientConfig.getClientPropertie());
         txnClientNo = txnClientNoValue;
         fundSummaryAcctNo = fundSummaryAcctNoValue;

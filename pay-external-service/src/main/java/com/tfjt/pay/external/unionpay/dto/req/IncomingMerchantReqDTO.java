@@ -65,13 +65,13 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 商户简称
      */
-    @NotBlank(message = "进件id不能为空")
+    @NotBlank(message = "商户简称不能为空")
     private String shopShortName;
 
     /**
      * 法人身份证信息id
      */
-    @NotNull(message = "商户身份id不能为空", groups = {UpdateGroup.class})
+    @NotNull(message = "法人身份id不能为空", groups = {UpdateGroup.class})
     private Long legalIdCard;
 
     /**
