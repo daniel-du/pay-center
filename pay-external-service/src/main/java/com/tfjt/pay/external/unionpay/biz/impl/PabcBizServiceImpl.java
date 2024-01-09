@@ -2,9 +2,12 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aliyun.openservices.shade.com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
+import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
@@ -18,9 +21,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -199,6 +200,70 @@ public class PabcBizServiceImpl implements PabcBizService {
         return Result.ok(moudleStatusRespDTO);
     }
 
+    @Override
+    public com.tfjt.dto.response.Result<String> saveChangeInfo(AsyncMessageEntity asyncMessage) {
+        //供应商在需求完成时会全部走一遍平安银行的进件流程
+        //供应商没有销售区域，供应商身份变更为经销商或者供应商身份添加了经销商身份则根据销售区域判断是否需要平安进件。
+        //身份变更或者销售区域变更需要将数据记录下来。变更记录表放在fms系统里。
+        String msgBody = asyncMessage.getMsgBody();
+        MerchantChangeInfoMqReqDTO dto = JSONObject.parseObject(msgBody, MerchantChangeInfoMqReqDTO.class);
+        if (dto!= null) {
+            Long supplierId = dto.getSupplierId();
+            List<String> newSaleAreas = dto.getNewSaleAreas();
+            List<String> oldSaleAreas = dto.getOldSaleAreas();
+            List<Integer> newIdentifyList = dto.getNewIdentifyList();
+            List<Integer> oldIdentifyList = dto.getOldIdentifyList();
+            //判断销售区域是否发生了变更，true表示没有发生变更，false表示发生了变更
+            Boolean saleFlag = checkListIsEquals(newSaleAreas, oldSaleAreas);
+            //判断商户身份是否发生了变更，true表示没有发生变更，false表示发生了变更
+            Boolean identityFlag = checkListIsEquals(newIdentifyList, oldIdentifyList);
+            //销售区域或身份发生变更记录到fms系统内
+            if (!saleFlag) {
+                //保存销售区域变更信息
+            }
+            if (!identityFlag) {
+                //保存身份变更信息
+            }
+            //查询出当前用户的进件信息，如果当前用户既在银联进件了又在平安进件了，则不会触发钉钉报警。
+            //查询银联进件信息
+            //银联进件查询
+            QueryAccessBankStatueRespDTO unionIncoming = getUnionIncoming(null, String.valueOf(supplierId));
+            //平安进件查询
+            QueryAccessBankStatueRespDTO pabcIncoming = getPabcIncoming(String.valueOf(supplierId));
+            if (IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus()) || IncomingStatusEnum.NOT_INCOMING.getCode().equals(pabcIncoming.getStatus())) {
+                //此时平安和银联至少有一个没有进件
+                //查询新城地区code集合
+                List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
+                List<String> pabcDistrictsCode = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
+                //判断新城地区code集合是否包含当前销售城市code
+                boolean b = pabcDistrictsCode.stream().anyMatch(e -> contains(newSaleAreas, e));
+            }
+
+
+        }
+
+        return com.tfjt.dto.response.Result.ok();
+
+    }
+
+    private boolean contains(List<String> cus, String value){
+        return cus.stream().filter(f -> f.equals(value)).findAny().isPresent();
+    }
+
+
+
+    private Boolean checkListIsEquals(List list,List list1){
+        if (CollectionUtil.isNotEmpty(list) && CollectionUtil.isNotEmpty(list1)) {
+            Collections.sort(list);
+            Collections.sort(list1);
+            return list.toString().equals(list1.toString());
+        }else if (CollectionUtil.isEmpty(list) && CollectionUtil.isEmpty(list1)) {
+            return true;
+        }else {
+            return false;
+        }
+
+    }
 
     private QueryAccessBankStatueRespDTO getUnionLoanIncoming(Integer businessType, String businessId) {
         QueryAccessBankStatueRespDTO queryAccessBankStatueRespDTO = new QueryAccessBankStatueRespDTO();

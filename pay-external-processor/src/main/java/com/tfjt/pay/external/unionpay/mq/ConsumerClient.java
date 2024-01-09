@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.aliyun.openservices.ons.api.*;
 import com.tfjt.consumer.SingleConsumerRetryJob;
 import com.tfjt.entity.AsyncMessageEntity;
+import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.config.ALiYunRocketMQConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -23,14 +24,9 @@ import java.util.Properties;
  */
 @Component
 @Slf4j
-public class MqConfig implements ApplicationContextAware {
+public class ConsumerClient implements ApplicationContextAware {
 
-//    @Value("${rocketmq.accessKey}")
-//    private String accessKey;
-//    @Value("${rocketmq.accessSecret}")
-//    private String accessSecret;
-//    @Value("${rocketmq.endpoints}")
-//    private String endpoints;
+
     @Value("${rocketmq.topic.dealerChange}")
     private String dealerChangeTopic;
     @Value("${rocketmq.group.consumer.dealerChange}")
@@ -44,14 +40,12 @@ public class MqConfig implements ApplicationContextAware {
     @Autowired
     private ALiYunRocketMQConfig aLiYunRocketMQConfig;
 
+    @Autowired
+    private PabcBizService pabcBizService;
+
 
     @PostConstruct
     void consumer() {
-        log.info("---------------mq消费啦！！！！！！！！！");
-        Properties properties = new Properties();
-//        properties.put(PropertyKeyConst.AccessKey, accessKey);
-//        properties.put(PropertyKeyConst.SecretKey, accessSecret);
-//        properties.put(PropertyKeyConst.NAMESRV_ADDR, endpoints);
         // 消费下单数据
         consumeOrder(aLiYunRocketMQConfig.getMqPropertie());
     }
@@ -59,7 +53,6 @@ public class MqConfig implements ApplicationContextAware {
 
     private void consumeOrder(Properties properties){
         properties.put(PropertyKeyConst.GROUP_ID, dealerChangeGroup);
-        log.info("---------------------:{}",dealerChangeTopic);
         Consumer consumer = ONSFactory.createConsumer(properties);
         // 订阅另外一个Topic，如需取消订阅该Topic，请删除该部分的订阅代码，重新启动消费端即可。
         // 订阅全部Tag。
@@ -74,21 +67,24 @@ public class MqConfig implements ApplicationContextAware {
 
     private Action processExport(Message msg){
         try {
-            final String message = new String(msg.getBody());
+            String msgID = msg.getMsgID();
+            log.info("msgID: " + msgID);
+            String message = new String(msg.getBody());
+            log.info("message: " + message);
             AsyncMessageEntity asyncMessage = JSONUtil.toBean(message, AsyncMessageEntity.class);
-            log.info("agency export consume message :{}", message);
-            // SingleConsumerRetryJob，这里一定要通过applicationContext.getBean获取，不要直接通过
+            log.info("pay-center supplier change info consume message :{}", message);
+            // SingleConsumerRetryJob，这里一定要通过applicationContext.getBean获取，不要直接  通过
             SingleConsumerRetryJob retryJob = applicationContext.getBean("singleConsumerRetryJob",SingleConsumerRetryJob.class);
             // 配置“更新生产者消息状态”的接口url
-           /* retryJob.setUpdateMsgUrl(updateMsgUrl)
+            retryJob.setUpdateMsgUrl(updateMsgUrl)
                     // 开启幂等处理
                     .repeatEnable()
                     // 设置消费业务逻辑的处理方法
-                    .bizFunc(orderSettleService::generateExportData)
+                    .bizFunc(pabcBizService::saveChangeInfo)
                     // 设置幂等检查的方法
                     .checkFunc(null)
                     // 执行补偿任务
-                    .executeMsg(asyncMessage);*/
+                    .executeMsg(asyncMessage);
         } catch (Exception e) {
             log.error("消费错误",e);
             return Action.CommitMessage;
@@ -100,4 +96,8 @@ public class MqConfig implements ApplicationContextAware {
         this.applicationContext = applicationContext;
 
     }
+
+
+
+
 }
