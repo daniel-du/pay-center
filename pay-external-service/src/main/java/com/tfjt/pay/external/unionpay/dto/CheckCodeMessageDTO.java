@@ -59,4 +59,9 @@ public class CheckCodeMessageDTO {
      * MAC地址
      */
     private String macAddress;
+
+    /**
+     * 入网状态
+     */
+    private Integer accessStatus;
 }

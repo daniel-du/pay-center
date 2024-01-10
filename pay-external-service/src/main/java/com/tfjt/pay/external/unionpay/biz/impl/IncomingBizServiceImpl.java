@@ -16,11 +16,11 @@ import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
+import com.tfjt.pay.external.unionpay.strategy.incoming.AbstractIncomingService;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class IncomingBizServiceImpl implements IncomingBizService {
 
     @Autowired
-    private Map<String, IncomingBindCardService> incomingBindCardServiceMap;
+    private Map<String, AbstractIncomingService> abstractIncomingServiceMap;
 
     @Autowired
     private TfIncomingInfoService tfIncomingInfoService;
@@ -111,9 +111,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         //根据参数类型获取实现类
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
 
-        IncomingBindCardService incomingBindCardService = incomingBindCardServiceMap.get(bindServiceName);
+        AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
         //调用实现类方法
-        incomingBindCardService.incomingSubmit(incomingSubmitMessageDTO);
+        abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
         //更新进件信息
 
         return Result.ok();
@@ -126,7 +126,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 tfIncomingInfoService.queryIncomingMessage(inComingCheckCodeReqDTO.getIncomingId());
         //根据进件信息类型数据获取对应实现
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
-        IncomingBindCardService incomingBindCardService = incomingBindCardServiceMap.get(bindServiceName);
+        AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
 
         CheckCodeMessageDTO checkCodeMessageDTO = CheckCodeMessageDTO.builder()
                 .id(incomingSubmitMessageDTO.getId())
@@ -136,9 +136,11 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 .authAmt(inComingCheckCodeReqDTO.getAuthAmt())
                 .messageCheckCode(inComingCheckCodeReqDTO.getMessageCheckCode())
                 .ipAddress(inComingCheckCodeReqDTO.getIpAddress())
-                .macAddress(inComingCheckCodeReqDTO.getMacAddress()).build();
+                .macAddress(inComingCheckCodeReqDTO.getMacAddress())
+                .signChannel(incomingSubmitMessageDTO.getSignChannel())
+                .accessStatus(incomingSubmitMessageDTO.getAccessStatus()).build();
         //调用实现类方法
-        incomingBindCardService.checkCode(checkCodeMessageDTO);
+        abstractIncomingService.checkCode(checkCodeMessageDTO);
         //异步发送mq-进件完成事件
         MQProcess(incomingSubmitMessageDTO);
         //更新进件信息
@@ -305,6 +307,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      */
     @Async
     public void MQProcess(IncomingSubmitMessageDTO incomingMessage){
+        log.info("IncomingBizServiceImpl--MQProcess, start incomingMessage:{}", JSONObject.toJSONString(incomingMessage));
         IncomingFinishDTO incomingFinishDTO = IncomingFinishDTO.builder()
                 .id(incomingMessage.getId())
                 .accessChannelType(incomingMessage.getAccessChannelType())
@@ -321,6 +324,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         //更新状态为成功
         messageEntity.setStatus(result ? MessageStatusEnum.SUCCESS.getCode() : MessageStatusEnum.FAILED.getCode());
         asyncMessageService.updateMessageStatus(messageEntity);
+        log.info("IncomingBizServiceImpl--MQProcess, end");
     }
 
     /**

@@ -9,6 +9,16 @@ package com.tfjt.pay.external.unionpay.constants;
 public class PnSdkConstant {
 
     /**
+     * 默认币种，人民币
+     */
+    public static final String DEFAULT_CCY = "RMB";
+
+    /**
+     * 平安银行编号
+     */
+    public static final String PN_BANK_CODE = "313";
+
+    /**
      * http成功标识
      */
     public static final Integer HTTP_SUCCESS_CODE = 200;

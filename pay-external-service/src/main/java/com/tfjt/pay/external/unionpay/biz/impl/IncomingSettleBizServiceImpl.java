@@ -113,12 +113,12 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
      * @param incomingSettleReqDTO
      */
     private void validateSettltEntity(IncomingSettleReqDTO incomingSettleReqDTO) {
-        if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingSettleReqDTO.getSettlementAccountType())) {
+        if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingSettleReqDTO.getSettlementAccountType().intValue())) {
             return;
         }
         //如果是“对私”结算类型，开户名称需要与法人姓名一致
         IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantById(incomingSettleReqDTO.getIncomingId());
-        if (!incomingSettleReqDTO.equals(incomingMerchantRespDTO.getLegalName())) {
+        if (!incomingSettleReqDTO.getBankAccountName().equals(incomingMerchantRespDTO.getLegalName())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_ACCOUNT_ERROR);
         }
     }

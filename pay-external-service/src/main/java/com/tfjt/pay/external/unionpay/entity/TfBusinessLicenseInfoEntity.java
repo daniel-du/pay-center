@@ -81,6 +81,11 @@ public class TfBusinessLicenseInfoEntity implements Serializable {
     private String businessLicenseNo;
 
     /**
+     * 营业执照类型
+     */
+    private Integer businessLicenseType;
+
+    /**
      * 营业执照有效起始日期
      */
     private String businessLicenseEffectiveDate;

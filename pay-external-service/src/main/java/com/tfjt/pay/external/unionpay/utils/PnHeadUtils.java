@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -50,7 +51,7 @@ public class PnHeadUtils {
     @Autowired
     private PnClientConfig pnClientConfig;
 
-    protected static String MrchCode="5655";
+    protected static String MrchCode="4426";
 
     /**
      * http成功标识
@@ -99,6 +100,7 @@ public class PnHeadUtils {
         jsonObject.put("TxnTime", simpleDateFormat1.format(new Date()));
         //商户号:签约客户号，见证宝产品此字段为必输
 //        jsonObject.put("MrchCode", MrchCode);
+        jsonObject.put("MrchCode", MrchCode);
         //商户号:交易客户号，Ecif客户号（例：680000376596）
         jsonObject.put("TxnClientNo", txnClientNo);
         //监管账户
@@ -143,12 +145,15 @@ public class PnHeadUtils {
 
     public static JSONObject getError(JSONObject resultJson) {
         JSONArray errorArray = resultJson.getJSONArray(PnSdkConstant.RESULT_ERRORS_FIELD);
-        System.out.println("errorArray=" + JSONArray.toJSONString(errorArray));
+        if (CollectionUtils.isEmpty(errorArray)) {
+            return new JSONObject();
+        }
+        log.info("PnHeadUtils---getError, errorArray:{}", JSONArray.toJSONString(errorArray));
         JSONObject errorJson = errorArray.getJSONObject(0);
 //        return errorJson.getString("ErrorMessage");
-        System.out.println("ErroeCode=" + errorJson.getString("ErrorCode") + ",ErrorMessage=" + errorJson.getString("ErrorMessage"));
-        JSONObject extendJson = resultJson.getJSONObject("ExtendData");
-        System.out.println("extendJson=" + JSONArray.toJSONString(extendJson));
+//        System.out.println("ErroeCode=" + errorJson.getString("ErrorCode") + ",ErrorMessage=" + errorJson.getString("ErrorMessage"));
+//        JSONObject extendJson = resultJson.getJSONObject("ExtendData");
+//        System.out.println("extendJson=" + JSONArray.toJSONString(extendJson));
         return errorJson;
     }
 

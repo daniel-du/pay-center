@@ -87,7 +87,7 @@ public class IncomingBusinessReqDTO implements Serializable {
      */
     @NotBlank(message = "营业执照号码不能为空", groups = { AddGroup.class, UpdateGroup.class })
     @Pattern(regexp = RegularConstants.SOCIAL_CREDIT_CODE, message = "营业执照号码格式错误", groups = { AddGroup.class, UpdateGroup.class })
-    @Length(min=18,max = 18, message ="详细地址最长为100字符", groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=18,max = 18, message ="营业执照号码长度有误", groups = { AddGroup.class, UpdateGroup.class })
     private String businessLicenseNo;
     /**
      * 营业执照照片

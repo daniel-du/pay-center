@@ -21,7 +21,7 @@ public class RegularConstants {
     /**
      * 手机号正则表达式
      */
-    public static final String MOBILE = "/1\\d{10}/";
+    public static final String MOBILE = "^[1][2,3,4,5,6,7,8,9][0-9]{9}$";
 
     /**
      * 18位身份证号正则表达式
@@ -36,11 +36,11 @@ public class RegularConstants {
     /**
      * 邮箱正则表达式
      */
-    public static final String EMAIL = "/^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$/";
+    public static final String EMAIL = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
 
     /**
      * 统一社会信用码正则表达式
      */
-    public static final String SOCIAL_CREDIT_CODE = "^[^IOSVZ\\d][\\da-zA-Z]{16}[A-HJ-NP-RT-UW-Y]$\n";
+    public static final String SOCIAL_CREDIT_CODE = "[0-9A-Z]{18}";
 
 }

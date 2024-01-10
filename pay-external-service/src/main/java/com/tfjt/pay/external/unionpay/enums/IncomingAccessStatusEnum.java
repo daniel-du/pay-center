@@ -37,7 +37,9 @@ public enum IncomingAccessStatusEnum {
 
     DATA_VALIDATION_FAIL(11, "资料验证失败"),
 
-    ACCOUNT_SUSPENDED(12, "账户冻结");
+    SMS_VERIFICATION_SUCCESS(12, "短信验证回填成功"),
+
+    ACCOUNT_SUSPENDED(13, "账户冻结");
 
     private Integer code;
 

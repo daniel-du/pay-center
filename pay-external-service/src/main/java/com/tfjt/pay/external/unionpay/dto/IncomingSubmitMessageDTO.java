@@ -106,6 +106,11 @@ public class IncomingSubmitMessageDTO implements Serializable {
     private String businessLicenseNo;
 
     /**
+     * 营业执照类型
+     */
+    private String businessLicenseType;
+
+    /**
      * 结算账户类型，1：对公，2：对私
      */
     private Integer settlementAccountType;
@@ -131,6 +136,11 @@ public class IncomingSubmitMessageDTO implements Serializable {
      * 开户总行名称
      */
     private String bankName;
+
+    /**
+     * 开户总行编号
+     */
+    private String bankCode;
     /**
      * 开户支行名称
      */
@@ -140,5 +150,5 @@ public class IncomingSubmitMessageDTO implements Serializable {
      */
     private String eiconBankBranch;
 
-
+    private Byte signChannel;
 }

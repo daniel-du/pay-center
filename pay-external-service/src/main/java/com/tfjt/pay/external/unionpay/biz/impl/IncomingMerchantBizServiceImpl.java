@@ -321,6 +321,12 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         String id = "142326199308223010";
         boolean idmatch = Pattern.compile(RegularConstants.IDCARD_CHECK).matcher(id).matches();
         System.out.println("idmatch:" + idmatch);
+        String businessNo = "91YC349TR2626RTJ6U";
+        boolean businessmatch = Pattern.compile("[0-9A-Z]{18}").matcher(businessNo).matches();
+        System.out.println("businessmatch:" + businessmatch);
+        String email = "3521112@139.com";
+        boolean emailmatch = Pattern.compile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$").matcher(email).matches();
+        System.out.println("emailmatch:" + emailmatch);
     }
 
 

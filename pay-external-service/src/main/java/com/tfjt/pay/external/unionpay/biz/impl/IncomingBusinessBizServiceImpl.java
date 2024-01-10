@@ -8,6 +8,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfBusinessLicenseInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingBusinessInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfBusinessLicenseInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingBusinessInfoService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -61,6 +62,7 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
         validateBusinessEntity(incomingBusinessReqDTO);
         TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
         BeanUtils.copyProperties(incomingBusinessReqDTO, tfBusinessLicenseInfoEntity);
+        tfBusinessLicenseInfoEntity.setBusinessLicenseType(IdTypeEnum.SOCIAL_CREDIT_CODE.getCode());
         //保存营业执照信息表
         if (!tfBusinessLicenseInfoService.save(tfBusinessLicenseInfoEntity)) {
             log.error("保存营业执照信息失败:{}", JSONObject.toJSONString(tfBusinessLicenseInfoEntity));

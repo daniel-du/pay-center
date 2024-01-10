@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.dto.req;
 
+import com.tfjt.pay.external.unionpay.constants.RegularConstants;
 import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import lombok.Data;
@@ -114,7 +115,7 @@ public class IncomingMerchantReqDTO implements Serializable {
      * 法人手机号
      */
     @NotBlank(message = "法人手机号不能为空", groups = { AddGroup.class, UpdateGroup.class })
-    @Pattern(regexp = "/1\\d{10}/", message = "法人手机号格式错误", groups = { AddGroup.class, UpdateGroup.class })
+    @Pattern(regexp = RegularConstants.MOBILE, message = "法人手机号格式错误", groups = { AddGroup.class, UpdateGroup.class })
     @Length(min=11,max = 11, groups = { AddGroup.class, UpdateGroup.class })
     private String legalMobile;
     /**
@@ -166,6 +167,11 @@ public class IncomingMerchantReqDTO implements Serializable {
      * 经办人姓名
      */
     private String agentName;
+
+    /**
+     * 签约渠道，1：APP，2：平台h5网页，3：公众号，4：小程序
+     */
+    private Byte signChannel;
 
 
 }
