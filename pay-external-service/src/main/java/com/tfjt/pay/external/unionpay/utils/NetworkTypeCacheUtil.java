@@ -28,8 +28,10 @@ public class NetworkTypeCacheUtil {
         List<String> cacheList = redisCache.getCacheList(RedisConstant.NETWORK_TYPE_BY_AREA_CODE);
         if (CollectionUtil.isEmpty(cacheList)) {
             List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
-            cacheList = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
-            redisCache.setCacheList(RedisConstant.NETWORK_TYPE_BY_AREA_CODE,cacheList);
+            if (CollectionUtil.isNotEmpty(list)) {
+                cacheList = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
+                redisCache.setCacheList(RedisConstant.NETWORK_TYPE_BY_AREA_CODE,cacheList);
+            }
         }
     }
 
