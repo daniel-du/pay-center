@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aliyun.openservices.shade.com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
+import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
@@ -13,7 +14,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
-import com.tfjt.tfcommon.core.cache.RedisCache;
+import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -58,11 +59,11 @@ public class PabcBizServiceImpl implements PabcBizService {
     @Autowired
     private TfIncomingBusinessInfoService tfIncomingBusinessInfoService;
     @Autowired
-    private RedisCache redisCache;
+    private FaStandardLocationDictService faStandardLocationDictService;
+    @Autowired
+    private NetworkTypeCacheUtil networkTypeCacheUtil;
     @DubboReference
     private SupplierApiService supplierApiService;
-
-    Map<String, String> areaChannelMap;
 
     @Override
     public Result<List<PabcBankNameAndCodeRespDTO>> getBankInfoByName(String name) {
@@ -140,13 +141,9 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Override
     public Result<Integer> getNetworkTypeByAreaCode(String code) {
+        List<String> cacheList = networkTypeCacheUtil.getNetworkTypeCacheList();
         int status;
-        if (this.areaChannelMap == null) {
-            List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
-            this.areaChannelMap = list.stream().collect(Collectors.toMap(SalesAreaIncomingChannelEntity::getDistrictsCode, SalesAreaIncomingChannelEntity::getDistricts));
-        }
-        String districts = this.areaChannelMap.get(code);
-        if (StringUtils.isNotBlank(districts)) {
+        if (cacheList.contains(code)) {
             //新城
             status = CityTypeEnum.NEW_CITY.getCode();
         } else {
@@ -213,42 +210,120 @@ public class PabcBizServiceImpl implements PabcBizService {
             List<String> oldSaleAreas = dto.getOldSaleAreas();
             List<Integer> newIdentifyList = dto.getNewIdentifyList();
             List<Integer> oldIdentifyList = dto.getOldIdentifyList();
-            //判断销售区域是否发生了变更，true表示没有发生变更，false表示发生了变更
-            Boolean saleFlag = checkListIsEquals(newSaleAreas, oldSaleAreas);
-            //判断商户身份是否发生了变更，true表示没有发生变更，false表示发生了变更
-            Boolean identityFlag = checkListIsEquals(newIdentifyList, oldIdentifyList);
             //销售区域或身份发生变更记录到fms系统内
-            if (!saleFlag) {
-                //保存销售区域变更信息
+            List<MerchantChangeReqDTO> saveList = getSaveList(newSaleAreas,newIdentifyList,oldSaleAreas,oldIdentifyList,dto);
+            if (CollectionUtil.isNotEmpty(saveList)) {
+                supplierApiService.saveMerchangtChangeInfo(saveList);
             }
-            if (!identityFlag) {
-                //保存身份变更信息
-            }
-            //查询出当前用户的进件信息，如果当前用户既在银联进件了又在平安进件了，则不会触发钉钉报警。
-            //查询银联进件信息
-            //银联进件查询
-            QueryAccessBankStatueRespDTO unionIncoming = getUnionIncoming(null, String.valueOf(supplierId));
-            //平安进件查询
-            QueryAccessBankStatueRespDTO pabcIncoming = getPabcIncoming(String.valueOf(supplierId));
-            if (IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus()) || IncomingStatusEnum.NOT_INCOMING.getCode().equals(pabcIncoming.getStatus())) {
-                //此时平安和银联至少有一个没有进件
-                //查询新城地区code集合
-                List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
-                List<String> pabcDistrictsCode = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
-                //判断新城地区code集合是否包含当前销售城市code
-                boolean b = pabcDistrictsCode.stream().anyMatch(e -> contains(newSaleAreas, e));
-            }
-
-
+            //钉钉报警
+            dingWarning(supplierId,newIdentifyList,newSaleAreas);
         }
-
         return com.tfjt.dto.response.Result.ok();
 
+    }
+
+    private void dingWarning(Long supplierId, List<Integer> newIdentifyList, List<String> newSaleAreas) {
+        //查询出当前用户的进件信息，如果当前用户既在银联进件了又在平安进件了，则不会触发钉钉报警。
+        //查询银联进件信息
+        //银联进件查询
+        QueryAccessBankStatueRespDTO unionIncoming = getUnionIncoming(null, String.valueOf(supplierId));
+        //平安进件查询
+        QueryAccessBankStatueRespDTO pabcIncoming = getPabcIncoming(String.valueOf(supplierId));
+        //判断用户身份，供应商必须要银联和平安都进件，经销商需要根据销售区域进行判断
+        if (newIdentifyList.contains(SupplierTypeEnum.SUPPLIER.getCode())) {
+            if (IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())) {
+                //todo 钉钉报警，银联进件通知
+            }
+            if (IncomingStatusEnum.NOT_INCOMING.getCode().equals(pabcIncoming.getStatus())) {
+                //todo 钉钉报警，平安进件通知
+            }
+        }else if (newIdentifyList.contains(SupplierTypeEnum.DEALER.getCode())) {
+            //判断经销商的销售区域是否包含新城
+            //查询新城地区code集合
+            List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
+            List<String> pabcDistrictsCode = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
+            //判断新城地区code集合是否包含当前销售城市code
+            boolean newCityFlag = pabcDistrictsCode.stream().anyMatch(e -> contains(newSaleAreas, e));
+            if (newCityFlag && IncomingStatusEnum.NOT_INCOMING.getCode().equals(pabcIncoming.getStatus())) {
+                //todo 此时触发钉钉报警，平安进件通知
+            }
+            //此时用户还在旧城
+            if (!newCityFlag && IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())){
+                //todo 此时触发钉钉报警，银联进件通知
+            }
+        }
+    }
+
+    private List<MerchantChangeReqDTO> getSaveList(List<String> newSaleAreas, List<Integer> newIdentifyList, List<String> oldSaleAreas, List<Integer> oldIdentifyList, MerchantChangeInfoMqReqDTO dto) {
+
+        //判断销售区域是否发生了变更，true表示没有发生变更，false表示发生了变更
+        Boolean saleFlag = checkListIsEquals(newSaleAreas, oldSaleAreas);
+        //判断商户身份是否发生了变更，true表示没有发生变更，false表示发生了变更
+        Boolean identityFlag = checkListIsEquals(newIdentifyList, oldIdentifyList);
+        List<MerchantChangeReqDTO> saveList = new ArrayList<>();
+        if (!saleFlag) {
+            MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
+            String oldSales = getSalesByCodes(oldSaleAreas);
+            String newSales = getSalesByCodes(newSaleAreas);
+            reqDTO.setAfterChange(newSales);
+            reqDTO.setBeforChange(oldSales);
+            reqDTO.setChangeField("销售区域");
+            reqDTO.setChangeTime(new Date());
+            reqDTO.setOperator(dto.getUserName());
+            reqDTO.setOperatorId(String.valueOf(dto.getCreator()));
+            saveList.add(reqDTO);
+
+        }
+        if (!identityFlag) {
+            MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
+            String oldIdentity = getIdentityByCode(oldIdentifyList);
+            String newIdentity = getIdentityByCode(newIdentifyList);
+            reqDTO.setAfterChange(newIdentity);
+            reqDTO.setBeforChange(oldIdentity);
+            reqDTO.setChangeField("身份");
+            reqDTO.setChangeTime(new Date());
+            reqDTO.setOperator(dto.getUserName());
+            reqDTO.setOperatorId(String.valueOf(dto.getCreator()));
+            saveList.add(reqDTO);
+        }
+        return saveList;
+    }
+
+    private String getIdentityByCode(List<Integer> identifyList) {
+        if (CollectionUtil.isNotEmpty(identifyList)){
+            StringBuilder sb = new StringBuilder();
+            for (Integer identity : identifyList) {
+                String msgByCode = getMsgByCode(identity);
+                sb.append(msgByCode);
+                sb.append(",");
+            }
+            String identityStr = sb.toString();
+            return identityStr.substring(0, identityStr.length() - 1);
+        }
+        return null;
+    }
+
+    private String getMsgByCode(Integer code){
+        for (SupplierTypeEnum value : SupplierTypeEnum.values()) {
+            if (value.getCode().equals(code)){
+                return value.getDesc();
+            }
+        }
+        return "";
+    }
+
+    private String getSalesByCodes(List<String> saleAreas) {
+        List<String> areas = faStandardLocationDictService.getAreasByCode(saleAreas);
+        if (CollectionUtil.isNotEmpty(areas)) {
+            return String.join(",", areas);
+        }
+        return null;
     }
 
     private boolean contains(List<String> cus, String value){
         return cus.stream().filter(f -> f.equals(value)).findAny().isPresent();
     }
+
 
 
 

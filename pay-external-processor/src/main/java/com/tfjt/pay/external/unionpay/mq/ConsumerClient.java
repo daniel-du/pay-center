@@ -57,7 +57,7 @@ public class ConsumerClient implements ApplicationContextAware {
         // 订阅另外一个Topic，如需取消订阅该Topic，请删除该部分的订阅代码，重新启动消费端即可。
         // 订阅全部Tag。
         consumer.subscribe(dealerChangeTopic, "*", (message, context) -> {
-            log.info("OrderChangeConsumer_Receive: " + message);
+            log.info("MerchantChangeConsumer_Receive: " + message);
             return processExport(message);
         });
         consumer.start();
@@ -94,10 +94,6 @@ public class ConsumerClient implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-
     }
-
-
-
 
 }

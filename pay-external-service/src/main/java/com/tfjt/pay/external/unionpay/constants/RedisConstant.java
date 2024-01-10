@@ -13,4 +13,6 @@ public class RedisConstant {
     public static final String PAY_GENERATE_ORDER_NO = "pay:generate_order_no";
 
     public static final String MOBILE_VERIFICATION_CODE = "smsCode:";
+
+    public static final String NETWORK_TYPE_BY_AREA_CODE = "networkTypeByAreaCode";
 }

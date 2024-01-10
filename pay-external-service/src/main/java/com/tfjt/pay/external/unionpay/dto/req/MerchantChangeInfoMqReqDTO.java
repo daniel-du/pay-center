@@ -31,4 +31,8 @@ public class MerchantChangeInfoMqReqDTO {
      * 变更后身份
      */
     private List<Integer> newIdentifyList;
+
+    private Long creator;
+
+    private String userName;
 }
