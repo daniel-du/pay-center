@@ -101,7 +101,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     private static final String MQ_TO_SERVER = "tf-cloud-shop";
 
-
+    /**
+     * 提交基本信息、获取验证码
+     * @return
+     */
     @Override
     public Result incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
         log.info("IncomingBizServiceImpl--incomingSubmit, incomingSubmitMessageReqDTO:{}", JSONObject.toJSONString(incomingSubmitMessageReqDTO));
@@ -110,8 +113,12 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 tfIncomingInfoService.queryIncomingMessage(incomingSubmitMessageReqDTO.getIncomingId());
         //根据参数类型获取实现类
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
-
         AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
+        //实现类为空时，直接返回
+        if (ObjectUtils.isEmpty(abstractIncomingService)) {
+            log.error("IncomingBizServiceImpl--incomingSubmit, abstractIncomingService isEmpty, bindServiceName:{}", bindServiceName);
+            return Result.failed(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
+        }
         //调用实现类方法
         abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
         //更新进件信息
@@ -119,6 +126,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         return Result.ok();
     }
 
+    /**
+     * 回填校验验证码、打款金额，验证协议
+     * @return
+     */
     @Override
     public Result checkCode(IncomingCheckCodeReqDTO inComingCheckCodeReqDTO) {
         log.info("IncomingBizServiceImpl--checkCode, incomingSubmitMessageReqDTO:{}", JSONObject.toJSONString(inComingCheckCodeReqDTO));
@@ -127,7 +138,11 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         //根据进件信息类型数据获取对应实现
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
         AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
-
+        //实现类为空时，直接返回
+        if (ObjectUtils.isEmpty(abstractIncomingService)) {
+            log.error("IncomingBizServiceImpl--incomingSubmit, abstractIncomingService isEmpty, bindServiceName:{}", bindServiceName);
+            return Result.failed(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
+        }
         CheckCodeMessageDTO checkCodeMessageDTO = CheckCodeMessageDTO.builder()
                 .id(incomingSubmitMessageDTO.getId())
                 .memberId(incomingSubmitMessageDTO.getMemberId())

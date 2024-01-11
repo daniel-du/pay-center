@@ -25,7 +25,7 @@ public interface IncomingBizService {
     Result incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO);
 
     /**
-     * 保存结算信息并回填校验验证码、打款金额
+     * 回填校验验证码、打款金额，验证协议
      * @return
      */
     Result checkCode(IncomingCheckCodeReqDTO inComingCheckCodeReqDTO);

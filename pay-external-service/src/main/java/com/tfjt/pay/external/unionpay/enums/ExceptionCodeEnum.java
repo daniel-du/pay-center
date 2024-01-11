@@ -68,6 +68,7 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_LEGAL_ID_NO_FORMAT_ERROR(2000016,"法人证件号码格式错误!"),
     INCOMING_CHANGE_MAIN_TYPE_CODE_ERROR(2000016,"入网主体不允许变更为该类型!"),
     QUERY_INCOMING_MSG_ILLEGAL_ARGUMENT(2000017,"查询进件信息入参异常!"),
+    INCOMING_STRATEGY_SERVICE_IS_NULL(2000018,"未找到对应策略服务!"),
 
 
     PN_API_ERROR(3000010, "调用平安API失败!"),
