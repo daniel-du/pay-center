@@ -21,24 +21,24 @@ spring:
 log:
   path: /data/logs/tf-cloud-pay-external
   console.out: true
-#logging:
-#  level:
-#    org.springframework: INFO
-#    com.hospital: DEBUG
-#    com.zaxxer.hikari: DEBUG
-#    com.tfjt: DEBUG
-#mybatis-plus:
-#  global-config:
-#    db-config:
-#      logic-delete-value: 1
-#      logic-not-delete-value: 0
-#
-#  mapper-locations: classpath:/mapper/*/*Dao.xml
-#  configuration:
-#    map-underscore-to-camel-case: true
-#    cache-enabled: false
-#    # 开发模式控制台打印日志
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+logging:
+  level:
+    org.springframework: INFO
+    com.hospital: DEBUG
+    com.zaxxer.hikari: DEBUG
+    com.tfjt: DEBUG
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+  mapper-locations: classpath:/mapper/*/*Dao.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    # 开发模式控制台打印日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 ##分布式锁
 #lock4j:
 #  acquire-timeout: 3000 #默认值3s，可不设置
@@ -58,14 +58,3 @@ xxl:
       logpath: ${xxl-job.log.path}
       logretentiondays: 30
       address:
-
-#pnclient:
-#  txnClientNo: '680001343736'
-#  fundSummaryAcctNo: '15000101232520'
-#  appPrivateKey: '40b83a01166fdb0b92d7af39daed2625c282947ed72276aa1ea159fc3ebb048a'
-#  publicKey: '0480E866C61C385C2916901CFC10AA53DFD89DBFFA87A4A49C26F82C66F30B7A7038D61FDBE08236F6ACFA6216A6FBCC511841586ABE24107438E049BE98C4660C'
-#  appId: 'a0833e1f-2ab0-4dd2-bc9d-d6e33ddff139'
-#  baseUrl: 'https://my-st1.orangebank.com.cn:567/fat7/openapi/gateway/'
-#  appSecret: '4x7XCP'
-#  fileUploadUrl: 'https://my-st1.orangebank.com.cn:567/fat7/openapi/file/boapFile/upload'
-#  fileDownLoadUrl: 'https://my-st1.orangebank.com.cn:567/fat7/openapi/file/boapFile/download'
