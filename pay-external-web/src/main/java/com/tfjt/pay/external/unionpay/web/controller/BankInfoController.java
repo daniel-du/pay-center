@@ -1,7 +1,8 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
+import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
-import com.tfjt.pay.external.unionpay.dto.req.QueryAccessBankStatueReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +50,7 @@ public class BankInfoController {
      * @return
      */
     @GetMapping("/getCityList")
-    public Result<List<PabcCityInfoRespDTO>> getCityList(String provinceCode,String bankCode){
+        public Result<List<PabcCityInfoRespDTO>> getCityList(String provinceCode,String bankCode){
         return pabcBizService.getCityList(provinceCode,bankCode);
     }
 

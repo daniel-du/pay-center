@@ -1,7 +1,8 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import com.tfjt.entity.AsyncMessageEntity;
-import com.tfjt.pay.external.unionpay.dto.req.QueryAccessBankStatueReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 

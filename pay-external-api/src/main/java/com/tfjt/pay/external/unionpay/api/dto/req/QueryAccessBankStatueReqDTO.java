@@ -1,4 +1,4 @@
-package com.tfjt.pay.external.unionpay.dto.req;
+package com.tfjt.pay.external.unionpay.api.dto.req;
 
 import lombok.Data;
 
@@ -16,6 +16,6 @@ public class QueryAccessBankStatueReqDTO implements Serializable {
     private String businessId;
     //系统来源：1、经销商；2、供应商；3、商家
     private Integer businessType;
-    //1、商户进件；2、贷款进件
+    //1、贷款进件;2、商户进件
     private Integer networkType;
 }
