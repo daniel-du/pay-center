@@ -276,10 +276,11 @@ public class LoanUserBizServiceImpl implements LoanUserBizService {
                 Long settledAmount = loanAccountDTO.getSettledAmount() == null ? 0 : loanAccountDTO.getSettledAmount();
                 BigDecimal bigDecimal = new BigDecimal(100);
                 balance = new BigDecimal(settledAmount).divide(bigDecimal);
+                result.put("isFrozen", loanAccountDTO.isFrozen());
             }
             result.put("isIncoming", true);
             result.put("settledAmount", balance);
-            result.put("isFrozen", loanAccountDTO.isFrozen());
+//            result.put("isFrozen", loanAccountDTO.isFrozen());
             return Result.ok(result);
         }
         result.put("isIncoming", false);

@@ -58,3 +58,8 @@ xxl:
       logpath: ${xxl-job.log.path}
       logretentiondays: 30
       address:
+
+dingding:
+  incoming:
+    accessToken: 714ef9bd946989d28b800b19ac65501ef555fadf8a3b24004b96a8796c56510a
+    encryptKey: SECbb7a9e5b86164920aedaac7aad6adac829623468dff3675c55cb7b783747a97f
