@@ -63,7 +63,7 @@ public class IncomingMerchantRespDTO implements Serializable {
     /**
      * 法人身份证是否长期，0否，1是
      */
-    private Byte legalIdIsLongTerm;
+    private Integer legalIdIsLongTerm;
     /**
      * 法人证件号码
      */
@@ -101,7 +101,7 @@ public class IncomingMerchantRespDTO implements Serializable {
     /**
      * 经办人身份证是否长期，0否，1是
      */
-    private Byte agentIdIsLongTerm;
+    private Integer agentIdIsLongTerm;
     /**
      * 经办人证件号码
      */
@@ -109,7 +109,7 @@ public class IncomingMerchantRespDTO implements Serializable {
     /**
      * 经办人同法人，0否，1是
      */
-    private Byte agentIsLegal;
+//    private Byte agentIsLegal;
     /**
      * 经办人手机
      */

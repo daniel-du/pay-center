@@ -41,6 +41,6 @@ public class TfIncomingBusinessInfoServiceImpl extends BaseServiceImpl<TfIncomin
         LambdaQueryWrapper<TfIncomingBusinessInfoEntity> businessInfoEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         businessInfoEntityLambdaQueryWrapper.eq(TfIncomingBusinessInfoEntity::getIncomingId, incomingId)
                 .eq(TfIncomingBusinessInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
-        return null;
+        return this.baseMapper.selectOne(businessInfoEntityLambdaQueryWrapper);
     }
 }

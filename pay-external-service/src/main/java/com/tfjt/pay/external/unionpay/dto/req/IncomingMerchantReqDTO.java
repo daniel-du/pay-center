@@ -61,7 +61,6 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 入网主体类型（1：个人，2：企业）
      */
-    @NotNull(message = "入网主体类型不能为空", groups = {AddGroup.class})
     private Byte accessMainType;
 
     /**
@@ -79,7 +78,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 法人身份证反面照片
      */
-    @NotBlank(message = "法人身份证反面照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
+    @NotBlank(message = "法人身份证背面照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalBackIdCardUrl;
     /**
      * 法人身份证正面照片
@@ -89,8 +88,8 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 法人身份证手持照片
      */
-    @NotBlank(message = "法人身份证手持照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
-    private String legalHoldIdCardUrl;
+//    @NotBlank(message = "法人身份证手持照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
+//    private String legalHoldIdCardUrl;
     /**
      * 法人身份证有效起始日期
      */
@@ -127,7 +126,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 法人国籍
      */
-    @NotBlank(message = "法人国籍不能为空", groups = { AddGroup.class, UpdateGroup.class })
+//    @NotBlank(message = "法人国籍不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalNationality;
     /**
      * 法人性别
@@ -139,6 +138,15 @@ public class IncomingMerchantReqDTO implements Serializable {
      * 经办人身份证信息id
      */
     private Long agentIdCard;
+
+    /**
+     * 经办人身份证反面照片
+     */
+    private String agentBackIdCardUrl;
+    /**
+     * 经办人身份证正面照片
+     */
+    private String agentFrontIdCardUrl;
 
     /**
      * 经办人身份证有效起始日期

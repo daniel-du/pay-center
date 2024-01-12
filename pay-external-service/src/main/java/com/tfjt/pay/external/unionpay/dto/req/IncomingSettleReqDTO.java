@@ -130,6 +130,6 @@ public class IncomingSettleReqDTO implements Serializable {
     /**
      * 职业
      */
-    @NotBlank(message = "职业不能为空", groups = {AddGroup.class, UpdateGroup.class})
+//    @NotBlank(message = "职业不能为空", groups = {AddGroup.class, UpdateGroup.class})
     private String occupation;
 }

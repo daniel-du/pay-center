@@ -22,6 +22,7 @@ import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
 import com.tfjt.robot.common.message.ding.MarkdownMessage;
 import com.tfjt.robot.service.dingtalk.DingRobotService;
 import com.tfjt.tfcommon.core.exception.TfException;
+import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -169,13 +170,17 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Override
     public Result<MoudleStatusRespDTO> getModuleStatus(IncomingModuleStatusReqDTO incomingModuleStatusReqDTO) {
+        ValidatorUtils.validateEntity(incomingModuleStatusReqDTO);
         TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoByMerchant(incomingModuleStatusReqDTO);
-        //创建返回对象
-        MoudleStatusRespDTO moudleStatusRespDTO = new MoudleStatusRespDTO();
-        //根据入网id查询身份信息、营业信息、结算信息
         if (ObjectUtil.isNull(tfIncomingInfoEntity)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
+        //创建返回对象
+        MoudleStatusRespDTO moudleStatusRespDTO = new MoudleStatusRespDTO();
+        moudleStatusRespDTO.setIncomingId(tfIncomingInfoEntity.getId());
+        moudleStatusRespDTO.setAccessChannelType(tfIncomingInfoEntity.getAccessChannelType());
+        moudleStatusRespDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
+        moudleStatusRespDTO.setAccessStatus(tfIncomingInfoEntity.getAccessStatus().byteValue());
         // 通过IdcardInfo服务查询IdcardInfo实体
         TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = tfIncomingBusinessInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 通过MerchantInfo服务查询MerchantInfo实体
@@ -184,11 +189,11 @@ public class PabcBizServiceImpl implements PabcBizService {
         TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = tfIncomingSettleInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 如果查询到IdcardInfo实体，则设置模块状态响应DTO的cardId
         if (ObjectUtil.isNotEmpty(tfIncomingMerchantInfoEntity)) {
-            moudleStatusRespDTO.setCardId(tfIncomingMerchantInfoEntity.getId());
+            moudleStatusRespDTO.setMerchantId(tfIncomingMerchantInfoEntity.getId());
         }
         // 如果查询到MerchantInfo实体，则设置模块状态响应DTO的merchantId
         if (ObjectUtil.isNotEmpty(tfIncomingBusinessInfoEntity)) {
-            moudleStatusRespDTO.setMerchantId(tfIncomingBusinessInfoEntity.getId());
+            moudleStatusRespDTO.setBusinessId(tfIncomingBusinessInfoEntity.getId());
         }
         // 如果查询到SettleInfo实体，则设置模块状态响应DTO的settleId
         if (ObjectUtil.isNotEmpty(tfIncomingSettleInfoEntity)) {

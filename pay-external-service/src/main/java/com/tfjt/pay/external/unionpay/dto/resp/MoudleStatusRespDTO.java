@@ -35,11 +35,11 @@ public class MoudleStatusRespDTO implements Serializable {
     /**
      * 身份信息id
      */
-    private Long cardId;
+    private Long merchantId;
     /**
      * 营业信息ID
      */
-    private Long merchantId;
+    private Long businessId;
     /**
      * 结算ID
      */

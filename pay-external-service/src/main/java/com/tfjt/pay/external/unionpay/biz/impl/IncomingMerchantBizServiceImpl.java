@@ -99,6 +99,12 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         try {
             log.info("IncomingMerchantBizServiceImpl--getById, id:{}", id);
             IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantById(id);
+            if (NumberConstant.ONE.equals(incomingMerchantRespDTO.getLegalIdIsLongTerm())) {
+                incomingMerchantRespDTO.setLegalIdExpiryDate(null);
+            }
+            if (NumberConstant.ONE.equals(incomingMerchantRespDTO.getAgentIdIsLongTerm())) {
+                incomingMerchantRespDTO.setAgentIdExpiryDate(null);
+            }
             log.info("IncomingMerchantBizServiceImpl--getById, incomingMerchantRespDTO:{}", JSONObject.toJSONString(incomingMerchantRespDTO));
             return Result.ok(incomingMerchantRespDTO);
         } catch (TfException e) {
@@ -121,6 +127,8 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         try {
             log.info("IncomingMerchantBizServiceImpl---save, incomingMerchantReqDTO:{}", JSONObject.toJSONString(incomingMerchantReqDTO));
             ValidatorUtils.validateEntity(incomingMerchantReqDTO, AddGroup.class);
+            TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingMerchantReqDTO.getIncomingId());
+            incomingMerchantReqDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
             validateMerchantEntity(incomingMerchantReqDTO);
             //保存进件主表信息
 //            TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
@@ -141,7 +149,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             TfIdcardInfoEntity legalIdcardInfoEntity = saveLegal(incomingMerchantReqDTO);
             tfIncomingMerchantInfoEntity.setLegalIdCard(legalIdcardInfoEntity.getId());
             //进件主体类型非企业时，无需处理经办人信息
-            if (!ACCESS_MAIN_TYPE_COMPANY.equals(incomingMerchantReqDTO.getAccessMainType())) {
+            if (!ACCESS_MAIN_TYPE_COMPANY.equals(tfIncomingInfoEntity.getAccessMainType())) {
                 if (!tfIncomingMerchantInfoService.save(tfIncomingMerchantInfoEntity)) {
                     log.error("保存商户身份信息失败:{}", JSONObject.toJSONString(tfIncomingMerchantInfoEntity));
                     throw new TfException(ExceptionCodeEnum.FAIL);
@@ -149,13 +157,15 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
                 return Result.ok();
             }
             //判断经办人信息是否同法人，如不同则单独处理
-            if (!AGENT_IS_LEGAL.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
-                //保存商户身份-经办人信息
-                TfIdcardInfoEntity agentIdcardInfoEntity = saveAgent(incomingMerchantReqDTO);
-                tfIncomingMerchantInfoEntity.setAgentIdCard(agentIdcardInfoEntity.getId());
-            } else {
-                tfIncomingMerchantInfoEntity.setAgentIdCard(legalIdcardInfoEntity.getId());
-            }
+//            if (!AGENT_IS_LEGAL.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
+//                //保存商户身份-经办人信息
+//                TfIdcardInfoEntity agentIdcardInfoEntity = saveAgent(incomingMerchantReqDTO);
+//                tfIncomingMerchantInfoEntity.setAgentIdCard(agentIdcardInfoEntity.getId());
+//            } else {
+//                tfIncomingMerchantInfoEntity.setAgentIdCard(legalIdcardInfoEntity.getId());
+//            }
+            TfIdcardInfoEntity agentIdcardInfoEntity = saveAgent(incomingMerchantReqDTO);
+            tfIncomingMerchantInfoEntity.setAgentIdCard(agentIdcardInfoEntity.getId());
             if (!tfIncomingMerchantInfoService.save(tfIncomingMerchantInfoEntity)) {
                 log.error("保存商户身份信息失败:{}", JSONObject.toJSONString(tfIncomingMerchantInfoEntity));
                 throw new TfException(ExceptionCodeEnum.FAIL);
@@ -180,6 +190,8 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     public Result update(IncomingMerchantReqDTO incomingMerchantReqDTO) {
         log.info("IncomingMerchantBizServiceImpl---update, incomingMerchantReqDTO:{}", JSONObject.toJSONString(incomingMerchantReqDTO));
         ValidatorUtils.validateEntity(incomingMerchantReqDTO, UpdateGroup.class);
+        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingMerchantReqDTO.getIncomingId());
+        incomingMerchantReqDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
         validateMerchantEntity(incomingMerchantReqDTO);
         TfIncomingMerchantInfoEntity originMerchantInfoEntity = tfIncomingMerchantInfoService.getById(incomingMerchantReqDTO.getId());
         //保存商户身份信息
@@ -195,23 +207,24 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         //保存商户身份-法人信息
         TfIdcardInfoEntity legalIdcardInfoEntity = saveLegal(incomingMerchantReqDTO);
         //入网主体非企业时，不需要保存经办人信息
-        if (!ACCESS_MAIN_TYPE_COMPANY.equals(incomingMerchantReqDTO.getAccessMainType())) {
+        if (!ACCESS_MAIN_TYPE_COMPANY.equals(tfIncomingInfoEntity.getAccessMainType())) {
             return Result.ok();
         }
-        //原经办人与变更后经办人都同法人
-        if (NumberConstant.ONE.equals(originMerchantInfoEntity.getAgentIsLegal()) && NumberConstant.ONE.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
-            return Result.ok();
-        }
-        //原经办人与变更后经办人都不同法人
-        if (NumberConstant.ZERO.equals(originMerchantInfoEntity.getAgentIsLegal()) && NumberConstant.ZERO.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
-            TfIdcardInfoEntity agentIdcardInfoEntity = updateAgent(incomingMerchantReqDTO);
-            return Result.ok();
-        }
-        //原经办人同法人，变更后经办人不同法人
-        if (NumberConstant.ONE.equals(originMerchantInfoEntity.getAgentIsLegal()) && NumberConstant.ZERO.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
-            TfIdcardInfoEntity agentIdcardInfoEntity = saveAgent(incomingMerchantReqDTO);
-            return Result.ok();
-        }
+        updateAgent(incomingMerchantReqDTO);
+//        //原经办人与变更后经办人都同法人
+//        if (NumberConstant.ONE.equals(originMerchantInfoEntity.getAgentIsLegal()) && NumberConstant.ONE.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
+//            return Result.ok();
+//        }
+//        //原经办人与变更后经办人都不同法人
+//        if (NumberConstant.ZERO.equals(originMerchantInfoEntity.getAgentIsLegal()) && NumberConstant.ZERO.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
+//            TfIdcardInfoEntity agentIdcardInfoEntity = updateAgent(incomingMerchantReqDTO);
+//            return Result.ok();
+//        }
+//        //原经办人同法人，变更后经办人不同法人
+//        if (NumberConstant.ONE.equals(originMerchantInfoEntity.getAgentIsLegal()) && NumberConstant.ZERO.equals(incomingMerchantReqDTO.getAgentIsLegal())) {
+//            TfIdcardInfoEntity agentIdcardInfoEntity = saveAgent(incomingMerchantReqDTO);
+//            return Result.ok();
+//        }
         return Result.ok();
     }
 
@@ -227,7 +240,6 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
                 sex(incomingMerchantReqDTO.getLegalSex()).nationality(incomingMerchantReqDTO.getLegalNationality()).
                 frontIdCardUrl(incomingMerchantReqDTO.getLegalFrontIdCardUrl()).
                 backIdCardUrl(incomingMerchantReqDTO.getLegalBackIdCardUrl()).
-                holdIdCardUrl(incomingMerchantReqDTO.getLegalHoldIdCardUrl()).
                 idEffectiveDate(incomingMerchantReqDTO.getLegalIdEffectiveDate()).
                 idExpiryDate(incomingMerchantReqDTO.getLegalIdExpiryDate()).
                 isLongTerm(incomingMerchantReqDTO.getLegalIdIsLongTerm()).build();
@@ -246,6 +258,8 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     private TfIdcardInfoEntity saveAgent(IncomingMerchantReqDTO incomingMerchantReqDTO) {
         TfIdcardInfoEntity agentIdcardInfoEntity = TfIdcardInfoEntity.builder().idType(IdTypeEnum.ID_CARD.getCode()).
                 idNo(incomingMerchantReqDTO.getAgentIdNo()).name(incomingMerchantReqDTO.getAgentName()).
+                frontIdCardUrl(incomingMerchantReqDTO.getAgentFrontIdCardUrl()).
+                backIdCardUrl(incomingMerchantReqDTO.getAgentBackIdCardUrl()).
                 idEffectiveDate(incomingMerchantReqDTO.getAgentIdEffectiveDate()).
                 idExpiryDate(incomingMerchantReqDTO.getAgentIdExpiryDate()).
                 isLongTerm(incomingMerchantReqDTO.getAgentIdIsLongTerm()).build();
@@ -264,6 +278,8 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     private TfIdcardInfoEntity updateAgent(IncomingMerchantReqDTO incomingMerchantReqDTO) {
         TfIdcardInfoEntity agentIdcardInfoEntity = TfIdcardInfoEntity.builder().id(incomingMerchantReqDTO.getAgentIdCard()).
                 idNo(incomingMerchantReqDTO.getAgentIdNo()).name(incomingMerchantReqDTO.getAgentName()).
+                frontIdCardUrl(incomingMerchantReqDTO.getAgentFrontIdCardUrl()).
+                backIdCardUrl(incomingMerchantReqDTO.getAgentBackIdCardUrl()).
                 idEffectiveDate(incomingMerchantReqDTO.getAgentIdEffectiveDate()).
                 idExpiryDate(incomingMerchantReqDTO.getAgentIdExpiryDate()).
                 isLongTerm(incomingMerchantReqDTO.getAgentIdIsLongTerm()).build();
@@ -286,9 +302,9 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         if (!ACCESS_MAIN_TYPE_COMPANY.equals(incomingMerchantReqDTO.getAccessMainType())) {
             return;
         }
-        if (incomingMerchantReqDTO.getAgentIsLegal() == null) {
-            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_IS_LEGAL_IS_NULL);
-        }
+//        if (incomingMerchantReqDTO.getAgentIsLegal() == null) {
+//            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_IS_LEGAL_IS_NULL);
+//        }
         if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentName())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_NAME_IS_NULL);
         }
@@ -297,6 +313,12 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         }
         if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentIdNo())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_ID_NO_IS_NULL);
+        }
+        if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentFrontIdCardUrl())) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_FRONT_URL_IS_NULL);
+        }
+        if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentBackIdCardUrl())) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_BACK_URL_IS_NULL);
         }
         if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentIdEffectiveDate())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_EFFECTIVE_IS_NULL);

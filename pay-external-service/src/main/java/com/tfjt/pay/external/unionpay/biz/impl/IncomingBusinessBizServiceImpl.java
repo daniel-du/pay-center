@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.biz.IncomingBusinessBizService;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RegularConstants;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingBusinessReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
@@ -50,6 +51,9 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
     public Result<IncomingBusinessRespDTO> getById(Long id) {
         log.info("IncomingBusinessBizServiceImpl---getById, id:{}", id);
         IncomingBusinessRespDTO incomingBusinessRespDTO = tfIncomingBusinessInfoService.queryBusinessById(id);
+        if (NumberConstant.ONE.equals(incomingBusinessRespDTO.getBusinessLicenseIsLongTerm())) {
+            incomingBusinessRespDTO.setBusinessLicenseExpireDate(null);
+        }
         log.info("IncomingBusinessBizServiceImpl---getById, incomingBusinessRespDTO:{}", JSONObject.toJSONString(incomingBusinessRespDTO));
         return Result.ok(incomingBusinessRespDTO);
     }

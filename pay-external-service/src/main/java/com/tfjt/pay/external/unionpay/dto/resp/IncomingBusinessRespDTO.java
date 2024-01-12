@@ -81,7 +81,7 @@ public class IncomingBusinessRespDTO implements Serializable {
     /**
      * 营业执照是否长期，0否，1是
      */
-    private Byte businessLicenseIsLongTerm;
+    private Integer businessLicenseIsLongTerm;
 
     /**
      * 联系邮箱
