@@ -97,7 +97,9 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     @Override
     public Result<IncomingMerchantRespDTO> getById(Long id) {
         try {
+            log.info("IncomingMerchantBizServiceImpl--getById, id:{}", id);
             IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantById(id);
+            log.info("IncomingMerchantBizServiceImpl--getById, incomingMerchantRespDTO:{}", JSONObject.toJSONString(incomingMerchantRespDTO));
             return Result.ok(incomingMerchantRespDTO);
         } catch (TfException e) {
             log.error("平安进件-查询商户身份信息 发生 RenException:", e);
@@ -121,20 +123,20 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             ValidatorUtils.validateEntity(incomingMerchantReqDTO, AddGroup.class);
             validateMerchantEntity(incomingMerchantReqDTO);
             //保存进件主表信息
-            TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
-            BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingInfoEntity);
-            String memberId = IncomingMemberBusinessTypeEnum.fromCode(incomingMerchantReqDTO.getBusinessType().intValue()).getMemberPrefix()
-                    + incomingMerchantReqDTO.getBusinessId();
-            tfIncomingInfoEntity.setMemberId(memberId);
-            tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
-            if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
-                log.error("保存进件主表信息失败:{}", JSONObject.toJSONString(tfIncomingInfoEntity));
-                throw new TfException(ExceptionCodeEnum.FAIL);
-            }
+//            TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
+//            BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingInfoEntity);
+//            String memberId = IncomingMemberBusinessTypeEnum.fromCode(incomingMerchantReqDTO.getBusinessType().intValue()).getMemberPrefix()
+//                    + incomingMerchantReqDTO.getBusinessId();
+//            tfIncomingInfoEntity.setMemberId(memberId);
+//            tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
+//            if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
+//                log.error("保存进件主表信息失败:{}", JSONObject.toJSONString(tfIncomingInfoEntity));
+//                throw new TfException(ExceptionCodeEnum.FAIL);
+//            }
             //保存商户身份信息
             TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = new TfIncomingMerchantInfoEntity();
             BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingMerchantInfoEntity);
-            tfIncomingMerchantInfoEntity.setIncomingId(tfIncomingInfoEntity.getId());
+//            tfIncomingMerchantInfoEntity.setIncomingId(tfIncomingInfoEntity.getId());
             //保存商户身份-法人信息
             TfIdcardInfoEntity legalIdcardInfoEntity = saveLegal(incomingMerchantReqDTO);
             tfIncomingMerchantInfoEntity.setLegalIdCard(legalIdcardInfoEntity.getId());

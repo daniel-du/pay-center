@@ -16,6 +16,7 @@ import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -25,6 +26,7 @@ import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
+import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -100,6 +102,32 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     private static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
 
     private static final String MQ_TO_SERVER = "tf-cloud-shop";
+
+    @Override
+    public Result incomingSave(IncomingInfoReqDTO incomingInfoReqDTO) {
+        try {
+            log.info("IncomingBizServiceImpl---incomingSave, incomingInfoReqDTO:{}", JSONObject.toJSONString(incomingInfoReqDTO));
+            ValidatorUtils.validateEntity(incomingInfoReqDTO, AddGroup.class);
+            //保存进件主表信息
+            TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
+            BeanUtils.copyProperties(incomingInfoReqDTO, tfIncomingInfoEntity);
+            String memberId = IncomingMemberBusinessTypeEnum.fromCode(incomingInfoReqDTO.getBusinessType().intValue()).getMemberPrefix()
+                    + incomingInfoReqDTO.getBusinessId();
+            tfIncomingInfoEntity.setMemberId(memberId);
+            tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
+            if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
+                log.error("IncomingBizServiceImpl---incomingSave, 保存进件主表信息失败:{}", JSONObject.toJSONString(tfIncomingInfoEntity));
+                throw new TfException(ExceptionCodeEnum.FAIL);
+            }
+            return Result.ok();
+        } catch (TfException e) {
+            log.error("平安进件-保存进件主表信息 发生 RenException:", e);
+            throw new TfException(e.getMessage());
+        } catch (Exception e) {
+            log.error("平安进件-保存进件主表信息 发生 Exception:", e);
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+    }
 
     /**
      * 提交基本信息、获取验证码

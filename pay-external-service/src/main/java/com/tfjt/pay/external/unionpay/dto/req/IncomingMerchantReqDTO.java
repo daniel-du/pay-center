@@ -23,7 +23,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 商户信息id
+     * 商户身份信息id
      */
     @NotNull(message = "商户身份id不能为空", groups = {UpdateGroup.class})
     private Long id;
@@ -31,32 +31,33 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 进件id
      */
+    @NotNull(message = "进件主表id不能为空", groups = {UpdateGroup.class, AddGroup.class})
     private Long incomingId;
 
     /**
      * 经销商/供应商id/店铺id
      */
-    @NotNull(message = "商户id不能为空", groups = {AddGroup.class})
-    private Long businessId;
-
-    /**
-     * 系统来源
-     */
-    @NotNull(message = "系统来源不能为空", groups = {AddGroup.class})
-    private Byte businessType;
-
-    /**
-     * 入网渠道类型（1：平安，2：银联）
-     */
-    @NotNull(message = "入网渠道类型不能为空", groups = {AddGroup.class})
-    private Byte accessChannelType;
-
-    /**
-     * 入网类型（1：贷款，2：商户入网）
-     */
-    @NotNull(message = "入网类型不能为空", groups = {AddGroup.class})
-    private Byte accessType;
-
+//    @NotNull(message = "商户id不能为空", groups = {AddGroup.class})
+//    private Long businessId;
+//
+//    /**
+//     * 系统来源
+//     */
+//    @NotNull(message = "系统来源不能为空", groups = {AddGroup.class})
+//    private Byte businessType;
+//
+//    /**
+//     * 入网渠道类型（1：平安，2：银联）
+//     */
+//    @NotNull(message = "入网渠道类型不能为空", groups = {AddGroup.class})
+//    private Byte accessChannelType;
+//
+//    /**
+//     * 入网类型（1：贷款，2：商户入网）
+//     */
+//    @NotNull(message = "入网类型不能为空", groups = {AddGroup.class})
+//    private Byte accessType;
+//
     /**
      * 入网主体类型（1：个人，2：企业）
      */
@@ -171,7 +172,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 签约渠道，1：APP，2：平台h5网页，3：公众号，4：小程序
      */
-    private Byte signChannel;
+//    private Byte signChannel;
 
 
 }

@@ -4,6 +4,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -17,6 +18,13 @@ import java.util.Map;
  * @description 进件服务
  */
 public interface IncomingBizService {
+
+    /**
+     * 保存进件主表信息
+     * @param incomingInfoReqDTO
+     * @return
+     */
+    Result incomingSave(IncomingInfoReqDTO incomingInfoReqDTO);
 
     /**
      * 提交基本信息、获取验证码
