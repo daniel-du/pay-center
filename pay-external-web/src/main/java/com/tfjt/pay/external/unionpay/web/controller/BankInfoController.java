@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
@@ -88,11 +89,11 @@ public class BankInfoController {
 
     /**
      * 查询模块完成状态（身份信息、营业信息、结算信息）
-     * @param incomingId  入网id
+     * @param incomingModuleStatusReqDTO
      */
-    @GetMapping("/getModuleStatus")
-    public Result<MoudleStatusRespDTO> getModuleStatus(Long incomingId){
-        return pabcBizService.getModuleStatus(incomingId);
+    @PostMapping("/getModuleStatus")
+    public Result<MoudleStatusRespDTO> getModuleStatus(@RequestBody IncomingModuleStatusReqDTO incomingModuleStatusReqDTO){
+        return pabcBizService.getModuleStatus(incomingModuleStatusReqDTO);
     }
 
 

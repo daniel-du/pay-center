@@ -21,4 +21,11 @@ public interface TfIncomingMerchantInfoService extends IService<TfIncomingMercha
      */
     IncomingMerchantRespDTO queryMerchantById(Long id);
 
+    /**
+     * 根据进件id查询商户身份信息
+     * @param incomingId
+     * @return
+     */
+    TfIncomingMerchantInfoEntity queryByIncomingId(Long incomingId);
+
 }

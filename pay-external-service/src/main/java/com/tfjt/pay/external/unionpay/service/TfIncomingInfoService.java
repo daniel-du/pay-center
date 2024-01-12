@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
@@ -48,5 +49,12 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      * @return
      */
     IncomingDataIdDTO queryIncomingDataId(Long id);
+
+    /**
+     * 根据商户类型、商户id、查询进件主表信息
+     * @param incomingModuleStatusReqDTO
+     * @return
+     */
+    TfIncomingInfoEntity queryIncomingInfoByMerchant(IncomingModuleStatusReqDTO incomingModuleStatusReqDTO);
 
 }

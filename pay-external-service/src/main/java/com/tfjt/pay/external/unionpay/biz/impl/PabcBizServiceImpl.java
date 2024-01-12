@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -167,46 +168,32 @@ public class PabcBizServiceImpl implements PabcBizService {
     }
 
     @Override
-    public Result<MoudleStatusRespDTO> getModuleStatus(Long incomingId) {
+    public Result<MoudleStatusRespDTO> getModuleStatus(IncomingModuleStatusReqDTO incomingModuleStatusReqDTO) {
+        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoByMerchant(incomingModuleStatusReqDTO);
         //创建返回对象
         MoudleStatusRespDTO moudleStatusRespDTO = new MoudleStatusRespDTO();
         //根据入网id查询身份信息、营业信息、结算信息
-        if (ObjectUtil.isNull(incomingId)) {
+        if (ObjectUtil.isNull(tfIncomingInfoEntity)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
-        // 创建IdcardInfo实体查询对象
-        LambdaQueryWrapper<TfIncomingBusinessInfoEntity> businessInfoEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        // 创建MerchantInfo实体查询对象
-        LambdaQueryWrapper<TfIncomingMerchantInfoEntity> merchantInfoEntityQueryWrapper = new LambdaQueryWrapper<>();
-        // 创建SettleInfo实体查询对象
-        LambdaQueryWrapper<TfIncomingSettleInfoEntity> settleInfoEntityQueryWrapper = new LambdaQueryWrapper<>();
-
-        // 根据incomingId和未删除状态筛选IdcardInfo实体
-        businessInfoEntityLambdaQueryWrapper.eq(TfIncomingBusinessInfoEntity::getIncomingId, incomingId).eq(TfIncomingBusinessInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
-        // 根据incomingId和未删除状态筛选MerchantInfo实体
-        merchantInfoEntityQueryWrapper.eq(TfIncomingMerchantInfoEntity::getIncomingId, incomingId).eq(TfIncomingMerchantInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
-        // 根据incomingId和未删除状态筛选SettleInfo实体
-        settleInfoEntityQueryWrapper.eq(TfIncomingSettleInfoEntity::getIncomingId, incomingId).eq(TfIncomingSettleInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
         // 通过IdcardInfo服务查询IdcardInfo实体
-        TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = tfIncomingBusinessInfoService.getOne(businessInfoEntityLambdaQueryWrapper);
+        TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = tfIncomingBusinessInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 通过MerchantInfo服务查询MerchantInfo实体
-        TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = tfIncomingMerchantInfoService.getOne(merchantInfoEntityQueryWrapper);
+        TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = tfIncomingMerchantInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 通过SettleInfo服务查询SettleInfo实体
-        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = tfIncomingSettleInfoService.getOne(settleInfoEntityQueryWrapper);
-
+        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = tfIncomingSettleInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 如果查询到IdcardInfo实体，则设置模块状态响应DTO的cardId
-        if (null != tfIncomingMerchantInfoEntity) {
+        if (ObjectUtil.isNotEmpty(tfIncomingMerchantInfoEntity)) {
             moudleStatusRespDTO.setCardId(tfIncomingMerchantInfoEntity.getId());
         }
         // 如果查询到MerchantInfo实体，则设置模块状态响应DTO的merchantId
-        if (null != tfIncomingBusinessInfoEntity) {
+        if (ObjectUtil.isNotEmpty(tfIncomingBusinessInfoEntity)) {
             moudleStatusRespDTO.setMerchantId(tfIncomingBusinessInfoEntity.getId());
         }
         // 如果查询到SettleInfo实体，则设置模块状态响应DTO的settleId
-        if (null != tfIncomingSettleInfoEntity) {
+        if (ObjectUtil.isNotEmpty(tfIncomingSettleInfoEntity)) {
             moudleStatusRespDTO.setSettleId(tfIncomingSettleInfoEntity.getId());
         }
-
         return Result.ok(moudleStatusRespDTO);
     }
 

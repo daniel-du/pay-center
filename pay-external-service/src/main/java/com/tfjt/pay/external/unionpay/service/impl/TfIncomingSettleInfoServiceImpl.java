@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingSettleInfoDao;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
+import com.tfjt.pay.external.unionpay.enums.DeleteStatusEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingSettleInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
@@ -25,8 +27,10 @@ public class TfIncomingSettleInfoServiceImpl extends BaseServiceImpl<TfIncomingS
      * @return
      */
     @Override
-    public TfIncomingSettleInfoEntity querySettleInfoByIncomingId(Long incomingId) {
-        return null;
+    public TfIncomingSettleInfoEntity queryByIncomingId(Long incomingId) {
+        LambdaQueryWrapper<TfIncomingSettleInfoEntity> settleInfoEntityQueryWrapper = new LambdaQueryWrapper<>();
+        settleInfoEntityQueryWrapper.eq(TfIncomingSettleInfoEntity::getIncomingId, incomingId).eq(TfIncomingSettleInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        return this.baseMapper.selectOne(settleInfoEntityQueryWrapper);
     }
 
     /**

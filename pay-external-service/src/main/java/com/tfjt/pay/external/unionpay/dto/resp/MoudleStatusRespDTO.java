@@ -11,6 +11,27 @@ import java.io.Serializable;
 @Data
 public class MoudleStatusRespDTO implements Serializable {
     private static final long serialVersionUID = 8545175036366620333L;
+
+    /**
+     * 进件id
+     */
+    private Long incomingId;
+
+    /**
+     * 入网状态
+     */
+    private Byte accessStatus;
+
+    /**
+     * 入网主体类型
+     */
+    private Byte accessMainType;
+
+    /**
+     * 入网渠道类型
+     */
+    private Byte accessChannelType;
+
     /**
      * 身份信息id
      */

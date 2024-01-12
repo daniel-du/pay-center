@@ -19,7 +19,7 @@ public interface TfIncomingSettleInfoService extends IService<TfIncomingSettleIn
      * @param incomingId
      * @return
      */
-    TfIncomingSettleInfoEntity querySettleInfoByIncomingId(Long incomingId);
+    TfIncomingSettleInfoEntity queryByIncomingId(Long incomingId);
 
     /**
      * 根据结算信息id查询结算信息

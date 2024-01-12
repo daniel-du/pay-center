@@ -20,4 +20,11 @@ public interface TfIncomingBusinessInfoService extends IService<TfIncomingBusine
      * @return
      */
     IncomingBusinessRespDTO queryBusinessById(Long id);
+
+    /**
+     * 根据进件id查询营业信息
+     * @param incomingId
+     * @return
+     */
+    TfIncomingBusinessInfoEntity queryByIncomingId(Long incomingId);
 }

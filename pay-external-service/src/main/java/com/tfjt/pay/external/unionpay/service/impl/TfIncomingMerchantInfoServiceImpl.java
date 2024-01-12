@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingMerchantInfoDao;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingMerchantInfoEntity;
+import com.tfjt.pay.external.unionpay.enums.DeleteStatusEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,5 +25,17 @@ public class TfIncomingMerchantInfoServiceImpl extends BaseServiceImpl<TfIncomin
     @Override
     public IncomingMerchantRespDTO queryMerchantById(Long id) {
         return this.baseMapper.queryMerchantById(id);
+    }
+
+    /**
+     * 根据进件id查询商户身份信息
+     * @param incomingId
+     * @return
+     */
+    @Override
+    public TfIncomingMerchantInfoEntity queryByIncomingId(Long incomingId) {
+        LambdaQueryWrapper<TfIncomingMerchantInfoEntity> merchantInfoEntityQueryWrapper = new LambdaQueryWrapper<>();
+        merchantInfoEntityQueryWrapper.eq(TfIncomingMerchantInfoEntity::getIncomingId, incomingId).eq(TfIncomingMerchantInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        return this.baseMapper.selectOne(merchantInfoEntityQueryWrapper);
     }
 }
