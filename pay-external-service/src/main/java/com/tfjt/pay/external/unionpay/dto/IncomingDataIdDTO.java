@@ -16,6 +16,10 @@ public class IncomingDataIdDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 进件id
+     */
+    private Long id;
+    /**
      * 商户身份信息id
      */
     private Long merchantInfoId;
