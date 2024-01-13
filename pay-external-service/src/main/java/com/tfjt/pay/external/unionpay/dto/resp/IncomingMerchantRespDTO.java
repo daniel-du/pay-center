@@ -106,6 +106,15 @@ public class IncomingMerchantRespDTO implements Serializable {
      * 经办人证件号码
      */
     private String agentIdNo;
+
+    /**
+     * 经办人身份证反面照片
+     */
+    private String agentBackIdCardUrl;
+    /**
+     * 经办人身份证正面照片
+     */
+    private String agentFrontIdCardUrl;
     /**
      * 经办人同法人，0否，1是
      */

@@ -49,8 +49,6 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         tfIncomingInfoEntity.setId(incomingSubmitMessageDTO.getId());
         if (IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode().equals(incomingSubmitMessageDTO.getAccessStatus())) {
             //调用平安6248-开户接口
-//            JSONObject resultJson = PnHeadUtils.send(covertOpenAccountJson(incomingSubmitMessageDTO),
-//                    PnApiEnum.OPEN_ACCOUNT.getServiceCode(), PnApiEnum.OPEN_ACCOUNT.getServiceId());
             String accountNo = openAccount(tfIncomingInfoEntity, covertOpenAccountJson(incomingSubmitMessageDTO));
             incomingSubmitMessageDTO.setAccountNo(accountNo);
             tfIncomingInfoEntity.setAccountNo(accountNo);
@@ -58,8 +56,6 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
             tfIncomingInfoService.updateById(tfIncomingInfoEntity);
         }
         //调用平安6240接口
-//        JSONObject resultJson = PnHeadUtils.send(covertBinkCardJson(incomingSubmitMessageDTO),
-//                PnApiEnum.BIND_CARD_CORPORATE.getServiceCode(), PnApiEnum.BIND_CARD_CORPORATE.getServiceId());
         binkCard(incomingSubmitMessageDTO);
         //更新入网状态
         tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
@@ -162,13 +158,12 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         //客户真实姓名
         jsonObject.put("MemberName", incomingSubmitMessageDTO.getBusinessName());
         //会员证件类型
-//        jsonObject.put("MemberGlobalType", IdTypeEnum.SOCIAL_CREDIT_CODE.getCode());
-        jsonObject.put("MemberGlobalType", "52");
+        jsonObject.put("MemberGlobalType", IdTypeEnum.SOCIAL_CREDIT_CODE.getCode());
+//        jsonObject.put("MemberGlobalType", "52");
         //会员证件号码
         jsonObject.put("MemberGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
         //会员属性: SH-商户子账户(默认) 00-普通子账户
         jsonObject.put("MemberProperty", "SH");
-
         //手机号码测试送11个1
         jsonObject.put("Mobile", incomingSubmitMessageDTO.getLegalMobile());
         //邮箱

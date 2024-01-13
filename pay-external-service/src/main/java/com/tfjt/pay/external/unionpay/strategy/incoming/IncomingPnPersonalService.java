@@ -43,14 +43,10 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
      */
     @Override
     public boolean incomingSubmit(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
-        //判断开户状态
-//        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingSubmitMessageReqDTO.getIncomingId());
         TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
         tfIncomingInfoEntity.setId(incomingSubmitMessageDTO.getId());
         if (IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode().equals(incomingSubmitMessageDTO.getAccessStatus())) {
             //调用平安6248-开户接口
-//            PnHeadUtils.send(covertOpenAccountJson(incomingSubmitMessageDTO),
-//                    PnApiEnum.OPEN_ACCOUNT.getServiceCode(), PnApiEnum.OPEN_ACCOUNT.getServiceId());
             String accountNo = openAccount(tfIncomingInfoEntity, covertOpenAccountJson(incomingSubmitMessageDTO));
             incomingSubmitMessageDTO.setAccountNo(accountNo);
             tfIncomingInfoEntity.setAccountNo(accountNo);
@@ -74,7 +70,6 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
     @Override
     public boolean checkCode(CheckCodeMessageDTO checkCodeMessageDTO) {
         JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("FundSummaryAcctNo", "15000101144986");
         jsonObject.put("SubAcctNo", checkCodeMessageDTO.getAccountNo());
         jsonObject.put("TranNetMemberCode", checkCodeMessageDTO.getMemberId());
         jsonObject.put("MemberAcctNo", checkCodeMessageDTO.getBankCardNo());
