@@ -34,30 +34,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     @NotNull(message = "进件主表id不能为空", groups = {UpdateGroup.class, AddGroup.class})
     private Long incomingId;
 
-    /**
-     * 经销商/供应商id/店铺id
-     */
-//    @NotNull(message = "商户id不能为空", groups = {AddGroup.class})
-//    private Long businessId;
-//
-//    /**
-//     * 系统来源
-//     */
-//    @NotNull(message = "系统来源不能为空", groups = {AddGroup.class})
-//    private Byte businessType;
-//
-//    /**
-//     * 入网渠道类型（1：平安，2：银联）
-//     */
-//    @NotNull(message = "入网渠道类型不能为空", groups = {AddGroup.class})
-//    private Byte accessChannelType;
-//
-//    /**
-//     * 入网类型（1：贷款，2：商户入网）
-//     */
-//    @NotNull(message = "入网类型不能为空", groups = {AddGroup.class})
-//    private Byte accessType;
-//
+
     /**
      * 入网主体类型（1：个人，2：企业）
      */
@@ -85,11 +62,7 @@ public class IncomingMerchantReqDTO implements Serializable {
      */
     @NotBlank(message = "法人身份证正面照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalFrontIdCardUrl;
-    /**
-     * 法人身份证手持照片
-     */
-//    @NotBlank(message = "法人身份证手持照片不能为空", groups = { AddGroup.class, UpdateGroup.class })
-//    private String legalHoldIdCardUrl;
+
     /**
      * 法人身份证有效起始日期
      */
@@ -126,12 +99,10 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 法人国籍
      */
-//    @NotBlank(message = "法人国籍不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalNationality;
     /**
      * 法人性别
      */
-//    @NotNull(message = "法人性别不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Byte legalSex;
 
     /**

@@ -29,7 +29,7 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
 
     @Override
     public TfIncomingInfoEntity queryIncomingInfoById(Long id) {
-        return null;
+        return this.baseMapper.selectById(id);
     }
 
     /**
