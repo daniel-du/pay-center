@@ -30,6 +30,8 @@ public interface PabcBizService {
 
     com.tfjt.dto.response.Result<String> saveChangeInfo(AsyncMessageEntity message);
 
+    Result<Integer> getNetworkTypeByAreaCode(List<String> code);
+
 
 
 }

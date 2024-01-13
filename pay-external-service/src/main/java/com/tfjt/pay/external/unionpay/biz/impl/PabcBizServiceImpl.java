@@ -153,7 +153,6 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(list);
     }
-
     @Override
     public Result<Integer> getNetworkTypeByAreaCode(String code) {
         List<String> cacheList = networkTypeCacheUtil.getNetworkTypeCacheList();
@@ -228,6 +227,47 @@ public class PabcBizServiceImpl implements PabcBizService {
             dingWarning(supplierId,newIdentifyList,newSaleAreas,saleFlag,identityFlag,oldSaleAreas,oldIdentifyList);
         }
         return com.tfjt.dto.response.Result.ok();
+
+    }
+
+    @Override
+    public Result<Integer> getNetworkTypeByAreaCode(List<String> code) {
+        Integer cityType = CityTypeEnum.OLD_CITY.getCode();
+
+        //获取全部新城区域
+        List<String> cacheList = networkTypeCacheUtil.getNetworkTypeCacheList();
+        //判断两个list是否有交集
+        Set<String> codeSet = new HashSet<>(code);
+        Set<String> cacheSet = new HashSet<>(cacheList);
+        codeSet.retainAll(cacheSet);
+        if (CollectionUtil.isEmpty(codeSet)) {
+            //此时的销售区域只有老城即银联入网
+            cityType = CityTypeEnum.OLD_CITY.getCode();
+        }
+        if (CollectionUtil.isNotEmpty(codeSet)) {
+            //交集的区域小于销售区域说明既有老城，又有新城,此时走银联进件
+            if (codeSet.size() < code.size()) {
+                cityType = CityTypeEnum.OLD_CITY.getCode();
+            }
+            //交集的区域等于销售区域说明只有新城即平安入网，此时走平安进件
+            if (codeSet.size() == code.size()) {
+                cityType = CityTypeEnum.NEW_CITY.getCode();
+            }
+        }
+        return Result.ok(cityType);
+    }
+
+    public static void main(String[] args) {
+
+        List<Integer> list1 = Arrays.asList(1, 2, 3, 4, 5);
+        List<Integer> list2 = Arrays.asList(4, 5, 6, 7, 8);
+
+        Set<Integer> set1 = new HashSet<>(list1);
+        Set<Integer> set2 = new HashSet<>(list2);
+        set1.retainAll(set2); // 修改set1为它与set2的交集
+
+        List<Integer> intersection = new ArrayList<>(set1); // 转换回List形式
+        System.out.println(intersection);
 
     }
 
@@ -416,10 +456,10 @@ public class PabcBizServiceImpl implements PabcBizService {
 
         LoanUserEntity loanUser = loanUserService.getOne(wrapper);
         if (null != loanUser) {
-            queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.INCOMING.getCode());
+            queryAccessBankStatueRespDTO.setStatus(String.valueOf(IncomingStatusEnum.INCOMING.getCode()));
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY_LOAN.getName());
         } else {
-            queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.NOT_INCOMING.getCode());
+            queryAccessBankStatueRespDTO.setStatus(String.valueOf(IncomingStatusEnum.NOT_INCOMING.getCode()));
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY_LOAN.getName());
         }
 
@@ -437,10 +477,12 @@ public class PabcBizServiceImpl implements PabcBizService {
         QueryAccessBankStatueRespDTO queryAccessBankStatueRespDTO = new QueryAccessBankStatueRespDTO();
         TfIncomingInfoEntity one = tfIncomingInfoService.getOne(new LambdaQueryWrapper<TfIncomingInfoEntity>().eq(TfIncomingInfoEntity::getBusinessId, businessId).eq(TfIncomingInfoEntity::getAccessChannelType, IncomingAccessChannelTypeEnum.PINGAN.getCode()).eq(TfIncomingInfoEntity::getAccessType, IncomingAccessTypeEnum.COMMON.getCode()));
         if (null != one) {
-            queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.INCOMING.getCode());
+            String code = PabcUnionNetworkStatusMappingEnum.getMsg(one.getAccessStatus());
+            queryAccessBankStatueRespDTO.setStatus(code);
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.PINGAN.getName());
+            queryAccessBankStatueRespDTO.setMsg(one.getFailReason());
         } else {
-            queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.NOT_INCOMING.getCode());
+            queryAccessBankStatueRespDTO.setStatus(String.valueOf(IncomingStatusEnum.NOT_INCOMING.getCode()));
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.PINGAN.getName());
         }
         return queryAccessBankStatueRespDTO;
@@ -461,10 +503,11 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         SelfSignEntity one = selfSignService.getOne(new LambdaQueryWrapper<SelfSignEntity>().eq(SelfSignEntity::getAccesserAcct, buisnessNo));
         if (null != one) {
-            queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.INCOMING.getCode());
+            queryAccessBankStatueRespDTO.setStatus(one.getSigningStatus());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY.getName());
+            queryAccessBankStatueRespDTO.setMsg(one.getMsg());
         } else {
-            queryAccessBankStatueRespDTO.setStatus(IncomingStatusEnum.NOT_INCOMING.getCode());
+            queryAccessBankStatueRespDTO.setStatus(String.valueOf(IncomingStatusEnum.NOT_INCOMING.getCode()));
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY.getName());
         }
         return queryAccessBankStatueRespDTO;

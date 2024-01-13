@@ -25,4 +25,7 @@ public interface PabcApiService {
     Result<List<QueryAccessBankStatueRespDTO>> getNetworkStatus( QueryAccessBankStatueReqDTO queryAccessBankStatueReqDTO);
 
 
+    Result<Integer> getNetworkTypeByAreaCode(List<String> code);
+
+
 }
