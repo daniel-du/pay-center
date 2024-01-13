@@ -83,15 +83,7 @@ public class TfIncomingImportEntity implements Serializable {
      */
     private String legalBackIdCardUrl;
 
-    /**
-     * 证件手持照片
-     */
-    private String legalHoldIdCardUrl;
 
-    /**
-     * 法人国籍
-     */
-    private String legalNationality;
 
     /**
      * 证件有效起始日期

@@ -5,7 +5,7 @@ import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingImportDao;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingImportEntity;
 import com.tfjt.pay.external.unionpay.service.ITfIncomingImportService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
  * @since 2024-01-07
  */
 @Service
-public class TfIncomingImportServiceImpl extends ServiceImpl<TfIncomingImportDao, TfIncomingImportEntity> implements ITfIncomingImportService {
+public class TfIncomingImportServiceImpl extends BaseServiceImpl<TfIncomingImportDao, TfIncomingImportEntity> implements ITfIncomingImportService {
 
     /**
      * 根据起始id查询未提交数据，每次一百条

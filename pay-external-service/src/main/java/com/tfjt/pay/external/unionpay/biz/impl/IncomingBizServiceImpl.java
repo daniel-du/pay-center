@@ -532,10 +532,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         TfIdcardInfoEntity legalIdcardInfoEntity = TfIdcardInfoEntity.builder().
                 idType(IdTypeEnum.ID_CARD.getCode()).
                 idNo(tfIncomingImportEntity.getLegalIdNo()).name(tfIncomingImportEntity.getLegalName()).
-                nationality(tfIncomingImportEntity.getLegalNationality()).
                 frontIdCardUrl(tfIncomingImportEntity.getLegalFrontIdCardUrl()).
                 backIdCardUrl(tfIncomingImportEntity.getLegalBackIdCardUrl()).
-                holdIdCardUrl(tfIncomingImportEntity.getLegalHoldIdCardUrl()).
                 idEffectiveDate(tfIncomingImportEntity.getLegalIdEffectiveDate()).
                 idExpiryDate(tfIncomingImportEntity.getLegalIdExpiryDate()).
                 isLongTerm(tfIncomingImportEntity.getLegalIdIsLongTerm()).build();
