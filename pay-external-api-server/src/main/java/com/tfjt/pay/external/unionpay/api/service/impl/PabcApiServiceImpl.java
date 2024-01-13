@@ -46,4 +46,9 @@ public class PabcApiServiceImpl implements PabcApiService {
     public Result<List<QueryAccessBankStatueRespDTO>> getNetworkStatus(QueryAccessBankStatueReqDTO queryAccessBankStatueReqDTO) {
         return pabcBizService.getNetworkStatus(queryAccessBankStatueReqDTO);
     }
+
+    @Override
+    public Result<Integer> getNetworkTypeByAreaCode(List<String> code) {
+        return pabcBizService.getNetworkTypeByAreaCode(code);
+    }
 }
