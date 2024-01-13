@@ -46,4 +46,9 @@ public class IncomingController {
     public Result changeAccessMainType(@RequestBody IncomingChangeAccessMainTypeReqDTO changeAccessMainTypeReqDTO) {
         return incomingBizService.changeAccessMainType(changeAccessMainTypeReqDTO);
     }
+
+    @PostMapping("/dataExtract")
+    public Result unionpayDataExtract() {
+        return incomingBizService.unionpayDataExtract();
+    }
 }
