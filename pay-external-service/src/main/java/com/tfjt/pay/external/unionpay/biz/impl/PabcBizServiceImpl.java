@@ -172,7 +172,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         ValidatorUtils.validateEntity(incomingModuleStatusReqDTO);
         TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoByMerchant(incomingModuleStatusReqDTO);
         if (ObjectUtil.isNull(tfIncomingInfoEntity)) {
-            throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
+            throw new TfException(ExceptionCodeEnum.INCOMING_DATA_IS_NULL);
         }
         //创建返回对象
         MoudleStatusRespDTO moudleStatusRespDTO = new MoudleStatusRespDTO();

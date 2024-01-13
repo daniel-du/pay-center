@@ -131,7 +131,7 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 法人性别
      */
-    @NotNull(message = "法人性别不能为空", groups = { AddGroup.class, UpdateGroup.class })
+//    @NotNull(message = "法人性别不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private Byte legalSex;
 
     /**

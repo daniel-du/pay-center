@@ -2,16 +2,16 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tfjt.pay.external.unionpay.dao.BankAreaDao;
 import com.tfjt.pay.external.unionpay.entity.BankAreaEntity;
 import com.tfjt.pay.external.unionpay.service.BankAreaService;
+import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service("tfBankAreaService")
-public class BankAreaServiceImpl extends ServiceImpl<BankAreaDao, BankAreaEntity> implements BankAreaService {
+public class BankAreaServiceImpl extends BaseServiceImpl<BankAreaDao, BankAreaEntity> implements BankAreaService {
 
 
     @Override
