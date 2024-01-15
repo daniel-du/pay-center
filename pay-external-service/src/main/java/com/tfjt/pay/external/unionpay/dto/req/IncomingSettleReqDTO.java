@@ -116,16 +116,16 @@ public class IncomingSettleReqDTO implements Serializable {
      */
     @NotBlank(message = "开户行所在地-市名称不能为空", groups = {AddGroup.class, UpdateGroup.class})
     private String openAccountCityName;
-    /**
-     * 开户行所在地-区code
-     */
-    @NotBlank(message = "开户行所在地-区code不能为空", groups = {AddGroup.class, UpdateGroup.class})
-    private String openAccountDistrict;
-    /**
-     * 开户行所在地-区名称
-     */
-    @NotBlank(message = "开户行所在地-区名称不能为空", groups = {AddGroup.class, UpdateGroup.class})
-    private String openAccountDistrictName;
+//    /**
+//     * 开户行所在地-区code
+//     */
+//    @NotBlank(message = "开户行所在地-区code不能为空", groups = {AddGroup.class, UpdateGroup.class})
+//    private String openAccountDistrict;
+//    /**
+//     * 开户行所在地-区名称
+//     */
+//    @NotBlank(message = "开户行所在地-区名称不能为空", groups = {AddGroup.class, UpdateGroup.class})
+//    private String openAccountDistrictName;
 
     /**
      * 职业
