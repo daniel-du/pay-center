@@ -314,6 +314,12 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         return null;
     }
 
+    @Override
+    public Result bacthIncoming() {
+
+        return null;
+    }
+
     /**
      * 根据进行信息获取实现类name
      * @param incomingSubmitMessageDTO

@@ -64,4 +64,10 @@ public interface IncomingBizService {
      * @return
      */
     Result unionpayDataExtract();
+
+    /**
+     * 银联老数据批量入网平安
+     * @return
+     */
+    Result bacthIncoming();
 }
