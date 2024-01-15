@@ -112,7 +112,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             log.info("IncomingMerchantBizServiceImpl--getById, incomingMerchantRespDTO:{}", JSONObject.toJSONString(incomingMerchantRespDTO));
             return Result.ok(incomingMerchantRespDTO);
         } catch (TfException e) {
-            log.error("平安进件-查询商户身份信息 发生 RenException:", e);
+            log.error("平安进件-查询商户身份信息 发生 TfException:", e);
             return Result.failed(e.getCode(), e.getMessage());
         } catch (Exception e) {
             log.error("平安进件-查询商户身份信息 发生 Exception:", e);
@@ -176,7 +176,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             }
             return Result.ok();
         } catch (TfException e) {
-            log.error("平安进件-保存商户身份信息 发生 RenException:", e);
+            log.error("平安进件-保存商户身份信息 发生 TfException:", e);
             throw new TfException(e.getMessage());
         } catch (Exception e) {
             log.error("平安进件-保存商户身份信息 发生 Exception:", e);

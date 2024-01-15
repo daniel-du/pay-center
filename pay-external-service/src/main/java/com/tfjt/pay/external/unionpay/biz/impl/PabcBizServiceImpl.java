@@ -71,6 +71,9 @@ public class PabcBizServiceImpl implements PabcBizService {
     private FaStandardLocationDictService faStandardLocationDictService;
     @Autowired
     private NetworkTypeCacheUtil networkTypeCacheUtil;
+
+    @Autowired
+    private TfBankCardInfoService tfBankCardInfoService;
     @Resource
     private DingRobotService dingRobotService;
     @DubboReference
@@ -186,6 +189,8 @@ public class PabcBizServiceImpl implements PabcBizService {
         TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = tfIncomingMerchantInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 通过SettleInfo服务查询SettleInfo实体
         TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = tfIncomingSettleInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
+
+
         // 如果查询到IdcardInfo实体，则设置模块状态响应DTO的cardId
         if (ObjectUtil.isNotEmpty(tfIncomingMerchantInfoEntity)) {
             moudleStatusRespDTO.setMerchantId(tfIncomingMerchantInfoEntity.getId());
@@ -197,6 +202,10 @@ public class PabcBizServiceImpl implements PabcBizService {
         // 如果查询到SettleInfo实体，则设置模块状态响应DTO的settleId
         if (ObjectUtil.isNotEmpty(tfIncomingSettleInfoEntity)) {
             moudleStatusRespDTO.setSettleId(tfIncomingSettleInfoEntity.getId());
+            TfBankCardInfoEntity tfBankCardInfoEntity = tfBankCardInfoService.getById(tfIncomingSettleInfoEntity.getBankCardId());
+            if (ObjectUtil.isNotEmpty(tfBankCardInfoEntity)) {
+                moudleStatusRespDTO.setBankCardMobile(tfBankCardInfoEntity.getBankCardMobile());
+            }
         }
         return Result.ok(moudleStatusRespDTO);
     }

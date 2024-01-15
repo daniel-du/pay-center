@@ -123,7 +123,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             }
             return Result.ok();
         } catch (TfException e) {
-            log.error("平安进件-保存进件主表信息 发生 RenException:", e);
+            log.error("平安进件-保存进件主表信息 发生 TfException:", e);
             throw new TfException(e.getMessage());
         } catch (Exception e) {
             log.error("平安进件-保存进件主表信息 发生 Exception:", e);

@@ -33,6 +33,11 @@ public class MoudleStatusRespDTO implements Serializable {
     private Byte accessChannelType;
 
     /**
+     * 银行卡预留手机号
+     */
+    private String bankCardMobile;
+
+    /**
      * 身份信息id
      */
     private Long merchantId;
