@@ -111,15 +111,17 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         List<PabcBranchBankInfoRespDTO> list = pabcPubPayBankaService.getBranchBankInfo(bankCode, cityCode, branchBankName);
         List<String> collect = list.stream().map(PabcBranchBankInfoRespDTO::getBankDreccode).collect(Collectors.toList());
-        List<PabcSuperbankcodeEntity> superbankcodeEntityList = pabcSuperbankcodeService.list(new LambdaQueryWrapper<PabcSuperbankcodeEntity>().in(PabcSuperbankcodeEntity::getAgentbankcode, collect));
-        Map<String, List<PabcSuperbankcodeEntity>> map = superbankcodeEntityList.stream().collect(Collectors.groupingBy(PabcSuperbankcodeEntity::getAgentbankcode));
-        for (PabcBranchBankInfoRespDTO pabcBranchBankInfoRespDTO : list) {
-            String bankDreccode = pabcBranchBankInfoRespDTO.getBankDreccode();
-            if (StringUtils.isNotBlank(bankDreccode)) {
-                List<PabcSuperbankcodeEntity> entityList = map.get(bankDreccode);
-                if (CollectionUtil.isNotEmpty(entityList)) {
-                    String bankno = entityList.get(0).getBankno();
-                    pabcBranchBankInfoRespDTO.setBankNo(bankno);
+        if (CollectionUtil.isNotEmpty(collect)) {
+            List<PabcSuperbankcodeEntity> superbankcodeEntityList = pabcSuperbankcodeService.list(new LambdaQueryWrapper<PabcSuperbankcodeEntity>().in(PabcSuperbankcodeEntity::getAgentbankcode, collect));
+            Map<String, List<PabcSuperbankcodeEntity>> map = superbankcodeEntityList.stream().collect(Collectors.groupingBy(PabcSuperbankcodeEntity::getAgentbankcode));
+            for (PabcBranchBankInfoRespDTO pabcBranchBankInfoRespDTO : list) {
+                String bankDreccode = pabcBranchBankInfoRespDTO.getBankDreccode();
+                if (StringUtils.isNotBlank(bankDreccode)) {
+                    List<PabcSuperbankcodeEntity> entityList = map.get(bankDreccode);
+                    if (CollectionUtil.isNotEmpty(entityList)) {
+                        String bankno = entityList.get(0).getBankno();
+                        pabcBranchBankInfoRespDTO.setBankNo(bankno);
+                    }
                 }
             }
         }
