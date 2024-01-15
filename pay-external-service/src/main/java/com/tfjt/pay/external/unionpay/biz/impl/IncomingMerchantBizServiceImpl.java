@@ -21,6 +21,7 @@ import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,6 +100,9 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         try {
             log.info("IncomingMerchantBizServiceImpl--getById, id:{}", id);
             IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantById(id);
+            if (ObjectUtils.isEmpty(incomingMerchantRespDTO)) {
+                return Result.ok();
+            }
             if (NumberConstant.ONE.equals(incomingMerchantRespDTO.getLegalIdIsLongTerm())) {
                 incomingMerchantRespDTO.setLegalIdExpiryDate(null);
             }

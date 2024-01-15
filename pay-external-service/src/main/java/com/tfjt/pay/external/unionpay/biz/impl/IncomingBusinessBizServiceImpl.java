@@ -19,6 +19,7 @@ import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,9 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
     public Result<IncomingBusinessRespDTO> getById(Long id) {
         log.info("IncomingBusinessBizServiceImpl---getById, id:{}", id);
         IncomingBusinessRespDTO incomingBusinessRespDTO = tfIncomingBusinessInfoService.queryBusinessById(id);
+        if (ObjectUtils.isEmpty(incomingBusinessRespDTO)) {
+            return Result.ok();
+        }
         if (NumberConstant.ONE.equals(incomingBusinessRespDTO.getBusinessLicenseIsLongTerm())) {
             incomingBusinessRespDTO.setBusinessLicenseExpireDate(null);
         }
