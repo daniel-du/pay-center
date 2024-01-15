@@ -88,14 +88,14 @@ public class IncomingSettleRespDTO implements Serializable {
      * 开户行所在地-市名称
      */
     private String openAccountCityName;
-    /**
-     * 开户行所在地-区code
-     */
-    private String openAccountDistrict;
-    /**
-     * 开户行所在地-区名称
-     */
-    private String openAccountDistrictName;
+//    /**
+//     * 开户行所在地-区code
+//     */
+//    private String openAccountDistrict;
+//    /**
+//     * 开户行所在地-区名称
+//     */
+//    private String openAccountDistrictName;
 
     /**
      * 职业
