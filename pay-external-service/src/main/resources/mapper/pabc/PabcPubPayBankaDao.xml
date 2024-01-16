@@ -23,7 +23,7 @@
         tf_pabc_pub_pay_banka
             <where>
                 bank_clscode = #{bankCode}
-                AND bank_citycode = #{cityCode},
+                AND bank_citycode = #{cityCode}
                 <if test="branchBankName != null and branchBankName != ''">
                     AND bank_lname LIKE concat('%',#{branchBankName},'%')
                 </if>
