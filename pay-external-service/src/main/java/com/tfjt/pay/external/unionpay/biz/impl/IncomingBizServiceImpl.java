@@ -141,6 +141,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         //查询提交进件申请所需信息
         IncomingSubmitMessageDTO incomingSubmitMessageDTO =
                 tfIncomingInfoService.queryIncomingMessage(incomingSubmitMessageReqDTO.getIncomingId());
+        if (IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode().equals(incomingSubmitMessageDTO.getAccessStatus())) {
+            return Result.ok();
+        }
         //根据参数类型获取实现类
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
         AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);

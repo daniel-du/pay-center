@@ -244,6 +244,8 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
             jsonObject.put("AgencyClientGlobalType", IdTypeEnum.ID_CARD.getCode());
             jsonObject.put("AgencyClientGlobalId", incomingSubmitMessageDTO.getAgentIdNo());
             jsonObject.put("AgencyClientMobile", incomingSubmitMessageDTO.getAgentMobile());
+        } else {
+            jsonObject.put("AgencyClientFlag", "2");
         }
         return jsonObject;
     }
