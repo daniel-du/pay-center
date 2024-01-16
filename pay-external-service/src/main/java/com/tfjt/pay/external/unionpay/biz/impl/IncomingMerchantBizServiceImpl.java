@@ -177,7 +177,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             return Result.ok();
         } catch (TfException e) {
             log.error("平安进件-保存商户身份信息 发生 TfException:", e);
-            throw new TfException(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("平安进件-保存商户身份信息 发生 Exception:", e);
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -197,7 +197,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingMerchantReqDTO.getIncomingId());
         incomingMerchantReqDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
         validateMerchantEntity(incomingMerchantReqDTO);
-        TfIncomingMerchantInfoEntity originMerchantInfoEntity = tfIncomingMerchantInfoService.getById(incomingMerchantReqDTO.getId());
+//        TfIncomingMerchantInfoEntity originMerchantInfoEntity = tfIncomingMerchantInfoService.getById(incomingMerchantReqDTO.getId());
         //保存商户身份信息
         TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = TfIncomingMerchantInfoEntity.builder().
                 id(incomingMerchantReqDTO.getId()).shopShortName(incomingMerchantReqDTO.getShopShortName()).
@@ -209,7 +209,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
         //保存商户身份-法人信息
-        TfIdcardInfoEntity legalIdcardInfoEntity = saveLegal(incomingMerchantReqDTO);
+        saveLegal(incomingMerchantReqDTO);
         //入网主体非企业时，不需要保存经办人信息
         if (!ACCESS_MAIN_TYPE_COMPANY.equals(tfIncomingInfoEntity.getAccessMainType())) {
             return Result.ok();

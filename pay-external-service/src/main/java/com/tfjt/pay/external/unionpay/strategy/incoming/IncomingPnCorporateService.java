@@ -182,6 +182,7 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         jsonObject.put("ShopId", incomingSubmitMessageDTO.getBusinessId());
         jsonObject.put("ShopName", incomingSubmitMessageDTO.getShopShortName());
         //法人信息-个体工商户必填
+        jsonObject.put("RepFlag", NumberConstant.ONE);
         jsonObject.put("ReprName", incomingSubmitMessageDTO.getLegalName());
         jsonObject.put("ReprGlobalType", IdTypeEnum.ID_CARD.getCode());
         jsonObject.put("ReprGlobalId", incomingSubmitMessageDTO.getLegalIdNo());
