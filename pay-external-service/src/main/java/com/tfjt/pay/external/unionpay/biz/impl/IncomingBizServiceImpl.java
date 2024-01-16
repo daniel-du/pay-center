@@ -25,6 +25,7 @@ import com.tfjt.pay.external.unionpay.strategy.incoming.AbstractIncomingService;
 import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.core.validator.group.AddGroup;
@@ -40,9 +41,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -85,8 +89,6 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private TfBankCardInfoService tfBankCardInfoService;
 
-    @Autowired
-    private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
 
     @Autowired
     private ITfIncomingImportService tfIncomingImportService;
@@ -97,6 +99,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private NetworkTypeCacheUtil networkTypeCacheUtil;
 
+    @Autowired
+    private RedisCache redisCache;
+
 
     @Value("${rocketmq.topic.incomingFinish}")
     private String incomingFinishTopic;
@@ -104,6 +109,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     private static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
 
     private static final String MQ_TO_SERVER = "tf-cloud-shop";
+
+    private final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 
     @Override
     public Result incomingSave(IncomingInfoReqDTO incomingInfoReqDTO) {
@@ -365,7 +372,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 .id(incomingMessage.getId())
                 .accessChannelType(incomingMessage.getAccessChannelType())
                 .accessMainType(incomingMessage.getAccessMainType())
-                .accountNo(incomingMessage.getAccountNo()).build();
+                .accountNo(incomingMessage.getAccountNo())
+                .businessType(incomingMessage.getBusinessType())
+                .businessId(incomingMessage.getBusinessId())
+                .build();
         // 创建消息
         AsyncMessageEntity messageEntity = createMessage(RetryMessageConstant.INCOMING_FINISH,
                 JSONObject.toJSONString(incomingFinishDTO), identifierGenerator.nextId(AsyncMessageEntity.class).toString());
@@ -619,5 +629,12 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
     }
 
+    private String generateStatementNo(Date date) {
+        String prefix = "DZ" + FORMAT.format(date);
+        Long incr = redisCache.incr(prefix);
+        redisCache.expire(prefix, 24, TimeUnit.HOURS);
+        String str = String.format("%04d", incr);
+        return prefix + str;
+    }
 
 }

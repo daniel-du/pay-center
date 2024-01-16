@@ -47,6 +47,11 @@ public class IncomingSubmitMessageDTO implements Serializable {
     private Integer accessStatus;
 
     /**
+     * 商户类型，1：经销商/供应商 ，2：云商
+     */
+    private Integer businessType;
+
+    /**
      * 经销商/云商id
      */
     private Long businessId;

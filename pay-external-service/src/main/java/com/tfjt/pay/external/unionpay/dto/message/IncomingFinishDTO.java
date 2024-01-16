@@ -37,5 +37,15 @@ public class IncomingFinishDTO implements Serializable {
      */
     private String accountNo;
 
+    /**
+     * 商户类型，1：经销商/供应商 ，2：云商
+     */
+    private Integer businessType;
+
+    /**
+     * 商户id
+     */
+    private Long businessId;
+
 
 }

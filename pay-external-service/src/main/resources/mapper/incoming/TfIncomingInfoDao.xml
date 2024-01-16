@@ -26,7 +26,7 @@
 
     <select id="queryIncomingMessage" resultType="com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO">
         select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
-        a.access_status,a.business_id,a.account_no,a.sign_channel,b.shop_short_name,
+        a.access_status,a.business_type,a.business_id,a.account_no,a.sign_channel,b.shop_short_name,
         b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
         d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,f.business_license_type,
 		g.settlement_account_type, g.occupation, h.bank_account_name, h.bank_card_no,
