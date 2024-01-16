@@ -22,7 +22,7 @@
         where city_nodecode =
               #{provinceCode}
           and city_oraareacode in (select bank_citycode
-                                   from tf_pabc_pub_pay_banka
+                                       from tf_pabc_pub_pay_banka
                                    where bank_clscode =
                                          #{bankCode})
     </select>

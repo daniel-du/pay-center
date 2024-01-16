@@ -1,9 +1,7 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
-import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -65,16 +63,6 @@ public class BankInfoController {
     @GetMapping("/getBranchBankInfo")
     public Result<List<PabcBranchBankInfoRespDTO>> getBranchBankInfo(String bankCode,String cityCode,String branchBankName){
         return pabcBizService.getBranchBankInfo(bankCode,cityCode,branchBankName);
-    }
-
-    /**
-     * 查询入网状态
-     * @param queryAccessBankStatueReqDTO   查询参数
-     * @return
-     */
-    @PostMapping("/getNetworkStatus")
-    public Result<List<QueryAccessBankStatueRespDTO>> getNetworkStatus(@RequestBody QueryAccessBankStatueReqDTO queryAccessBankStatueReqDTO){
-        return pabcBizService.getNetworkStatus(queryAccessBankStatueReqDTO);
     }
 
     /**

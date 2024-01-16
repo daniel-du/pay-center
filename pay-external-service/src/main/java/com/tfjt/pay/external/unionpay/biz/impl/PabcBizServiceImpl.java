@@ -9,11 +9,11 @@ import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,8 +59,6 @@ public class PabcBizServiceImpl implements PabcBizService {
     @Autowired
     private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
     @Autowired
-    private TfIdcardInfoService tfIdcardInfoService;
-    @Autowired
     private TfIncomingMerchantInfoService tfIncomingMerchantInfoService;
     @Autowired
     private TfIncomingSettleInfoService tfIncomingSettleInfoService;
@@ -74,7 +71,7 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Autowired
     private TfBankCardInfoService tfBankCardInfoService;
-    @Resource
+    @Autowired
     private DingRobotService dingRobotService;
     @DubboReference
     private SupplierApiService supplierApiService;
@@ -85,8 +82,7 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Override
     public Result<List<PabcBankNameAndCodeRespDTO>> getBankInfoByName(String name) {
-        List<PabcBankNameAndCodeRespDTO> list = pabcPubAppparService.getBankInfoByName(name);
-        return Result.ok(list);
+        return Result.ok(pabcPubAppparService.getBankInfoByName(name));
     }
 
     @Override
@@ -108,6 +104,9 @@ public class PabcBizServiceImpl implements PabcBizService {
     public Result<List<PabcBranchBankInfoRespDTO>> getBranchBankInfo(String bankCode, String cityCode, String branchBankName) {
         if (StringUtils.isBlank(bankCode) || StringUtils.isBlank(cityCode)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
+        }
+        if (StringUtils.isNotBlank(cityCode)) {
+            cityCode = cityCode.substring(1,4);
         }
         List<PabcBranchBankInfoRespDTO> list = pabcPubPayBankaService.getBranchBankInfo(bankCode, cityCode, branchBankName);
         List<String> collect = list.stream().map(PabcBranchBankInfoRespDTO::getBankDreccode).collect(Collectors.toList());
@@ -232,9 +231,10 @@ public class PabcBizServiceImpl implements PabcBizService {
             Boolean identityFlag = checkListIsEquals(newIdentifyList, oldIdentifyList);
             List<MerchantChangeReqDTO> saveList = getSaveList(newSaleAreas,newIdentifyList,oldSaleAreas,oldIdentifyList,dto,saleFlag,identityFlag);
             if (CollectionUtil.isNotEmpty(saveList)) {
+                //todo dubbo 重试次数设置为0
                 supplierApiService.saveMerchangtChangeInfo(saveList);
             }
-            //钉钉报警
+            //todo 钉钉报警 改为异步
             dingWarning(supplierId,newIdentifyList,newSaleAreas,saleFlag,identityFlag,oldSaleAreas,oldIdentifyList);
         }
         return com.tfjt.dto.response.Result.ok();

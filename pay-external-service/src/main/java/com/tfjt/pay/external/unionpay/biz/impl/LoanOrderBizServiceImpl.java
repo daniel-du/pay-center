@@ -436,6 +436,7 @@ public class LoanOrderBizServiceImpl implements LoanOrderBizService {
      * @param result 银联合并下单返回数据
      * @param appId  appId
      */
+    @Override
     public void saveMergeConsumerResult(Result<ConsumerPoliciesRespDTO> result, String appId) {
         ConsumerPoliciesRespDTO data = result.getData();
         String status = data.getStatus();
