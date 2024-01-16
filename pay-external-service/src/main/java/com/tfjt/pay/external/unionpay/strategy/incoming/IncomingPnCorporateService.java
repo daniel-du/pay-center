@@ -34,6 +34,9 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
     TfIncomingInfoService tfIncomingInfoService;
 
     @Autowired
+    IncomingPnCorporateService incomingPnCorporateService;
+
+    @Autowired
     PnHeadUtils pnHeadUtils;
 
 
@@ -211,17 +214,13 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         //开户行名称
         jsonObject.put("AcctOpenBranchName", incomingSubmitMessageDTO.getBankName());
         //大小额行号：大小额行号和超级网银行号两者二选一必填。
-        log.info("--------bankcode--------:{},{},{}", incomingSubmitMessageDTO.getBankName(),PnSdkConstant.PN_BANK_CODE,PnSdkConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankName()));
         if (!PnSdkConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankCode())) {
-            log.info("--------bankcode2--------:{},{},{}", incomingSubmitMessageDTO.getBankName(),PnSdkConstant.PN_BANK_CODE,PnSdkConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankName()));
             jsonObject.put("CnapsBranchId", incomingSubmitMessageDTO.getBankBranchCode());
         }
-
 //        //超级网银行号
 //        jsonObject.put("EiconBankBranchId", "102100099996");
         //手机号码
         jsonObject.put("Mobile", incomingSubmitMessageDTO.getBankCardMobile());
-
         //个体工商户标识
         jsonObject.put("IndivBusinessFlag", NumberConstant.ONE.equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
         //营业及店铺信息-个体工商户必填

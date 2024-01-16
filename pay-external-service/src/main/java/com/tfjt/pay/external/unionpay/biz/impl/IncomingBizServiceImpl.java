@@ -356,7 +356,6 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      * 异步发送消息
      * @param incomingMessage
      */
-    @Async
     public void MQProcess(IncomingSubmitMessageDTO incomingMessage){
         log.info("IncomingBizServiceImpl--MQProcess, start incomingMessage:{}", JSONObject.toJSONString(incomingMessage));
         IncomingFinishDTO incomingFinishDTO = IncomingFinishDTO.builder()

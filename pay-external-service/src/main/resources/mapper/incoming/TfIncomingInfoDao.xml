@@ -57,7 +57,7 @@
         left join tf_business_license_info f on e.business_license_id = f.id
 		left join tf_incoming_settle_info g on g.incoming_id = a.id
         left join tf_bank_card_info h on g.bank_card_id = h.id
-		where a.business_id = #{param.busineeeId} and a.business_type = #{param.businessType}
+		where a.business_id = #{param.businessId} and a.business_type = #{param.businessType}
 		and a.access_channel_type = #{param.accessChannelType} and a.access_status = 6
     </select>
     <select id="queryIncomingMessagesByMerchantList" resultMap="incomingMessageMap">

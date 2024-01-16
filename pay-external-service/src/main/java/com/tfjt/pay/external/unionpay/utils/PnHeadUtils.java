@@ -51,19 +51,13 @@ public class PnHeadUtils {
     @Autowired
     private PnClientConfig pnClientConfig;
 
-    protected static String MrchCode="4426";
-
     /**
      * http成功标识
      */
     private static final Integer HTTP_SUCCESS_CODE = 200;
 
-    /**
-     * 平安api成功标识
-     */
-    public static final String API_SUCCESS_CODE = "000000";
-
-    private static final String REQUEST_TYPE = "POST";
+    @Value("${pnclient.mrchCode}")
+    private String mrchCodeValue;
 
     @Value("${pnclient.txnClientNo}")
     private String txnClientNoValue;
@@ -78,9 +72,12 @@ public class PnHeadUtils {
 
     protected static ApiClient apiClient;
 
+    protected static String mrchCode;
+
     @PostConstruct
     public void init() {
         apiClient = ApiClient.getInstance(pnClientConfig.getClientPropertie());
+        mrchCode = mrchCodeValue;
         txnClientNo = txnClientNoValue;
         fundSummaryAcctNo = fundSummaryAcctNoValue;
     }
@@ -100,7 +97,7 @@ public class PnHeadUtils {
         jsonObject.put("TxnTime", simpleDateFormat1.format(new Date()));
         //商户号:签约客户号，见证宝产品此字段为必输
 //        jsonObject.put("MrchCode", MrchCode);
-        jsonObject.put("MrchCode", MrchCode);
+        jsonObject.put("MrchCode", mrchCode);
         //商户号:交易客户号，Ecif客户号（例：680000376596）
         jsonObject.put("TxnClientNo", txnClientNo);
         //监管账户
@@ -117,7 +114,7 @@ public class PnHeadUtils {
         LocalDateTime respTime = LocalDateTime.now();
         log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, sw:{}, responseBody:{}", txnCode, serviceId, sw.getLastTaskTimeMillis(), httpResult.toString());
         //异步保存调用日志
-        logProcessAsync(jsonObject, serviceId, httpResult, reqTime, respTime, sw.getLastTaskTimeMillis());
+        incomingApiLogService.logProcessAsync(jsonObject, serviceId, httpResult, reqTime, respTime, sw.getLastTaskTimeMillis());
         //http响应为空
         if (ObjectUtils.isEmpty(httpResult)) {
             throw new TfException(ExceptionCodeEnum.PN_API_RESULT_IS_NULL);
@@ -157,37 +154,4 @@ public class PnHeadUtils {
         return errorJson;
     }
 
-    /**
-     * 异步保存调用日志
-     * @param jsonObject
-     * @param serviceId
-     * @param httpResult
-     * @param reqTime
-     * @param respTime
-     * @param comsumingTime
-     */
-    @Async
-    public void logProcessAsync(JSONObject jsonObject, String serviceId, HttpResult httpResult, LocalDateTime reqTime,
-                           LocalDateTime respTime, Long comsumingTime) {
-        TfIncomingApiLogEntity incomingApiLogEntity = new TfIncomingApiLogEntity();
-        incomingApiLogEntity.setUrl(serviceId);
-        incomingApiLogEntity.setApiCode(jsonObject.getString("TxnCode"));
-        incomingApiLogEntity.setRequestType(REQUEST_TYPE);
-        incomingApiLogEntity.setRequestTime(reqTime);
-        incomingApiLogEntity.setResponseTime(respTime);
-        incomingApiLogEntity.setRequestParam(jsonObject.toJSONString());
-        incomingApiLogEntity.setResponseBody(JSONObject.toJSONString(httpResult));
-        incomingApiLogEntity.setConsumeTime(comsumingTime.intValue());
-        incomingApiLogEntity.setStatus(NumberConstant.ONE);
-        incomingApiLogEntity.setAccessChannelType(IncomingAccessChannelTypeEnum.PINGAN.getCode().byteValue());
-        incomingApiLogEntity.setAccessType(IncomingAccessTypeEnum.COMMON.getCode().byteValue());
-        if (!HTTP_SUCCESS_CODE.equals(httpResult.getCode())) {
-            incomingApiLogEntity.setStatus(NumberConstant.TWO);
-        }
-        JSONObject resultJson = JSONObject.parseObject(httpResult.getData());
-        if (!API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
-            incomingApiLogEntity.setStatus(NumberConstant.TWO);
-        }
-        incomingApiLogService.save(incomingApiLogEntity);
-    }
 }
