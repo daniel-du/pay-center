@@ -120,8 +120,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             //保存进件主表信息
             TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
             BeanUtils.copyProperties(incomingInfoReqDTO, tfIncomingInfoEntity);
-            String memberId = IncomingMemberBusinessTypeEnum.fromCode(incomingInfoReqDTO.getBusinessType().intValue()).getMemberPrefix()
-                    + incomingInfoReqDTO.getBusinessId();
+            String memberId = generateMemberId(incomingInfoReqDTO.getBusinessType().intValue());
             tfIncomingInfoEntity.setMemberId(memberId);
             tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
             if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
@@ -629,11 +628,11 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
     }
 
-    private String generateStatementNo(Date date) {
-        String prefix = "DZ" + FORMAT.format(date);
+    private String generateMemberId(Integer businessType) {
+        String prefix = IncomingMemberBusinessTypeEnum.fromCode(businessType).getMemberPrefix() + FORMAT.format(new Date());
         Long incr = redisCache.incr(prefix);
         redisCache.expire(prefix, 24, TimeUnit.HOURS);
-        String str = String.format("%04d", incr);
+        String str = String.format("%05d", incr);
         return prefix + str;
     }
 

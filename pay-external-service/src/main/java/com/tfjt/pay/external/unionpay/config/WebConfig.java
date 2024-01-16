@@ -66,7 +66,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
-        System.out.println("主："+restTemplate);
         // 将xml解析的优先级调低
         int xml = 0, json = 0;
         List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
