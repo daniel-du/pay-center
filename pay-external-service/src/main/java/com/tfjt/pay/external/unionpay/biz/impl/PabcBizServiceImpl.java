@@ -1,7 +1,6 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aliyun.openservices.shade.com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -12,22 +11,18 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
-import com.tfjt.robot.common.message.ding.MarkdownMessage;
-import com.tfjt.robot.service.dingtalk.DingRobotService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -57,8 +52,6 @@ public class PabcBizServiceImpl implements PabcBizService {
     @Autowired
     private LoanUserService loanUserService;
     @Autowired
-    private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
-    @Autowired
     private TfIncomingMerchantInfoService tfIncomingMerchantInfoService;
     @Autowired
     private TfIncomingSettleInfoService tfIncomingSettleInfoService;
@@ -68,38 +61,27 @@ public class PabcBizServiceImpl implements PabcBizService {
     private FaStandardLocationDictService faStandardLocationDictService;
     @Autowired
     private NetworkTypeCacheUtil networkTypeCacheUtil;
-
+    @Autowired
+    private AsyncService asyncService;
     @Autowired
     private TfBankCardInfoService tfBankCardInfoService;
-    @Autowired
-    private DingRobotService dingRobotService;
-    @DubboReference
+    @DubboReference(retries = 0)
     private SupplierApiService supplierApiService;
-    @Value("${dingding.incoming.accessToken}")
-    private String accessToken;
-    @Value("${dingding.incoming.encryptKey}")
-    private String encryptKey;
-
     @Override
     public Result<List<PabcBankNameAndCodeRespDTO>> getBankInfoByName(String name) {
         return Result.ok(pabcPubAppparService.getBankInfoByName(name));
     }
-
     @Override
     public Result<List<PabcProvinceInfoRespDTO>> getProvinceList(String name) {
-        List<PabcProvinceInfoRespDTO> list = pabcPubPayNodeService.getProvinceList(name);
-        return Result.ok(list);
+        return Result.ok(pabcPubPayNodeService.getProvinceList(name));
     }
-
     @Override
     public Result<List<PabcCityInfoRespDTO>> getCityList(String provinceCode, String bankCode) {
         if (StringUtils.isBlank(provinceCode) || StringUtils.isBlank(bankCode)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
-        List<PabcCityInfoRespDTO> list = pabcPubPayCityService.getCityList(provinceCode, bankCode);
-        return Result.ok(list);
+        return Result.ok(pabcPubPayCityService.getCityList(provinceCode, bankCode));
     }
-
     @Override
     public Result<List<PabcBranchBankInfoRespDTO>> getBranchBankInfo(String bankCode, String cityCode, String branchBankName) {
         if (StringUtils.isBlank(bankCode) || StringUtils.isBlank(cityCode)) {
@@ -126,7 +108,6 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(list);
     }
-
     @Override
     public Result<List<QueryAccessBankStatueRespDTO>> getNetworkStatus(QueryAccessBankStatueReqDTO queryAccessBankStatueReqDTO) {
         List<QueryAccessBankStatueRespDTO> list = new ArrayList<>();
@@ -170,7 +151,6 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(status);
     }
-
     @Override
     public Result<MoudleStatusRespDTO> getModuleStatus(IncomingModuleStatusReqDTO incomingModuleStatusReqDTO) {
         ValidatorUtils.validateEntity(incomingModuleStatusReqDTO);
@@ -210,7 +190,6 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(moudleStatusRespDTO);
     }
-
     @Override
     public com.tfjt.dto.response.Result<String> saveChangeInfo(AsyncMessageEntity asyncMessage) {
         //供应商在需求完成时会全部走一遍平安银行的进件流程
@@ -231,11 +210,9 @@ public class PabcBizServiceImpl implements PabcBizService {
             Boolean identityFlag = checkListIsEquals(newIdentifyList, oldIdentifyList);
             List<MerchantChangeReqDTO> saveList = getSaveList(newSaleAreas,newIdentifyList,oldSaleAreas,oldIdentifyList,dto,saleFlag,identityFlag);
             if (CollectionUtil.isNotEmpty(saveList)) {
-                //todo dubbo 重试次数设置为0
                 supplierApiService.saveMerchangtChangeInfo(saveList);
             }
-            //todo 钉钉报警 改为异步
-            dingWarning(supplierId,newIdentifyList,newSaleAreas,saleFlag,identityFlag,oldSaleAreas,oldIdentifyList);
+            asyncService.dingWarning(supplierId,newIdentifyList,newSaleAreas,saleFlag,identityFlag,oldSaleAreas,oldIdentifyList);
         }
         return com.tfjt.dto.response.Result.ok();
 
@@ -266,97 +243,6 @@ public class PabcBizServiceImpl implements PabcBizService {
             }
         }
         return Result.ok(cityType);
-    }
-
-    public static void main(String[] args) {
-
-        List<Integer> list1 = Arrays.asList(1, 2, 3, 4, 5);
-        List<Integer> list2 = Arrays.asList(4, 5, 6, 7, 8);
-
-        Set<Integer> set1 = new HashSet<>(list1);
-        Set<Integer> set2 = new HashSet<>(list2);
-        set1.retainAll(set2); // 修改set1为它与set2的交集
-
-        List<Integer> intersection = new ArrayList<>(set1); // 转换回List形式
-        System.out.println(intersection);
-
-    }
-
-    private void dingWarning(Long supplierId, List<Integer> newIdentifyList, List<String> newSaleAreas, Boolean saleFlag, Boolean identityFlag, List<String> oldSaleAreas, List<Integer> oldIdentifyList) {
-        //查询出当前用户的进件信息，如果当前用户既在银联进件了又在平安进件了，则不会触发钉钉报警。
-        //查询银联进件信息
-        //银联进件查询
-        QueryAccessBankStatueRespDTO unionIncoming = getUnionIncoming(null, String.valueOf(supplierId));
-        //平安进件查询
-        QueryAccessBankStatueRespDTO pabcIncoming = getPabcIncoming(String.valueOf(supplierId));
-        //判断用户身份，供应商必须要银联和平安都进件，经销商需要根据销售区域进行判断
-        //供应商钉钉报警不考虑销售区域变更
-        Result<String> result = supplierApiService.getSupplierNameBySupplierId(supplierId);
-        String supplierName = null;
-        int code = result.getCode();
-        if (code == NumberConstant.ZERO) {
-            supplierName = result.getData();
-        }
-        if (newIdentifyList.contains(SupplierTypeEnum.SUPPLIER.getCode())) {
-            //身份变更
-            if (!identityFlag) {
-                String title = "商户身份变更";
-                String oldIdentity = getIdentityByCode(oldIdentifyList);
-                String newIdentity = getIdentityByCode(newIdentifyList);
-                StringBuilder msgBuilder = new StringBuilder();
-                msgBuilder.append("时间：" + DateUtil.format(new Date(), DatePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()) + "\n\n");
-                msgBuilder.append("商户名称:"+supplierName+"\n\n");
-                msgBuilder.append("商户ID:"+supplierId+"\n\n");
-                msgBuilder.append("变更内容:商户身份由"+oldIdentity+"变更为"+newIdentity+"，请尽快【<font color=#FF0000>%s</font>】进件。");
-                if (IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())) {
-                    String msg = msgBuilder.toString();
-                    msg = String.format(msg, "银联");
-                    sendMessage(title,msg);
-                }
-                if (IncomingStatusEnum.NOT_INCOMING.getCode().equals(pabcIncoming.getStatus())) {
-                    String msg = msgBuilder.toString();
-                    msg = String.format(msg, "平安");
-                    sendMessage(title,msg);
-                }
-            }
-        }
-        if (newIdentifyList.contains(SupplierTypeEnum.DEALER.getCode())) {
-            //判断经销商的销售区域是否包含新城
-            //销售区域变更
-            if (!saleFlag) {
-                //查询新城地区code集合
-                String oldSales = getSalesByCodes(oldSaleAreas);
-                String newSales = getSalesByCodes(newSaleAreas);
-                List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
-                List<String> pabcDistrictsCode = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
-                //判断新城地区code集合是否包含当前销售城市code
-                boolean newCityFlag = pabcDistrictsCode.stream().anyMatch(e -> contains(newSaleAreas, e));
-                String title = "销售区域变更";
-                StringBuilder msgBuilder = new StringBuilder();
-                msgBuilder.append("时间：" + DateUtil.format(new Date(), DatePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()) + "\n\n");
-                msgBuilder.append("商户名称:"+supplierName+"\n\n");
-                msgBuilder.append("商户ID:"+supplierId+"\n\n");
-                msgBuilder.append("变更内容：\n\n老销售区域:"+oldSales+";\n\n新销售区域:"+newSales+"，请尽快【<font color=#FF0000>%s</font>】进件。");
-                if (newCityFlag && IncomingStatusEnum.NOT_INCOMING.getCode().equals(pabcIncoming.getStatus())) {
-                    String msg = msgBuilder.toString();
-                    msg = String.format(msg, "平安");
-                    sendMessage(title,msg);
-                }
-                //此时用户还在旧城
-                if (!newCityFlag && IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())){
-                    String msg = msgBuilder.toString();
-                    msg = String.format(msg, "银联");
-                    sendMessage(title,msg);
-                }
-            }
-        }
-
-    }
-
-    private void sendMessage(String title,String msg) {
-
-        MarkdownMessage message = MarkdownMessage.buildBizFree(title, msg);
-        dingRobotService.send(message, accessToken, true, encryptKey);
     }
 
     private List<MerchantChangeReqDTO> getSaveList(List<String> newSaleAreas, List<Integer> newIdentifyList, List<String> oldSaleAreas, List<Integer> oldIdentifyList, MerchantChangeInfoMqReqDTO dto, Boolean saleFlag, Boolean identityFlag) {
@@ -404,7 +290,7 @@ public class PabcBizServiceImpl implements PabcBizService {
             String identityStr = sb.toString();
             return identityStr.substring(0, identityStr.length() - 1);
         }
-        return null;
+        return "";
     }
 
     private String getMsgByCode(Integer code){
@@ -421,15 +307,8 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (CollectionUtil.isNotEmpty(areas)) {
             return String.join(",", areas);
         }
-        return null;
+        return "";
     }
-
-    private boolean contains(List<String> cus, String value){
-        return cus.stream().filter(f -> f.equals(value)).findAny().isPresent();
-    }
-
-
-
 
     private Boolean checkListIsEquals(List list,List list1){
         if (CollectionUtil.isNotEmpty(list) && CollectionUtil.isNotEmpty(list1)) {
