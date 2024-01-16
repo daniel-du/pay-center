@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -23,6 +26,8 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -62,6 +67,18 @@ public class WebConfig implements WebMvcConfigurer {
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         System.out.println("主："+restTemplate);
+        // 将xml解析的优先级调低
+        int xml = 0, json = 0;
+        List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
+        for (int i = 0; i < messageConverters.size(); i++) {
+            HttpMessageConverter<?> h = messageConverters.get(i);
+            if (h instanceof MappingJackson2XmlHttpMessageConverter) {
+                xml = i;
+            } else if (h instanceof MappingJackson2HttpMessageConverter) {
+                json = i;
+            }
+        }
+        Collections.swap(restTemplate.getMessageConverters(), xml, json);
         return restTemplate;
     }
 
