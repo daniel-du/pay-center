@@ -87,9 +87,9 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (StringUtils.isBlank(bankCode) || StringUtils.isBlank(cityCode)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
-        if (StringUtils.isNotBlank(cityCode)) {
+      /*  if (StringUtils.isNotBlank(cityCode)) {
             cityCode = cityCode.substring(1,4);
-        }
+        }*/
         List<PabcBranchBankInfoRespDTO> list = pabcPubPayBankaService.getBranchBankInfo(bankCode, cityCode, branchBankName);
         List<String> collect = list.stream().map(PabcBranchBankInfoRespDTO::getBankDreccode).collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(collect)) {
