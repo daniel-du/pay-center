@@ -218,7 +218,17 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         if (ObjectUtils.isEmpty(incomingMessageReqDTO.getAccessChannelType())) {
             incomingMessageReqDTO.setAccessChannelType(getAccessChannelType(incomingMessageReqDTO.getAreaCode()));
         }
-        IncomingMessageRespDTO incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
+        IncomingMessageRespDTO incomingMessageRespDTO;
+        String cacheKey = "PAY:EXTERNAL:INCOMING:" + incomingMessageReqDTO.getAccessChannelType() + ":" +
+                incomingMessageReqDTO.getBusinessType() + ":" + incomingMessageReqDTO.getBusinessId();
+        String incomingMsgStr = redisCache.getCacheString(cacheKey);
+        log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMsgStr:{}", incomingMsgStr);
+        if (StringUtils.isNotBlank(incomingMsgStr)) {
+            incomingMessageRespDTO = JSONObject.parseObject(incomingMsgStr, IncomingMessageRespDTO.class);
+            return Result.ok(incomingMessageRespDTO);
+        }
+        incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
+        log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
         if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
             return Result.ok();
         }
@@ -228,7 +238,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         } else {
             incomingMessageRespDTO.setMemberName(incomingMessageRespDTO.getLegalName());
         }
-        return Result.ok(tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO));
+        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO), 10, TimeUnit.SECONDS);
+        return Result.ok(incomingMessageRespDTO);
     }
 
     /**
