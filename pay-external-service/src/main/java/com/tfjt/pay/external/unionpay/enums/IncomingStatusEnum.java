@@ -9,15 +9,15 @@ import lombok.Getter;
 public enum IncomingStatusEnum {
 
     /**
-     * 贷款进件
+     * 未入网
      */
-    NOT_INCOMING(0, "未入网"),
+    NOT_INCOMING("0", "未入网"),
     /**
-     * 普通进件
+     * 已入网
      */
-    INCOMING(1, "已入网");
+    INCOMING("1", "已入网");
 
-    private final Integer code;
+    private final String code;
     private final String name;
 
     /**
