@@ -9,6 +9,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
@@ -219,8 +220,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             incomingMessageReqDTO.setAccessChannelType(getAccessChannelType(incomingMessageReqDTO.getAreaCode()));
         }
         IncomingMessageRespDTO incomingMessageRespDTO;
-        String cacheKey = "PAY:EXTERNAL:INCOMING:" + incomingMessageReqDTO.getAccessChannelType() + ":" +
+        String cacheKey = RedisConstant.INCOMING_MSG_KEY_PREFIX + incomingMessageReqDTO.getAccessChannelType() + ":" +
                 incomingMessageReqDTO.getBusinessType() + ":" + incomingMessageReqDTO.getBusinessId();
+        //获取缓存
         String incomingMsgStr = redisCache.getCacheString(cacheKey);
         log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMsgStr:{}", incomingMsgStr);
         if (StringUtils.isNotBlank(incomingMsgStr)) {
@@ -238,7 +240,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         } else {
             incomingMessageRespDTO.setMemberName(incomingMessageRespDTO.getLegalName());
         }
-        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO), 10, TimeUnit.SECONDS);
+        //设置缓存，10分钟
+        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO), NumberConstant.TEN, TimeUnit.MINUTES);
         return Result.ok(incomingMessageRespDTO);
     }
 
