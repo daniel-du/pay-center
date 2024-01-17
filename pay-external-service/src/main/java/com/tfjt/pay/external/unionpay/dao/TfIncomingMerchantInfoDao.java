@@ -18,4 +18,6 @@ import org.apache.ibatis.annotations.Param;
 public interface TfIncomingMerchantInfoDao extends BaseMapper<TfIncomingMerchantInfoEntity> {
 
     IncomingMerchantRespDTO queryMerchantById(@Param("id") Long id);
+
+    IncomingMerchantRespDTO queryMerchantByIncomingId(@Param("incomingId") Long incomingId);
 }

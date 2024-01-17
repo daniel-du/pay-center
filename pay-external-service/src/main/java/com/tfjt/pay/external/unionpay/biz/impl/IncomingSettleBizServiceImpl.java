@@ -19,6 +19,7 @@ import com.tfjt.tfcommon.core.validator.group.AddGroup;
 import com.tfjt.tfcommon.core.validator.group.UpdateGroup;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -117,7 +118,11 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
             return;
         }
         //如果是“对私”结算类型，开户名称需要与法人姓名一致
-        IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantById(incomingSettleReqDTO.getIncomingId());
+        IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantByIncomingId(incomingSettleReqDTO.getIncomingId());
+        if (ObjectUtils.isEmpty(incomingMerchantRespDTO)) {
+            log.warn("IncomingSettleBizServiceImpl---validateSettltEntity, incomingMerchantRespDTO isEmpty");
+            return;
+        }
         if (!incomingSettleReqDTO.getBankAccountName().equals(incomingMerchantRespDTO.getLegalName())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_ACCOUNT_ERROR);
         }
