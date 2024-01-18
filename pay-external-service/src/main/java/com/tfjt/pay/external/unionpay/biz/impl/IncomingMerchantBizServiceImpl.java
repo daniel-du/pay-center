@@ -277,6 +277,9 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         if (!ID_NEW_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches() && !ID_OLD_REGEXP.matcher(incomingMerchantReqDTO.getLegalIdNo()).matches()) {
             throw new TfException(ExceptionCodeEnum.INCOMING_LEGAL_ID_NO_FORMAT_ERROR);
         }
+        if (StringUtils.isBlank(incomingMerchantReqDTO.getLegalIdExpiryDate()) && NumberConstant.ZERO.equals(incomingMerchantReqDTO.getLegalIdIsLongTerm().intValue())) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_LEGAL_EXPIRE_IS_NULL);
+        }
         //入网主体非企业时，经办人信息不做校验
         if (!ACCESS_MAIN_TYPE_COMPANY.equals(incomingMerchantReqDTO.getAccessMainType())) {
             return;
@@ -296,14 +299,14 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentBackIdCardUrl())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_BACK_URL_IS_NULL);
         }
+        if (incomingMerchantReqDTO.getAgentIdIsLongTerm() == null) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_IS_LONG_TERM_IS_NULL);
+        }
         if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentIdEffectiveDate())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_EFFECTIVE_IS_NULL);
         }
-        if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentIdExpiryDate())) {
+        if (StringUtils.isBlank(incomingMerchantReqDTO.getAgentIdExpiryDate()) && NumberConstant.ZERO.equals(incomingMerchantReqDTO.getAgentIdIsLongTerm().intValue())) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_EXPIRE_IS_NULL);
-        }
-        if (incomingMerchantReqDTO.getAgentIdIsLongTerm() == null) {
-            throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_IS_LONG_TERM_IS_NULL);
         }
         if (!MOBILE_REGEXP.matcher(incomingMerchantReqDTO.getAgentMobile()).matches()) {
             throw new TfException(ExceptionCodeEnum.INCOMING_AGENT_MOBILE_FORMAT_ERROR);

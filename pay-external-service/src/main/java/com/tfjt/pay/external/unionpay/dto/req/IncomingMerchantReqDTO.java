@@ -71,7 +71,6 @@ public class IncomingMerchantReqDTO implements Serializable {
     /**
      * 法人身份证有效截止日期
      */
-    @NotBlank(message = "法人身份证有效截止日期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String legalIdExpiryDate;
     /**
      * 法人身份证是否长期，0否，1是

@@ -129,6 +129,9 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
         if (StringUtils.isNotBlank(incomingBusinessReqDTO.getEmail()) && !EMAIL_REGEXP.matcher(incomingBusinessReqDTO.getEmail()).matches()) {
             throw new TfException(ExceptionCodeEnum.INCOMING_EMAIL_FORMAT_ERROR);
         }
+        if (StringUtils.isBlank(incomingBusinessReqDTO.getBusinessLicenseExpireDate()) && NumberConstant.ZERO.equals(incomingBusinessReqDTO.getBusinessLicenseIsLongTerm())) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_EMAIL_FORMAT_ERROR);
+        }
         //校验当前营业执照号码是否已存在
         if (tfBusinessLicenseInfoService.queryCountByLicenseNo(incomingBusinessReqDTO) > 0) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BUSINESS_LICENSE_NO_REPEAT);

@@ -102,7 +102,6 @@ public class IncomingBusinessReqDTO implements Serializable {
     /**
      * 营业执照有效截止日期
      */
-    @NotBlank(message = "营业执照有效截止日期不能为空", groups = { AddGroup.class, UpdateGroup.class })
     private String businessLicenseExpireDate;
     /**
      * 营业执照是否长期，0否，1是
