@@ -41,6 +41,6 @@ public class TfIncomingMerchantInfoServiceImpl extends BaseServiceImpl<TfIncomin
 
     @Override
     public IncomingMerchantRespDTO queryMerchantByIncomingId(Long incomingId) {
-        return this.baseMapper.queryMerchantById(incomingId);
+        return this.baseMapper.queryMerchantByIncomingId(incomingId);
     }
 }

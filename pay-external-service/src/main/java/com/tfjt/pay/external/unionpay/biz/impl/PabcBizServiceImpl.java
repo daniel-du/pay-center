@@ -158,19 +158,20 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (ObjectUtil.isNull(tfIncomingInfoEntity)) {
             throw new TfException(ExceptionCodeEnum.INCOMING_DATA_IS_NULL);
         }
-        //创建返回对象
-        MoudleStatusRespDTO moudleStatusRespDTO = new MoudleStatusRespDTO();
-        moudleStatusRespDTO.setIncomingId(tfIncomingInfoEntity.getId());
-        moudleStatusRespDTO.setAccessChannelType(tfIncomingInfoEntity.getAccessChannelType());
-        moudleStatusRespDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
-        moudleStatusRespDTO.setAccessStatus(tfIncomingInfoEntity.getAccessStatus().byteValue());
+
         // 通过IdcardInfo服务查询IdcardInfo实体
         TfIncomingBusinessInfoEntity tfIncomingBusinessInfoEntity = tfIncomingBusinessInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 通过MerchantInfo服务查询MerchantInfo实体
         TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = tfIncomingMerchantInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
         // 通过SettleInfo服务查询SettleInfo实体
         TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = tfIncomingSettleInfoService.queryByIncomingId(tfIncomingInfoEntity.getId());
-
+        //创建返回对象
+        MoudleStatusRespDTO moudleStatusRespDTO = new MoudleStatusRespDTO();
+        moudleStatusRespDTO.setIncomingId(tfIncomingInfoEntity.getId());
+        moudleStatusRespDTO.setAccessChannelType(tfIncomingInfoEntity.getAccessChannelType());
+        moudleStatusRespDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
+        moudleStatusRespDTO.setAccessStatus(tfIncomingInfoEntity.getAccessStatus().byteValue());
+        moudleStatusRespDTO.setSettlementAccountType(tfIncomingSettleInfoEntity.getSettlementAccountType());
 
         // 如果查询到IdcardInfo实体，则设置模块状态响应DTO的cardId
         if (ObjectUtil.isNotEmpty(tfIncomingMerchantInfoEntity)) {
