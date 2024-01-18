@@ -1,5 +1,7 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
@@ -50,5 +52,10 @@ public class IncomingController {
     @PostMapping("/dataExtract")
     public Result unionpayDataExtract() {
         return incomingBizService.unionpayDataExtract();
+    }
+
+    @PostMapping("/queryIncomingMsg")
+    public Result<IncomingMessageRespDTO> queryIncomingMsg(@RequestBody IncomingMessageReqDTO incomingMessageReqDTO) {
+        return incomingBizService.queryIncomingMessage(incomingMessageReqDTO);
     }
 }

@@ -16,4 +16,9 @@ public class RedisConstant {
 
     public static final String NETWORK_TYPE_BY_AREA_CODE = "pay:incoming:";
     public static final String NETWORK_TYPE_BY_AREA_CODE_All = "pay:incoming:all";
+
+    /**
+     * 进件信息缓存key前缀
+     */
+    public static final String INCOMING_MSG_KEY_PREFIX = "PAY:EXTERNAL:INCOMING:";
 }

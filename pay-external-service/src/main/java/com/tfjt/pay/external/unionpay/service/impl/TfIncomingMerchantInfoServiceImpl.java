@@ -38,4 +38,9 @@ public class TfIncomingMerchantInfoServiceImpl extends BaseServiceImpl<TfIncomin
         merchantInfoEntityQueryWrapper.eq(TfIncomingMerchantInfoEntity::getIncomingId, incomingId).eq(TfIncomingMerchantInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
         return this.baseMapper.selectOne(merchantInfoEntityQueryWrapper);
     }
+
+    @Override
+    public IncomingMerchantRespDTO queryMerchantByIncomingId(Long incomingId) {
+        return this.baseMapper.queryMerchantByIncomingId(incomingId);
+    }
 }
