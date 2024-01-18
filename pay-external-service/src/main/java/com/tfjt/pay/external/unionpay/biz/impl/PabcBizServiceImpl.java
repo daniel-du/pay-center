@@ -258,7 +258,9 @@ public class PabcBizServiceImpl implements PabcBizService {
                 .eq(TfIncomingInfoEntity::getIsDeleted,DeleteStatusEnum.NO.getCode());
         TfIncomingInfoEntity one = tfIncomingInfoService.getOne(wrapper);
         IncomingMessageRespDTO respDTO = new IncomingMessageRespDTO();
-        BeanUtils.copyProperties(one,respDTO);
+        if (ObjectUtil.isNotNull(one)) {
+            BeanUtils.copyProperties(one,respDTO);
+        }
         return respDTO;
     }
 
