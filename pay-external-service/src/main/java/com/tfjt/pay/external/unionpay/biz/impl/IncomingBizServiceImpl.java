@@ -36,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -47,7 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author Du Penglun
@@ -484,14 +482,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      * @return
      */
     private Integer getAccessChannelType(String areaCode) {
-        List<String> cacheList = networkTypeCacheUtil.getNetworkTypeCacheList();
-        if (cacheList.contains(areaCode)) {
-            //新城
-            return IncomingAccessChannelTypeEnum.PINGAN.getCode();
-        } else {
-            //老城
-            return IncomingAccessChannelTypeEnum.UNIONPAY.getCode();
-        }
+        return networkTypeCacheUtil.getNetworkTypeCacheList(areaCode);
     }
 
     /**

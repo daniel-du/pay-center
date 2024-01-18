@@ -14,5 +14,6 @@ public class RedisConstant {
 
     public static final String MOBILE_VERIFICATION_CODE = "smsCode:";
 
-    public static final String NETWORK_TYPE_BY_AREA_CODE = "networkTypeByAreaCode";
+    public static final String NETWORK_TYPE_BY_AREA_CODE = "pay:incoming:";
+    public static final String NETWORK_TYPE_BY_AREA_CODE_All = "pay:incoming:all";
 }

@@ -7,8 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
@@ -22,6 +24,7 @@ import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,14 +70,17 @@ public class PabcBizServiceImpl implements PabcBizService {
     private TfBankCardInfoService tfBankCardInfoService;
     @DubboReference(retries = 0)
     private SupplierApiService supplierApiService;
+
     @Override
     public Result<List<PabcBankNameAndCodeRespDTO>> getBankInfoByName(String name) {
         return Result.ok(pabcPubAppparService.getBankInfoByName(name));
     }
+
     @Override
     public Result<List<PabcProvinceInfoRespDTO>> getProvinceList(String name) {
         return Result.ok(pabcPubPayNodeService.getProvinceList(name));
     }
+
     @Override
     public Result<List<PabcCityInfoRespDTO>> getCityList(String provinceCode, String bankCode) {
         if (StringUtils.isBlank(provinceCode) || StringUtils.isBlank(bankCode)) {
@@ -82,14 +88,15 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(pabcPubPayCityService.getCityList(provinceCode, bankCode));
     }
+
     @Override
     public Result<List<PabcBranchBankInfoRespDTO>> getBranchBankInfo(String bankCode, String cityCode, String branchBankName) {
         if (StringUtils.isBlank(bankCode) || StringUtils.isBlank(cityCode)) {
             throw new TfException(PayExceptionCodeEnum.QUERY_PARAM_IS_NOT_NULL);
         }
-      /*  if (StringUtils.isNotBlank(cityCode)) {
-            cityCode = cityCode.substring(1,4);
-        }*/
+        if (StringUtils.isNotBlank(cityCode)) {
+            cityCode = cityCode.substring(0, 4);
+        }
         List<PabcBranchBankInfoRespDTO> list = pabcPubPayBankaService.getBranchBankInfo(bankCode, cityCode, branchBankName);
         List<String> collect = list.stream().map(PabcBranchBankInfoRespDTO::getBankDreccode).collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(collect)) {
@@ -108,6 +115,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(list);
     }
+
     @Override
     public Result<List<QueryAccessBankStatueRespDTO>> getNetworkStatus(QueryAccessBankStatueReqDTO queryAccessBankStatueReqDTO) {
         List<QueryAccessBankStatueRespDTO> list = new ArrayList<>();
@@ -138,19 +146,12 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(list);
     }
+
     @Override
     public Result<Integer> getNetworkTypeByAreaCode(String code) {
-        List<String> cacheList = networkTypeCacheUtil.getNetworkTypeCacheList();
-        int status;
-        if (cacheList.contains(code)) {
-            //新城
-            status = CityTypeEnum.NEW_CITY.getCode();
-        } else {
-            //老城
-            status = CityTypeEnum.OLD_CITY.getCode();
-        }
-        return Result.ok(status);
+        return Result.ok(networkTypeCacheUtil.getNetworkTypeCacheList(code));
     }
+
     @Override
     public Result<MoudleStatusRespDTO> getModuleStatus(IncomingModuleStatusReqDTO incomingModuleStatusReqDTO) {
         ValidatorUtils.validateEntity(incomingModuleStatusReqDTO);
@@ -190,6 +191,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return Result.ok(moudleStatusRespDTO);
     }
+
     @Override
     public com.tfjt.dto.response.Result<String> saveChangeInfo(AsyncMessageEntity asyncMessage) {
         //供应商在需求完成时会全部走一遍平安银行的进件流程
@@ -197,7 +199,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         //身份变更或者销售区域变更需要将数据记录下来。变更记录表放在fms系统里。
         String msgBody = asyncMessage.getMsgBody();
         MerchantChangeInfoMqReqDTO dto = JSONObject.parseObject(msgBody, MerchantChangeInfoMqReqDTO.class);
-        if (dto!= null) {
+        if (dto != null) {
             Long supplierId = dto.getSupplierId();
             List<String> newSaleAreas = dto.getNewSaleAreas();
             List<String> oldSaleAreas = dto.getOldSaleAreas();
@@ -208,11 +210,11 @@ public class PabcBizServiceImpl implements PabcBizService {
             Boolean saleFlag = checkListIsEquals(newSaleAreas, oldSaleAreas);
             //判断商户身份是否发生了变更，true表示没有发生变更，false表示发生了变更
             Boolean identityFlag = checkListIsEquals(newIdentifyList, oldIdentifyList);
-            List<MerchantChangeReqDTO> saveList = getSaveList(newSaleAreas,newIdentifyList,oldSaleAreas,oldIdentifyList,dto,saleFlag,identityFlag);
+            List<MerchantChangeReqDTO> saveList = getSaveList(newSaleAreas, newIdentifyList, oldSaleAreas, oldIdentifyList, dto, saleFlag, identityFlag);
             if (CollectionUtil.isNotEmpty(saveList)) {
                 supplierApiService.saveMerchangtChangeInfo(saveList);
             }
-            asyncService.dingWarning(supplierId,newIdentifyList,newSaleAreas,saleFlag,identityFlag,oldSaleAreas,oldIdentifyList);
+            asyncService.dingWarning(supplierId, newIdentifyList, newSaleAreas, saleFlag, identityFlag, oldSaleAreas, oldIdentifyList);
         }
         return com.tfjt.dto.response.Result.ok();
 
@@ -223,7 +225,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         Integer cityType = CityTypeEnum.OLD_CITY.getCode();
 
         //获取全部新城区域
-        List<String> cacheList = networkTypeCacheUtil.getNetworkTypeCacheList();
+        List<String> cacheList = networkTypeCacheUtil.getAllNetworkTypeCacheList();
         //判断两个list是否有交集
         Set<String> codeSet = new HashSet<>(code);
         Set<String> cacheSet = new HashSet<>(cacheList);
@@ -243,6 +245,19 @@ public class PabcBizServiceImpl implements PabcBizService {
             }
         }
         return Result.ok(cityType);
+    }
+
+    @Override
+    public IncomingMessageRespDTO getIncomingInfo(BusinessInfoReqDTO businessInfoReqDTO) {
+        LambdaQueryWrapper<TfIncomingInfoEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TfIncomingInfoEntity::getBusinessId, businessInfoReqDTO.getBuisnessId())
+                .eq(TfIncomingInfoEntity::getBusinessType, businessInfoReqDTO.getBusinessType())
+                .eq(TfIncomingInfoEntity::getAccessChannelType,CityTypeEnum.NEW_CITY.getCode())
+                .eq(TfIncomingInfoEntity::getIsDeleted,DeleteStatusEnum.NO.getCode());
+        TfIncomingInfoEntity one = tfIncomingInfoService.getOne(wrapper);
+        IncomingMessageRespDTO respDTO = new IncomingMessageRespDTO();
+        BeanUtils.copyProperties(one,respDTO);
+        return respDTO;
     }
 
     private List<MerchantChangeReqDTO> getSaveList(List<String> newSaleAreas, List<Integer> newIdentifyList, List<String> oldSaleAreas, List<Integer> oldIdentifyList, MerchantChangeInfoMqReqDTO dto, Boolean saleFlag, Boolean identityFlag) {
@@ -280,7 +295,7 @@ public class PabcBizServiceImpl implements PabcBizService {
     }
 
     private String getIdentityByCode(List<Integer> identifyList) {
-        if (CollectionUtil.isNotEmpty(identifyList)){
+        if (CollectionUtil.isNotEmpty(identifyList)) {
             StringBuilder sb = new StringBuilder();
             for (Integer identity : identifyList) {
                 String msgByCode = getMsgByCode(identity);
@@ -293,9 +308,9 @@ public class PabcBizServiceImpl implements PabcBizService {
         return "";
     }
 
-    private String getMsgByCode(Integer code){
+    private String getMsgByCode(Integer code) {
         for (SupplierTypeEnum value : SupplierTypeEnum.values()) {
-            if (value.getCode().equals(code)){
+            if (value.getCode().equals(code)) {
                 return value.getDesc();
             }
         }
@@ -310,14 +325,14 @@ public class PabcBizServiceImpl implements PabcBizService {
         return "";
     }
 
-    private Boolean checkListIsEquals(List list,List list1){
+    private Boolean checkListIsEquals(List list, List list1) {
         if (CollectionUtil.isNotEmpty(list) && CollectionUtil.isNotEmpty(list1)) {
             Collections.sort(list);
             Collections.sort(list1);
             return list.toString().equals(list1.toString());
-        }else if (CollectionUtil.isEmpty(list) && CollectionUtil.isEmpty(list1)) {
+        } else if (CollectionUtil.isEmpty(list) && CollectionUtil.isEmpty(list1)) {
             return true;
-        }else {
+        } else {
             return false;
         }
 
@@ -402,8 +417,6 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         return queryAccessBankStatueRespDTO;
     }
-
-
 
 
 }

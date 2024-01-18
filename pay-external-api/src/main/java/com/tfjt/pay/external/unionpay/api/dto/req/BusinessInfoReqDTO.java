@@ -17,7 +17,7 @@ public class BusinessInfoReqDTO extends ReqDto implements Serializable {
      */
     private String buisnessId;
     /**
-     * 商户身份：1、商家；2、供应商；3、经销商
+     * 商铺类型（1：经销商 ，2：云商）
      */
     private String businessType;
 }
