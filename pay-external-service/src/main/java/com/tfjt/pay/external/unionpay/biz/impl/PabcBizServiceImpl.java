@@ -384,7 +384,7 @@ public class PabcBizServiceImpl implements PabcBizService {
      */
     private QueryAccessBankStatueRespDTO getPabcIncoming(String businessId) {
         QueryAccessBankStatueRespDTO queryAccessBankStatueRespDTO = new QueryAccessBankStatueRespDTO();
-        TfIncomingInfoEntity one = tfIncomingInfoService.getOne(new LambdaQueryWrapper<TfIncomingInfoEntity>().eq(TfIncomingInfoEntity::getBusinessId, businessId).eq(TfIncomingInfoEntity::getAccessChannelType, IncomingAccessChannelTypeEnum.PINGAN.getCode()).eq(TfIncomingInfoEntity::getAccessType, IncomingAccessTypeEnum.COMMON.getCode()));
+        TfIncomingInfoEntity one = tfIncomingInfoService.getOne(new LambdaQueryWrapper<TfIncomingInfoEntity>().eq(TfIncomingInfoEntity::getBusinessId, businessId).eq(TfIncomingInfoEntity::getAccessChannelType, IncomingAccessChannelTypeEnum.PINGAN.getCode()).eq(TfIncomingInfoEntity::getAccessType, IncomingAccessTypeEnum.COMMON.getCode()).eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode()));
         if (null != one) {
             String code = PabcUnionNetworkStatusMappingEnum.getMsg(one.getAccessStatus());
             queryAccessBankStatueRespDTO.setStatus(code);
