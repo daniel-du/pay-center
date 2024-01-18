@@ -72,6 +72,7 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_AGENT_FRONT_URL_IS_NULL(2000019,"经办人身份证正面照片不能为空!"),
     INCOMING_AGENT_BACK_URL_IS_NULL(2000020,"经办人身份证背面照片不能为空!"),
     INCOMING_DATA_IS_NULL(2000021, "入网信息为空，请返回重新选择进件主体!"),
+    INCOMING_DATA_ALREADY_EXIST(2000022, "当前用户已存在入网信息，请勿重复入网!"),
 
 
     PN_API_ERROR(3000010, "调用平安API失败!"),

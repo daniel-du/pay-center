@@ -118,6 +118,11 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         try {
             log.info("IncomingBizServiceImpl---incomingSave, incomingInfoReqDTO:{}", JSONObject.toJSONString(incomingInfoReqDTO));
             ValidatorUtils.validateEntity(incomingInfoReqDTO, AddGroup.class);
+            Long incomingCount = tfIncomingInfoService.queryIncomingInfoCountByMerchant(incomingInfoReqDTO.getBusinessId(),
+                    incomingInfoReqDTO.getBusinessType(), incomingInfoReqDTO.getAccessChannelType());
+            if (incomingCount > 0) {
+                throw new TfException(ExceptionCodeEnum.INCOMING_DATA_ALREADY_EXIST);
+            }
             //保存进件主表信息
             TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
             BeanUtils.copyProperties(incomingInfoReqDTO, tfIncomingInfoEntity);
@@ -131,7 +136,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             return Result.ok();
         } catch (TfException e) {
             log.error("平安进件-保存进件主表信息 发生 TfException:", e);
-            throw new TfException(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("平安进件-保存进件主表信息 发生 Exception:", e);
             throw new TfException(ExceptionCodeEnum.FAIL);

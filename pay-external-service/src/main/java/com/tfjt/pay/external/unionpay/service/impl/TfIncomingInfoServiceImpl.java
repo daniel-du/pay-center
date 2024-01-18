@@ -86,4 +86,21 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
         queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
         return this.baseMapper.selectOne(queryWrapper);
     }
+
+    /**
+     * 根据商户类型、商户id、进件渠道查询进件主表是否存在
+     * @param businessId
+     * @param businessType
+     * @param accessChannelType
+     * @return
+     */
+    @Override
+    public Long queryIncomingInfoCountByMerchant(Long businessId, Byte businessType, Byte accessChannelType) {
+        LambdaQueryWrapper<TfIncomingInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TfIncomingInfoEntity::getAccessChannelType, accessChannelType);
+        queryWrapper.eq(TfIncomingInfoEntity::getBusinessType, businessType);
+        queryWrapper.eq(TfIncomingInfoEntity::getBusinessId, businessId);
+        queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        return this.baseMapper.selectCount(queryWrapper);
+    }
 }

@@ -30,14 +30,14 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
     IncomingSubmitMessageDTO queryIncomingMessage(Long id);
 
     /**
-     * 根据商户信息查询进件信息
+     * 根据商户信息查询进件完成信息
      * @param incomingMessageReqDTO
      * @return
      */
     IncomingMessageRespDTO queryIncomingMessageByMerchant(IncomingMessageReqDTO incomingMessageReqDTO);
 
     /**
-     * 根据多个商户信息批量查询进件信息
+     * 根据多个商户信息批量查询进件完成信息
      * @param incomingMessageReqs
      * @return
      */
@@ -51,10 +51,19 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
     IncomingDataIdDTO queryIncomingDataId(Long id);
 
     /**
-     * 根据商户类型、商户id、查询进件主表信息
+     * 根据商户类型、商户id、进件渠道查询进件主表信息
      * @param incomingModuleStatusReqDTO
      * @return
      */
     TfIncomingInfoEntity queryIncomingInfoByMerchant(IncomingModuleStatusReqDTO incomingModuleStatusReqDTO);
+
+    /**
+     * 根据商户类型、商户id、进件渠道查询进件主表是否存在
+     * @param businessId
+     * @param businessType
+     * @param accessChannelType
+     * @return
+     */
+    Long queryIncomingInfoCountByMerchant(Long businessId, Byte businessType, Byte accessChannelType);
 
 }
