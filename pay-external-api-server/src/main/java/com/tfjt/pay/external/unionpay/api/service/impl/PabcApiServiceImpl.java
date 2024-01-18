@@ -2,11 +2,10 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.BusinessChangeRecodRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.PabcApiService;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
-import com.tfjt.tfcommon.dto.response.Paged;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -27,16 +26,6 @@ public class PabcApiServiceImpl implements PabcApiService {
 
 
 
-    /**
-     * 查询变更信息
-     * @param businessInfoReqDTO 查询入参
-     * @return
-     */
-    @Override
-    public Result<Paged<BusinessChangeRecodRespDTO>> getChangeRecord(BusinessInfoReqDTO businessInfoReqDTO) {
-        return null;
-    }
-
     @Override
     public Result<Integer> getNetworkTypeByAreaCode(String code) {
         return pabcBizService.getNetworkTypeByAreaCode(code);
@@ -50,5 +39,12 @@ public class PabcApiServiceImpl implements PabcApiService {
     @Override
     public Result<Integer> getNetworkTypeByAreaCode(List<String> code) {
         return pabcBizService.getNetworkTypeByAreaCode(code);
+    }
+
+    @Override
+    public Result<IncomingMessageRespDTO> getIncomingInfo(BusinessInfoReqDTO businessInfoReqDTO) {
+
+        IncomingMessageRespDTO respDTO = pabcBizService.getIncomingInfo(businessInfoReqDTO);
+        return Result.ok(respDTO);
     }
 }

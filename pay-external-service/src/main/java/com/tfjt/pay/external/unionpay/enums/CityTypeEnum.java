@@ -13,11 +13,11 @@ public enum CityTypeEnum {
     /**
      * 老城
      */
-    OLD_CITY(1, "老城"),
+    OLD_CITY(2, "银联"),
     /**
      * 新城
      */
-    NEW_CITY(2, "新城");
+    NEW_CITY(1, "平安");
 
     /**
      * code
