@@ -171,7 +171,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         moudleStatusRespDTO.setAccessChannelType(tfIncomingInfoEntity.getAccessChannelType());
         moudleStatusRespDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
         moudleStatusRespDTO.setAccessStatus(tfIncomingInfoEntity.getAccessStatus().byteValue());
-        moudleStatusRespDTO.setSettlementAccountType(tfIncomingSettleInfoEntity.getSettlementAccountType());
+
 
         // 如果查询到IdcardInfo实体，则设置模块状态响应DTO的cardId
         if (ObjectUtil.isNotEmpty(tfIncomingMerchantInfoEntity)) {
@@ -184,6 +184,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         // 如果查询到SettleInfo实体，则设置模块状态响应DTO的settleId
         if (ObjectUtil.isNotEmpty(tfIncomingSettleInfoEntity)) {
             moudleStatusRespDTO.setSettleId(tfIncomingSettleInfoEntity.getId());
+            moudleStatusRespDTO.setSettlementAccountType(tfIncomingSettleInfoEntity.getSettlementAccountType());
             TfBankCardInfoEntity tfBankCardInfoEntity = tfBankCardInfoService.getById(tfIncomingSettleInfoEntity.getBankCardId());
             if (ObjectUtil.isNotEmpty(tfBankCardInfoEntity)) {
                 moudleStatusRespDTO.setBankCardMobile(tfBankCardInfoEntity.getBankCardMobile());
