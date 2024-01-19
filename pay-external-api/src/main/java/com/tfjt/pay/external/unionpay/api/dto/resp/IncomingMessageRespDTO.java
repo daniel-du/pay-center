@@ -57,6 +57,10 @@ public class IncomingMessageRespDTO implements Serializable {
      * 会员名称
      */
     private String memberName;
+    /**
+     * 入网状态（1：信息填写，2：入网中，3：入网成功，4：入网失败）
+     */
+    private Integer accessStatus;
 
 
     /**
