@@ -54,12 +54,10 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
             tfIncomingInfoService.updateById(tfIncomingInfoEntity);
         }
         //调用平安6238接口
-//        PnHeadUtils.send(covertBinkCardJson(incomingSubmitMessageDTO),
-//                PnApiEnum.BIND_CARD_PERSONAL.getServiceCode(), PnApiEnum.BIND_CARD_PERSONAL.getServiceId());
         binkCard(incomingSubmitMessageDTO);
         tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
         tfIncomingInfoService.updateById(tfIncomingInfoEntity);
-        return false;
+        return true;
     }
 
     /**
@@ -104,7 +102,7 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
             throw new TfException(ExceptionCodeEnum.PN_API_ERROR);
         }
         //调用平安6239接口
-        return false;
+        return true;
     }
 
     private void binkCard(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {

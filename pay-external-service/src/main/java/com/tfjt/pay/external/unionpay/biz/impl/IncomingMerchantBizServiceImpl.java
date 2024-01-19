@@ -80,7 +80,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
     /**
      * 18位身份证号验证格式
      */
-    private final Pattern ID_NEW_REGEXP = Pattern.compile(RegularConstants.IDCARD_CHECK);
+    private final Pattern ID_NEW_REGEXP = Pattern.compile(RegularConstants.ID_CARD_NEW);
     /**
      * 15位身份证号验证格式
      */
@@ -319,8 +319,8 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         String mobile = "13522221111";
         boolean match = Pattern.compile("^[1][2,3,4,5,6,7,8,9][0-9]{9}$").matcher(mobile).matches();
         System.out.println("match:" + match);
-        String id = "142326199308223010";
-        boolean idmatch = Pattern.compile(RegularConstants.IDCARD_CHECK).matcher(id).matches();
+        String id = "14232619930822301X";
+        boolean idmatch = Pattern.compile(RegularConstants.ID_CARD_NEW).matcher(id).matches();
         System.out.println("idmatch:" + idmatch);
         String businessNo = "91YC349TR2626RTJ6U";
         boolean businessmatch = Pattern.compile("[0-9A-Z]{18}").matcher(businessNo).matches();
