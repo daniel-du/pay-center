@@ -63,7 +63,7 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         //更新入网状态
         tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
         tfIncomingInfoService.updateById(tfIncomingInfoEntity);
-        return false;
+        return true;
     }
 
     /**
