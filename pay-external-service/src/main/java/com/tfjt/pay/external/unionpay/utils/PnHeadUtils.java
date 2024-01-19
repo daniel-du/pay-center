@@ -39,7 +39,7 @@ import java.util.Random;
  * @author Du Penglun
  * @version 1.0
  * @date 2023/12/20 11:07
- * @description Æ½°²api±¨ÎÄÍ·
+ * @description å¹³å®‰apiæŠ¥æ–‡å¤´
  */
 @Slf4j
 @Component
@@ -52,7 +52,7 @@ public class PnHeadUtils {
     private PnClientConfig pnClientConfig;
 
     /**
-     * http³É¹¦±êÊ¶
+     * httpæˆåŠŸæ ‡è¯†
      */
     private static final Integer HTTP_SUCCESS_CODE = 200;
 
@@ -89,18 +89,18 @@ public class PnHeadUtils {
         StopWatch sw = new StopWatch();
         Random random = new Random();
         String seq = simpleDateFormat.format(new Date()) + "" + random.nextInt(99999999);
-        //½»Ò×Á÷Ë®ºÅ:ÏµÍ³Á÷Ë®ºÅ£¬½¨Òé¹æ·¶£ºÓÃ»§¶ÌºÅ£¨6Î»£©+ÈÕÆÚ£¨6Î»£©+Ëæ»ú±àºÅ£¨10Î»£©Àı£ºC256341801183669951236Æ½Ì¨Ò²¿É×ÔĞĞ¶¨Òå£¬Âú×ã³¤¶È¼´¿É
+        //äº¤æ˜“æµæ°´å·:ç³»ç»Ÿæµæ°´å·ï¼Œå»ºè®®è§„èŒƒï¼šç”¨æˆ·çŸ­å·ï¼ˆ6ä½ï¼‰+æ—¥æœŸï¼ˆ6ä½ï¼‰+éšæœºç¼–å·ï¼ˆ10ä½ï¼‰ä¾‹ï¼šC256341801183669951236å¹³å°ä¹Ÿå¯è‡ªè¡Œå®šä¹‰ï¼Œæ»¡è¶³é•¿åº¦å³å¯
         jsonObject.put("CnsmrSeqNo", seq);
-        //½»Ò×Âë
+        //äº¤æ˜“ç 
         jsonObject.put("TxnCode", txnCode);
-        //·¢ËÍÊ±¼ä:¸ñÊ½ÎªYYYYMMDDHHmmSSNNNºóÈıÎ»¹Ì¶¨000
+        //å‘é€æ—¶é—´:æ ¼å¼ä¸ºYYYYMMDDHHmmSSNNNåä¸‰ä½å›ºå®š000
         jsonObject.put("TxnTime", simpleDateFormat1.format(new Date()));
-        //ÉÌ»§ºÅ:Ç©Ô¼¿Í»§ºÅ£¬¼ûÖ¤±¦²úÆ·´Ë×Ö¶ÎÎª±ØÊä
+        //å•†æˆ·å·:ç­¾çº¦å®¢æˆ·å·ï¼Œè§è¯å®äº§å“æ­¤å­—æ®µä¸ºå¿…è¾“
 //        jsonObject.put("MrchCode", MrchCode);
         jsonObject.put("MrchCode", mrchCode);
-        //ÉÌ»§ºÅ:½»Ò×¿Í»§ºÅ£¬Ecif¿Í»§ºÅ£¨Àı£º680000376596£©
+        //å•†æˆ·å·:äº¤æ˜“å®¢æˆ·å·ï¼ŒEcifå®¢æˆ·å·ï¼ˆä¾‹ï¼š680000376596ï¼‰
         jsonObject.put("TxnClientNo", txnClientNo);
-        //¼à¹ÜÕË»§
+        //ç›‘ç®¡è´¦æˆ·
 //        jsonObject.put("FundSummaryAcctNo", "15000101232520");
         jsonObject.put("FundSummaryAcctNo", fundSummaryAcctNo);
         SdkRequest sdkRequest = new SdkRequest();
@@ -113,24 +113,24 @@ public class PnHeadUtils {
         sw.stop();
         LocalDateTime respTime = LocalDateTime.now();
         log.info("PnHeadUtils---send, txnCode:{}, serviceId:{}, sw:{}, responseBody:{}", txnCode, serviceId, sw.getLastTaskTimeMillis(), httpResult.toString());
-        //Òì²½±£´æµ÷ÓÃÈÕÖ¾
+        //å¼‚æ­¥ä¿å­˜è°ƒç”¨æ—¥å¿—
         incomingApiLogService.logProcessAsync(jsonObject, serviceId, httpResult, reqTime, respTime, sw.getLastTaskTimeMillis());
-        //httpÏìÓ¦Îª¿Õ
+        //httpå“åº”ä¸ºç©º
         if (ObjectUtils.isEmpty(httpResult)) {
             throw new TfException(ExceptionCodeEnum.PN_API_RESULT_IS_NULL);
         }
-        //httpÏìÓ¦Ê§°Ü
+        //httpå“åº”å¤±è´¥
         if (!HTTP_SUCCESS_CODE.equals(httpResult.getCode())) {
             throw new TfException(ExceptionCodeEnum.PN_API_ERROR);
         }
         String resultMessage = httpResult.getData();
-        //½Ó¿Ú·µ»Ø½á¹ûÎª¿Õ£¬Å×³öÒì³£
+        //æ¥å£è¿”å›ç»“æœä¸ºç©ºï¼ŒæŠ›å‡ºå¼‚å¸¸
         if (StringUtils.isBlank(resultMessage)) {
             throw new TfException(ExceptionCodeEnum.PN_API_RESULT_IS_NULL);
         }
         JSONObject resultJson = JSONObject.parseObject(resultMessage);
         log.info("PnHeadUtils---send, resultJson:{}", resultJson.toJSONString());
-//        //Æ½°²api·µ»Ø±êÊ¶·Ç³É¹¦
+//        //å¹³å®‰apiè¿”å›æ ‡è¯†éæˆåŠŸ
 //        if (!API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
 ////            throw new TfException(errorProcess(resultJson));
 //        }
