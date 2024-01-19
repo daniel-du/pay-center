@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.robot.common.message.ding.MarkdownMessage;
 import com.tfjt.robot.service.dingtalk.DingRobotService;
 import com.tfjt.tfcommon.dto.response.Result;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,7 +77,11 @@ public class AsyncServiceImpl implements AsyncService {
                 msgBuilder.append("时间：" + DateUtil.format(new Date(), DatePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()) + "\n\n");
                 msgBuilder.append("商户名称:"+supplierName+"\n\n");
                 msgBuilder.append("商户ID:"+supplierId+"\n\n");
-                msgBuilder.append("变更内容:商户身份由"+oldIdentity+"变更为"+newIdentity+"，请尽快【<font color=#FF0000>%s</font>】进件。");
+                if (StringUtils.isNotBlank(oldIdentity)) {
+                    msgBuilder.append("变更内容:商户身份由"+oldIdentity+"变更为"+newIdentity+"，请尽快【<font color=#FF0000>%s</font>】进件。");
+                }else {
+                    msgBuilder.append("变更内容:新增"+newIdentity+"，请尽快【<font color=#FF0000>%s</font>】进件。");
+                }
                 if (IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())) {
                     String msg = msgBuilder.toString();
                     msg = String.format(msg, "银联");
