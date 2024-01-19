@@ -50,15 +50,15 @@
 		g.settlement_account_type, h.bank_account_name, h.bank_card_no,
         h.bank_card_mobile, h.bank_name, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
         from  tf_incoming_info a
-        left join tf_incoming_merchant_info b on b.incoming_id = a.id
-        left join tf_idcard_info c on b.legal_id_card = c.id
-        left join tf_idcard_info d on b.agent_id_card= d.id
-		left join tf_incoming_business_info e on e.incoming_id = a.id
-        left join tf_business_license_info f on e.business_license_id = f.id
-		left join tf_incoming_settle_info g on g.incoming_id = a.id
-        left join tf_bank_card_info h on g.bank_card_id = h.id
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+        left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
+        left join tf_idcard_info d on b.agent_id_card= d.id and d.is_deleted = 0
+		left join tf_incoming_business_info e on e.incoming_id = a.id and e.is_deleted = 0
+        left join tf_business_license_info f on e.business_license_id = f.id and f.is_deleted = 0
+		left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
+        left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
 		where a.business_id = #{param.businessId} and a.business_type = #{param.businessType}
-		and a.access_channel_type = #{param.accessChannelType} and a.access_status = 6
+		and a.access_channel_type = #{param.accessChannelType} and a.is_deleted = 0 and a.access_status = 6
     </select>
     <select id="queryIncomingMessagesByMerchantList" resultMap="incomingMessageMap">
         select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
@@ -68,13 +68,13 @@
 		g.settlement_account_type, h.bank_account_name, h.bank_card_no,
         h.bank_card_mobile, h.bank_name, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
         from  tf_incoming_info a
-        left join tf_incoming_merchant_info b on b.incoming_id = a.id
-        left join tf_idcard_info c on b.legal_id_card = c.id
-        left join tf_idcard_info d on b.agent_id_card= d.id
-		left join tf_incoming_business_info e on e.incoming_id = a.id
-        left join tf_business_license_info f on e.business_license_id = f.id
-		left join tf_incoming_settle_info g on g.incoming_id = a.id
-        left join tf_bank_card_info h on g.bank_card_id = h.id
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+        left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
+        left join tf_idcard_info d on b.agent_id_card= d.id and d.is_deleted = 0
+        left join tf_incoming_business_info e on e.incoming_id = a.id and e.is_deleted = 0
+        left join tf_business_license_info f on e.business_license_id = f.id and f.is_deleted = 0
+        left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
+        left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
 		where a.access_status = 6
 		and (a.business_id, a.business_type, a.access_channel_type) in
         <foreach collection="params" item="item" open="(" close=")" separator=",">
