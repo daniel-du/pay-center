@@ -81,14 +81,14 @@ public class IncomingMerchantReqDTO implements Serializable {
      * 法人证件号码
      */
     @NotBlank(message = "法人证件号码不能为空", groups = { AddGroup.class, UpdateGroup.class })
-    @Length(min=15,max = 18, groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=15,max = 18, message = "法人证件号码长度不正确", groups = { AddGroup.class, UpdateGroup.class })
     private String legalIdNo;
     /**
      * 法人手机号
      */
     @NotBlank(message = "法人手机号不能为空", groups = { AddGroup.class, UpdateGroup.class })
     @Pattern(regexp = RegularConstants.MOBILE, message = "法人手机号格式错误", groups = { AddGroup.class, UpdateGroup.class })
-    @Length(min=11,max = 11, groups = { AddGroup.class, UpdateGroup.class })
+    @Length(min=11,max = 11, message = "法人手机号长度不正确", groups = { AddGroup.class, UpdateGroup.class })
     private String legalMobile;
     /**
      * 法人姓名

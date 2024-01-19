@@ -31,7 +31,7 @@ public class RegularConstants {
     /**
      * 15位身份证号正则表达式
      */
-    public static final String ID_CARD_OLD = "/^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}$/";
+    public static final String ID_CARD_OLD = "^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{2}[0-9Xx]$";
 
     /**
      * 邮箱正则表达式
