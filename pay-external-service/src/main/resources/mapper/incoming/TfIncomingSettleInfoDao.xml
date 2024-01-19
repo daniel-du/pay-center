@@ -9,7 +9,7 @@
         select a.id, a.bank_card_id, a.settlement_account_type, a.occupation, b.bank_account_name, b.bank_card_no,
         b.bank_card_mobile, b.bank_card_url, b.bank_name, b.bank_sub_branch_name, b.bank_branch_code,b.eicon_bank_branch,
         b.open_account_province, b.open_account_province_name, b.open_account_city, b.open_account_city_name,
-        b.open_account_district, b.open_account_district_name
+        b.open_account_district, b.open_account_district_name, b.bank_code
         from tf_incoming_settle_info a
         left join tf_bank_card_info b on a.bank_card_id = b.id  and b.is_deleted = 0
         where a.id = #{id}  and a.is_deleted = 0;
