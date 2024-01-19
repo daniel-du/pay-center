@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.sun.org.apache.regexp.internal.RE;
 import com.tfjt.pay.external.unionpay.biz.IncomingMerchantBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RegularConstants;
@@ -332,6 +333,9 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         System.out.println("emailmatch:" + emailmatch);
         String a = "12345";
         System.out.println("sub:" + a.substring(0,4));
+        String oldId = "372924861204011";
+        boolean idOldmatch = Pattern.compile(RegularConstants.ID_CARD_OLD).matcher(oldId).matches();
+        System.out.println("idOldmatch:" + idOldmatch);
     }
 
 
