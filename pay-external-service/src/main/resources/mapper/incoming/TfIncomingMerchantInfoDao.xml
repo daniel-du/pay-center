@@ -32,6 +32,6 @@
         left join tf_incoming_info b on a.incoming_id = b.id and a.is_deleted = 0
         left join tf_idcard_info c on a.legal_id_card = c.id and c.is_deleted = 0
         left join tf_idcard_info d on a.agent_id_card= d.id and d.is_deleted = 0
-        where b.id = #{id} ;
+        where b.id = #{incomingId} ;
     </select>
 </mapper>
