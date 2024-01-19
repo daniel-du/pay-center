@@ -1,21 +1,16 @@
 package com.tfjt.pay.external.unionpay.utils;
 
 
-import cn.hutool.http.HttpUtil;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.pingan.openbank.api.sdk.client.ApiClient;
 import com.pingan.openbank.api.sdk.common.http.HttpResult;
 import com.pingan.openbank.api.sdk.entity.SdkRequest;
 import com.pingan.openbank.api.sdk.exception.OpenBankSdkException;
-import com.tfjt.pay.external.unionpay.config.ALiYunRocketMQConfig;
 import com.tfjt.pay.external.unionpay.config.PnClientConfig;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
-import com.tfjt.pay.external.unionpay.entity.TfIncomingApiLogEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.IncomingAccessChannelTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.IncomingAccessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingApiLogService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +18,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StopWatch;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
