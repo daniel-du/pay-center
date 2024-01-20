@@ -117,6 +117,10 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
         if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingSettleReqDTO.getSettlementAccountType().intValue())) {
             return;
         }
+        //判断银行卡号是否重复
+        if (tfBankCardInfoService.queryCountByBankNo(incomingSettleReqDTO) > 0) {
+            throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_REPEAT);
+        }
         //如果是“对私”结算类型，开户名称需要与法人姓名一致
         IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantByIncomingId(incomingSettleReqDTO.getIncomingId());
         if (ObjectUtils.isEmpty(incomingMerchantRespDTO)) {

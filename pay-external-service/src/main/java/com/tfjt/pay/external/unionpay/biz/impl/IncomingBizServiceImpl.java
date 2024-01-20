@@ -148,12 +148,15 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Override
     public Result incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
         log.info("IncomingBizServiceImpl--incomingSubmit, incomingSubmitMessageReqDTO:{}", JSONObject.toJSONString(incomingSubmitMessageReqDTO));
+        String codeValidityKey = RedisConstant.INCOMING_BINK_CARD_KEY_PREFIX + incomingSubmitMessageReqDTO.getIncomingId();
+        //获取缓存，如果两分钟内存在操作记录，直接返回错误提示
+        if (redisCache.getCacheString(codeValidityKey) != null) {
+            return Result.failed(ExceptionCodeEnum.INCOMING_FREQUENT_OPERATION);
+        }
         //查询提交进件申请所需信息
         IncomingSubmitMessageDTO incomingSubmitMessageDTO =
                 tfIncomingInfoService.queryIncomingMessage(incomingSubmitMessageReqDTO.getIncomingId());
-        if (IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode().equals(incomingSubmitMessageDTO.getAccessStatus())) {
-            return Result.ok();
-        }
+
         //根据参数类型获取实现类
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
         AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
@@ -164,8 +167,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         //调用实现类方法
         abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
-        //更新进件信息
-
+        //设置缓存，防止用户频繁操作
+        redisCache.setCacheString(codeValidityKey, "binkCard", 120, TimeUnit.SECONDS);
         return Result.ok();
     }
 
