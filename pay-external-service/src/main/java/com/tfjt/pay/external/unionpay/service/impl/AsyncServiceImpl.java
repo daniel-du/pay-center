@@ -116,8 +116,10 @@ public class AsyncServiceImpl implements AsyncService {
                     msg = String.format(msg, "平安");
                     sendMessage(title,msg);
                 }
+                //
                 //此时用户还在旧城
-                if (!newCityFlag && IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())){
+                newSaleAreas.removeAll(pabcDistrictsCode);
+                if (CollectionUtil.isNotEmpty(newSaleAreas) && IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())){
                     String msg = msgBuilder.toString();
                     msg = String.format(msg, "银联");
                     sendMessage(title,msg);
@@ -126,6 +128,8 @@ public class AsyncServiceImpl implements AsyncService {
         }
 
     }
+
+
 
     private String getIdentityByCode(List<Integer> identifyList) {
         if (CollectionUtil.isNotEmpty(identifyList)){
