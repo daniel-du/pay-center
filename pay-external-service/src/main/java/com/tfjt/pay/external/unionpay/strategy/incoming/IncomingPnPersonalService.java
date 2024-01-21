@@ -3,8 +3,10 @@ package com.tfjt.pay.external.unionpay.strategy.incoming;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
+import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
@@ -12,6 +14,7 @@ import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
 import com.tfjt.pay.external.unionpay.enums.PnApiEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.utils.PnHeadUtils;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Du Penglun
@@ -36,28 +40,44 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
     @Autowired
     PnHeadUtils pnHeadUtils;
 
+    @Autowired
+    private RedisCache redisCache;
+
     /**
      * 进件开户
      * @param incomingSubmitMessageDTO
      * @return
      */
     @Override
-    public boolean incomingSubmit(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
-        TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
-        tfIncomingInfoEntity.setId(incomingSubmitMessageDTO.getId());
-        if (IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode().equals(incomingSubmitMessageDTO.getAccessStatus())) {
-            //调用平安6248-开户接口
-            String accountNo = openAccount(tfIncomingInfoEntity, covertOpenAccountJson(incomingSubmitMessageDTO));
-            incomingSubmitMessageDTO.setAccountNo(accountNo);
-            tfIncomingInfoEntity.setAccountNo(accountNo);
-            tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.SIGN_SUCCESS.getCode());
+    public IncomingSubmitMessageRespDTO incomingSubmit(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
+        IncomingSubmitMessageRespDTO incomingSubmitMessageResp = new IncomingSubmitMessageRespDTO();
+        String codeValidityKey = RedisConstant.INCOMING_BINK_CARD_KEY_PREFIX + incomingSubmitMessageDTO.getId();
+        try {
+            TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
+            tfIncomingInfoEntity.setId(incomingSubmitMessageDTO.getId());
+            if (IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode().equals(incomingSubmitMessageDTO.getAccessStatus())) {
+                //调用平安6248-开户接口
+                String accountNo = openAccount(tfIncomingInfoEntity, covertOpenAccountJson(incomingSubmitMessageDTO));
+                incomingSubmitMessageDTO.setAccountNo(accountNo);
+                tfIncomingInfoEntity.setAccountNo(accountNo);
+                tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.SIGN_SUCCESS.getCode());
+                tfIncomingInfoService.updateById(tfIncomingInfoEntity);
+                incomingSubmitMessageResp.setAccessStatus(IncomingAccessStatusEnum.SIGN_SUCCESS.getCode());
+            }
+            //调用平安6238接口
+            binkCard(incomingSubmitMessageDTO);
+            tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
             tfIncomingInfoService.updateById(tfIncomingInfoEntity);
+            incomingSubmitMessageResp.setAccessStatus(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
+            //设置缓存，防止用户频繁操作
+            redisCache.setCacheString(codeValidityKey, "binkCard", 120, TimeUnit.SECONDS);
+        } catch (TfException e) {
+            incomingSubmitMessageResp.setErrorMsg(e.getMessage());
+        } catch (Exception e) {
+            throw e;
         }
-        //调用平安6238接口
-        binkCard(incomingSubmitMessageDTO);
-        tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
-        tfIncomingInfoService.updateById(tfIncomingInfoEntity);
-        return true;
+
+        return incomingSubmitMessageResp;
     }
 
     /**

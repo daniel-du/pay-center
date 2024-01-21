@@ -19,6 +19,7 @@ import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
@@ -146,14 +147,17 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      * @return
      */
     @Override
-    public Result incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
+    public Result<IncomingSubmitMessageRespDTO> incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO) {
         log.info("IncomingBizServiceImpl--incomingSubmit, incomingSubmitMessageReqDTO:{}", JSONObject.toJSONString(incomingSubmitMessageReqDTO));
+        String codeValidityKey = RedisConstant.INCOMING_BINK_CARD_KEY_PREFIX + incomingSubmitMessageReqDTO.getIncomingId();
+        //获取缓存，如果两分钟内存在操作记录，直接返回错误提示
+        if (redisCache.getCacheString(codeValidityKey) != null) {
+            return Result.failed(ExceptionCodeEnum.INCOMING_FREQUENT_OPERATION);
+        }
         //查询提交进件申请所需信息
         IncomingSubmitMessageDTO incomingSubmitMessageDTO =
                 tfIncomingInfoService.queryIncomingMessage(incomingSubmitMessageReqDTO.getIncomingId());
-        if (IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode().equals(incomingSubmitMessageDTO.getAccessStatus())) {
-            return Result.ok();
-        }
+
         //根据参数类型获取实现类
         String bindServiceName = getServiceName(incomingSubmitMessageDTO);
         AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
@@ -163,10 +167,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             return Result.failed(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
         }
         //调用实现类方法
-        abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
-        //更新进件信息
-
-        return Result.ok();
+        IncomingSubmitMessageRespDTO respDTO = abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
+        return Result.ok(respDTO);
     }
 
     /**

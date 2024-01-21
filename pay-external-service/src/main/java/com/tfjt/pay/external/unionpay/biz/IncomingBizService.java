@@ -6,6 +6,7 @@ import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public interface IncomingBizService {
      * 提交基本信息、获取验证码
      * @return
      */
-    Result incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO);
+    Result<IncomingSubmitMessageRespDTO> incomingSubmit(IncomingSubmitMessageReqDTO incomingSubmitMessageReqDTO);
 
     /**
      * 回填校验验证码、打款金额，验证协议

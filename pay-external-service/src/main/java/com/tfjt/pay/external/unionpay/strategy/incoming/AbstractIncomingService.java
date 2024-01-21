@@ -7,6 +7,7 @@ import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
@@ -41,7 +42,7 @@ public abstract class AbstractIncomingService {
      * 绑定银行卡、获取验证码
      * @return
      */
-    abstract public boolean incomingSubmit(IncomingSubmitMessageDTO incomingSubmitMessageDTO);
+    abstract public IncomingSubmitMessageRespDTO incomingSubmit(IncomingSubmitMessageDTO incomingSubmitMessageDTO);
 
     /**
      * 回填校验验证码、打款金额
