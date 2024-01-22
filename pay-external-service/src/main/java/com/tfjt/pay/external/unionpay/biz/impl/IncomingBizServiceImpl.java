@@ -542,11 +542,13 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      */
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public void incomingMessageWrite(TfIncomingImportEntity tfIncomingImportEntity) {
-//        tfIncomingImportEntity.setId(null);
+        Long importId = tfIncomingImportEntity.getId();
+        tfIncomingImportEntity.setId(null);
         TfIncomingInfoEntity incomingInfoEntity = new TfIncomingInfoEntity();
         BeanUtils.copyProperties(tfIncomingImportEntity, incomingInfoEntity);
         incomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.IMPORTS_CLOSURE.getCode());
         String memberId = generateMemberId(tfIncomingImportEntity.getBusinessType().intValue());
+        incomingInfoEntity.setId(null);
         incomingInfoEntity.setMemberId(memberId);
         incomingInfoEntity.setSignChannel(NumberConstant.ONE.byteValue());
         if (!tfIncomingInfoService.save(incomingInfoEntity)) {
@@ -561,6 +563,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         saveSettleInfo(tfIncomingImportEntity, incomingInfoEntity.getId());
 
         //更新提交状态
+        tfIncomingImportEntity.setId(importId);
         tfIncomingImportEntity.setSubmitStatus(NumberConstant.ONE.byteValue());
         if (!tfIncomingImportService.updateById(tfIncomingImportEntity)) {
             throw new TfException(ExceptionCodeEnum.FAIL);
