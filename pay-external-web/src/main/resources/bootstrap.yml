@@ -58,15 +58,3 @@ xxl:
       logpath: ${xxl-job.log.path}
       logretentiondays: 30
       address:
-
-#pnclient:
-#  mrchCode: 4426
-#  txnClientNo: '680013011914'
-#  fundSummaryAcctNo: '15000101630142'
-#  appPrivateKey: '40b83a01166fdb0b92d7af39daed2625c282947ed72276aa1ea159fc3ebb048a'
-#  publicKey: '0480E866C61C385C2916901CFC10AA53DFD89DBFFA87A4A49C26F82C66F30B7A7038D61FDBE08236F6ACFA6216A6FBCC511841586ABE24107438E049BE98C4660C'
-#  appId: 'a0833e1f-2ab0-4dd2-bc9d-d6e33ddff139'
-#  baseUrl: 'https://my-st1.orangebank.com.cn:567/fat7/openapi/gateway/'
-#  appSecret: '4x7XCP'
-#  fileUploadUrl: 'https://my-st1.orangebank.com.cn:567/fat7/openapi/file/boapFile/upload'
-#  fileDownLoadUrl: 'https://my-st1.orangebank.com.cn:567/fat7/openapi/file/boapFile/download'

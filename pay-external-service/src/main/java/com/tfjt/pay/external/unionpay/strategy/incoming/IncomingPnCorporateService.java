@@ -82,7 +82,6 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         } catch (Exception e) {
             throw e;
         }
-
         return incomingSubmitMessageResp;
     }
 

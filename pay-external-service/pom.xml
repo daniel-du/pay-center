@@ -284,10 +284,41 @@
             <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <!--平安api-->
+<!--        <dependency>-->
+<!--            <groupId>com.tfjt.pabank</groupId>-->
+<!--            <artifactId>tf-pabank</artifactId>-->
+<!--            <version>1.0.0</version>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>com.tfjt.pabank</groupId>
-            <artifactId>tf-pabank</artifactId>
+            <groupId>com.tfjt</groupId>
+            <artifactId>pingan-original-api-sdk</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>pingan-cipher-sdk</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>pingan-rsa</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.10.7</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.10.7</version>
+            <!-- <scope>runtime</scope> -->
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.10.7</version>
         </dependency>
         <!--消息异步补偿-->
         <dependency>

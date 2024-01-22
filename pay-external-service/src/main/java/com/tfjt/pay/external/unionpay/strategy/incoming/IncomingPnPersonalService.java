@@ -76,7 +76,6 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
         } catch (Exception e) {
             throw e;
         }
-
         return incomingSubmitMessageResp;
     }
 
