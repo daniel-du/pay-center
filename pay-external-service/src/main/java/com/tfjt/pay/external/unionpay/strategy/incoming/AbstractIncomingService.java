@@ -50,6 +50,8 @@ public abstract class AbstractIncomingService {
      */
     abstract public boolean checkCode(CheckCodeMessageDTO checkCodeMessageDTO);
 
+    abstract public boolean openAccount(IncomingSubmitMessageDTO incomingSubmitMessageDTO);
+
     /**
      * 平安开通账户
      * @param json

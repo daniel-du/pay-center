@@ -59,4 +59,9 @@ public class IncomingController {
     public Result<IncomingMessageRespDTO> queryIncomingMsg(@RequestBody IncomingMessageReqDTO incomingMessageReqDTO) {
         return incomingBizService.queryIncomingMessage(incomingMessageReqDTO);
     }
+
+    @PostMapping("/bacthIncoming")
+    public Result bacthIncoming() {
+        return incomingBizService.bacthIncoming();
+    }
 }

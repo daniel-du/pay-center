@@ -102,6 +102,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private IncomingBizServiceImpl incomingBizService;
 
     @Value("${rocketmq.topic.incomingFinish}")
     private String incomingFinishTopic;
@@ -360,7 +362,12 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         while(extractFlag) {
             List<TfIncomingInfoEntity> incomingList = tfIncomingInfoService.queryListByStartId(startId);
             incomingList.forEach(incomingEntity -> {
-                incomingMessageSubmit(incomingEntity);
+                try {
+                    incomingBizService.incomingMessageSubmit(incomingEntity);
+                } catch (Exception e) {
+
+                }
+
             });
 
             startId = incomingList.get(incomingList.size() - 1).getId();
@@ -535,11 +542,13 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      */
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public void incomingMessageWrite(TfIncomingImportEntity tfIncomingImportEntity) {
+//        tfIncomingImportEntity.setId(null);
         TfIncomingInfoEntity incomingInfoEntity = new TfIncomingInfoEntity();
         BeanUtils.copyProperties(tfIncomingImportEntity, incomingInfoEntity);
         incomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.IMPORTS_CLOSURE.getCode());
         String memberId = generateMemberId(tfIncomingImportEntity.getBusinessType().intValue());
         incomingInfoEntity.setMemberId(memberId);
+        incomingInfoEntity.setSignChannel(NumberConstant.ONE.byteValue());
         if (!tfIncomingInfoService.save(incomingInfoEntity)) {
             log.error("IncomingBizServiceImpl--saveMerchantInfo，保存进件主表信息失败:{}", JSONObject.toJSONString(incomingInfoEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
@@ -628,6 +637,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     private void saveBusinessInfo(TfIncomingImportEntity tfIncomingImportEntity, Long incomingId) {
         TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
         BeanUtils.copyProperties(tfIncomingImportEntity, tfBusinessLicenseInfoEntity);
+        tfBusinessLicenseInfoEntity.setBusinessLicenseType(IdTypeEnum.SOCIAL_CREDIT_CODE.getCode());
         //保存营业执照信息表
         if (!tfBusinessLicenseInfoService.save(tfBusinessLicenseInfoEntity)) {
             log.error("IncomingBizServiceImpl--saveBusinessInfo，保存营业执照信息失败:{}", JSONObject.toJSONString(tfBusinessLicenseInfoEntity));
@@ -669,19 +679,25 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
     }
 
+    @Transactional(rollbackFor = {TfException.class, Exception.class})
     public void incomingMessageSubmit(TfIncomingInfoEntity tfIncomingInfoEntity) {
-        //查询提交进件申请所需信息
-        IncomingSubmitMessageDTO incomingSubmitMessageDTO =
-                tfIncomingInfoService.queryIncomingMessage(tfIncomingInfoEntity.getId());
-        //根据参数类型获取实现类
-        String bindServiceName = getServiceName(incomingSubmitMessageDTO);
-        AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
-        //实现类为空时，直接返回
-        if (ObjectUtils.isEmpty(abstractIncomingService)) {
-            log.error("IncomingBizServiceImpl--incomingMessageSubmit, abstractIncomingService isEmpty, bindServiceName:{}", bindServiceName);
-            throw new TfException(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
+        try {
+            //查询提交进件申请所需信息
+            IncomingSubmitMessageDTO incomingSubmitMessageDTO =
+                    tfIncomingInfoService.queryIncomingMessage(tfIncomingInfoEntity.getId());
+            //根据参数类型获取实现类
+            String bindServiceName = getServiceName(incomingSubmitMessageDTO);
+            AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
+            //实现类为空时，直接返回
+            if (ObjectUtils.isEmpty(abstractIncomingService)) {
+                log.error("IncomingBizServiceImpl--incomingMessageSubmit, abstractIncomingService isEmpty, bindServiceName:{}", bindServiceName);
+                throw new TfException(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
+            }
+            abstractIncomingService.openAccount(incomingSubmitMessageDTO);
+        } catch (Exception e) {
+            log.error("IncomingBizServiceImpl--incomingMessageSubmit，银联数据开户失败, incomingId:{}", tfIncomingInfoEntity.getId());
+            throw e;
         }
-
     }
 
     private String generateMemberId(Integer businessType) {

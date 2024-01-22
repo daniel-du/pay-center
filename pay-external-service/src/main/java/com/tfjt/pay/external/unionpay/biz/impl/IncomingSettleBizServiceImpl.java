@@ -114,14 +114,14 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
      * @param incomingSettleReqDTO
      */
     private void validateSettltEntity(IncomingSettleReqDTO incomingSettleReqDTO) {
-        if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingSettleReqDTO.getSettlementAccountType().intValue())) {
-            return;
-        }
         //判断银行卡号是否重复
         if (tfBankCardInfoService.queryCountByBankNo(incomingSettleReqDTO) > 0) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_REPEAT);
         }
-        //如果是“对私”结算类型，开户名称需要与法人姓名一致
+        //如果是“对私”结算类型，开户名称需要与法人姓名一致,"对公"直接返回
+        if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingSettleReqDTO.getSettlementAccountType().intValue())) {
+            return;
+        }
         IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantByIncomingId(incomingSettleReqDTO.getIncomingId());
         if (ObjectUtils.isEmpty(incomingMerchantRespDTO)) {
             log.warn("IncomingSettleBizServiceImpl---validateSettltEntity, incomingMerchantRespDTO isEmpty");

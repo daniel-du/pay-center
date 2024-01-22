@@ -124,6 +124,19 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
         return true;
     }
 
+    @Override
+    public boolean openAccount(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
+        TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
+        tfIncomingInfoEntity.setId(incomingSubmitMessageDTO.getId());
+        //调用平安6248-开户接口
+        String accountNo = openAccount(tfIncomingInfoEntity, covertOpenAccountJson(incomingSubmitMessageDTO));
+        incomingSubmitMessageDTO.setAccountNo(accountNo);
+        tfIncomingInfoEntity.setAccountNo(accountNo);
+        tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.SIGN_SUCCESS.getCode());
+        tfIncomingInfoService.updateById(tfIncomingInfoEntity);
+        return true;
+    }
+
     private void binkCard(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
         try {
             //调用平安6248-开户接口
