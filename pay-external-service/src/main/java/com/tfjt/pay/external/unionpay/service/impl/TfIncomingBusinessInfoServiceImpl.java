@@ -43,4 +43,14 @@ public class TfIncomingBusinessInfoServiceImpl extends BaseServiceImpl<TfIncomin
                 .eq(TfIncomingBusinessInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
         return this.baseMapper.selectOne(businessInfoEntityLambdaQueryWrapper);
     }
+
+    /**
+     * 根据进件id查询商户营业信息
+     * @param incomingId
+     * @return
+     */
+    @Override
+    public IncomingBusinessRespDTO queryBusinessByIncomingId(Long incomingId) {
+        return this.baseMapper.queryBusinessByIncomingId(incomingId);
+    }
 }

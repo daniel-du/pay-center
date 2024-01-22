@@ -18,4 +18,6 @@ import org.apache.ibatis.annotations.Param;
 public interface TfIncomingBusinessInfoDao extends BaseMapper<TfIncomingBusinessInfoEntity> {
 
     IncomingBusinessRespDTO queryBusinessById(@Param("id") Long id);
+
+    IncomingBusinessRespDTO queryBusinessByIncomingId(@Param("incomingId") Long incomingId);
 }

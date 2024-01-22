@@ -13,4 +13,14 @@
         left join tf_business_license_info b on a.business_license_id = b.id and b.is_deleted = 0
         where a.id = #{id}  and a.is_deleted = 0;
     </select>
+    <select id="queryBusinessByIncomingId"
+            resultType="com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO">
+        select a.id,a.business_license_id,a.email, b.business_name, b.business_province, b.business_province_name, b.business_city,
+        b.business_city_name, b.business_district, b.business_district_name, b.business_license_no, b.business_license_url,
+        b.business_license_effective_date, b.business_license_expire_date, b.business_license_is_long_term, b.address
+        from tf_incoming_business_info a
+        left join tf_business_license_info b on a.business_license_id = b.id and b.is_deleted = 0
+        left join tf_incoming_info c on a.incoming_id = c.id and c.is_deleted = 0
+        where c.id = #{incomingId}  and a.is_deleted = 0;
+    </select>
 </mapper>
