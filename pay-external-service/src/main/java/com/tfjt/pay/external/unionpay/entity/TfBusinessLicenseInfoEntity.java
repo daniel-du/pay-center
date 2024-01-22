@@ -98,7 +98,7 @@ public class TfBusinessLicenseInfoEntity implements Serializable {
     /**
      * 营业执照是否长期（0否，1是）
      */
-    private Boolean businessLicenseIsLongTerm;
+    private Integer businessLicenseIsLongTerm;
 
     /**
      * 数据有效状态（0：有效，1：无效）

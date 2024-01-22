@@ -66,4 +66,8 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      */
     Long queryIncomingInfoCountByMerchant(Long businessId, Byte businessType, Byte accessChannelType);
 
+    TfIncomingInfoEntity queryNotSubmitMinIdData();
+
+    List<TfIncomingInfoEntity> queryListByStartId(Long id);
+
 }

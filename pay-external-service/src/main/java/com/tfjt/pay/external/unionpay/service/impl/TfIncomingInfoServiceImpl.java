@@ -9,6 +9,7 @@ import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.DeleteStatusEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
@@ -102,5 +103,22 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
         queryWrapper.eq(TfIncomingInfoEntity::getBusinessId, businessId);
         queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
         return this.baseMapper.selectCount(queryWrapper);
+    }
+
+    @Override
+    public TfIncomingInfoEntity queryNotSubmitMinIdData() {
+        LambdaQueryWrapper<TfIncomingInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TfIncomingInfoEntity::getAccessStatus, IncomingAccessStatusEnum.IMPORTS_CLOSURE);
+        queryWrapper.orderByAsc(TfIncomingInfoEntity::getId).last("limit 1");
+        return this.baseMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public List<TfIncomingInfoEntity> queryListByStartId(Long id) {
+        LambdaQueryWrapper<TfIncomingInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TfIncomingInfoEntity::getAccessStatus, IncomingAccessStatusEnum.IMPORTS_CLOSURE);
+        queryWrapper.ge(TfIncomingInfoEntity::getId, id);
+        queryWrapper.orderByAsc(TfIncomingInfoEntity::getId).last("limit 100");
+        return this.baseMapper.selectList(queryWrapper);
     }
 }

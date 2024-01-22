@@ -300,8 +300,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         tfIncomingInfoEntity.setAccessMainType(changeAccessMainTypeReqDTO.getAccessMainType().byteValue());
         //变更主表进件主体类型
         if (!tfIncomingInfoService.updateById(tfIncomingInfoEntity)) {
-            log.error("IncomingBizServiceImpl--changeAccessMainType, incomingId:{}", changeAccessMainTypeReqDTO.getId());
-            throw new TfException(ExceptionCodeEnum.FAIL);
+            log.error("IncomingBizServiceImpl--changeAccessMainType, isError incomingId:{}", changeAccessMainTypeReqDTO.getId());
+            return Result.failed(ExceptionCodeEnum.FAIL);
         }
         //清除身份信息
         clearMerchantInfo(incomingDataIdDTO);
@@ -339,13 +339,37 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             }
         }
         log.info("IncomingBizServiceImpl--unionpayDataExtract, end");
-        return null;
+        return Result.ok();
     }
 
+    /**
+     * 银联老数据批量入网平安
+     * @return
+     */
     @Override
     public Result bacthIncoming() {
+        log.info("IncomingBizServiceImpl--bacthIncoming, start");
+        TfIncomingInfoEntity tfIncomingInfostart = tfIncomingInfoService.queryNotSubmitMinIdData();
+        log.info("IncomingBizServiceImpl--bacthIncoming, tfIncomingInfoStart:{}", JSONObject.toJSONString(tfIncomingInfostart));
+        if (ObjectUtils.isEmpty(tfIncomingInfostart)) {
+            log.warn("IncomingBizServiceImpl--bacthIncoming, tfIncomingImportStart isEmpty");
+            return Result.ok();
+        }
+        boolean extractFlag = true;
+        long startId = tfIncomingInfostart.getId();
+        while(extractFlag) {
+            List<TfIncomingInfoEntity> incomingList = tfIncomingInfoService.queryListByStartId(startId);
+            incomingList.forEach(incomingEntity -> {
+                incomingMessageSubmit(incomingEntity);
+            });
 
-        return null;
+            startId = incomingList.get(incomingList.size() - 1).getId();
+            if (incomingList.size() < 100) {
+                extractFlag = false;
+            }
+        }
+        log.info("IncomingBizServiceImpl--bacthIncoming, end");
+        return Result.ok();
     }
 
     /**
@@ -514,8 +538,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         TfIncomingInfoEntity incomingInfoEntity = new TfIncomingInfoEntity();
         BeanUtils.copyProperties(tfIncomingImportEntity, incomingInfoEntity);
         incomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.IMPORTS_CLOSURE.getCode());
-        String memberId = IncomingMemberBusinessTypeEnum.fromCode(tfIncomingImportEntity.getBusinessType().intValue()).getMemberPrefix()
-                + tfIncomingImportEntity.getBusinessId();
+        String memberId = generateMemberId(tfIncomingImportEntity.getBusinessType().intValue());
         incomingInfoEntity.setMemberId(memberId);
         if (!tfIncomingInfoService.save(incomingInfoEntity)) {
             log.error("IncomingBizServiceImpl--saveMerchantInfo，保存进件主表信息失败:{}", JSONObject.toJSONString(incomingInfoEntity));
@@ -527,6 +550,12 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         saveBusinessInfo(tfIncomingImportEntity, incomingInfoEntity.getId());
         //保存结算信息
         saveSettleInfo(tfIncomingImportEntity, incomingInfoEntity.getId());
+
+        //更新提交状态
+        tfIncomingImportEntity.setSubmitStatus(NumberConstant.ONE.byteValue());
+        if (!tfIncomingImportService.updateById(tfIncomingImportEntity)) {
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
     }
 
     /**
@@ -638,6 +667,21 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             log.error("IncomingBizServiceImpl--saveSettleInfo，保存结算信息失败:{}", JSONObject.toJSONString(tfIncomingSettleInfoEntity));
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
+    }
+
+    public void incomingMessageSubmit(TfIncomingInfoEntity tfIncomingInfoEntity) {
+        //查询提交进件申请所需信息
+        IncomingSubmitMessageDTO incomingSubmitMessageDTO =
+                tfIncomingInfoService.queryIncomingMessage(tfIncomingInfoEntity.getId());
+        //根据参数类型获取实现类
+        String bindServiceName = getServiceName(incomingSubmitMessageDTO);
+        AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get(bindServiceName);
+        //实现类为空时，直接返回
+        if (ObjectUtils.isEmpty(abstractIncomingService)) {
+            log.error("IncomingBizServiceImpl--incomingMessageSubmit, abstractIncomingService isEmpty, bindServiceName:{}", bindServiceName);
+            throw new TfException(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
+        }
+
     }
 
     private String generateMemberId(Integer businessType) {

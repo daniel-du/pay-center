@@ -56,7 +56,7 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
             return Result.ok();
         }
         if (NumberConstant.ONE.equals(incomingBusinessRespDTO.getBusinessLicenseIsLongTerm())) {
-            incomingBusinessRespDTO.setBusinessLicenseExpireDate(null);
+            incomingBusinessRespDTO.setBusinessLicenseExpireDate("");
         }
         log.info("IncomingBusinessBizServiceImpl---getById, incomingBusinessRespDTO:{}", JSONObject.toJSONString(incomingBusinessRespDTO));
         return Result.ok(incomingBusinessRespDTO);
