@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -189,9 +190,19 @@ public class AsyncServiceImpl implements AsyncService {
         String buisnessNo = businessId;
         if (BusinessUserTypeEnum.BUSINESS.getCode().equals(businessType)) {
             buisnessNo = "tfys" + businessId;
+        }else {
+            Result<String> result = supplierApiService.getSupplierIdById(businessId);
+            if (result.getCode()==NumberConstant.ZERO){
+                buisnessNo = result.getData();
+            }
         }
         SelfSignEntity one = selfSignService.getOne(new LambdaQueryWrapper<SelfSignEntity>().eq(SelfSignEntity::getAccesserAcct, buisnessNo));
-        if (null != one) {
+        String signingStatus = one.getSigningStatus();
+        List<String> notSigningStatus = new ArrayList<>();
+        notSigningStatus.add("-1");
+        notSigningStatus.add("00");
+        notSigningStatus.add("18");
+        if (null != one && !notSigningStatus.contains(signingStatus)) {
             queryAccessBankStatueRespDTO.setStatus(one.getSigningStatus());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY.getName());
             queryAccessBankStatueRespDTO.setMsg(one.getMsg());
