@@ -103,4 +103,14 @@ public class IncomingMessageRespDTO implements Serializable {
      * 银行卡号
      */
     private String bankCardNo;
+
+    /**
+     * 银行名称
+     */
+    private String bankName;
+
+    /**
+     * 银行编号
+     */
+    private String bankCode;
 }

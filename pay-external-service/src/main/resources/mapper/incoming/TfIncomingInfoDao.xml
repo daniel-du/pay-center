@@ -48,7 +48,7 @@
         b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
         d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,
 		g.settlement_account_type, h.bank_account_name, h.bank_card_no,
-        h.bank_card_mobile, h.bank_name, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
+        h.bank_card_mobile, h.bank_name,h.bank_code, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
         from  tf_incoming_info a
         left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
         left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0

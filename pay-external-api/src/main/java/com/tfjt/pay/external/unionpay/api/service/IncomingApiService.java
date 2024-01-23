@@ -1,7 +1,9 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -28,4 +30,13 @@ public interface IncomingApiService {
      * @return
      */
     Result<Map<String, IncomingMessageRespDTO>> queryIncomingMessages(List<IncomingMessageReqDTO> incomingMessageReqs);
+
+    /**
+     * 根据多个商户信息批量查询入网状态（一个渠道入网成功即算入网成功），key为“商户类型”-“商户id”
+     * @param incomingStatusReqs
+     * @return
+     */
+    Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(List<IncomingStatusReqDTO> incomingStatusReqs);
+
+
 }
