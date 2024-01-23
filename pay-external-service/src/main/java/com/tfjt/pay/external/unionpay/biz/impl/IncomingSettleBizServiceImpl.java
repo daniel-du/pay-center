@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.biz.IncomingSettleBizService;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSettleReqDTO;
+import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfBankCardInfoEntity;
@@ -10,6 +11,7 @@ import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IncomingSettleTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfBankCardInfoService;
+import com.tfjt.pay.external.unionpay.service.TfIncomingBusinessInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingSettleInfoService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -42,6 +44,9 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
 
     @Autowired
     private TfIncomingMerchantInfoService tfIncomingMerchantInfoService;
+
+    @Autowired
+    private TfIncomingBusinessInfoService tfIncomingBusinessInfoService;
 
     @Override
     public Result<IncomingSettleRespDTO> getById(Long id) {
@@ -118,17 +123,26 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
         if (tfBankCardInfoService.queryCountByBankNo(incomingSettleReqDTO) > 0) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_REPEAT);
         }
-        //如果是“对私”结算类型，开户名称需要与法人姓名一致,"对公"直接返回
+        //如果是“对私”结算类型，开户名称需要与法人姓名一致,"对公"结算类型，开户名称需要与营业名称一致
         if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingSettleReqDTO.getSettlementAccountType().intValue())) {
-            return;
+            IncomingBusinessRespDTO incomingBusinessRespDTO = tfIncomingBusinessInfoService.queryBusinessByIncomingId(incomingSettleReqDTO.getIncomingId());
+            if (ObjectUtils.isEmpty(incomingBusinessRespDTO)) {
+                log.warn("IncomingSettleBizServiceImpl---validateSettltEntity, incomingBusinessRespDTO isEmpty");
+                return;
+            }
+            if (!incomingSettleReqDTO.getBankAccountName().equals(incomingBusinessRespDTO.getBusinessName())) {
+                throw new TfException(ExceptionCodeEnum.INCOMING_CORPORATE_BANK_CARD_ACCOUNT_ERROR);
+            }
+        } else {
+            IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantByIncomingId(incomingSettleReqDTO.getIncomingId());
+            if (ObjectUtils.isEmpty(incomingMerchantRespDTO)) {
+                log.warn("IncomingSettleBizServiceImpl---validateSettltEntity, incomingMerchantRespDTO isEmpty");
+                return;
+            }
+            if (!incomingSettleReqDTO.getBankAccountName().equals(incomingMerchantRespDTO.getLegalName())) {
+                throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_ACCOUNT_ERROR);
+            }
         }
-        IncomingMerchantRespDTO incomingMerchantRespDTO = tfIncomingMerchantInfoService.queryMerchantByIncomingId(incomingSettleReqDTO.getIncomingId());
-        if (ObjectUtils.isEmpty(incomingMerchantRespDTO)) {
-            log.warn("IncomingSettleBizServiceImpl---validateSettltEntity, incomingMerchantRespDTO isEmpty");
-            return;
-        }
-        if (!incomingSettleReqDTO.getBankAccountName().equals(incomingMerchantRespDTO.getLegalName())) {
-            throw new TfException(ExceptionCodeEnum.INCOMING_BANK_CARD_ACCOUNT_ERROR);
-        }
+
     }
 }
