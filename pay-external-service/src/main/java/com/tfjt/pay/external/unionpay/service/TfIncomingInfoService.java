@@ -70,4 +70,6 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     List<TfIncomingInfoEntity> queryListByStartId(Long id);
 
+    int updateTimeById(Long id);
+
 }

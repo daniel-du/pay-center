@@ -132,6 +132,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
             TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingMerchantReqDTO.getIncomingId());
             incomingMerchantReqDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
             validateMerchantEntity(incomingMerchantReqDTO);
+            tfIncomingInfoService.updateTimeById(incomingMerchantReqDTO.getIncomingId());
             //保存商户身份信息
             TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = new TfIncomingMerchantInfoEntity();
             BeanUtils.copyProperties(incomingMerchantReqDTO, tfIncomingMerchantInfoEntity);
@@ -184,6 +185,7 @@ public class IncomingMerchantBizServiceImpl implements IncomingMerchantBizServic
         TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingMerchantReqDTO.getIncomingId());
         incomingMerchantReqDTO.setAccessMainType(tfIncomingInfoEntity.getAccessMainType());
         validateMerchantEntity(incomingMerchantReqDTO);
+        tfIncomingInfoService.updateTimeById(incomingMerchantReqDTO.getIncomingId());
 //        TfIncomingMerchantInfoEntity originMerchantInfoEntity = tfIncomingMerchantInfoService.getById(incomingMerchantReqDTO.getId());
         //保存商户身份信息
         TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = TfIncomingMerchantInfoEntity.builder().

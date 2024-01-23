@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -120,5 +121,13 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
         queryWrapper.ge(TfIncomingInfoEntity::getId, id);
         queryWrapper.orderByAsc(TfIncomingInfoEntity::getId).last("limit 100");
         return this.baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public int updateTimeById(Long id) {
+        TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
+        tfIncomingInfoEntity.setId(id);
+        tfIncomingInfoEntity.setUpdateTime(LocalDateTime.now());
+        return this.baseMapper.updateById(tfIncomingInfoEntity);
     }
 }

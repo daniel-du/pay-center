@@ -12,6 +12,7 @@ import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfBusinessLicenseInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingBusinessInfoService;
+import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
@@ -43,6 +44,9 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
     @Autowired
     private TfBusinessLicenseInfoService tfBusinessLicenseInfoService;
 
+    @Autowired
+    private TfIncomingInfoService tfIncomingInfoService;
+
     /**
      * 邮箱验证格式
      */
@@ -68,6 +72,7 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
         log.info("IncomingBusinessBizServiceImpl---save, incomingBusinessReqDTO:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
         ValidatorUtils.validateEntity(incomingBusinessReqDTO, AddGroup.class);
         validateBusinessEntity(incomingBusinessReqDTO);
+        tfIncomingInfoService.updateTimeById(incomingBusinessReqDTO.getIncomingId());
         TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
         BeanUtils.copyProperties(incomingBusinessReqDTO, tfBusinessLicenseInfoEntity);
         tfBusinessLicenseInfoEntity.setBusinessLicenseType(IdTypeEnum.SOCIAL_CREDIT_CODE.getCode());
@@ -102,6 +107,7 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
         if (incomingBusinessReqDTO.getId() == null || incomingBusinessReqDTO.getBusinessLicenseId() == null) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BUSINESS_ID_IS_NULL);
         }
+        tfIncomingInfoService.updateTimeById(incomingBusinessReqDTO.getIncomingId());
         TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
         BeanUtils.copyProperties(incomingBusinessReqDTO, tfBusinessLicenseInfoEntity);
         tfBusinessLicenseInfoEntity.setId(incomingBusinessReqDTO.getBusinessLicenseId());

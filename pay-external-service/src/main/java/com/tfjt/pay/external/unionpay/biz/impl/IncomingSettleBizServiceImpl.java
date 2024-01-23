@@ -10,10 +10,7 @@ import com.tfjt.pay.external.unionpay.entity.TfBankCardInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IncomingSettleTypeEnum;
-import com.tfjt.pay.external.unionpay.service.TfBankCardInfoService;
-import com.tfjt.pay.external.unionpay.service.TfIncomingBusinessInfoService;
-import com.tfjt.pay.external.unionpay.service.TfIncomingMerchantInfoService;
-import com.tfjt.pay.external.unionpay.service.TfIncomingSettleInfoService;
+import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
@@ -48,6 +45,9 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
     @Autowired
     private TfIncomingBusinessInfoService tfIncomingBusinessInfoService;
 
+    @Autowired
+    private TfIncomingInfoService tfIncomingInfoService;
+
     @Override
     public Result<IncomingSettleRespDTO> getById(Long id) {
         log.info("IncomingSettleBizServiceImpl---getById, id:{}", id);
@@ -70,6 +70,7 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
         log.info("IncomingSettleBizServiceImpl---save, incomingSettleReqDTO:{}", JSONObject.toJSONString(incomingSettleReqDTO));
         ValidatorUtils.validateEntity(incomingSettleReqDTO, AddGroup.class);
         validateSettltEntity(incomingSettleReqDTO);
+        tfIncomingInfoService.updateTimeById(incomingSettleReqDTO.getIncomingId());
         TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
         BeanUtils.copyProperties(incomingSettleReqDTO, tfBankCardInfoEntity);
         //保存银行卡表信息
@@ -96,6 +97,7 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
         log.info("IncomingSettleBizServiceImpl---save, incomingSettleReqDTO:{}", JSONObject.toJSONString(incomingSettleReqDTO));
         ValidatorUtils.validateEntity(incomingSettleReqDTO, UpdateGroup.class);
         validateSettltEntity(incomingSettleReqDTO);
+        tfIncomingInfoService.updateTimeById(incomingSettleReqDTO.getIncomingId());
         TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
         BeanUtils.copyProperties(incomingSettleReqDTO, tfBankCardInfoEntity);
         tfBankCardInfoEntity.setId(incomingSettleReqDTO.getBankCardId());
