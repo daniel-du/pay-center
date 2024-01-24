@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.web.controller;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.config.DevConfig;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
@@ -11,10 +12,7 @@ import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Du Penglun
@@ -29,6 +27,9 @@ public class IncomingController {
 
     @Autowired
     private IncomingBizService incomingBizService;
+
+    @Autowired
+    private DevConfig devConfig;
 
     @PostMapping("/save")
     public Result save(@RequestBody IncomingInfoReqDTO incomingInfoReqDTO) {
@@ -63,5 +64,10 @@ public class IncomingController {
     @PostMapping("/bacthIncoming")
     public Result bacthIncoming() {
         return incomingBizService.bacthIncoming();
+    }
+
+    @GetMapping("/getActive")
+    public Result getActive() {
+        return Result.ok(devConfig.getActive());
     }
 }

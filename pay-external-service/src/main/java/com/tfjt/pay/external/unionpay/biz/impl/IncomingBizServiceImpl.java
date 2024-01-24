@@ -31,7 +31,6 @@ import com.tfjt.pay.external.unionpay.strategy.incoming.AbstractIncomingService;
 import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
-import com.tfjt.request.BaseRestRequest;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
@@ -774,9 +773,5 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         return prefix + str;
     }
 
-    private void buildBaseRestQuest(BaseRestRequest baseRestRequest) {
-        baseRestRequest.setAppId(appId);
-        baseRestRequest.setAppSecret(appSecret);
-    }
 
 }

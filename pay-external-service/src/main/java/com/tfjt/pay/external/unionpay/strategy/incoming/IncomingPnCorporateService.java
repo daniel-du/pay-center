@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.strategy.incoming;
 
 import com.alibaba.fastjson.JSONObject;
+import com.tfjt.pay.external.unionpay.config.DevConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
@@ -45,6 +46,9 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
 
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private DevConfig devConfig;
 
 
     /**
@@ -200,7 +204,12 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         //会员属性: SH-商户子账户(默认) 00-普通子账户
         jsonObject.put("MemberProperty", "SH");
         //手机号码测试送11个1
-        jsonObject.put("Mobile", incomingSubmitMessageDTO.getLegalMobile());
+        if (devConfig.isProd()) {
+            jsonObject.put("Mobile", incomingSubmitMessageDTO.getLegalMobile());
+        } else {
+            jsonObject.put("Mobile", "11111111111");
+        }
+
         //邮箱
 //        jsonObject.put("Email", "duake524@163.com");
 
@@ -253,7 +262,11 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
 //        //超级网银行号
 //        jsonObject.put("EiconBankBranchId", "102100099996");
         //手机号码
-        jsonObject.put("Mobile", incomingSubmitMessageDTO.getBankCardMobile());
+        if (devConfig.isProd()) {
+            jsonObject.put("Mobile", incomingSubmitMessageDTO.getBankCardMobile());
+        } else {
+            jsonObject.put("Mobile", "11111111111");
+        }
         //个体工商户标识
         jsonObject.put("IndivBusinessFlag", NumberConstant.ONE.equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
         //营业及店铺信息-个体工商户必填
