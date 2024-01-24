@@ -208,12 +208,11 @@ public class AsyncServiceImpl implements AsyncService {
             }
         }
         SelfSignEntity one = selfSignService.getOne(new LambdaQueryWrapper<SelfSignEntity>().eq(SelfSignEntity::getAccesserAcct, buisnessNo));
-        String signingStatus = one.getSigningStatus();
         List<String> notSigningStatus = new ArrayList<>();
         notSigningStatus.add("-1");
         notSigningStatus.add("00");
         notSigningStatus.add("18");
-        if (null != one && !notSigningStatus.contains(signingStatus)) {
+        if (null != one && !notSigningStatus.contains(one.getSigningStatus())) {
             queryAccessBankStatueRespDTO.setStatus(one.getSigningStatus());
             queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY.getName());
             queryAccessBankStatueRespDTO.setMsg(one.getMsg());
