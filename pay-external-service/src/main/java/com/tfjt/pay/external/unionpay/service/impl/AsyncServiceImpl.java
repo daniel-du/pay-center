@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.robot.common.message.ding.MarkdownMessage;
 import com.tfjt.robot.service.dingtalk.DingRobotService;
 import com.tfjt.tfcommon.dto.response.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  * @create 2024/1/16 9:49
  */
 @Service
+@Slf4j
 public class AsyncServiceImpl implements AsyncService {
 
     @Autowired
@@ -69,8 +71,10 @@ public class AsyncServiceImpl implements AsyncService {
             supplierName = result.getData();
         }
         if (newIdentifyList.contains(SupplierTypeEnum.SUPPLIER.getCode())) {
+            log.info("身份信息包含供应商");
             //身份变更
             if (!identityFlag) {
+                log.info("供应商身份发生了变更");
                 String title = "商户身份变更";
                 String oldIdentity = getIdentityByCode(oldIdentifyList);
                 String newIdentity = getIdentityByCode(newIdentifyList);
@@ -96,9 +100,11 @@ public class AsyncServiceImpl implements AsyncService {
             }
         }
         if (newIdentifyList.contains(SupplierTypeEnum.DEALER.getCode())) {
+            log.info("身份信息包含经销商");
             //判断经销商的销售区域是否包含新城
             //销售区域变更
             if (!saleFlag) {
+                log.info("经销商销售区域发生了变更");
                 //查询新城地区code集合
                 String oldSales = getSalesByCodes(oldSaleAreas);
                 String newSales = getSalesByCodes(newSaleAreas);
@@ -106,6 +112,7 @@ public class AsyncServiceImpl implements AsyncService {
                 List<String> pabcDistrictsCode = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
                 //判断新城地区code集合是否包含当前销售城市code
                 boolean newCityFlag = pabcDistrictsCode.stream().anyMatch(e -> contains(newSaleAreas, e));
+                log.info("经销商销售区域是否包含了平安地区：{},平安进件状态：{}",newCityFlag,pabcIncoming.getStatus());
                 String title = "销售区域变更";
                 StringBuilder msgBuilder = new StringBuilder();
                 msgBuilder.append("时间：" + DateUtil.format(new Date(), DatePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()) + "\n\n");
@@ -114,6 +121,7 @@ public class AsyncServiceImpl implements AsyncService {
                 msgBuilder.append("变更内容：\n\n老销售区域:"+oldSales+";\n\n新销售区域:"+newSales+"，请尽快【<font color=#FF0000>%s</font>】进件。");
                 if (newCityFlag && IncomingStatusEnum.NOT_INCOMING.getCode().equals(pabcIncoming.getStatus())) {
                     String msg = msgBuilder.toString();
+                    log.info("平安进件报警，报警信息为：{}",msg);
                     msg = String.format(msg, "平安");
                     sendMessage(title,msg);
                 }
@@ -122,6 +130,7 @@ public class AsyncServiceImpl implements AsyncService {
                 newSaleAreas.removeAll(pabcDistrictsCode);
                 if (CollectionUtil.isNotEmpty(newSaleAreas) && IncomingStatusEnum.NOT_INCOMING.getCode().equals(unionIncoming.getStatus())){
                     String msg = msgBuilder.toString();
+                    log.info("银联进件报警，报警信息为：{}",msg);
                     msg = String.format(msg, "银联");
                     sendMessage(title,msg);
                 }
