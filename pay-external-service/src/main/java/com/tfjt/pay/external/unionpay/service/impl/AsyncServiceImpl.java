@@ -51,6 +51,8 @@ public class AsyncServiceImpl implements AsyncService {
     private String accessToken;
     @Value("${dingding.incoming.encryptKey}")
     private String encryptKey;
+    @Value("${dingding.incoming.sleep}")
+    private Integer sleepTime;
 
 
     @Override
@@ -64,6 +66,11 @@ public class AsyncServiceImpl implements AsyncService {
         QueryAccessBankStatueRespDTO pabcIncoming = getPabcIncoming(String.valueOf(supplierId));
         //判断用户身份，供应商必须要银联和平安都进件，经销商需要根据销售区域进行判断
         //供应商钉钉报警不考虑销售区域变更
+        try {
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Result<String> result = supplierApiService.getSupplierNameBySupplierId(supplierId);
         String supplierName = null;
         int code = result.getCode();
