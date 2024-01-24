@@ -253,6 +253,19 @@
             <groupId>com.tfjt</groupId>
             <artifactId>tf-shop-api</artifactId>
             <version>1.4.14-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.tf.log</groupId>
+                    <artifactId>tf-log-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion></exclusions>
         </dependency>
     </dependencies>
 </project>
