@@ -252,7 +252,7 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-shop-api</artifactId>
-            <version>1.4.4-SNAPSHOT</version>
+            <version>1.4.14-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
