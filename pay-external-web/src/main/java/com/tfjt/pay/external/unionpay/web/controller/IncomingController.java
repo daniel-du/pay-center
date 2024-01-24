@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.config.DevConfig;
@@ -70,4 +71,11 @@ public class IncomingController {
     public Result getActive() {
         return Result.ok(devConfig.getActive());
     }
+
+    @PostMapping("/queryIncomingStatus")
+    public Result queryIncomingStatus(@RequestBody IncomingStatusReqDTO incomingStatusReqDTO) {
+        return incomingBizService.queryIncomingStatus(incomingStatusReqDTO);
+    }
+
+
 }
