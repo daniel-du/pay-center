@@ -405,11 +405,18 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         Map<String, IncomingStatusRespDTO> incomingStatusMap = new HashMap<>();
         if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(incomingStatusReqDTO.getBusinessType())) {
             List<TfSupplierDTO> tfSuppliers = tfSupplierApiService.getTfSupplierList(ids);
+            log.info("IncomingBizServiceImpl--queryIncomingStatus, tfSuppliers:{}",JSONObject.toJSONString(tfSuppliers));
             if (CollectionUtils.isEmpty(tfSuppliers)) {
                 return Result.failed(ExceptionCodeEnum.IS_NULL);
             }
+            tfSuppliers.forEach(tfSupplier -> {
+                accessAccts.add(tfSupplier.getSupplierId());
+            });
+            log.info("IncomingBizServiceImpl--queryIncomingStatus, accessAccts:{}",accessAccts.toString());
             List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
+            log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
             List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+            log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
             Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
             Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
             tfSuppliers.forEach(tfSupplier -> {
