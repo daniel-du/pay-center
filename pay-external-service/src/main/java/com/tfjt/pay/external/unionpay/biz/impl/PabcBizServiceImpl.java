@@ -322,9 +322,11 @@ public class PabcBizServiceImpl implements PabcBizService {
     }
 
     private String getSalesByCodes(List<String> saleAreas) {
-        List<String> areas = faStandardLocationDictService.getAreasByCode(saleAreas);
-        if (CollectionUtil.isNotEmpty(areas)) {
-            return String.join(",", areas);
+        if (CollectionUtil.isNotEmpty(saleAreas)) {
+            List<String> areas = faStandardLocationDictService.getAreasByCode(saleAreas);
+            if (CollectionUtil.isNotEmpty(areas)) {
+                return String.join(",", areas);
+            }
         }
         return "";
     }
