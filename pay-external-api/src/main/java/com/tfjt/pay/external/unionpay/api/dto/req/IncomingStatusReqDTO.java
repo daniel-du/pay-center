@@ -2,8 +2,10 @@ package com.tfjt.pay.external.unionpay.api.dto.req;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author Du Penglun
@@ -21,8 +23,8 @@ public class IncomingStatusReqDTO implements Serializable {
     private Integer businessType;
 
     /**
-     * 商户id
+     * 商户id集合
      */
-    @NotNull(message = "商户id不能为空")
-    private Long businessId;
+    @NotEmpty(message = "商户id集合不能为空")
+    private List<Long> businessIds;
 }

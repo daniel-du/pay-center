@@ -130,4 +130,13 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
         tfIncomingInfoEntity.setUpdateTime(LocalDateTime.now());
         return this.baseMapper.updateById(tfIncomingInfoEntity);
     }
+
+    @Override
+    public List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> ids, Integer businessType) {
+        LambdaQueryWrapper<TfIncomingInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TfIncomingInfoEntity::getId, ids);
+        queryWrapper.eq(TfIncomingInfoEntity::getBusinessType, businessType);
+        queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        return this.baseMapper.selectList(queryWrapper);
+    }
 }

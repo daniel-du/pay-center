@@ -66,10 +66,32 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      */
     Long queryIncomingInfoCountByMerchant(Long businessId, Byte businessType, Byte accessChannelType);
 
+    /**
+     * 查询已导入状态最小数据
+     * @return
+     */
     TfIncomingInfoEntity queryNotSubmitMinIdData();
 
+    /**
+     * 根据起始id查询100条已导入状态进件数据
+     * @param id
+     * @return
+     */
     List<TfIncomingInfoEntity> queryListByStartId(Long id);
 
+    /**
+     * 更新时间字段
+     * @param id
+     * @return
+     */
     int updateTimeById(Long id);
+
+    /**
+     * 根据商户id、商户类型批量查询进件信息
+     * @param ids
+     * @param businessType
+     * @return
+     */
+    List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> ids, Integer businessType);
 
 }

@@ -36,7 +36,7 @@ public interface IncomingApiService {
      * @param incomingStatusReqs
      * @return
      */
-    Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(List<IncomingStatusReqDTO> incomingStatusReqs);
+    Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReqs);
 
 
 }

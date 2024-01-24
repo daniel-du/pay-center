@@ -1,7 +1,9 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
@@ -71,4 +73,11 @@ public interface IncomingBizService {
      * @return
      */
     Result bacthIncoming();
+
+    /**
+     * 根据多个商户信息批量查询入网状态（一个渠道入网成功即算入网成功），key为“商户类型”-“商户id”
+     * @param incomingStatusReqDTO
+     * @return
+     */
+    Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReqDTO);
 }

@@ -3,10 +3,14 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
+import com.tfjt.api.TfSupplierApiService;
 import com.tfjt.constant.MessageStatusEnum;
+import com.tfjt.dto.TfSupplierDTO;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
@@ -27,6 +31,7 @@ import com.tfjt.pay.external.unionpay.strategy.incoming.AbstractIncomingService;
 import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
+import com.tfjt.request.BaseRestRequest;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
@@ -35,6 +40,7 @@ import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,11 +49,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Du Penglun
@@ -105,8 +110,20 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private IncomingBizServiceImpl incomingBizService;
 
+    @Autowired
+    private SelfSignService selfSignService;
+
+    @DubboReference
+    private TfSupplierApiService tfSupplierApiService;
+
     @Value("${rocketmq.topic.incomingFinish}")
     private String incomingFinishTopic;
+
+    @Value("${tf-pay.appId}")
+    private String appId;
+
+    @Value("${tf-pay.appSecret}")
+    private String appSecret;
 
     private static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
 
@@ -377,6 +394,52 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         log.info("IncomingBizServiceImpl--bacthIncoming, end");
         return Result.ok();
+    }
+
+    /**
+     * 根据多个商户信息批量查询入网状态（一个渠道入网成功即算入网成功），key为“商户类型”-“商户id”
+     * @param incomingStatusReqDTO
+     * @return
+     */
+    @Override
+    public Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReqDTO) {
+        ValidatorUtils.validateEntity(incomingStatusReqDTO);
+        List<Integer> ids = new ArrayList<>();
+        incomingStatusReqDTO.getBusinessIds().forEach(id -> {
+            ids.add(id.intValue());
+        });
+        List<String> accessAccts = new ArrayList<>();
+        Map<String, IncomingStatusRespDTO> incomingStatusMap = new HashMap<>();
+        if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(incomingStatusReqDTO.getBusinessType())) {
+            List<TfSupplierDTO> tfSuppliers = tfSupplierApiService.getTfSupplierList(ids);
+            if (CollectionUtils.isEmpty(tfSuppliers)) {
+                return Result.failed(ExceptionCodeEnum.IS_NULL);
+            }
+            List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
+            List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+            Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
+            Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
+            tfSuppliers.forEach(tfSupplier -> {
+                IncomingStatusRespDTO incomingStatus = new IncomingStatusRespDTO();
+                incomingStatus.setBusinessType(incomingStatusReqDTO.getBusinessType());
+                incomingStatus.setBusinessId(tfSupplier.getId().longValue());
+                SelfSignEntity selfSignEntity = selfMap.get(tfSupplier.getSupplierId());
+                TfIncomingInfoEntity tfIncomingInfoEntity = incomingMap.get(tfSupplier.getId());
+                incomingStatusMap.put(incomingStatusReqDTO.getBusinessType() + "-" + tfSupplier.getId(), incomingStatus);
+                if (ObjectUtils.isNotEmpty(selfSignEntity)) {
+                    incomingStatus.setIncomingStatus(selfSignEntity.getSigningStatus());
+                }
+                if (PabcUnionNetworkStatusMappingEnum.NETWORK_SUCCESS.getUnionSigningStatus().equals(incomingStatus.getIncomingStatus())) {
+                    return;
+                }
+                if (ObjectUtils.isNotEmpty(tfIncomingInfoEntity)) {
+                    incomingStatus.setIncomingStatus(PabcUnionNetworkStatusMappingEnum.getMsg(tfIncomingInfoEntity.getAccessStatus()));
+                }
+            });
+        } else {
+
+        }
+        return null;
     }
 
     /**
@@ -709,6 +772,11 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         redisCache.expire(prefix, 24, TimeUnit.HOURS);
         String str = String.format("%05d", incr);
         return prefix + str;
+    }
+
+    private void buildBaseRestQuest(BaseRestRequest baseRestRequest) {
+        baseRestRequest.setAppId(appId);
+        baseRestRequest.setAppSecret(appSecret);
     }
 
 }

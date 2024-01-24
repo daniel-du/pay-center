@@ -3,6 +3,8 @@ package com.tfjt.pay.external.unionpay.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 
+import java.util.List;
+
 
 /**
  * 入网表
@@ -13,5 +15,12 @@ import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
  */
 public interface SelfSignService extends IService<SelfSignEntity> {
 
+
+    /**
+     * 根据来源账户批量查询入网信息
+     * @param accessAccts
+     * @return
+     */
+    List<SelfSignEntity> querySelfSignsByAccessAccts(List<String> accessAccts);
 }
 

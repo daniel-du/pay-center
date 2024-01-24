@@ -42,7 +42,7 @@ public class IncomingApiServiceImpl implements IncomingApiService {
     }
 
     @Override
-    public Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(List<IncomingStatusReqDTO> incomingStatusReqs) {
-        return null;
+    public Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReq) {
+        return incomingBizService.queryIncomingStatus(incomingStatusReq);
     }
 }
