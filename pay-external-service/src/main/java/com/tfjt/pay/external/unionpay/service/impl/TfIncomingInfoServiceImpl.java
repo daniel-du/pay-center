@@ -132,11 +132,11 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     }
 
     @Override
-    public List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> ids, Integer businessType) {
+    public List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> businessIds, Integer businessType) {
         LambdaQueryWrapper<TfIncomingInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(TfIncomingInfoEntity::getId, ids);
         queryWrapper.eq(TfIncomingInfoEntity::getBusinessType, businessType);
         queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        queryWrapper.in(TfIncomingInfoEntity::getBusinessId, businessIds);
         return this.baseMapper.selectList(queryWrapper);
     }
 }

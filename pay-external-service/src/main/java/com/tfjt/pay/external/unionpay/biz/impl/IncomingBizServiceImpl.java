@@ -424,7 +424,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 incomingStatus.setBusinessType(incomingStatusReqDTO.getBusinessType());
                 incomingStatus.setBusinessId(tfSupplier.getId().longValue());
                 SelfSignEntity selfSignEntity = selfMap.get(tfSupplier.getSupplierId());
-                TfIncomingInfoEntity tfIncomingInfoEntity = incomingMap.get(tfSupplier.getId());
+                TfIncomingInfoEntity tfIncomingInfoEntity = incomingMap.get(tfSupplier.getId().longValue());
                 incomingStatusMap.put(incomingStatusReqDTO.getBusinessType() + "-" + tfSupplier.getId(), incomingStatus);
                 if (ObjectUtils.isNotEmpty(selfSignEntity)) {
                     incomingStatus.setIncomingStatus(selfSignEntity.getSigningStatus());

@@ -88,10 +88,10 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据商户id、商户类型批量查询进件信息
-     * @param ids
+     * @param businessIds
      * @param businessType
      * @return
      */
-    List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> ids, Integer businessType);
+    List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> businessIds, Integer businessType);
 
 }
