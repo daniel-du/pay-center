@@ -118,12 +118,6 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Value("${rocketmq.topic.incomingFinish}")
     private String incomingFinishTopic;
 
-    @Value("${tf-pay.appId}")
-    private String appId;
-
-    @Value("${tf-pay.appSecret}")
-    private String appSecret;
-
     private static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
 
     private static final String MQ_TO_SERVER = "tf-cloud-shop";
