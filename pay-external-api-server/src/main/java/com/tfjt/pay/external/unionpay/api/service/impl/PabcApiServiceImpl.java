@@ -50,7 +50,8 @@ public class PabcApiServiceImpl implements PabcApiService {
     }
 
     @Override
-    public Result<List<PayChannelRespDTO>> getAllSaleAreas() {
-        return Result.ok(pabcBizService.getAllSaleAreas());
+    public Result<List<PayChannelRespDTO>> getAllSaleAreas(Integer areaLevel, String distinctName) {
+        log.info("获取省市区下拉列表参数areaLevel:{},distinctName:{}",areaLevel,distinctName);
+        return Result.ok(pabcBizService.getAllSaleAreas(areaLevel,distinctName));
     }
 }

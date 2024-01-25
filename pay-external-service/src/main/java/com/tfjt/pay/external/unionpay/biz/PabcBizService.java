@@ -38,6 +38,6 @@ public interface PabcBizService {
 
     IncomingMessageRespDTO getIncomingInfo(BusinessInfoReqDTO businessInfoReqDTO);
 
-    List<PayChannelRespDTO> getAllSaleAreas();
+    List<PayChannelRespDTO> getAllSaleAreas(Integer areaLevel, String distinctName);
 
 }

@@ -26,7 +26,7 @@ public interface PabcApiService {
     Result<IncomingMessageRespDTO>  getIncomingInfo(BusinessInfoReqDTO businessInfoReqDTO);
 
 
-    Result<List<PayChannelRespDTO>> getAllSaleAreas();
+    Result<List<PayChannelRespDTO>> getAllSaleAreas(Integer areaLevel, String distinctName);
 
 
 }

@@ -26,4 +26,7 @@ public class RedisConstant {
      * 进件信息缓存key前缀
      */
     public static final String INCOMING_BINK_CARD_KEY_PREFIX = "PAY:EXTERNAL:INCOMING:BINKCARD:";
+
+
+    public static final String SALE_AREA_KEY_PREFIX = "PAY:EXTERNAL:SALE_AREA:";
 }

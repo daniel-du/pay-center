@@ -2,8 +2,10 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.aliyun.openservices.shade.com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
@@ -14,6 +16,7 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
+import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
@@ -28,8 +31,10 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -71,6 +76,8 @@ public class PabcBizServiceImpl implements PabcBizService {
     private TfBankCardInfoService tfBankCardInfoService;
     @Autowired
     private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
+    @Autowired
+    private RedisCache redisCache;
     @DubboReference(retries = 0)
     private SupplierApiService supplierApiService;
 
@@ -268,8 +275,100 @@ public class PabcBizServiceImpl implements PabcBizService {
     }
 
     @Override
-    public List<PayChannelRespDTO> getAllSaleAreas() {
-        return salesAreaIncomingChannelService.getAllSaleAreas();
+    public List<PayChannelRespDTO> getAllSaleAreas(Integer areaLevel, String distinctName) {
+
+        boolean blank = StringUtils.isBlank(distinctName);
+        Object cacheObject = null;
+        String redisKey = RedisConstant.SALE_AREA_KEY_PREFIX + areaLevel;
+        if (blank) {
+            cacheObject = redisCache.getCacheObject(redisKey);
+        }
+        List<PayChannelRespDTO> treeList;
+        if (cacheObject == null || "[]".equals(cacheObject.toString())) {
+            treeList = virtualAreaCode(areaLevel, distinctName);
+            if (blank && !CollectionUtil.isEmpty(treeList)) {
+                redisCache.setCacheObject(redisKey, JSON.toJSONString(treeList), 1, TimeUnit.HOURS);
+            }
+        } else {
+            treeList = JSON.parseArray((String) cacheObject, PayChannelRespDTO.class);
+        }
+        return treeList;
+    }
+
+    private List<PayChannelRespDTO> virtualAreaCode(Integer areaLevel, String distinctName) {
+        QueryWrapper<SalesAreaIncomingChannelEntity> wrapper = new QueryWrapper<>();
+        if(StringUtils.isNotBlank(distinctName)){
+            wrapper.and((w)->{
+                switch (areaLevel) {
+                    case 3:
+                        w.like("districts", distinctName).or();
+                    case 2:
+                        w.like("city", distinctName).or();
+                    default:
+                        w.like("province", distinctName);
+                }
+            });
+        }
+        if (areaLevel == 1) {
+            wrapper.select("distinct province_code,province").orderByAsc("province_code");
+        } else if (areaLevel == 2) {
+            wrapper.select("distinct province_code,province, city_code,city").orderByAsc("city_code");
+        } else {
+            wrapper.orderByAsc("districts_code");
+        }
+        List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list(wrapper);
+        //解析成树形结构
+        List<PayChannelRespDTO> rootList = new ArrayList<>();
+        for (SalesAreaIncomingChannelEntity district : list) {
+            //获取省
+            List<PayChannelRespDTO> childrenCityList = getChildrenList(district.getProvinceCode(), district.getProvince(), rootList, areaLevel != 1);
+            //获取市
+            if (areaLevel > 1) {
+                List<PayChannelRespDTO> childrenDistrictList = getChildrenList(district.getCityCode(), district.getCity(), childrenCityList, areaLevel != 2);
+                if (areaLevel > 2) {
+                    getChildrenList(district.getDistrictsCode(), district.getDistricts(), childrenDistrictList, false);
+                }
+            }
+        }
+        return rootList;
+    }
+
+    private List<PayChannelRespDTO> getChildrenList(String code, String name, List<PayChannelRespDTO> rootList, boolean addChildrenList) {
+        int i = binarySearch(rootList, code);
+        PayChannelRespDTO faStandardLocationDictDTO;
+        if (i < 0) {
+            faStandardLocationDictDTO = new PayChannelRespDTO(code, name, addChildrenList ? new ArrayList<>() : null);
+            rootList.add(faStandardLocationDictDTO);
+        } else {
+            faStandardLocationDictDTO = rootList.get(i);
+        }
+        return faStandardLocationDictDTO.getChildrenList();
+    }
+
+    private int binarySearch(List<PayChannelRespDTO> list, String code) {
+        if (list.size() == 0) {
+            return -1;
+        }
+        int low = 0;
+        int high = list.size() - 1;
+        // 当low小于等于high时，继续查找
+        while (low <= high) {
+            // 计算中间位置
+            int mid = (low + high) / 2;
+            // 获取中间位置的值
+            PayChannelRespDTO midVal = list.get(mid);
+            // 比较中间位置的值和查找值的大小
+            int cmp = midVal.getId().compareTo(code);
+            if (cmp < 0) {
+                low = mid + 1;
+            } else if (cmp > 0) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+        // 如果查找值不存在于List中，则返回插入位置的负数形式
+        return -(low + 1);
     }
 
     private List<MerchantChangeReqDTO> getSaveList(List<String> newSaleAreas, List<Integer> newIdentifyList, List<String> oldSaleAreas, List<Integer> oldIdentifyList, MerchantChangeInfoMqReqDTO dto, Boolean saleFlag, Boolean identityFlag) {
