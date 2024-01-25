@@ -13,6 +13,7 @@ import java.io.Serializable;
 @Data
 public class IncomingMessageRespDTO implements Serializable {
 
+    private static final long serialVersionUID = 4030934244852753360L;
     /**
      * 进件id
      */

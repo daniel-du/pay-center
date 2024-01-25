@@ -17,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class PayChannelRespDTO implements Serializable {
+    private static final long serialVersionUID = 5979130694212656173L;
     private String id;
     private String name;
     private List<PayChannelRespDTO> childrenList;
