@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.api.service;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -23,6 +24,9 @@ public interface PabcApiService {
     Result<Integer> getNetworkTypeByAreaCode(List<String> code);
 
     Result<IncomingMessageRespDTO>  getIncomingInfo(BusinessInfoReqDTO businessInfoReqDTO);
+
+
+    Result<List<PayChannelRespDTO>> getAllSaleAreas();
 
 
 }

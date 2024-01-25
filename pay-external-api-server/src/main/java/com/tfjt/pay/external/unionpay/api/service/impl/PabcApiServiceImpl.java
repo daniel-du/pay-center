@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.PabcApiService;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
@@ -46,5 +47,10 @@ public class PabcApiServiceImpl implements PabcApiService {
 
         IncomingMessageRespDTO respDTO = pabcBizService.getIncomingInfo(businessInfoReqDTO);
         return Result.ok(respDTO);
+    }
+
+    @Override
+    public Result<List<PayChannelRespDTO>> getAllSaleAreas() {
+        return Result.ok(pabcBizService.getAllSaleAreas());
     }
 }

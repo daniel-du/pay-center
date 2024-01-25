@@ -11,6 +11,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
@@ -68,6 +69,8 @@ public class PabcBizServiceImpl implements PabcBizService {
     private AsyncService asyncService;
     @Autowired
     private TfBankCardInfoService tfBankCardInfoService;
+    @Autowired
+    private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
     @DubboReference(retries = 0)
     private SupplierApiService supplierApiService;
 
@@ -262,6 +265,11 @@ public class PabcBizServiceImpl implements PabcBizService {
             BeanUtils.copyProperties(one,respDTO);
         }
         return respDTO;
+    }
+
+    @Override
+    public List<PayChannelRespDTO> getAllSaleAreas() {
+        return salesAreaIncomingChannelService.getAllSaleAreas();
     }
 
     private List<MerchantChangeReqDTO> getSaveList(List<String> newSaleAreas, List<Integer> newIdentifyList, List<String> oldSaleAreas, List<Integer> oldIdentifyList, MerchantChangeInfoMqReqDTO dto, Boolean saleFlag, Boolean identityFlag) {
