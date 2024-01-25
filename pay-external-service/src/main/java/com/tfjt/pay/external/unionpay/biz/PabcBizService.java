@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.biz;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
@@ -39,5 +40,7 @@ public interface PabcBizService {
     IncomingMessageRespDTO getIncomingInfo(BusinessInfoReqDTO businessInfoReqDTO);
 
     List<PayChannelRespDTO> getAllSaleAreas(Integer areaLevel, String distinctName);
+
+    List<AllSalesAreaRespDTO> getAllSaleAreas();
 
 }

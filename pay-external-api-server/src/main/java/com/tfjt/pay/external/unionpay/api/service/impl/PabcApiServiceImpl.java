@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
@@ -53,5 +54,10 @@ public class PabcApiServiceImpl implements PabcApiService {
     public Result<List<PayChannelRespDTO>> getAllSaleAreas(Integer areaLevel, String distinctName) {
         log.info("获取省市区下拉列表参数areaLevel:{},distinctName:{}",areaLevel,distinctName);
         return Result.ok(pabcBizService.getAllSaleAreas(areaLevel,distinctName));
+    }
+
+    @Override
+    public Result<List<AllSalesAreaRespDTO>> getAllSaleAreas() {
+        return Result.ok(pabcBizService.getAllSaleAreas());
     }
 }

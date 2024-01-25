@@ -12,6 +12,7 @@ import com.tfjt.fms.data.insight.api.service.SupplierApiService;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
@@ -293,6 +294,11 @@ public class PabcBizServiceImpl implements PabcBizService {
             treeList = JSON.parseArray((String) cacheObject, PayChannelRespDTO.class);
         }
         return treeList;
+    }
+
+    @Override
+    public List<AllSalesAreaRespDTO> getAllSaleAreas() {
+        return salesAreaIncomingChannelService.getAllSaleAreas();
     }
 
     private List<PayChannelRespDTO> virtualAreaCode(Integer areaLevel, String distinctName) {

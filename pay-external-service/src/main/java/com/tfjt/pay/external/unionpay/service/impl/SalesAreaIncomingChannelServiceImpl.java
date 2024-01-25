@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.dao.SalesAreaIncomingChannelDao;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
@@ -16,7 +17,7 @@ import java.util.List;
 @Service
 public class SalesAreaIncomingChannelServiceImpl extends BaseServiceImpl<SalesAreaIncomingChannelDao, SalesAreaIncomingChannelEntity> implements SalesAreaIncomingChannelService {
     @Override
-    public List<PayChannelRespDTO> getAllSaleAreas() {
-        return super.list(PayChannelRespDTO.class);
+    public List<AllSalesAreaRespDTO> getAllSaleAreas() {
+        return super.list(AllSalesAreaRespDTO.class);
     }
 }
