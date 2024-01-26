@@ -70,7 +70,10 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
                 return selectByAccountResult(false,respDTO);
             }
             Long shopId = dbShopService.getShopIdByMobile(account);
+            log.info("查询店铺id信息:{}",shopId);
             ShopDetailInfoRpcRespDto shopDetailInfoRpcRespDto = dbShopService.searchShopDetailInfoById(shopId.intValue());
+            log.info("查询店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
+
             if(Objects.isNull(shopDetailInfoRpcRespDto)){
                 return selectByAccountResult(false,respDTO);
             }
