@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Base64;
 import java.util.Objects;
 
 /**
@@ -78,10 +79,10 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
                 return selectByAccountResult(false,respDTO);
             }
             if (Objects.nonNull(shopDetailInfoRpcRespDto.getCard())){
-                respDTO.setCertId(Base64Encoder.encode(shopDetailInfoRpcRespDto.getCard().getBytes()));
+                respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
             }
             if (Objects.nonNull(shopDetailInfoRpcRespDto.getName())){
-                respDTO.setCustomerName(Base64Encoder.encode(shopDetailInfoRpcRespDto.getName().getBytes()));
+                respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getName()));
             }
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
         }catch (Exception e){
