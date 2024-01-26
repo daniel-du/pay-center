@@ -58,7 +58,7 @@
 		left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
         left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
 		where a.business_id = #{param.businessId} and a.business_type = #{param.businessType}
-		and a.access_channel_type = #{param.accessChannelType} and a.is_deleted = 0 and a.access_status = 6
+		and a.access_channel_type = #{param.accessChannelType} and a.is_deleted = 0 and a.access_status in (3,4,6,12)
     </select>
     <select id="queryIncomingMessagesByMerchantList" resultMap="incomingMessageMap">
         select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
@@ -75,7 +75,7 @@
         left join tf_business_license_info f on e.business_license_id = f.id and f.is_deleted = 0
         left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
         left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
-		where a.access_status = 6
+		where a.access_status in (3,4,6,12)
 		and (a.business_id, a.business_type, a.access_channel_type) in
         <foreach collection="params" item="item" open="(" close=")" separator=",">
             (#{item.busineeeId},#{item.businessType},#{item.accessChannelType})

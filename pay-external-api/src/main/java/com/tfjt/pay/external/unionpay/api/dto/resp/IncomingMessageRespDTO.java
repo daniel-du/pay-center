@@ -58,7 +58,7 @@ public class IncomingMessageRespDTO implements Serializable {
      */
     private String memberName;
     /**
-     * 入网状态（1：信息填写，2：入网中，3：入网成功，4：入网失败）
+     * 入网状态（1：信息填写，2：入网中，3：开户成功，4：已提交绑卡信息，12：回填验证码成功，6入网成功）
      */
     private Integer accessStatus;
 

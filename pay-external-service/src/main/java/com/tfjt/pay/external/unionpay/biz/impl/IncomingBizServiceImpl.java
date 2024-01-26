@@ -396,48 +396,13 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      */
     @Override
     public Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReqDTO) {
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingStatusReqDTO:{}",JSONObject.toJSONString(incomingStatusReqDTO));
         ValidatorUtils.validateEntity(incomingStatusReqDTO);
-        List<Integer> ids = new ArrayList<>();
-        incomingStatusReqDTO.getBusinessIds().forEach(id -> {
-            ids.add(id.intValue());
-        });
-        List<String> accessAccts = new ArrayList<>();
         Map<String, IncomingStatusRespDTO> incomingStatusMap = new HashMap<>();
         if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(incomingStatusReqDTO.getBusinessType())) {
-            List<TfSupplierDTO> tfSuppliers = tfSupplierApiService.getTfSupplierList(ids);
-            log.info("IncomingBizServiceImpl--queryIncomingStatus, tfSuppliers:{}",JSONObject.toJSONString(tfSuppliers));
-            if (CollectionUtils.isEmpty(tfSuppliers)) {
-                return Result.failed(ExceptionCodeEnum.IS_NULL);
-            }
-            tfSuppliers.forEach(tfSupplier -> {
-                accessAccts.add(tfSupplier.getSupplierId());
-            });
-            log.info("IncomingBizServiceImpl--queryIncomingStatus, accessAccts:{}",accessAccts.toString());
-            List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
-            log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
-            List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
-            log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
-            Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
-            Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
-            tfSuppliers.forEach(tfSupplier -> {
-                IncomingStatusRespDTO incomingStatus = new IncomingStatusRespDTO();
-                incomingStatus.setBusinessType(incomingStatusReqDTO.getBusinessType());
-                incomingStatus.setBusinessId(tfSupplier.getId().longValue());
-                SelfSignEntity selfSignEntity = selfMap.get(tfSupplier.getSupplierId());
-                TfIncomingInfoEntity tfIncomingInfoEntity = incomingMap.get(tfSupplier.getId().longValue());
-                incomingStatusMap.put(incomingStatusReqDTO.getBusinessType() + "-" + tfSupplier.getId(), incomingStatus);
-                if (ObjectUtils.isNotEmpty(selfSignEntity)) {
-                    incomingStatus.setIncomingStatus(selfSignEntity.getSigningStatus());
-                }
-                if (PabcUnionNetworkStatusMappingEnum.NETWORK_SUCCESS.getUnionSigningStatus().equals(incomingStatus.getIncomingStatus())) {
-                    return;
-                }
-                if (ObjectUtils.isNotEmpty(tfIncomingInfoEntity)) {
-                    incomingStatus.setIncomingStatus(PabcUnionNetworkStatusMappingEnum.getMsg(tfIncomingInfoEntity.getAccessStatus()));
-                }
-            });
+            batchQuerySupplierIncomingStatus(incomingStatusReqDTO, incomingStatusMap);
         } else {
-
+            batchQueryShopIncomingStatus(incomingStatusReqDTO, incomingStatusMap);
         }
         return Result.ok(incomingStatusMap);
     }
@@ -764,6 +729,97 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             log.error("IncomingBizServiceImpl--incomingMessageSubmit，银联数据开户失败, incomingId:{}", tfIncomingInfoEntity.getId());
             throw e;
         }
+    }
+
+    /**
+     * 批量查询供应商是入网状态
+     * @param incomingStatusReqDTO
+     * @param incomingStatusMap
+     */
+    private void batchQuerySupplierIncomingStatus(IncomingStatusReqDTO incomingStatusReqDTO, Map<String, IncomingStatusRespDTO> incomingStatusMap) {
+        List<Integer> ids = new ArrayList<>();
+        incomingStatusReqDTO.getBusinessIds().forEach(id -> {
+            ids.add(id.intValue());
+        });
+        List<String> accessAccts = new ArrayList<>();
+        //查询供应商信息，获取supplierId
+        List<TfSupplierDTO> tfSuppliers = tfSupplierApiService.getTfSupplierList(ids);
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, tfSuppliers:{}",JSONObject.toJSONString(tfSuppliers));
+        if (CollectionUtils.isEmpty(tfSuppliers)) {
+            throw new TfException(ExceptionCodeEnum.IS_NULL);
+        }
+        tfSuppliers.forEach(tfSupplier -> {
+            accessAccts.add(tfSupplier.getSupplierId());
+        });
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, accessAccts:{}",accessAccts.toString());
+        //查询银联入网数据
+        List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
+        //查询平安入网数据
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
+        Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
+        Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
+        tfSuppliers.forEach(tfSupplier -> {
+            IncomingStatusRespDTO incomingStatus = new IncomingStatusRespDTO();
+            incomingStatus.setBusinessType(incomingStatusReqDTO.getBusinessType());
+            incomingStatus.setBusinessId(tfSupplier.getId().longValue());
+            SelfSignEntity selfSignEntity = selfMap.get(tfSupplier.getSupplierId());
+            TfIncomingInfoEntity tfIncomingInfoEntity = incomingMap.get(tfSupplier.getId().longValue());
+            incomingStatusMap.put(incomingStatusReqDTO.getBusinessType() + "-" + tfSupplier.getId(), incomingStatus);
+            //设置银联入网状态
+            if (ObjectUtils.isNotEmpty(selfSignEntity)) {
+                incomingStatus.setIncomingStatus(selfSignEntity.getSigningStatus());
+            }
+            //如果银联状态为“入网完成”，则跳出循环
+            if (PabcUnionNetworkStatusMappingEnum.NETWORK_SUCCESS.getUnionSigningStatus().equals(incomingStatus.getIncomingStatus())) {
+                return;
+            }
+            //设置平安入网状态
+            if (ObjectUtils.isNotEmpty(tfIncomingInfoEntity)) {
+                incomingStatus.setIncomingStatus(PabcUnionNetworkStatusMappingEnum.getMsg(tfIncomingInfoEntity.getAccessStatus()));
+            }
+        });
+    }
+
+    /**
+     * 批量查询云店入网状态
+     * @param incomingStatusReqDTO
+     * @param incomingStatusMap
+     */
+    private void batchQueryShopIncomingStatus(IncomingStatusReqDTO incomingStatusReqDTO, Map<String, IncomingStatusRespDTO> incomingStatusMap) {
+        List<String> accessAccts = new ArrayList<>();
+        incomingStatusReqDTO.getBusinessIds().forEach(id -> {
+            accessAccts.add(id.toString());
+        });
+        //查询银联入网数据
+        List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
+        //查询平安入网数据
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
+        Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
+        Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
+        incomingStatusReqDTO.getBusinessIds().forEach(id -> {
+            IncomingStatusRespDTO incomingStatus = new IncomingStatusRespDTO();
+            incomingStatus.setBusinessType(incomingStatusReqDTO.getBusinessType());
+            incomingStatus.setBusinessId(id);
+            SelfSignEntity selfSignEntity = selfMap.get(id);
+            TfIncomingInfoEntity tfIncomingInfoEntity = incomingMap.get(id);
+            incomingStatusMap.put(incomingStatusReqDTO.getBusinessType() + "-" + id, incomingStatus);
+            //设置银联入网状态
+            if (ObjectUtils.isNotEmpty(selfSignEntity)) {
+                incomingStatus.setIncomingStatus(selfSignEntity.getSigningStatus());
+            }
+            //如果银联状态为“入网完成”，则跳出循环
+            if (PabcUnionNetworkStatusMappingEnum.NETWORK_SUCCESS.getUnionSigningStatus().equals(incomingStatus.getIncomingStatus())) {
+                return;
+            }
+            //设置平安入网状态
+            if (ObjectUtils.isNotEmpty(tfIncomingInfoEntity)) {
+                incomingStatus.setIncomingStatus(PabcUnionNetworkStatusMappingEnum.getMsg(tfIncomingInfoEntity.getAccessStatus()));
+            }
+        });
     }
 
     private String generateMemberId(Integer businessType) {
