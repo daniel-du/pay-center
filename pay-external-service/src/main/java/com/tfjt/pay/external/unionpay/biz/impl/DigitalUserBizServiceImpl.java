@@ -1,10 +1,13 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
+import cn.hutool.core.codec.Base64Encoder;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.lock.annotation.Lock4j;
+import com.tf.user.api.DbShopService;
+import com.tf.user.api.dto.resp.ShopDetailInfoRpcRespDto;
 import com.tfjt.api.CheckUserPhoneRpcService;
 import com.tfjt.api.TfSupplierApiService;
 import com.tfjt.pay.external.unionpay.biz.DigitalUserBizService;
@@ -12,10 +15,7 @@ import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.req.DigitalSelectReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.DigitalRespDTO;
 import com.tfjt.pay.external.unionpay.entity.DigitalUserEntity;
-import com.tfjt.pay.external.unionpay.enums.digital.DigitalBankCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.digital.DigitalCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.digital.DigitalErrorCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.digital.DigitalTransactionStatusEnum;
+import com.tfjt.pay.external.unionpay.enums.digital.*;
 import com.tfjt.pay.external.unionpay.service.DigitalUserService;
 import com.tfjt.supplier.dto.SupplierAddDTO;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -51,29 +51,48 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     @DubboReference(retries = 1, timeout = 3000, check = false)
     private CheckUserPhoneRpcService checkUserPhoneRpcService;
 
+    @DubboReference(retries = 1, timeout = 3000, check = false)
+    private DbShopService dbShopService;
+
     @Override
     public Result<DigitalRespDTO> selectByAccount(DigitalSelectReqDTO digitalSelectReqDTO) {
         String account = decryptStr(digitalSelectReqDTO.getMchntSideAccount());
         log.info("数字人民币查询账户参数,mchntSideAccount:{}", account);
-        boolean exit = tfSupplierApiService.isExists(new SupplierAddDTO().setMobile(account));
+        boolean exit = false;
         DigitalRespDTO respDTO = new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS);
         respDTO.setQueryType(digitalSelectReqDTO.getQueryType());
         //供应商没有注册,查询是否商家是否注册,如果有有一个注册就返回银联成功状态
-        if(!exit){
-            try {
-                com.tfjt.tfcommon.core.util.Result<Boolean> result = checkUserPhoneRpcService.checkUserPhone(account);
-                log.info("调用接口查询数字人民币账户信息返回:{}",JSONObject.toJSONString(result));
-                if (result.getCode()==0){
-                    exit= result.getData();
-                }
-            }catch (Exception e){
-                log.error("查询手机是否注册dubbo异常:",e);
-                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_FAILED.getCode());
-                return Result.ok(respDTO);
+        try {
+            com.tfjt.tfcommon.core.util.Result<Boolean> result = checkUserPhoneRpcService.checkUserPhone(account);
+            log.info("调用接口查询数字人民币账户信息返回:{}",JSONObject.toJSONString(result));
+            //接口调用失败 或者接口返回false,返回失败状态
+            if(result.getCode()!=NumberConstant.ZERO || !result.getData()){
+                return selectByAccountResult(false,respDTO);
             }
+            Long shopId = dbShopService.getShopIdByMobile(account);
+            ShopDetailInfoRpcRespDto shopDetailInfoRpcRespDto = dbShopService.searchShopDetailInfoById(shopId.intValue());
+            if(Objects.isNull(shopDetailInfoRpcRespDto)){
+                return selectByAccountResult(false,respDTO);
+            }
+            if (Objects.nonNull(shopDetailInfoRpcRespDto.getCard())){
+                respDTO.setCertId(Base64Encoder.encode(shopDetailInfoRpcRespDto.getCard().getBytes()));
+            }
+            if (Objects.nonNull(shopDetailInfoRpcRespDto.getName())){
+                respDTO.setCustomerName(shopDetailInfoRpcRespDto.getName());
+            }
+            respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
+        }catch (Exception e){
+            log.error("查询手机是否注册dubbo异常:",e);
+            respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_FAILED.getCode());
+            return Result.ok(respDTO);
         }
 
-        respDTO.setMchntSideRegisterFlag(exit ? DigitalCodeEnum.EF00.getCode() : DigitalCodeEnum.EF01.getCode());
+        return selectByAccountResult(exit,respDTO);
+    }
+
+    private Result<DigitalRespDTO> selectByAccountResult(Boolean data, DigitalRespDTO respDTO) {
+        respDTO.setMchntSideRegisterFlag(data ? DigitalCodeEnum.EF00.getCode()
+                : DigitalCodeEnum.EF01.getCode());
         return Result.ok(respDTO);
     }
 

@@ -252,7 +252,7 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-shop-api</artifactId>
-            <version>1.4.14-SNAPSHOT</version>
+            <version>1.4.15-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.springfox</groupId>
@@ -266,6 +266,12 @@
                     <groupId>javax.servlet</groupId>
                     <artifactId>servlet-api</artifactId>
                 </exclusion></exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-user-api</artifactId>
+            <version>1.0.4-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

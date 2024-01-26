@@ -20,14 +20,35 @@ public class DigitalRespDTO implements Serializable {
     private String bussReceiptStat;
 
     private String bussReceiptCode;
-
+    /**
+     * 错误码
+     */
     private String bussReceiptDesc;
-
+    /**
+     * 查询类型
+     */
     private String queryType;
-
+    /**
+     * 商户注册标识
+     */
     private String mchntSideRegisterFlag;
-
+    /**
+     *加密证书序
+     * 列号
+     */
     private String keySn;
+    /**
+     * 证件类型
+     */
+    private String certType;
+    /**
+     * 证件号码
+     */
+    private String certId;
+    /**
+     * 客户名称
+     */
+    private String customerName;
 
     public DigitalRespDTO(DigitalTransactionStatusEnum digitalTransactionStatusEnum){
         this.bussReceiptStat = digitalTransactionStatusEnum.getCode();
