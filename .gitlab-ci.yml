@@ -1,0 +1,25 @@
+stages:
+  - build
+variables:
+  PATH: "/usr/bin:$PATH"  # Adjust the path accordingly
+  ENV: prod
+  TYPE: backend
+  #TYPE: frontend
+  JAR_PATH: pay-external-web/target/pay-external-web-1.0-SNAPSHOT.jar
+build:
+  stage: build
+  tags:
+    - docker
+  only:
+    - master
+  script:
+    - export ts=$(date "+%Y%m%d_%H%M%S")
+    - cp /home/gitlab-runner/dockerfile/java/* ./
+    - mvn clean package -U  -Dmaven.test.skip=true -P $ENV 
+    - cp $JAR_PATH ./server.jar
+    - docker login -u $HARBOR_REGISTRY_USER -p $HARBOR_REGISTRY_PASSWORD $HARBOR_REGISTRY
+    - docker build -t $CI_PROJECT_NAME:latest .
+    - docker tag $CI_PROJECT_NAME:latest $HARBOR_REGISTRY/$ENV/$TYPE/$CI_PROJECT_NAME:$ts-$CI_COMMIT_SHA
+    - docker push $HARBOR_REGISTRY/$ENV/$TYPE/$CI_PROJECT_NAME:$ts-$CI_COMMIT_SHA
+    - docker tag $CI_PROJECT_NAME:latest $HARBOR_REGISTRY/$ENV/$TYPE/$CI_PROJECT_NAME:latest
+    - docker push $HARBOR_REGISTRY/$ENV/$TYPE/$CI_PROJECT_NAME:latest
