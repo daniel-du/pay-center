@@ -281,7 +281,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         Map<String, IncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
         //将查询到的数据集合，以“入网渠道”-“商户类型”-“商户id”为key放入map
         incomingMessageRespDTOS.forEach(incomingMessage -> {
-            String key = incomingMessage.getAccessChannelType() + "-" + incomingMessage.getBusinessType() + incomingMessage.getBusinessId();
+            String key = incomingMessage.getAccessChannelType() + "-" + incomingMessage.getBusinessType() +"-"+ incomingMessage.getBusinessId();
             incomingMessageMap.put(key, incomingMessage);
         });
         return Result.ok(incomingMessageMap);

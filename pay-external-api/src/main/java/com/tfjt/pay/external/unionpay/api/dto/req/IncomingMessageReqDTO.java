@@ -14,6 +14,7 @@ import java.io.Serializable;
 @Data
 public class IncomingMessageReqDTO  implements Serializable {
 
+    private static final long serialVersionUID = -5147741655670229960L;
     /**
      * 商户类型，1：供应商、经销商  2：云商
      */

@@ -9,7 +9,7 @@
         <result property="businessType" column="business_type"/>
         <result property="accessMainType" column="accessMain_type"/>
         <result property="accessType" column="access_type"/>
-        <result property="accessChannelType" column="accessChannel_type"/>
+        <result property="accessChannelType" column="access_channel_type"/>
         <result property="accountNo" column="account_no"/>
         <result property="memberId" column="member_id"/>
         <result property="memberName" column="member_name"/>
@@ -61,7 +61,7 @@
 		and a.access_channel_type = #{param.accessChannelType} and a.is_deleted = 0 and a.access_status in (3,4,6,12)
     </select>
     <select id="queryIncomingMessagesByMerchantList" resultMap="incomingMessageMap">
-        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
+        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,a.business_id,a.business_type,
         a.access_status,a.account_no,
         b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
         d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,
@@ -78,7 +78,7 @@
 		where a.access_status in (3,4,6,12)
 		and (a.business_id, a.business_type, a.access_channel_type) in
         <foreach collection="params" item="item" open="(" close=")" separator=",">
-            (#{item.busineeeId},#{item.businessType},#{item.accessChannelType})
+            (#{item.businessId},#{item.businessType},#{item.accessChannelType})
         </foreach>
     </select>
     <select id="queryIncomingDataId" resultType="com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO">
