@@ -62,6 +62,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         boolean exit = false;
         DigitalRespDTO respDTO = new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS);
         respDTO.setQueryType(digitalSelectReqDTO.getQueryType());
+        respDTO.setKeySn(digitalSelectReqDTO.getKeySn());
         //供应商没有注册,查询是否商家是否注册,如果有有一个注册就返回银联成功状态
         try {
             com.tfjt.tfcommon.core.util.Result<Boolean> result = checkUserPhoneRpcService.checkUserPhone(account);

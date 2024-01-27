@@ -36,7 +36,7 @@ public class DigitalRespDTO implements Serializable {
      *加密证书序
      * 列号
      */
-    private String keySn;
+    private Integer keySn;
     /**
      * 证件类型
      */
