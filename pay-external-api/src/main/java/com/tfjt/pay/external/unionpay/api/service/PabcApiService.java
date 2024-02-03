@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.api.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
@@ -30,6 +31,8 @@ public interface PabcApiService {
     Result<List<PayChannelRespDTO>> getAllSaleAreas(Integer areaLevel, String distinctName);
 
     Result<List<AllSalesAreaRespDTO>> getAllSaleAreas();
+
+    Result<Boolean> isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos);
 
 
 }

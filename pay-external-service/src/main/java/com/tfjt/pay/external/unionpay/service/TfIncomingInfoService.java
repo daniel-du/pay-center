@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.service;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
@@ -94,4 +95,5 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      */
     List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> businessIds, Integer businessType);
 
+    List<Boolean> isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos);
 }

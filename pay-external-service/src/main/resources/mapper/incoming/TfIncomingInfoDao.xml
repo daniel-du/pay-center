@@ -90,4 +90,19 @@
 		left join tf_incoming_settle_info d on d.incoming_id = a.id and d.is_deleted = 0
 		where a.id = #{id}
     </select>
+
+    <select id="isIncomingByBusinessIdAndType" resultType="java.lang.Boolean">
+        SELECT
+            IF
+                (( account_no != NULL OR account_no != '' ), TRUE, FALSE ) AS flag
+        FROM
+            tf_incoming_info
+        WHERE
+            is_deleted = 0
+             and  ( business_id, business_type ) IN (
+        <foreach collection="params" item="item" open="(" close=")" separator=",">
+            (#{item.businessId},#{item.businessType}),
+        </foreach>
+            )
+    </select>
 </mapper>

@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
@@ -299,6 +300,18 @@ public class PabcBizServiceImpl implements PabcBizService {
     @Override
     public List<AllSalesAreaRespDTO> getAllSaleAreas() {
         return salesAreaIncomingChannelService.getAllSaleAreas();
+    }
+
+    @Override
+    public Boolean isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
+        List<Boolean> flag =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
+        if (dtos.size() != flag.size()) {
+            return false;
+        }
+        if (flag.stream().anyMatch(item -> item.equals(false))){
+            return false;
+        }
+        return true;
     }
 
     private List<PayChannelRespDTO> virtualAreaCode(Integer areaLevel, String distinctName) {
