@@ -99,10 +99,10 @@
             tf_incoming_info
         WHERE
             is_deleted = 0
-             and  ( business_id, business_type ) IN (
+             and  ( business_id, business_type ) IN
         <foreach collection="params" item="item" open="(" close=")" separator=",">
-            (#{item.businessId},#{item.businessType}),
+            (#{item.businessId},#{item.businessType})
         </foreach>
-            )
+
     </select>
 </mapper>
