@@ -85,7 +85,7 @@ public class BankInfoController {
         return pabcBizService.getModuleStatus(incomingModuleStatusReqDTO);
     }
 
-    @GetMapping("isIncomingByBusinessIdAndType")
+    @GetMapping("/isIncomingByBusinessIdAndType")
     public Result<Boolean> isIncomingByBusinessIdAndType(@RequestBody List<BusinessBasicInfoReqDTO> dtos){
         return Result.ok(pabcBizService.isIncomingByBusinessIdAndType(dtos));
     }
