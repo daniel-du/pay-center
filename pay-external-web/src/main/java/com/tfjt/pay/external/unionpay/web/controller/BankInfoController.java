@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
@@ -82,6 +83,11 @@ public class BankInfoController {
     @PostMapping("/getModuleStatus")
     public Result<MoudleStatusRespDTO> getModuleStatus(@RequestBody IncomingModuleStatusReqDTO incomingModuleStatusReqDTO){
         return pabcBizService.getModuleStatus(incomingModuleStatusReqDTO);
+    }
+
+    @GetMapping("isIncomingByBusinessIdAndType")
+    public Result<Boolean> isIncomingByBusinessIdAndType(@RequestBody List<BusinessBasicInfoReqDTO> dtos){
+        return Result.ok(pabcBizService.isIncomingByBusinessIdAndType(dtos));
     }
 
 
