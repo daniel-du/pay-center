@@ -23,9 +23,9 @@ public enum DigitalBankCodeEnum {
     /**邮储*/
     DCRI_PSBC("DCRI_PSBC","邮储银行","https://qiniu.tongfuyouxuan.com/shop/240124103006-IiEq3m.png"),
     /**网商*/
-    DCRI_MYBANK("DCRI_MYBANK","网商银行","https://qiniu.tongfuyouxuan.com/shop/240124103041-JITwQp.png"),
+    DCRI_MYBANK("DCRI_MYBANK","网商银行","https://qiniu.tongfuyouxuan.com/shop/240205094117-7JhaGz.png"),
     /**微众*/
-    DCRI_WEBANK("DCRI_WEBANK","微众银行","https://qiniu.tongfuyouxuan.com/shop/240124103037-JhwDce.png"),
+    DCRI_WEBANK("DCRI_WEBANK","微众银行","https://qiniu.tongfuyouxuan.com/shop/240205094133-qJBQYL.png"),
     /**招行*/
     DCRI_CMB("DCRI_CMB","招行银行","https://qiniu.tongfuyouxuan.com/shop/240124102802-zVxh2s.png"),
     /**兴业*/
