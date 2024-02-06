@@ -19,12 +19,14 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
+import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -33,7 +35,6 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.tfjt.tfcommon.core.cache.RedisCache;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -304,14 +305,19 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Override
     public Boolean isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
-        List<Boolean> flag =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
-        if (dtos.size() != flag.size()) {
-            return false;
+        List<BusinessIsIncomingRespDTO> businessList =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
+        boolean flag = true;
+        if (CollectionUtil.isEmpty(businessList) || dtos.size() != businessList.size()) {
+            flag =  false;
         }
-        if (flag.stream().anyMatch(item -> item.equals(false))){
-            return false;
+        if (flag && businessList.stream().anyMatch(item->StringUtils.isBlank(item.getAccountNo()))){
+            flag =  false;
         }
-        return true;
+        if (!flag) {
+            //钉钉报警
+            asyncService.dingWarning(dtos,businessList);
+        }
+        return flag;
     }
 
     private List<PayChannelRespDTO> virtualAreaCode(Integer areaLevel, String distinctName) {

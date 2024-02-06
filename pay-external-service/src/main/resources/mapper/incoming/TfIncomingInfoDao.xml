@@ -91,10 +91,11 @@
 		where a.id = #{id}
     </select>
 
-    <select id="isIncomingByBusinessIdAndType" resultType="java.lang.Boolean">
+    <select id="isIncomingByBusinessIdAndType" resultType="com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO">
         SELECT
-            IF
-                (( account_no != NULL OR account_no != '' ), TRUE, FALSE ) AS flag
+        account_no as accountNo,
+        business_id as businessId,
+        business_type as businessType
         FROM
             tf_incoming_info
         WHERE

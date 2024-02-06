@@ -4,8 +4,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
@@ -22,9 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -146,6 +146,49 @@ public class AsyncServiceImpl implements AsyncService {
 
     }
 
+    @Override
+    @Async
+    public void dingWarning(List<BusinessBasicInfoReqDTO> dtos, List<BusinessIsIncomingRespDTO> businessList) {
+        List<BusinessBasicInfoReqDTO> warningList = new ArrayList<>();
+        if (CollectionUtil.isEmpty(businessList)) {
+            warningList = dtos;
+        }else {
+            Map<String, BusinessIsIncomingRespDTO> map = new HashMap<>();
+            for (BusinessIsIncomingRespDTO businessIsIncomingRespDTO : businessList) {
+                if (businessIsIncomingRespDTO.getBusinessType() != null) {
+                    map.put(businessIsIncomingRespDTO.getBusinessId()+"-"+businessIsIncomingRespDTO.getBusinessType(),businessIsIncomingRespDTO);
+                }
+            }
+
+            for (BusinessBasicInfoReqDTO dto : dtos) {
+                String key = dto.getBusinessId()+"-"+dto.getBusinessType();
+                BusinessIsIncomingRespDTO businessIsIncomingRespDTO = map.get(key);
+                if (null == businessIsIncomingRespDTO) {
+                    warningList.add(dto);
+                }else {
+                    if (StringUtils.isBlank(businessIsIncomingRespDTO.getAccountNo())) {
+                        warningList.add(dto);
+                    }
+                }
+            }
+
+        }
+        if (CollectionUtil.isNotEmpty(warningList)) {
+            //发送钉钉
+            String title = "未入网通知";
+            String msg = "";
+            for (BusinessBasicInfoReqDTO dto : warningList) {
+                if (dto.getBusinessType() == 1) {
+                    msg = "商户身份为：经销商或供应商的商户，ID为【"+dto.getBusinessId()+"】的商户还未入网";
+                }
+                if (dto.getBusinessType() == 2) {
+                    msg = "商户身份为：云商，ID为【"+dto.getBusinessId()+"】的商户还未入网";
+                }
+                log.info(msg);
+//                sendMessage(title,msg);
+            }
+        }
+    }
 
 
     private String getIdentityByCode(List<Integer> identifyList) {

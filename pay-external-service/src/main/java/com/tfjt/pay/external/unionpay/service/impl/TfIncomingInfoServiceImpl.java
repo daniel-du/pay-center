@@ -6,6 +6,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingInfoDao;
+import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
@@ -142,7 +143,7 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     }
 
     @Override
-    public List<Boolean> isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
+    public List<BusinessIsIncomingRespDTO> isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
         return baseMapper.isIncomingByBusinessIdAndType(dtos);
     }
 }
