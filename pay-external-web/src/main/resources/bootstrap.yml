@@ -8,7 +8,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_HOST:tf-register}:${NACOS_PORT:8848}
+        server-addr: ${NACOS_HOST:172.25.190.29}:${NACOS_PORT:8848}
         namespace: ${spring.profiles.active}
       config:
         server-addr: ${spring.cloud.nacos.discovery.server-addr}
@@ -19,7 +19,7 @@ spring:
   profiles:
     active: local
 log:
-  path: /data/logs/tf-cloud-pay-external
+  path: ./data/logs/tf-cloud-pay-external
   console.out: true
 logging:
   level:
