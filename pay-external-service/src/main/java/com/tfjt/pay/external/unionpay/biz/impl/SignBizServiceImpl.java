@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.tfjt.pay.external.unionpay.biz.SignBizService;
 import com.tfjt.pay.external.unionpay.dto.req.SelfSignAppDTO;
 import com.tfjt.pay.external.unionpay.dto.req.SelfSignParamDTO;
@@ -19,6 +20,7 @@ import com.tfjt.pay.external.unionpay.utils.DESUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.xxl.job.core.context.XxlJobHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -54,8 +56,13 @@ public class SignBizServiceImpl implements SignBizService {
     @Value("${unionPay.signgys.appKey}")
     private String ysAppKey;
 
+
+    @Value("${unionPay.signgys.payAppId}")
+    private String ysPayAppId;
+
     @Value("${spring.profiles.active}")
     private String env;
+
 
     @Resource
     private SigningReviewLogService signingReviewLogService;
@@ -119,6 +126,14 @@ public class SignBizServiceImpl implements SignBizService {
             selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
             selfSignParamDTO.setMid(signingReviewRespDTO.getMerNo());
             selfSignParamDTO.setBusinessNo(signingReviewRespDTO.getCompanyNo());
+
+            if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
+                selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
+                //当供应商没有关联成功时，入网状态修改审核中
+                if (Objects.equals(selfSignParamDTO.getSigningStatus(), "03") && !Objects.equals(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()), "1")) {
+                    selfSignParamDTO.setSigningStatus("02");
+                }
+            }
         }
         //处理业务数据
         if (Objects.nonNull(selfSignParamDTO)) {
@@ -157,7 +172,6 @@ public class SignBizServiceImpl implements SignBizService {
                 try {
                     log.info("请求入网URL" + callbackUrlEntity.getUrl());
                     log.info("请求入网回调参数" + JSON.toJSONString(selfSignAppDTO));
-
                     rest = restTemplate.postForObject(callbackUrlEntity.getUrl(), stringHttpEntity, String.class);
                     if (StringUtils.isNotBlank(rest)) {
                         JSONObject json = JSONObject.parseObject(rest);
@@ -173,10 +187,31 @@ public class SignBizServiceImpl implements SignBizService {
                     log.error("远程调用业务接口失败", e);
                 }
                 payCallbackLogService.saveCallBackLog(callbackUrlEntity.getUrl(), appId, JSON.toJSONString(selfSignAppDTO), rest, 4, r, "");
-                XxlJobHelper.log("--------------------------入网商户状态结束共" + selfSignEntityList.size() + "个----------------------");
-                log.info("入网商户状态更新结束共{}" + selfSignEntityList.size());
+                log.info("入网商户状态更新结束共{}", selfSignEntityList.size());
             }
         }
 
+    }
+
+
+    /**
+     * 获取89813015499AQ1G绑定结果
+     *
+     * @param merMsRelation
+     * @return
+     */
+    private static String getMerMsRelation(String merMsRelation) {
+        String status = "0";
+        if (StringUtils.isNotBlank(merMsRelation)) {
+            merMsRelation = StringEscapeUtils.unescapeJava(merMsRelation);
+            Map map = JSON.parseObject(merMsRelation, new TypeReference<Map>() {
+            });
+            String aQ1G = (String) map.get("7756962ec46748c09ed69a4cbc93db53");
+            String aQ14 = (String) map.get("2d9081bd83cb5ab80183f85c81404690");
+            if (Objects.equals(aQ1G, "1") && Objects.equals(aQ14, "1")) {
+                status = "1";
+            }
+        }
+        return status;
     }
 }

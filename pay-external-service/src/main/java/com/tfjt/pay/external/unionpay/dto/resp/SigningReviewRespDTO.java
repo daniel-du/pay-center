@@ -137,4 +137,12 @@ public class SigningReviewRespDTO {
     @JsonProperty("fail_reason")
     private String failReason;
 
+    /**
+     * <pre>
+     *   主从关系绑定结果	String	主从关系绑定结果	O	分账主商户不为空时返回                                          /*“0”:绑定失败”
+     *   “0”:绑定失败”  “1”:”绑定成功”
+     * </pre>
+     */
+    private String  merMsRelation;
+
 }
