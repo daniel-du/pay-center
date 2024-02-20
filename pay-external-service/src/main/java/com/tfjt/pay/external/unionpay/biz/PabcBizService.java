@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import com.tfjt.entity.AsyncMessageEntity;
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
@@ -43,4 +44,5 @@ public interface PabcBizService {
 
     List<AllSalesAreaRespDTO> getAllSaleAreas();
 
+    Boolean isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos);
 }

@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
@@ -28,4 +30,5 @@ public interface TfIncomingInfoDao extends BaseMapper<TfIncomingInfoEntity> {
 
     IncomingDataIdDTO queryIncomingDataId(@Param("id") Long id);
 
+    List<BusinessIsIncomingRespDTO> isIncomingByBusinessIdAndType(@Param(("params")) List<BusinessBasicInfoReqDTO> dtos);
 }

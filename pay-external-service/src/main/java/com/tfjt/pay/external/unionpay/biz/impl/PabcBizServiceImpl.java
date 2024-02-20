@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
+import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
@@ -18,12 +19,14 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
+import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -32,7 +35,6 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.tfjt.tfcommon.core.cache.RedisCache;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -299,6 +301,23 @@ public class PabcBizServiceImpl implements PabcBizService {
     @Override
     public List<AllSalesAreaRespDTO> getAllSaleAreas() {
         return salesAreaIncomingChannelService.getAllSaleAreas();
+    }
+
+    @Override
+    public Boolean isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
+        List<BusinessIsIncomingRespDTO> businessList =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
+        boolean flag = true;
+        if (CollectionUtil.isEmpty(businessList) || dtos.size() != businessList.size()) {
+            flag =  false;
+        }
+        if (flag && businessList.stream().anyMatch(item->StringUtils.isBlank(item.getAccountNo()))){
+            flag =  false;
+        }
+        if (!flag) {
+            //钉钉报警
+            asyncService.dingWarning(dtos,businessList);
+        }
+        return flag;
     }
 
     private List<PayChannelRespDTO> virtualAreaCode(Integer areaLevel, String distinctName) {
