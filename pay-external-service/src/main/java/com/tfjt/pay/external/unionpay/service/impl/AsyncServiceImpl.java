@@ -185,7 +185,7 @@ public class AsyncServiceImpl implements AsyncService {
                     msg = "商户身份为：云商，ID为【"+dto.getBusinessId()+"】的商户还未入网";
                 }
                 log.info(msg);
-//                sendMessage(title,msg);
+                sendMessage(title,msg);
             }
         }
     }
