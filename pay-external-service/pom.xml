@@ -335,7 +335,7 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-async-job-retry</artifactId>
-            <version>1.0.7-RELEASE</version>
+            <version>1.2.0-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.openservices</groupId>
