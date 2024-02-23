@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.cache.MybatisRedisCache;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
+import org.apache.ibatis.annotations.CacheNamespace;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.List;
  * @author Du Penglun
  * @since 2023-12-07
  */
+@CacheNamespace(implementation= MybatisRedisCache.class,eviction= MybatisRedisCache.class)
 public interface TfIncomingInfoDao extends BaseMapper<TfIncomingInfoEntity> {
 
     IncomingSubmitMessageDTO queryIncomingMessage(@Param("id") Long id);
