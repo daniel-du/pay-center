@@ -159,7 +159,7 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-robot</artifactId>
-            <version>1.0.1-RELEASE</version>
+            <version>1.0.0.3</version>
         </dependency>
 
 
