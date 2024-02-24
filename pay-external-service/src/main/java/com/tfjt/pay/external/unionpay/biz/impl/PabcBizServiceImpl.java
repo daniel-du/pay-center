@@ -30,6 +30,7 @@ import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
  * @create 2023/12/9 16:05
  */
 @Service
+@Slf4j
 public class PabcBizServiceImpl implements PabcBizService {
 
     @Autowired

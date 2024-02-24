@@ -144,6 +144,15 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
 
     @Override
     public List<BusinessIsIncomingRespDTO> isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
-        return baseMapper.isIncomingByBusinessIdAndType(dtos);
+        LambdaQueryWrapper<TfIncomingInfoEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TfIncomingInfoEntity::getIsDeleted,DeleteStatusEnum.NO.getCode());
+        String sql = "(";
+        for (BusinessBasicInfoReqDTO dto : dtos) {
+            sql+="("+dto.getBusinessId()+","+dto.getBusinessType()+"),";
+        }
+        sql = sql.substring(0,sql.length()-1);
+        sql+=")";
+        wrapper.apply("( business_id, business_type ) IN "+sql);
+        return super.list(BusinessIsIncomingRespDTO.class,wrapper);
     }
 }
