@@ -189,7 +189,7 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
         jsonObject.put("MemberProperty", "SH");
 
         //手机号码测试送11个1
-        if (devConfig.isProd()) {
+        if (devConfig.isProd() || devConfig.isPre()) {
             jsonObject.put("Mobile", incomingSubmitMessageDTO.getLegalMobile());
         } else {
             jsonObject.put("Mobile", "11111111111");
@@ -243,7 +243,7 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
 //        //超级网银行号
 //        jsonObject.put("EiconBankBranchId", "102100099996");
         //手机号码
-        if (devConfig.isProd()) {
+        if (devConfig.isProd() || devConfig.isPre()) {
             jsonObject.put("Mobile", incomingSubmitMessageDTO.getBankCardMobile());
         } else {
             jsonObject.put("Mobile", "11111111111");
