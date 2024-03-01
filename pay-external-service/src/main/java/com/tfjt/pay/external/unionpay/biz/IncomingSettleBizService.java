@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSettleReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.QueryIncomingSettleByMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -32,4 +33,11 @@ public interface IncomingSettleBizService {
      * @return
      */
     Result update(IncomingSettleReqDTO incomingSettleReqDTO);
+
+    /**
+     * 根据商户id、商户类型、进件渠道查询结算信息
+     * @param reqDTO
+     * @return
+     */
+    Result<IncomingSettleRespDTO> getByMerchant(QueryIncomingSettleByMerchantReqDTO reqDTO);
 }
