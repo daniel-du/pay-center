@@ -18,9 +18,12 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ShopExamineMqReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ShopUpdateMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -322,6 +325,93 @@ public class PabcBizServiceImpl implements PabcBizService {
         return flag;
     }
 
+    @Override
+    public void saveShopExamineInfo(ShopExamineMqReqDTO dto) {
+        List<MerchantChangeReqDTO> saveList = getShopExamineInfoList(dto);
+        if (CollectionUtil.isNotEmpty(saveList)) {
+            supplierApiService.saveMerchangtChangeInfo(saveList);
+        }
+    }
+
+    @Override
+    public void saveShopUpdateInfo(ShopUpdateMqReqDTO dto) {
+        List<MerchantChangeReqDTO> saveList = getShopUpdateInfoList(dto);
+        if (CollectionUtil.isNotEmpty(saveList)) {
+            supplierApiService.saveMerchangtChangeInfo(saveList);
+        }
+    }
+
+    private List<MerchantChangeReqDTO> getShopUpdateInfoList(ShopUpdateMqReqDTO dto) {
+        List<MerchantChangeReqDTO> saveList = new ArrayList<>();
+        if (StringUtils.isNotBlank(dto.getAfterDistractCode())) {
+            MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
+            List<String> oldSalesList = new ArrayList<>();
+            List<String> newSalesList = new ArrayList<>();
+            oldSalesList.add(dto.getAfterDistractCode());
+            newSalesList.add(dto.getBeforeDistractCode());
+            String oldSales = getSalesByCodes(oldSalesList);
+            String newSales = getSalesByCodes(newSalesList);
+            reqDTO.setAfterChange(newSales);
+            reqDTO.setBeforChange(oldSales);
+            reqDTO.setChangeField("销售区域");
+            reqDTO.setChangeTime(new Date());
+            reqDTO.setOperator(dto.getOperator());
+            reqDTO.setOperatorId(dto.getOperatorId());
+            reqDTO.setMerchantId(dto.getShopId());
+            reqDTO.setMerchantType(NumberConstant.ONE);
+            saveList.add(reqDTO);
+        }
+        return saveList;
+    }
+
+    private List<MerchantChangeReqDTO> getShopExamineInfoList(ShopExamineMqReqDTO dto) {
+        List<MerchantChangeReqDTO> saveList = new ArrayList<>();
+        String shopName = dto.getShopName();
+        String phone = dto.getPhone();
+        String afterDistractCode = dto.getAfterDistractCode();
+        String operator = dto.getOperator();
+        String operatorId = dto.getOperatorId();
+        Long shopId = dto.getShopId();
+        if (StringUtils.isNotBlank(shopName)) {
+            MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
+            reqDTO.setAfterChange(shopName);
+            reqDTO.setChangeField("商铺名称");
+            reqDTO.setChangeTime(new Date());
+            reqDTO.setOperator(operator);
+            reqDTO.setOperatorId(operatorId);
+            reqDTO.setMerchantId(shopId);
+            reqDTO.setMerchantType(NumberConstant.ONE);
+            saveList.add(reqDTO);
+        }
+        if (StringUtils.isNotBlank(phone)) {
+            MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
+            reqDTO.setAfterChange(phone);
+            reqDTO.setChangeField("联系电话");
+            reqDTO.setChangeTime(new Date());
+            reqDTO.setOperator(operator);
+            reqDTO.setOperatorId(operatorId);
+            reqDTO.setMerchantId(shopId);
+            reqDTO.setMerchantType(NumberConstant.ONE);
+            saveList.add(reqDTO);
+        }
+        if (StringUtils.isNotBlank(afterDistractCode)) {
+            MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
+            List<String> salesList = new ArrayList<>();
+            salesList.add(afterDistractCode);
+            String sales = getSalesByCodes(salesList);
+            reqDTO.setAfterChange(sales);
+            reqDTO.setChangeField("销售区域");
+            reqDTO.setChangeTime(new Date());
+            reqDTO.setOperator(operator);
+            reqDTO.setOperatorId(operatorId);
+            reqDTO.setMerchantId(shopId);
+            reqDTO.setMerchantType(NumberConstant.ONE);
+            saveList.add(reqDTO);
+        }
+
+        return saveList;
+    }
+
     private List<PayChannelRespDTO> virtualAreaCode(Integer areaLevel, String distinctName) {
         QueryWrapper<SalesAreaIncomingChannelEntity> wrapper = new QueryWrapper<>();
         if(StringUtils.isNotBlank(distinctName)){
@@ -413,6 +503,7 @@ public class PabcBizServiceImpl implements PabcBizService {
             reqDTO.setOperator(dto.getUserName());
             reqDTO.setOperatorId(String.valueOf(dto.getCreator()));
             reqDTO.setMerchantId(dto.getSupplierId());
+            reqDTO.setMerchantType(NumberConstant.TWO);
             saveList.add(reqDTO);
 
         }
@@ -427,6 +518,7 @@ public class PabcBizServiceImpl implements PabcBizService {
             reqDTO.setOperator(dto.getUserName());
             reqDTO.setOperatorId(String.valueOf(dto.getCreator()));
             reqDTO.setMerchantId(dto.getSupplierId());
+            reqDTO.setMerchantType(NumberConstant.TWO);
             saveList.add(reqDTO);
         }
         return saveList;

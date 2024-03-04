@@ -9,6 +9,8 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ShopExamineMqReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ShopUpdateMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -45,4 +47,8 @@ public interface PabcBizService {
     List<AllSalesAreaRespDTO> getAllSaleAreas();
 
     Boolean isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos);
+
+    void saveShopExamineInfo(ShopExamineMqReqDTO dto);
+
+    void saveShopUpdateInfo(ShopUpdateMqReqDTO dto);
 }
