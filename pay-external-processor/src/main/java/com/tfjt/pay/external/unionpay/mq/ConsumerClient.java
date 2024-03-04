@@ -34,6 +34,8 @@ public class ConsumerClient implements ApplicationContextAware {
     @Value("${async-retry-job.product.updateMsgUrl}")
     private String updateMsgUrl;
 
+    private String shopChangeTopic = "TEST_SHOP_CHANGE_TOPIC";
+
 
     private ApplicationContext applicationContext;
 
