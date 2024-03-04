@@ -9,10 +9,7 @@ import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
-import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
-import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
-import com.tfjt.pay.external.unionpay.enums.PnApiEnum;
+import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.utils.PnHeadUtils;
 import com.tfjt.tfcommon.core.cache.RedisCache;
@@ -198,13 +195,15 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
 //        jsonObject.put("Email", "duake524@163.com");
 
         //个体工商户标识
-        jsonObject.put("IndivBusinessFlag", NumberConstant.ONE.equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
+        jsonObject.put("IndivBusinessFlag", IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
         //营业及店铺信息-个体工商户必填
-        jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
-        jsonObject.put("CompanyGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
-        jsonObject.put("CompanyGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
-        jsonObject.put("ShopId", incomingSubmitMessageDTO.getBusinessId());
-        jsonObject.put("ShopName", incomingSubmitMessageDTO.getShopShortName());
+        if (IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType())) {
+            jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
+            jsonObject.put("CompanyGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
+            jsonObject.put("CompanyGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
+            jsonObject.put("ShopId", incomingSubmitMessageDTO.getBusinessId());
+            jsonObject.put("ShopName", incomingSubmitMessageDTO.getShopShortName());
+        }
         //法人信息-个体工商户必填
         jsonObject.put("RepFlag", NumberConstant.ONE);
         jsonObject.put("ReprName", incomingSubmitMessageDTO.getLegalName());
@@ -249,14 +248,15 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
             jsonObject.put("Mobile", "11111111111");
         }
         //个体工商户标识
-        jsonObject.put("IndivBusinessFlag", NumberConstant.ONE.equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
+        jsonObject.put("IndivBusinessFlag", IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
         //营业及店铺信息-个体工商户必填
-        jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
-        jsonObject.put("CompanyGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
-        jsonObject.put("CompanyGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
-        jsonObject.put("ShopId", incomingSubmitMessageDTO.getBusinessId());
-        jsonObject.put("ShopName", incomingSubmitMessageDTO.getShopShortName());
-
+        if (IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType())) {
+            jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
+            jsonObject.put("CompanyGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
+            jsonObject.put("CompanyGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
+            jsonObject.put("ShopId", incomingSubmitMessageDTO.getBusinessId());
+            jsonObject.put("ShopName", incomingSubmitMessageDTO.getShopShortName());
+        }
         //会员名称是否是法人：1-是  2-否（个体工商户必输）
         jsonObject.put("RepFlag", "1");
         jsonObject.put("ReprName", incomingSubmitMessageDTO.getLegalName());
