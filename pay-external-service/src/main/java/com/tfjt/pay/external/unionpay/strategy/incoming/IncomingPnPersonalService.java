@@ -176,12 +176,17 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
         jsonObject.put("FunctionFlag", NumberConstant.ONE);
         //交易网会员代码:平台端的用户ID，需要保证唯一性，可数字字母混合，如HY_120，若需要开通智能收款要求后6位是数字，该6位数字为智能收款账号后6位，因账号前几位固定故后6位不能重复。
         jsonObject.put("TranNetMemberCode", incomingSubmitMessageDTO.getMemberId());
-        //客户真实姓名
-        jsonObject.put("MemberName", incomingSubmitMessageDTO.getBusinessName());
-        //会员证件类型
-        jsonObject.put("MemberGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
-        //会员证件号码
-        jsonObject.put("MemberGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
+        if (IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType())) {
+            //客户真实姓名
+            jsonObject.put("MemberName", incomingSubmitMessageDTO.getBusinessName());
+            //会员证件类型
+            jsonObject.put("MemberGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
+            //会员证件号码
+            jsonObject.put("MemberGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
+        } else {
+
+        }
+
         //会员属性: SH-商户子账户(默认) 00-普通子账户
         jsonObject.put("MemberProperty", "SH");
 
@@ -196,9 +201,9 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
 
         //个体工商户标识
         jsonObject.put("IndivBusinessFlag", IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
+        jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
         //营业及店铺信息-个体工商户必填
         if (IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType())) {
-            jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
             jsonObject.put("CompanyGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
             jsonObject.put("CompanyGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
             jsonObject.put("ShopId", incomingSubmitMessageDTO.getBusinessId());
