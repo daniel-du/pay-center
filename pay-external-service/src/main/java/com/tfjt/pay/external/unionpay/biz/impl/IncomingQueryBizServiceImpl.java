@@ -27,11 +27,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Du Penglun
@@ -66,6 +69,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
 
     @DubboReference(retries = 0, timeout = 2000, check = false)
     private TfSupplierApiService tfSupplierApiService;
+
+    @Value("${unionpay.appId.yunshang}")
+    private String yunshangAppId;
+
+    @Value("${unionpay.appId.yundian}")
+    private String yundianAppId;
 
     private static final String NO_ACCESS_STATUS = "00";
 
@@ -122,7 +131,94 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     @Override
     public Result<Map<String, QueryIncomingStatusRespDTO>> batchQueryIncomingStatus(List<QueryIncomingStatusReqDTO> queryIncomingStatusReqDTOS) {
-        return null;
+        //判断入参集合是否为空
+        if (CollectionUtils.isEmpty(queryIncomingStatusReqDTOS)) {
+            return Result.failed();
+        }
+        //获取缓存中区域对应的入网渠道
+        Set<String> channelCacheKeys = new HashSet<>();
+        Set<String> incomingCacheKeys = new HashSet<>();
+        Set<String> cacheNullCodes = new HashSet<>();
+        Set<String> incomingCacheNullKeys = new HashSet<>();
+        Map<String, QueryIncomingStatusReqDTO> pnIncomingReqMap = new HashMap<>();
+        Map<String, QueryIncomingStatusReqDTO> unIncomingReqMap = new HashMap<>();
+        List<String> areaCodes = new ArrayList<>();
+        queryIncomingStatusReqDTOS.forEach(req -> {
+            channelCacheKeys.add(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + req.getAreaCode());
+            cacheNullCodes.add(req.getAreaCode());
+            areaCodes.add(req.getAreaCode());
+        });
+        //查询区域-入网渠道配置信息
+        List<SalesAreaIncomingChannelEntity> areaIncomingChannels =
+                getIncomingChannels(channelCacheKeys, cacheNullCodes, areaCodes);
+        //补齐渠道信息完整集合
+        Map<String, SalesAreaIncomingChannelEntity> areaChannelMap =
+                getAreaIncomingChannels(channelCacheKeys, areaCodes, areaIncomingChannels);
+        queryIncomingStatusReqDTOS.forEach(req -> {
+            String channelCode = areaChannelMap.get(req.getAreaCode()).getChannelCode();
+            String cacheKey = RedisConstant.INCOMING_MSG_KEY_PREFIX + channelCode + ":" +
+                    req.getBusinessType() + ":" + req.getBusinessId();
+            req.setAccessChannelType(Integer.parseInt(channelCode));
+            incomingCacheKeys.add(cacheKey);
+            incomingCacheNullKeys.add(channelCode + ":" +
+                    req.getBusinessType() + ":" + req.getBusinessId());
+            if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(Integer.parseInt(channelCode))) {
+                pnIncomingReqMap.put(cacheKey, req);
+            } else {
+                unIncomingReqMap.put(cacheKey, req);
+            }
+
+        });
+
+        Map<String, QueryIncomingStatusRespDTO> incomingMessageMap = new HashMap<>();
+        //批量查询Redis
+        List<String> incomingChannels = redisTemplate.opsForValue().multiGet(incomingCacheKeys);
+        incomingChannels.forEach(incomingChannel -> {
+            IncomingMessageRespDTO incomingMessageRespDTO = JSONObject.parseObject(incomingChannel, IncomingMessageRespDTO.class);
+//            queryIncomingStatusRespDTO.setIncomingStatus(getAccessStatus(channelCode, incomingMessageRespDTO));
+            String mapKey = incomingMessageRespDTO.getAccessChannelType() + "-"
+                    + incomingMessageRespDTO.getBusinessType() + "-" + incomingMessageRespDTO.getBusinessId();
+            QueryIncomingStatusRespDTO queryIncomingStatusRespDTO = new QueryIncomingStatusRespDTO();
+            queryIncomingStatusRespDTO.setAccessChannelType(incomingMessageRespDTO.getAccessChannelType());
+            queryIncomingStatusRespDTO.setBusinessType(incomingMessageRespDTO.getBusinessType());
+            queryIncomingStatusRespDTO.setBusinessId(incomingMessageRespDTO.getBusinessId());
+            queryIncomingStatusRespDTO.setIncomingStatus(getAccessStatus(incomingMessageRespDTO.getAccessChannelType(), incomingMessageRespDTO));
+            incomingMessageMap.put(mapKey, queryIncomingStatusRespDTO);
+//            incomingCacheNullKeys.remove(mapKey);
+            pnIncomingReqMap.remove(mapKey);
+            unIncomingReqMap.remove(mapKey);
+        });
+        if (CollectionUtils.isEmpty(pnIncomingReqMap) && CollectionUtils.isEmpty(unIncomingReqMap)) {
+            return Result.ok(incomingMessageMap);
+        }
+
+        Map<String, QueryIncomingStatusRespDTO> pnStatusMap = batchQueryPnIncomingStatus(pnIncomingReqMap);
+        if (!CollectionUtils.isEmpty(pnStatusMap)) {
+            incomingMessageMap.putAll(pnStatusMap);
+        }
+
+        Map<String, QueryIncomingStatusRespDTO> unStatusMap = batchQueryUnIncomingStatus(unIncomingReqMap);
+        if (!CollectionUtils.isEmpty(unStatusMap)) {
+            incomingMessageMap.putAll(unStatusMap);
+        }
+        //获取差集查询数据库-异步写入缓存
+
+
+        //根据渠道拆分，各自查询平安或银联渠道
+
+        //查询缓存
+
+        //获取差集
+        //查询数据库-平安入网
+        //写缓存
+
+        //获取差集
+        //--是否云商，获取acct
+        //查询数据库-银联入网
+        //写缓存
+
+
+        return Result.ok(incomingMessageMap);
     }
 
     /**
@@ -132,19 +228,44 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     @Override
     public Result<QueryIncomingStatusRespDTO> queryIncomingStatusByAreaCodes(QueryIncomingStatusReqDTO queryIncomingStatusReqDTO) {
-        List<String> incomingChannels;
         Set<String> cacheKeys = new HashSet<>();
         Set<String> cacheNullCodes = new HashSet<>();
         queryIncomingStatusReqDTO.getAreaCodes().forEach(areaCode -> {
             cacheKeys.add(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaCode);
             cacheNullCodes.add(areaCode);
         });
+        //查询区域-入网渠道配置信息
+        List<SalesAreaIncomingChannelEntity> areaIncomingChannels = getIncomingChannels(cacheKeys, cacheNullCodes, queryIncomingStatusReqDTO.getAreaCodes());
+        Integer flag;
+        //未查询到任何渠道配置数据，该渠道为银联
+        if (CollectionUtils.isEmpty(areaIncomingChannels)) {
+            flag = NumberConstant.TWO;
+        } else {
+            //补齐渠道信息完整集合
+            getAreaIncomingChannels(cacheKeys, queryIncomingStatusReqDTO.getAreaCodes(), areaIncomingChannels);
+            //根据区域渠道集合获取入网渠道标识，1：平安  2：银联  3：平安+银联
+            flag = getChannelFlag(areaIncomingChannels);
+        }
+        //根据入网渠道标识、商户类型、商户id获取入网状态
+        QueryIncomingStatusRespDTO incomingStatusResp = getIncomingStatusByChannelFlag(flag, queryIncomingStatusReqDTO.getBusinessType(), queryIncomingStatusReqDTO.getBusinessId());
+        log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, incomingStatusResp:{}", incomingStatusResp);
+        return Result.ok(incomingStatusResp);
+    }
+
+    /**
+     * 查询区域-入网渠道配置信息
+     * @param cacheKeys
+     * @param cacheNullCodes
+     * @param areaCodes
+     * @return
+     */
+    private List<SalesAreaIncomingChannelEntity> getIncomingChannels(Set<String> cacheKeys, Set<String> cacheNullCodes, List<String> areaCodes) {
         //批量查询Redis
-        incomingChannels = redisTemplate.opsForValue().multiGet(cacheKeys);
+        List<String> incomingChannels = redisTemplate.opsForValue().multiGet(cacheKeys);
         List<SalesAreaIncomingChannelEntity> areaIncomingChannels = new ArrayList<>();
         //如果缓存查询为空，则查询数据库
         if (CollectionUtils.isEmpty(incomingChannels)) {
-            areaIncomingChannels = salesAreaIncomingChannelService.queryByDistrictsCodes(queryIncomingStatusReqDTO.getAreaCodes());
+            areaIncomingChannels = salesAreaIncomingChannelService.queryByDistrictsCodes(areaCodes);
             //异步更新缓存
             networkTypeCacheUtil.writeCache(cacheNullCodes);
         } else {
@@ -162,20 +283,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 networkTypeCacheUtil.writeCache(cacheNullCodes);
             }
         }
-        Integer flag;
-        //未查询到任何渠道配置数据，该渠道为银联
-        if (CollectionUtils.isEmpty(areaIncomingChannels)) {
-            flag = NumberConstant.TWO;
-        } else {
-            //补齐渠道信息完成集合
-            getAreaIncomingChannels(cacheKeys, queryIncomingStatusReqDTO.getAreaCodes(), areaIncomingChannels);
-            //根据区域渠道集合获取入网渠道标识，1：平安  2：银联  3：平安+银联
-            flag = getChannelFlag(areaIncomingChannels);
-        }
-        //根据入网渠道标识、商户类型、商户id获取入网状态
-        QueryIncomingStatusRespDTO incomingStatusResp = getIncomingStatusByChannelFlag(flag, queryIncomingStatusReqDTO.getBusinessType(), queryIncomingStatusReqDTO.getBusinessId());
-        log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, incomingStatusResp:{}", incomingStatusResp);
-        return Result.ok(incomingStatusResp);
+        return areaIncomingChannels;
     }
 
     /**
@@ -207,11 +315,10 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         //根据渠道查询数据库中入网信息
         IncomingMessageRespDTO incomingMessageRespDTO = getIncomingMessage(channelCode, incomingMessageReqDTO);
         log.info("IncomingQueryBizServiceImpl--queryIncomingStatus, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
-//        if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
-//            incomingMessageRespDTO.setAccessStatus(0);
-//            incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
-//            return Result.ok();
-//        }
+        if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
+            incomingMessageRespDTO.setAccessStatus(0);
+            incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
+        }
         //设置缓存
         redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO));
         queryIncomingStatusRespDTO.setIncomingStatus(getAccessStatus(channelCode, incomingMessageRespDTO));
@@ -250,6 +357,10 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         //查询平安入网进件信息
         if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelCode)) {
             incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
+            if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
+                incomingMessageRespDTO = new IncomingMessageRespDTO();
+                incomingMessageRespDTO.setAccessStatus(0);
+            }
             //如果结算类型为对公，会员名称返回“营业名称”，否则返回“法人姓名”
             if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingMessageRespDTO.getSettlementAccountType())) {
                 incomingMessageRespDTO.setMemberName(incomingMessageRespDTO.getBusinessName());
@@ -278,6 +389,9 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             }
 
         }
+        incomingMessageRespDTO.setAccessChannelType(channelCode);
+        incomingMessageRespDTO.setBusinessType(incomingMessageReqDTO.getBusinessType());
+        incomingMessageRespDTO.setBusinessId(incomingMessageReqDTO.getBusinessId());
         return incomingMessageRespDTO;
     }
 
@@ -338,7 +452,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      * @param areaCodes
      * @param areaIncomingChannels
      */
-    private void getAreaIncomingChannels(Set<String> cacheKeys, List<String> areaCodes, List<SalesAreaIncomingChannelEntity> areaIncomingChannels) {
+    private Map<String, SalesAreaIncomingChannelEntity> getAreaIncomingChannels(Set<String> cacheKeys, List<String> areaCodes, List<SalesAreaIncomingChannelEntity> areaIncomingChannels) {
         Map<String, SalesAreaIncomingChannelEntity> areaIncomingChannelMap = new HashMap<>();
         //将查询到的数据集合存入map
         for (SalesAreaIncomingChannelEntity areaIncomingChannel : areaIncomingChannels) {
@@ -354,8 +468,10 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 salesAreaIncomingChannelEntity.setDistrictsCode(areaCode);
                 salesAreaIncomingChannelEntity.setChannelCode(IncomingAccessChannelTypeEnum.UNIONPAY.getCode().toString());
                 areaIncomingChannels.add(salesAreaIncomingChannelEntity);
+                areaIncomingChannelMap.put(areaCode, salesAreaIncomingChannelEntity);
             }
         }
+        return areaIncomingChannelMap;
     }
     /**
      * 根据区域渠道集合获取入网渠道标识，1：平安  2：银联  3：平安+银联
@@ -378,6 +494,125 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                     NumberConstant.ONE : NumberConstant.TWO;
         }
         return flag;
+    }
+
+
+    /**
+     * 查询数据库平安入网信息
+     * @param pnIncomingReqMap
+     * @return
+     */
+    private Map<String, QueryIncomingStatusRespDTO> batchQueryPnIncomingStatus(Map<String, QueryIncomingStatusReqDTO> pnIncomingReqMap) {
+        if (CollectionUtils.isEmpty(pnIncomingReqMap)) {
+            return null;
+        }
+        Map<String, QueryIncomingStatusRespDTO> incomingStatusMap = new HashMap<>();
+        List<IncomingMessageReqDTO> incomingMessageReqs = new ArrayList<>();
+        for (Map.Entry<String, QueryIncomingStatusReqDTO> entry : pnIncomingReqMap.entrySet()) {
+            String key = entry.getValue().getAccessChannelType() + "-"
+                    + entry.getValue().getBusinessType() + "-" + entry.getValue().getBusinessId();
+            IncomingMessageReqDTO  incomingMessageReq = new IncomingMessageReqDTO();
+            incomingMessageReq.setAccessChannelType(entry.getValue().getAccessChannelType());
+            incomingMessageReq.setBusinessType(entry.getValue().getBusinessType());
+            incomingMessageReq.setBusinessId(entry.getValue().getBusinessId());
+            incomingMessageReqs.add(incomingMessageReq);
+            //往返回map中放入默认状态“未入网”
+            QueryIncomingStatusRespDTO incomingStatusResp = new QueryIncomingStatusRespDTO();
+            incomingStatusResp.setBusinessId(entry.getValue().getBusinessId());
+            incomingStatusResp.setBusinessType(entry.getValue().getBusinessType());
+            incomingStatusResp.setAccessChannelType(entry.getValue().getAccessChannelType());
+            incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
+            incomingStatusMap.put(key, incomingStatusResp);
+        }
+        //查询数据库
+        List<IncomingMessageRespDTO> incomingMessages = tfIncomingInfoService.queryIncomingMessagesByMerchantList(incomingMessageReqs);
+        if (CollectionUtils.isEmpty(incomingMessages)) {
+            return incomingStatusMap;
+        }
+        //数据库查询到的数据替换返回map中的值
+        incomingMessages.forEach(incomingMessage -> {
+            String key = incomingMessage.getAccessChannelType() + "-"
+                    + incomingMessage.getBusinessType() + "-" + incomingMessage.getBusinessId();
+            QueryIncomingStatusRespDTO incomingStatusResp = new QueryIncomingStatusRespDTO();
+            incomingStatusResp.setBusinessId(incomingMessage.getBusinessId());
+            incomingStatusResp.setBusinessType(incomingMessage.getBusinessType());
+            incomingStatusResp.setAccessChannelType(incomingMessage.getAccessChannelType());
+            if (PN_OPEN_ACCOUNT_STATUS_SET.contains(incomingMessage.getAccessStatus())) {
+                incomingStatusResp.setIncomingStatus(HAS_ACCESS_STATUS);
+            } else {
+                incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
+            }
+            incomingStatusMap.put(key, incomingStatusResp);
+        });
+        return incomingStatusMap;
+    }
+
+    /**
+     * 查询数据库银联入网信息
+     * @param unIncomingReqMap
+     * @return
+     */
+    private Map<String, QueryIncomingStatusRespDTO> batchQueryUnIncomingStatus(Map<String, QueryIncomingStatusReqDTO> unIncomingReqMap) {
+        if (CollectionUtils.isEmpty(unIncomingReqMap)) {
+            return null;
+        }
+        Map<String, QueryIncomingStatusRespDTO> incomingStatusMap = new HashMap<>();
+        List<String> accts = new ArrayList<>();
+        List<Integer> supplierIds = new ArrayList<>();
+        Map<String, Integer> supplierIdMap = new HashMap<>();
+        for (Map.Entry<String, QueryIncomingStatusReqDTO> entry : unIncomingReqMap.entrySet()) {
+            String key = entry.getValue().getAccessChannelType() + "-"
+                    + entry.getValue().getBusinessType() + "-" + entry.getValue().getBusinessId();
+            if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(entry.getValue().getBusinessType())) {
+                supplierIds.add(entry.getValue().getBusinessId().intValue());
+            } else {
+                String acct = devConfig.isPreOrProd() ? "tfys" + entry.getValue().getBusinessId() : entry.getValue().getBusinessId().toString();
+                accts.add(acct);
+                supplierIdMap.put(acct, entry.getValue().getBusinessId().intValue());
+            }
+            //往返回map中放入默认状态“未入网”
+            QueryIncomingStatusRespDTO incomingStatusResp = new QueryIncomingStatusRespDTO();
+            incomingStatusResp.setBusinessId(entry.getValue().getBusinessId());
+            incomingStatusResp.setBusinessType(entry.getValue().getBusinessType());
+            incomingStatusResp.setAccessChannelType(entry.getValue().getAccessChannelType());
+            incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
+            incomingStatusMap.put(key, incomingStatusResp);
+        }
+        List<TfSupplierDTO> tfSuppliers = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(supplierIds)) {
+            tfSuppliers = tfSupplierApiService.getTfSupplierList(supplierIds);
+        }
+        if (!CollectionUtils.isEmpty(tfSuppliers)) {
+            tfSuppliers.forEach(tfSupplier -> {
+                accts.add(tfSupplier.getSupplierId());
+                supplierIdMap.put(tfSupplier.getSupplierId(), tfSupplier.getId());
+            });
+        }
+        //查询银联入网数据
+        List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accts);
+        if (CollectionUtils.isEmpty(selfSignEntities)) {
+            return incomingStatusMap;
+        }
+        selfSignEntities.forEach(selfSignEntity -> {
+            //往返回map中放入默认状态“未入网”
+            QueryIncomingStatusRespDTO incomingStatusResp = new QueryIncomingStatusRespDTO();
+            incomingStatusResp.setBusinessId(supplierIdMap.get(selfSignEntity.getAccesserAcct()).longValue());
+            if (yundianAppId.equals(selfSignEntity.getAppId())) {
+                incomingStatusResp.setBusinessType(IncomingMemberBusinessTypeEnum.YUNDIAN.getCode());
+            } else {
+                incomingStatusResp.setBusinessType(IncomingMemberBusinessTypeEnum.YUNSHANG.getCode());
+            }
+            incomingStatusResp.setAccessChannelType(IncomingAccessChannelTypeEnum.UNIONPAY.getCode());
+            if (HAS_ACCESS_STATUS.equals(selfSignEntity.getSigningStatus())) {
+                incomingStatusResp.setIncomingStatus(HAS_ACCESS_STATUS);
+            } else {
+                incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
+            }
+            incomingStatusMap.put(IncomingAccessChannelTypeEnum.UNIONPAY.getCode() + "-"
+                    + incomingStatusResp.getBusinessType() + "-"
+                    + supplierIdMap.get(selfSignEntity.getAccesserAcct()).longValue(), incomingStatusResp);
+        });
+        return incomingStatusMap;
     }
     public static void main(String[] a) {
         IncomingMessageRespDTO mes = new IncomingMessageRespDTO();

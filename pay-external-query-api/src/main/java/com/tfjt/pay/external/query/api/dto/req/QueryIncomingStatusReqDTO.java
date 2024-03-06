@@ -36,4 +36,9 @@ public class QueryIncomingStatusReqDTO implements Serializable {
      * 区域-区编号集合-与“区域-区编号”参数二选一
      */
     private List<String> areaCodes;
+
+    /**
+     * 入网渠道类型，1：平安  2：银联
+     */
+    private Integer accessChannelType;
 }
