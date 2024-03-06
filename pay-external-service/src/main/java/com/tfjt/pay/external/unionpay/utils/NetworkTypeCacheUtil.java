@@ -37,6 +37,10 @@ public class NetworkTypeCacheUtil {
                 redisCache.setCacheString(key, JSONObject.toJSONString(entity));
                 return Integer.valueOf(entity.getChannelCode());
             }else {
+                SalesAreaIncomingChannelEntity entityOld = new SalesAreaIncomingChannelEntity();
+                entityOld.setDistrictsCode(code);
+                entityOld.setChannelCode(CityTypeEnum.OLD_CITY.getCode().toString());
+                redisCache.setCacheString(key, JSONObject.toJSONString(entityOld));
                 return CityTypeEnum.OLD_CITY.getCode();
             }
         }
