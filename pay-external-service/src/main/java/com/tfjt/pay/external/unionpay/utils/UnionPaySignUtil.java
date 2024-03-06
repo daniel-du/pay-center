@@ -38,8 +38,8 @@ public class UnionPaySignUtil {
      * 证书类型，值为{@value}
      */
     public static final String CERT_TYPE_PKCS12 = "PKCS12";
-
-    private static KeyStore keyStore = null;//签名证书
+    //签名证书
+    private static KeyStore keyStore = null;
     /**
      * 证书类型，值为{@value}
      */
