@@ -32,4 +32,9 @@ public class QueryIncomingStatusRespDTO implements Serializable {
      * 入网渠道类型，1：平安  2：银联，获取多渠道（区域）合并入网状态时，该字段不返回
      */
     private Integer accessChannelType;
+
+    /**
+     * 未入网原因
+     */
+    private String noIncomingReason;
 }

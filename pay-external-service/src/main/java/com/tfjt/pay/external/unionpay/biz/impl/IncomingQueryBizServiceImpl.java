@@ -71,6 +71,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
 
     private static final String HAS_ACCESS_STATUS = "03";
 
+    private static final String PN_NO_INCOMING_REASON = "平安未入网";
+
+    private static final String UNIONPAY_NO_INCOMING_REASON = "银联未入网";
+
+    private static final String ALL_NO_INCOMING_REASON = "平安、银联均未入网";
+
 
     private static final Set<Integer> PN_OPEN_ACCOUNT_STATUS_SET = new HashSet<>();
 
@@ -286,13 +292,26 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      * @param businessId
      * @return
      */
-    private String getIncomingStatusByChannelFlag(Integer channelFlag, Integer businessType, Long businessId) {
+    private QueryIncomingStatusRespDTO getIncomingStatusByChannelFlag(Integer channelFlag, Integer businessType, Long businessId) {
+        QueryIncomingStatusRespDTO incomingStatusResp = new QueryIncomingStatusRespDTO();
+        incomingStatusResp.setBusinessId(businessId);
+        incomingStatusResp.setBusinessType(businessType);
         //标识不等于3时，根据标识获取对应渠道的入网状态
         if (!NumberConstant.THREE.equals(channelFlag)) {
             QueryIncomingStatusRespDTO statusResp = getIncomingStatusResp(channelFlag,
                     businessType, businessId);
+            //根据渠道写入未入网原因
+            if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelFlag)
+                    && NO_ACCESS_STATUS.equals(statusResp.getIncomingStatus())) {
+                incomingStatusResp.setNoIncomingReason(PN_NO_INCOMING_REASON);
+            }
+            if (IncomingAccessChannelTypeEnum.UNIONPAY.getCode().equals(channelFlag)
+                    && NO_ACCESS_STATUS.equals(statusResp.getIncomingStatus())) {
+                incomingStatusResp.setNoIncomingReason(UNIONPAY_NO_INCOMING_REASON);
+            }
+            incomingStatusResp.setIncomingStatus(statusResp.getIncomingStatus());
             log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, statusResp:{}", JSONObject.toJSONString(statusResp));
-            return statusResp.getIncomingStatus();
+            return incomingStatusResp;
         }
         //标识等于3时，需要同时判断“银联”与“平安”入网状态，都入网成功才返回成功
         QueryIncomingStatusRespDTO pnResp = getIncomingStatusResp(IncomingAccessChannelTypeEnum.PINGAN.getCode(),
@@ -301,11 +320,20 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 businessType, businessId);
         log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, pnResp:{}, unResp:{}",
                 JSONObject.toJSONString(pnResp), JSONObject.toJSONString(unResp));
+        ////根据多个渠道入网状态写入最终入网状态与未入网原因
         if (HAS_ACCESS_STATUS.equals(pnResp.getIncomingStatus()) && HAS_ACCESS_STATUS.equals(unResp.getIncomingStatus())) {
-            return HAS_ACCESS_STATUS;
+            incomingStatusResp.setIncomingStatus(HAS_ACCESS_STATUS);
+        } else if (NO_ACCESS_STATUS.equals(pnResp.getIncomingStatus()) && HAS_ACCESS_STATUS.equals(unResp.getIncomingStatus())) {
+            incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
+            incomingStatusResp.setNoIncomingReason(PN_NO_INCOMING_REASON);
+        } else if (HAS_ACCESS_STATUS.equals(pnResp.getIncomingStatus()) && NO_ACCESS_STATUS.equals(unResp.getIncomingStatus())) {
+            incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
+            incomingStatusResp.setNoIncomingReason(UNIONPAY_NO_INCOMING_REASON);
         } else {
-            return NO_ACCESS_STATUS;
+            incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
+            incomingStatusResp.setNoIncomingReason(ALL_NO_INCOMING_REASON);
         }
+        return incomingStatusResp;
     }
 
     /**
