@@ -184,9 +184,13 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
             //会员证件号码
             jsonObject.put("MemberGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
         } else {
-
+            //会员名称
+            jsonObject.put("MemberName", incomingSubmitMessageDTO.getLegalName());
+            //会员证件类型
+            jsonObject.put("MemberGlobalType", IdTypeEnum.ID_CARD.getCode());
+            //会员证件号码
+            jsonObject.put("MemberGlobalId", incomingSubmitMessageDTO.getLegalIdNo());
         }
-
         //会员属性: SH-商户子账户(默认) 00-普通子账户
         jsonObject.put("MemberProperty", "SH");
 
@@ -254,9 +258,9 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
         }
         //个体工商户标识
         jsonObject.put("IndivBusinessFlag", IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType()) ? NumberConstant.ONE : NumberConstant.TWO);
+        jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
         //营业及店铺信息-个体工商户必填
         if (IncomingAccessMainTypeEnum.INDIVIDUAL_BUSINESS.getCode().equals(incomingSubmitMessageDTO.getAccessMainType())) {
-            jsonObject.put("CompanyName", incomingSubmitMessageDTO.getBusinessName());
             jsonObject.put("CompanyGlobalType", incomingSubmitMessageDTO.getBusinessLicenseType());
             jsonObject.put("CompanyGlobalId", incomingSubmitMessageDTO.getBusinessLicenseNo());
             jsonObject.put("ShopId", incomingSubmitMessageDTO.getBusinessId());

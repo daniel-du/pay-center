@@ -69,17 +69,17 @@ public class NetworkTypeCacheUtil {
         if (!CollectionUtils.isEmpty(areaIncomingChannels)) {
             //遍历数据库查询结果，写入缓存，移除set中元素
             for (SalesAreaIncomingChannelEntity areaIncomingChannel : areaIncomingChannels) {
-                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaIncomingChannel.getChannelCode(), JSONObject.toJSONString(areaIncomingChannel));
+                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaIncomingChannel.getDistrictsCode(), areaIncomingChannel.getChannelCode());
                 areaCodes.remove(areaIncomingChannel.getChannelCode());
             }
         }
         //剩余set中元素不为空时，剩余区域未配置渠道，默认为银联，写入缓存
         if (!CollectionUtils.isEmpty(areaCodes)) {
             for (String areaCode : areaCodes) {
-                SalesAreaIncomingChannelEntity salesAreaIncomingChannel = new SalesAreaIncomingChannelEntity();
-                salesAreaIncomingChannel.setChannelCode(IncomingAccessChannelTypeEnum.UNIONPAY.getCode().toString());
-                salesAreaIncomingChannel.setDistrictsCode(areaCode);
-                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaCode, JSONObject.toJSONString(salesAreaIncomingChannel));
+//                SalesAreaIncomingChannelEntity salesAreaIncomingChannel = new SalesAreaIncomingChannelEntity();
+//                salesAreaIncomingChannel.setChannelCode(IncomingAccessChannelTypeEnum.UNIONPAY.getCode().toString());
+//                salesAreaIncomingChannel.setDistrictsCode(areaCode);
+                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaCode, IncomingAccessChannelTypeEnum.UNIONPAY.getCode().toString());
             }
         }
 
