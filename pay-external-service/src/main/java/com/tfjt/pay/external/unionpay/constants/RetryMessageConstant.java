@@ -12,4 +12,13 @@ public class RetryMessageConstant {
      * 进件完成
      */
     public static final String INCOMING_FINISH = "1";
+
+    public static final String SIGN_REVIEW = "SIGN_REVIEW";
+
+
+    public static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
+
+    public static final String MQ_TO_SERVER = "tf-cloud-pay-center";
+    public static final String SIGN_TAG = "sign";
+
 }

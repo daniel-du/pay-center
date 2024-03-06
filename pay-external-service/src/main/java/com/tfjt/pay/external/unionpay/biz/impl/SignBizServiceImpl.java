@@ -4,21 +4,26 @@ import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.tfjt.dto.response.Result;
+import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.biz.SignBizService;
 import com.tfjt.pay.external.unionpay.dto.req.SelfSignAppDTO;
 import com.tfjt.pay.external.unionpay.dto.req.SelfSignParamDTO;
+import com.tfjt.pay.external.unionpay.dto.req.SigningReviewReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.SigningReviewRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.UnionPayResult;
 import com.tfjt.pay.external.unionpay.entity.PayApplicationCallbackUrlEntity;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.entity.SigningReviewLogEntity;
+import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.PayCallbackLogService;
 import com.tfjt.pay.external.unionpay.service.SelfSignService;
 import com.tfjt.pay.external.unionpay.service.SigningReviewLogService;
 import com.tfjt.pay.external.unionpay.service.UnionPayCallbackUrlService;
+import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
 import com.tfjt.pay.external.unionpay.utils.DESUtil;
-import com.tfjt.tfcommon.core.exception.TfException;
-import com.xxl.job.core.context.XxlJobHelper;
+import com.tfjt.producter.ProducerMessageApi;
+import com.tfjt.producter.service.AsyncMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +32,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -77,45 +83,41 @@ public class SignBizServiceImpl implements SignBizService {
     private PayCallbackLogService payCallbackLogService;
 
 
+    @Resource
+    private ProducerMessageApi producerMessageApi;
+    @Resource
+    private AsyncMessageService asyncMessageService;
+
+
+    @Value("${rocketmq.topic.signingReviewTopic}")
+    private String signingReviewTopic;
+
+
     @Override
-    public UnionPayResult signingReview(String signData, String jsonData, String accesserId) {
-        //
-        if (Objects.isNull(signData)) {
-            log.error("sign_data不能为空");
-            return new UnionPayResult().setResCode("9999").setResMsg("sign_data不能为空");
-        }
-        if (Objects.isNull(jsonData)) {
-            log.error("json_data不能为空");
-            return new UnionPayResult().setResCode("9999").setResMsg("sign_data不能为空");
-        }
-        if (Objects.isNull(accesserId)) {
-            log.error("accesser_id不能为空");
-            return new UnionPayResult().setResCode("9999").setResMsg("accesser_id不能为空");
-        }
-        //异步写入日志
+    public Result<String> signingReview(SigningReviewReqDTO signingReviewReqDTO) {
         SigningReviewLogEntity signingReviewLogEntity = new SigningReviewLogEntity();
-        signingReviewLogEntity.setSignData(signData)
-                .setJsonData(jsonData)
-                .setAccesserId(accesserId)
+        signingReviewLogEntity.setSignData(signingReviewReqDTO.getSignData())
+                .setJsonData(signingReviewReqDTO.getJsonData())
+                .setAccesserId(signingReviewReqDTO.getAccesserId())
                 .setEnv(env);
         signingReviewLogService.save(signingReviewLogEntity);
         //解密jsonData
         String data = null;
-        if (Objects.equals(accesserId, ysAppId)) {
+        if (Objects.equals(signingReviewReqDTO.getAccesserId(), ysAppId)) {
             try {
-                data = DESUtil.decrypt(jsonData, ysAppKey);
+                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), ysAppKey);
             } catch (Exception ex) {
                 log.error("解密失败", ex);
-                return new UnionPayResult().setResCode("1005").setResMsg("解密失败");
+                return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
             }
         }
 
-        if (Objects.equals(accesserId, appId)) {
+        if (Objects.equals(signingReviewReqDTO.getAccesserId(), appId)) {
             try {
-                data = DESUtil.decrypt(jsonData, appKey);
+                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), appKey);
             } catch (Exception ex) {
                 log.error("解密失败", ex);
-                return new UnionPayResult().setResCode("1005").setResMsg("解密失败");
+                return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
             }
         }
         log.info("解密后的数据：{}", data);
@@ -141,10 +143,54 @@ public class SignBizServiceImpl implements SignBizService {
         if (Objects.nonNull(selfSignParamDTO)) {
             updateSignStatus(selfSignParamDTO);
         }
+        return Result.ok();
+    }
+
+    /**
+     * @param signData
+     * @param jsonData
+     * @param accesserId
+     * @return
+     */
+    @Override
+    public UnionPayResult signingReviewCreateMessage(String signData, String jsonData, String accesserId) {
+        if (Objects.isNull(signData)) {
+            log.error("sign_data不能为空");
+            return new UnionPayResult().setResCode("9999").setResMsg("sign_data不能为空");
+        }
+        if (Objects.isNull(jsonData)) {
+            log.error("json_data不能为空");
+            return new UnionPayResult().setResCode("9999").setResMsg("sign_data不能为空");
+        }
+        if (Objects.isNull(accesserId)) {
+            log.error("accesser_id不能为空");
+            return new UnionPayResult().setResCode("9999").setResMsg("accesser_id不能为空");
+        }
+        try {
+            SigningReviewReqDTO signingReviewReqDTO = new SigningReviewReqDTO();
+            signingReviewReqDTO.setSignData(signData);
+            signingReviewReqDTO.setJsonData(jsonData);
+            signingReviewReqDTO.setAccesserId(accesserId);
+            AsyncMessageEntity messageEntity = createMessage(JSON.toJSONString(signingReviewReqDTO), UUID.randomUUID().toString());
+            // 调用jar包中保存消息到数据库的方法
+            asyncMessageService.saveMessage(messageEntity);
+            // rocketMQ发送消息自行实现
+            producerMessageApi.sendMessage(messageEntity.getTopic(), JSON.toJSONString(signingReviewReqDTO), messageEntity.getUniqueNo(),
+                    messageEntity.getMsgTag());
+        } catch (Exception ex) {
+            log.error("保存入网消息异常", ex);
+            return new UnionPayResult().setResCode("9999").setResMsg("服务异常");
+        }
+
         return new UnionPayResult().setResCode("0000").setResMsg("成功");
     }
 
 
+    /**
+     * 更新业务入网状态
+     *
+     * @param selfSignParamDTO
+     */
     private void updateSignStatus(SelfSignParamDTO selfSignParamDTO) {
 
         List<SelfSignEntity> selfSignEntityList = selfSignService.selectByMid(selfSignParamDTO.getMid());
@@ -215,5 +261,31 @@ public class SignBizServiceImpl implements SignBizService {
             }
         }
         return status;
+    }
+
+    /**
+     * 生产topic
+     *
+     * @param messageBody
+     * @param uniqueNo
+     * @return
+     */
+    private AsyncMessageEntity createMessage(String messageBody, String uniqueNo) {
+        AsyncMessageEntity message = new AsyncMessageEntity();
+        // 生产者application name
+        message.setFromServerName(RetryMessageConstant.MQ_FROM_SERVER);
+        // 消费者application name
+        message.setToServerName(RetryMessageConstant.MQ_TO_SERVER);
+        // 消息队列的topic
+        message.setTopic(signingReviewTopic);
+        // 消息队列的tag
+        message.setMsgTag(RetryMessageConstant.SIGN_TAG);
+        // 定义的业务消息类型
+        message.setMsgType(RetryMessageConstant.SIGN_REVIEW);
+        // 消息内容
+        message.setMsgBody(messageBody);
+        // 业务的唯一序列号
+        message.setUniqueNo(uniqueNo);
+        return message;
     }
 }

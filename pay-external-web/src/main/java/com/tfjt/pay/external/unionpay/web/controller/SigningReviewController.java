@@ -34,7 +34,7 @@ public class SigningReviewController {
     @PostMapping
     public UnionPayResult signingReview(@RequestParam(value = "sign_data", required = false) String signData, @RequestParam(value = "json_data", required = false) String jsonData, @RequestParam(value = "accesser_id", required = false) String accesserId) {
         log.info("signData:{},jsonData:{},accesserId:{}", signData, jsonData, accesserId);
-        return signBizService.signingReview(signData, jsonData, accesserId);
+        return signBizService.signingReviewCreateMessage(signData, jsonData, accesserId);
     }
 
 }
