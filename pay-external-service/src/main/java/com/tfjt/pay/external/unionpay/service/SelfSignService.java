@@ -22,5 +22,12 @@ public interface SelfSignService extends IService<SelfSignEntity> {
      * @return
      */
     List<SelfSignEntity> querySelfSignsByAccessAccts(List<String> accessAccts);
+
+    /**
+     * 根据平台账户id查询进件信息
+     * @param accessAcct
+     * @return
+     */
+    SelfSignEntity querySelfSignByAccessAcct(String accessAcct);
 }
 

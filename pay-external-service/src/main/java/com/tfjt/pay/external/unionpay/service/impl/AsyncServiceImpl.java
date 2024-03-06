@@ -2,12 +2,17 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
+import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
+import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
@@ -15,6 +20,7 @@ import com.tfjt.pay.external.unionpay.enums.*;
 import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.robot.common.message.ding.MarkdownMessage;
 import com.tfjt.robot.service.dingtalk.DingRobotService;
+import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +31,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +52,8 @@ public class AsyncServiceImpl implements AsyncService {
     private DingRobotService dingRobotService;
     @Autowired
     private FaStandardLocationDictService faStandardLocationDictService;
+    @Autowired
+    private RedisCache redisCache;
     @DubboReference(retries = 0)
     private SupplierApiService supplierApiService;
     @Value("${dingding.incoming.accessToken}")
@@ -188,6 +197,30 @@ public class AsyncServiceImpl implements AsyncService {
                 sendMessage(title,msg);
             }
         }
+    }
+
+    /**
+     * 写入进件缓存
+     * @param incomingSubmitMessageDTO
+     */
+    @Async
+    @Override
+    public void writeIncomingCache(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
+        IncomingMessageReqDTO incomingMessageReqDTO = new IncomingMessageReqDTO();
+        incomingMessageReqDTO.setBusinessId(incomingSubmitMessageDTO.getBusinessId());
+        incomingMessageReqDTO.setBusinessType(incomingSubmitMessageDTO.getBusinessType());
+        incomingMessageReqDTO.setAccessChannelType(incomingSubmitMessageDTO.getAccessChannelType());
+        IncomingMessageRespDTO incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
+        //如果结算类型为对公，会员名称返回“营业名称”，否则返回“法人姓名”
+        if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingMessageRespDTO.getSettlementAccountType())) {
+            incomingMessageRespDTO.setMemberName(incomingMessageRespDTO.getBusinessName());
+        } else {
+            incomingMessageRespDTO.setMemberName(incomingMessageRespDTO.getLegalName());
+        }
+        String cacheKey = RedisConstant.INCOMING_MSG_KEY_PREFIX + incomingMessageReqDTO.getAccessChannelType() + ":" +
+                incomingMessageReqDTO.getBusinessType() + ":" + incomingMessageReqDTO.getBusinessId();
+        //设置缓存
+        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO));
     }
 
 

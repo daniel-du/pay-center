@@ -1,9 +1,11 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
+import com.tfjt.pay.external.query.api.dto.req.QueryIncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.biz.IncomingQueryBizService;
 import com.tfjt.pay.external.unionpay.config.DevConfig;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
@@ -28,6 +30,9 @@ public class IncomingController {
 
     @Autowired
     private IncomingBizService incomingBizService;
+
+    @Autowired
+    private IncomingQueryBizService incomingQueryBizService;
 
     @Autowired
     private DevConfig devConfig;
@@ -75,6 +80,11 @@ public class IncomingController {
     @PostMapping("/queryIncomingStatus")
     public Result queryIncomingStatus(@RequestBody IncomingStatusReqDTO incomingStatusReqDTO) {
         return incomingBizService.queryIncomingStatus(incomingStatusReqDTO);
+    }
+
+    @PostMapping("/getIncomingAreaChannel")
+    public Result getIncomingAreaChannel(@RequestBody QueryIncomingStatusReqDTO reqDTO) {
+        return incomingQueryBizService.queryIncomingStatusByAreaCodes(reqDTO);
     }
 
 

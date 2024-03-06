@@ -1,19 +1,13 @@
-package com.tfjt.pay.external.unionpay.api.dto.resp;
-
-import lombok.Data;
-
-import java.io.Serializable;
+package com.tfjt.pay.external.unionpay.dto;
 
 /**
  * @author Du Penglun
  * @version 1.0
- * @date 2023/12/25 15:28
- * @description 查询进件信息出参
+ * @date 2024/3/4 10:09
+ * @description 平安进件入网信息-内部逻辑使用
  */
-@Data
-public class IncomingMessageRespDTO implements Serializable {
+public class IncomingMessageDTO {
 
-    private static final long serialVersionUID = 4030934244852753360L;
     /**
      * 进件id
      */
@@ -114,9 +108,4 @@ public class IncomingMessageRespDTO implements Serializable {
      * 银行编号
      */
     private String bankCode;
-
-    /**
-     * 老银联进件状态
-     */
-    private String unionpaySignStatus;
 }

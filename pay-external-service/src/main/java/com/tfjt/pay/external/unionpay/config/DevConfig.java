@@ -39,6 +39,14 @@ public class DevConfig {
         return active.equals("pre");
     }
 
+    /**
+     * 判断是否预发或生产环境
+     * @return
+     */
+    public boolean isPreOrProd() {
+        return active.equals("pre") || active.equals("prod");
+    }
+
     public String getActive() {
         return active;
     }

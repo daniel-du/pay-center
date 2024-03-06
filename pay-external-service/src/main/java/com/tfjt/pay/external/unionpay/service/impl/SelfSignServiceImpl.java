@@ -23,4 +23,11 @@ public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEn
         queryWrapper.in(SelfSignEntity::getAccesserAcct, accessAccts);
         return this.baseMapper.selectList(queryWrapper);
     }
+
+    @Override
+    public SelfSignEntity querySelfSignByAccessAcct(String accessAcct) {
+        LambdaQueryWrapper<SelfSignEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SelfSignEntity::getAccesserAcct, accessAcct);
+        return this.baseMapper.selectOne(queryWrapper);
+    }
 }

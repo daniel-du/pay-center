@@ -234,6 +234,12 @@
             <version>${project.external.api.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>pay-external-query-api</artifactId>
+            <version>${project.external.query.api.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.tfjt</groupId>
