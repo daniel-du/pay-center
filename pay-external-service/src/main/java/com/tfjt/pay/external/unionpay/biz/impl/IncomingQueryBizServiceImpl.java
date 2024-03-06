@@ -132,9 +132,6 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     @Override
     public Result<QueryIncomingStatusRespDTO> queryIncomingStatusByAreaCodes(QueryIncomingStatusReqDTO queryIncomingStatusReqDTO) {
-        QueryIncomingStatusRespDTO incomingStatusResp = new QueryIncomingStatusRespDTO();
-        incomingStatusResp.setBusinessId(queryIncomingStatusReqDTO.getBusinessId());
-        incomingStatusResp.setBusinessType(queryIncomingStatusReqDTO.getBusinessType());
         List<String> incomingChannels;
         Set<String> cacheKeys = new HashSet<>();
         Set<String> cacheNullCodes = new HashSet<>();
@@ -176,9 +173,8 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             flag = getChannelFlag(areaIncomingChannels);
         }
         //根据入网渠道标识、商户类型、商户id获取入网状态
-        String incomingStatus = getIncomingStatusByChannelFlag(flag, queryIncomingStatusReqDTO.getBusinessType(), queryIncomingStatusReqDTO.getBusinessId());
-        log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, incomingStatus:{}", incomingStatus);
-        incomingStatusResp.setIncomingStatus(incomingStatus);
+        QueryIncomingStatusRespDTO incomingStatusResp = getIncomingStatusByChannelFlag(flag, queryIncomingStatusReqDTO.getBusinessType(), queryIncomingStatusReqDTO.getBusinessId());
+        log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, incomingStatusResp:{}", incomingStatusResp);
         return Result.ok(incomingStatusResp);
     }
 
