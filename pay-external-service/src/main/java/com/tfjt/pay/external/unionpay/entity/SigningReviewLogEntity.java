@@ -28,21 +28,25 @@ public class SigningReviewLogEntity implements Serializable {
 	@TableId(value = "id", type = IdType.AUTO)
 	private Long id;
 	/**
-	 *
+	 * 对json_data明文内容做签名摘要
 	 */
 	private String signData;
 	/**
-	 *
+	 * 对json_data明文内容做签名摘要
 	 */
 	private String jsonData;
 	/**
-	 *
+	 * 外部系统平台标识(明文)，由ums分配
 	 */
 	private String accesserId;
 	/**
-	 *
+	 * 环境
 	 */
 	private String env;
+	/**
+	 * 解密后的数据
+	 */
+	private String data;
 	/**
 	 *
 	 */
@@ -51,5 +55,7 @@ public class SigningReviewLogEntity implements Serializable {
 	 *
 	 */
 	private Date updateTime;
+
+
 
 }

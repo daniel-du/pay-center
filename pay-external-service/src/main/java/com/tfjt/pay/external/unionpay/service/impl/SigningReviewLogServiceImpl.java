@@ -11,9 +11,4 @@ import org.springframework.stereotype.Service;
 @Service
 public class SigningReviewLogServiceImpl extends BaseServiceImpl<SigningReviewLogDao, SigningReviewLogEntity> implements SigningReviewLogService {
 
-    @Override
-    @Async
-    public void saveLog(SigningReviewLogEntity entity) {
-        super.save(entity);
-    }
 }

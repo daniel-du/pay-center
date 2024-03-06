@@ -98,7 +98,7 @@ public class SignBizServiceImpl implements SignBizService {
                 .setJsonData(jsonData)
                 .setAccesserId(accesserId)
                 .setEnv(env);
-        signingReviewLogService.saveLog(signingReviewLogEntity);
+        signingReviewLogService.save(signingReviewLogEntity);
         //解密jsonData
         String data = null;
         if (Objects.equals(accesserId, ysAppId)) {
@@ -119,6 +119,8 @@ public class SignBizServiceImpl implements SignBizService {
             }
         }
         log.info("解密后的数据：{}", data);
+        signingReviewLogEntity.setData(data);
+        signingReviewLogService.updateById(signingReviewLogEntity);
         SelfSignParamDTO selfSignParamDTO = null;
         if (Objects.nonNull(data)) {
             SigningReviewRespDTO signingReviewRespDTO = JSON.parseObject(data, SigningReviewRespDTO.class);
