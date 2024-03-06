@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tfjt.pay.external.unionpay.dao.TfFailureInfoDao;
 import com.tfjt.pay.external.unionpay.entity.TfFailureInfoEntity;
 import com.tfjt.pay.external.unionpay.service.TfFailureInfoService;
+import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Async;
@@ -18,7 +19,7 @@ import java.util.Date;
  *
  */
 @Service
-public class TfFailureInfoServiceImpl extends ServiceImpl<TfFailureInfoDao, TfFailureInfoEntity> implements TfFailureInfoService {
+public class TfFailureInfoServiceImpl extends BaseServiceImpl<TfFailureInfoDao, TfFailureInfoEntity> implements TfFailureInfoService {
 
     @Resource
     private TfFailureInfoDao failureInfoDao;

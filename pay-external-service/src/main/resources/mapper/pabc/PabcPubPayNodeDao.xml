@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.PabcPubPayNodeDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.PabcPubPayNodeEntity" id="PabcPubPayNodeMap">
+        <result property="nodeNodecode" column="node_nodecode"/>
+        <result property="nodeNodename" column="node_nodename"/>
+    </resultMap>
+
+    <select id="getProvinceList" resultType="com.tfjt.pay.external.unionpay.dto.resp.PabcProvinceInfoRespDTO">
+        select node_nodecode as provinceCode ,node_nodename as  provinceName from tf_pabc_pub_pay_node
+        <where>
+            <if test="name!=null and name != ''">
+                and node_nodename like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+</mapper>

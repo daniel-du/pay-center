@@ -1,7 +1,6 @@
 package com.tfjt.pay.external.unionpay.enums;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 /**
@@ -17,7 +16,9 @@ public enum BusinessUserTypeEnum {
     //商家
     BUSINESS(1,"商家"),
     //供应商
-    SUPPLIER(2,"供应商");
+    SUPPLIER(2,"供应商"),
+    //经销商
+    DEALER(3,"经销商");
 
     private Integer code;
 

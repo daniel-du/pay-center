@@ -15,5 +15,19 @@ import java.util.List;
 public interface SelfSignService extends IService<SelfSignEntity> {
 
     List<SelfSignEntity> selectByMid(String mid);
+
+    /**
+     * 根据来源账户批量查询入网信息
+     * @param accessAccts
+     * @return
+     */
+    List<SelfSignEntity> querySelfSignsByAccessAccts(List<String> accessAccts);
+
+    /**
+     * 根据平台账户id查询进件信息
+     * @param accessAcct
+     * @return
+     */
+    SelfSignEntity querySelfSignByAccessAcct(String accessAcct);
 }
 

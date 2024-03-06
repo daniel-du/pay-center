@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.TfIncomingInfoDao">
+
+    <resultMap type="com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO" id="incomingMessageMap">
+        <result property="id" column="id"/>
+        <result property="businessId" column="business_id"/>
+        <result property="businessType" column="business_type"/>
+        <result property="accessMainType" column="accessMain_type"/>
+        <result property="accessType" column="access_type"/>
+        <result property="accessChannelType" column="access_channel_type"/>
+        <result property="accountNo" column="account_no"/>
+        <result property="memberId" column="member_id"/>
+        <result property="memberName" column="member_name"/>
+        <result property="legalIdNo" column="legalId_no"/>
+        <result property="legalMobile" column="legal_mobile"/>
+        <result property="legalName" column="legal_name"/>
+        <result property="businessName" column="business_name"/>
+        <result property="businessLicenseNo" column="business_license_no"/>
+        <result property="settlementAccountType" column="settlement_account_type"/>
+        <result property="bankAccountName" column="bank_account_name"/>
+        <result property="bankCardMobile" column="bank_card_mobile"/>
+        <result property="bankCardNo" column="bank_card_no"/>
+    </resultMap>
+
+    <select id="queryIncomingMessage" resultType="com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO">
+        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
+        a.access_status,a.business_type,a.business_id,a.account_no,a.sign_channel,b.shop_short_name,
+        b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
+        d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,f.business_license_type,
+		g.settlement_account_type, g.occupation, h.bank_account_name, h.bank_card_no,
+        h.bank_card_mobile, h.bank_name, h.bank_code,h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
+        from  tf_incoming_info a
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+        left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
+        left join tf_idcard_info d on b.agent_id_card= d.id and d.is_deleted = 0
+		left join tf_incoming_business_info e on e.incoming_id = a.id and e.is_deleted = 0
+        left join tf_business_license_info f on e.business_license_id = f.id and f.is_deleted = 0
+		left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
+        left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
+		where a.id = #{id}
+    </select>
+    <select id="queryIncomingMessageByMerchant"
+            resultType="com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO">
+        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
+        a.access_status,a.account_no,
+        b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
+        d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,
+		g.settlement_account_type, h.bank_account_name, h.bank_card_no,
+        h.bank_card_mobile, h.bank_name,h.bank_code, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
+        from  tf_incoming_info a
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+        left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
+        left join tf_idcard_info d on b.agent_id_card= d.id and d.is_deleted = 0
+		left join tf_incoming_business_info e on e.incoming_id = a.id and e.is_deleted = 0
+        left join tf_business_license_info f on e.business_license_id = f.id and f.is_deleted = 0
+		left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
+        left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
+		where a.business_id = #{param.businessId} and a.business_type = #{param.businessType}
+		and a.access_channel_type = #{param.accessChannelType} and a.is_deleted = 0 and a.access_status in (3,4,6,12)
+    </select>
+    <select id="queryIncomingMessagesByMerchantList" resultMap="incomingMessageMap">
+        select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,a.business_id,a.business_type,
+        a.access_status,a.account_no,
+        b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
+        d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,
+		g.settlement_account_type, h.bank_account_name, h.bank_card_no,
+        h.bank_card_mobile, h.bank_name, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch
+        from  tf_incoming_info a
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+        left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
+        left join tf_idcard_info d on b.agent_id_card= d.id and d.is_deleted = 0
+        left join tf_incoming_business_info e on e.incoming_id = a.id and e.is_deleted = 0
+        left join tf_business_license_info f on e.business_license_id = f.id and f.is_deleted = 0
+        left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
+        left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
+		where a.access_status in (3,4,6,12)
+		and (a.business_id, a.business_type, a.access_channel_type) in
+        <foreach collection="params" item="item" open="(" close=")" separator=",">
+            (#{item.businessId},#{item.businessType},#{item.accessChannelType})
+        </foreach>
+    </select>
+    <select id="queryIncomingDataId" resultType="com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO">
+        select a.id, b.id merchantInfoId, b.legal_id_card legalId, b.agent_id_card agentId, c.id businessInfoId,
+        c.business_license_id businessLicenseId, d.id settleInfoId, d.bank_card_id bankCardId
+        from  tf_incoming_info a
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+		left join tf_incoming_business_info c on c.incoming_id = a.id and c.is_deleted = 0
+		left join tf_incoming_settle_info d on d.incoming_id = a.id and d.is_deleted = 0
+		where a.id = #{id}
+    </select>
+
+    <select id="isIncomingByBusinessIdAndType" resultType="com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO">
+        SELECT
+        account_no as accountNo,
+        business_id as businessId,
+        business_type as businessType
+        FROM
+            tf_incoming_info
+        WHERE
+            is_deleted = 0
+             and  ( business_id, business_type ) IN
+        <foreach collection="params" item="item" open="(" close=")" separator=",">
+            (#{item.businessId},#{item.businessType})
+        </foreach>
+
+    </select>
+</mapper>
