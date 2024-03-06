@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.utils;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
@@ -33,13 +34,17 @@ public class NetworkTypeCacheUtil {
         if (StringUtils.isBlank(cacheString)) {
             SalesAreaIncomingChannelEntity entity = salesAreaIncomingChannelService.getOne(new LambdaQueryWrapper<SalesAreaIncomingChannelEntity>().eq(SalesAreaIncomingChannelEntity::getDistrictsCode, code));
             if (ObjectUtil.isNotNull(entity)) {
-                redisCache.setCacheString(key, entity.getChannelCode());
+                redisCache.setCacheString(key, JSONObject.toJSONString(entity));
                 return Integer.valueOf(entity.getChannelCode());
             }else {
                 return CityTypeEnum.OLD_CITY.getCode();
             }
         }
-        return Integer.valueOf(cacheString);
+        SalesAreaIncomingChannelEntity entity = JSONObject.parseObject(cacheString, SalesAreaIncomingChannelEntity.class);
+        if (ObjectUtil.isNotNull(entity) && StringUtils.isNotBlank(entity.getChannelCode())) {
+            return Integer.valueOf(entity.getChannelCode());
+        }
+        return CityTypeEnum.OLD_CITY.getCode();
     }
 
     public List<String> getAllNetworkTypeCacheList() {
