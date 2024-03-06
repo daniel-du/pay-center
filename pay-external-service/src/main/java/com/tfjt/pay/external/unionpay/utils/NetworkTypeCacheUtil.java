@@ -33,10 +33,13 @@ public class NetworkTypeCacheUtil {
         if (StringUtils.isBlank(cacheString)) {
             SalesAreaIncomingChannelEntity entity = salesAreaIncomingChannelService.getOne(new LambdaQueryWrapper<SalesAreaIncomingChannelEntity>().eq(SalesAreaIncomingChannelEntity::getDistrictsCode, code));
             if (ObjectUtil.isNotNull(entity)) {
+                redisCache.setCacheString(key, entity.getChannelCode());
                 return Integer.valueOf(entity.getChannelCode());
+            }else {
+                return CityTypeEnum.OLD_CITY.getCode();
             }
         }
-        return CityTypeEnum.OLD_CITY.getCode();
+        return Integer.valueOf(cacheString);
     }
 
     public List<String> getAllNetworkTypeCacheList() {
