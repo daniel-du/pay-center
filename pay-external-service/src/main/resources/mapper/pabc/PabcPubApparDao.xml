@@ -11,11 +11,10 @@
     </resultMap>
 
     <select id="getBankInfoByName" resultType="com.tfjt.pay.external.unionpay.dto.resp.PabcBankNameAndCodeRespDTO">
-        select apr_value as bankCode, apr_showmsg as bankName from tf_pabc_pub_apppar
+        select DISTINCT apr_value as bankCode, apr_showmsg as bankName from tf_pabc_pub_apppar
             <where>
-                apr_code = 'BANK_TYPE_EXTEND'
                 <if test="name != null and name !=''">
-                  and apr_showmsg like concat('%',#{name},'%')
+                  apr_showmsg like concat('%',#{name},'%')
                 </if>
             </where>
     </select>

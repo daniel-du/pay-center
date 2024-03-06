@@ -2,10 +2,13 @@ package com.tfjt.pay.external.unionpay.mq;
 
 import cn.hutool.json.JSONUtil;
 import com.aliyun.openservices.ons.api.*;
+import com.aliyun.openservices.shade.com.alibaba.fastjson.JSONObject;
 import com.tfjt.consumer.SingleConsumerRetryJob;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.config.ALiYunRocketMQConfig;
+import com.tfjt.pay.external.unionpay.dto.req.ShopExamineMqReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.ShopUpdateMqReqDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,13 @@ public class ConsumerClient implements ApplicationContextAware {
     @Value("${async-retry-job.product.updateMsgUrl}")
     private String updateMsgUrl;
 
+    private String shopChangeTopic = "TEST_SHOP_CHANGE_TOPIC";
+    private String shopChangeGroup = "TEST_SHOP_CHANGE_GROUP";
+
+    private String shopExaminTag = "examine";
+    private String shopUpdateTag = "update";
+    private String shopchangeDistrictTag = "changeDistrict";
+
 
     private ApplicationContext applicationContext;
 
@@ -48,6 +58,25 @@ public class ConsumerClient implements ApplicationContextAware {
     void consumer() {
         // 消费下单数据
         consumeOrder(aLiYunRocketMQConfig.getMqPropertie());
+        consumeShopChange(aLiYunRocketMQConfig.getMqPropertie());
+    }
+
+    private void consumeShopChange(Properties properties) {
+        properties.put(PropertyKeyConst.GROUP_ID, shopChangeGroup);
+        Consumer consumer = ONSFactory.createConsumer(properties);
+        // 订阅另外一个Topic，如需取消订阅该Topic，请删除该部分的订阅代码，重新启动消费端即可。
+        // 订阅Tag。
+        shopChangeBYTag(consumer,shopExaminTag);
+        shopChangeBYTag(consumer,shopUpdateTag);
+        shopChangeBYTag(consumer,shopchangeDistrictTag);
+        consumer.start();
+    }
+
+    private void shopChangeBYTag(Consumer consumer, String shopExaminTag) {
+        consumer.subscribe(shopChangeTopic, shopExaminTag, (message, context) -> {
+            log.info("MerchantChangeConsumer_Receive: " + message);
+            return processShopChange(message,shopExaminTag);
+        });
     }
 
 
@@ -63,6 +92,22 @@ public class ConsumerClient implements ApplicationContextAware {
         consumer.start();
     }
 
+    private Action processShopChange(Message msg,String tag) {
+        String msgID = msg.getMsgID();
+        log.info("msgID: " + msgID);
+        String message = new String(msg.getBody());
+        log.info("message: " + message);
+        if (tag.equals(shopExaminTag)){
+            ShopExamineMqReqDTO dto = JSONObject.parseObject(message, ShopExamineMqReqDTO.class);
+            pabcBizService.saveShopExamineInfo(dto);
+        }
+        if (tag.equals(shopUpdateTag) || tag.equals(shopchangeDistrictTag)){
+            ShopUpdateMqReqDTO dto = JSONObject.parseObject(message, ShopUpdateMqReqDTO.class);
+            pabcBizService.saveShopUpdateInfo(dto);
+        }
+
+        return  Action.CommitMessage;
+    }
 
 
     private Action processExport(Message msg){

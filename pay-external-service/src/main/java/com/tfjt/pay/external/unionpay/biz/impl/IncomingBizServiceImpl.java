@@ -429,7 +429,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         // 消息队列的topic
         message.setTopic(incomingFinishTopic);
         // 消息队列的tag
-        message.setMsgTag("");
+        message.setMsgTag("*");
         // 定义的业务消息类型
         message.setMsgType(messageType);
         // 消息内容
