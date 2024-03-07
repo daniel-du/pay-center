@@ -110,6 +110,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         }
         //根据区域获取入网渠道
         Integer channelCode = networkTypeCacheUtil.getNetworkTypeCacheList(queryIncomingStatusReqDTO.getAreaCode());
+        log.info("IncomingQueryBizServiceImpl--queryIncomingStatus, channelCode:{}", channelCode);
         QueryIncomingStatusRespDTO queryIncomingStatusRespDTO =
                 getIncomingStatusResp(channelCode, queryIncomingStatusReqDTO.getBusinessType(), queryIncomingStatusReqDTO.getBusinessId());
 
@@ -302,7 +303,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         queryIncomingStatusRespDTO.setAccessChannelType(channelCode);
         //获取缓存
         String incomingMsgStr = redisCache.getCacheString(cacheKey);
-        log.info("IncomingQueryBizServiceImpl--queryIncomingStatus, incomingMsgStr:{}", incomingMsgStr);
+        log.info("IncomingQueryBizServiceImpl--getIncomingStatusResp, incomingMsgStr:{}", incomingMsgStr);
         //缓存命中
         if (StringUtils.isNotBlank(incomingMsgStr)) {
             IncomingMessageRespDTO incomingMessageRespDTO = JSONObject.parseObject(incomingMsgStr, IncomingMessageRespDTO.class);
@@ -331,6 +332,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     private String getAccessStatus(Integer channelCode, IncomingMessageRespDTO incomingMessageRespDTO) {
         String accessStatus = NO_ACCESS_STATUS;
+        log.info("IncomingQueryBizServiceImpl--getAccessStatus, channelCode:{}", channelCode);
         //根据渠道判断是否入网成功
         if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelCode)) {
             if (PN_OPEN_ACCOUNT_STATUS_SET.contains(incomingMessageRespDTO.getAccessStatus())) {
@@ -342,6 +344,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 accessStatus = HAS_ACCESS_STATUS;
             }
         }
+        log.info("IncomingQueryBizServiceImpl--getAccessStatus, accessStatus:{}", accessStatus);
         return accessStatus;
     }
 
@@ -352,10 +355,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      * @return
      */
     private IncomingMessageRespDTO getIncomingMessage(Integer channelCode, IncomingMessageReqDTO incomingMessageReqDTO) {
+        log.info("IncomingQueryBizServiceImpl--getIncomingMessage, channelCode:{}, incomingMessageReqDTO:{}", channelCode, JSONObject.toJSONString(incomingMessageReqDTO));
         IncomingMessageRespDTO incomingMessageRespDTO = new IncomingMessageRespDTO();
         //查询平安入网进件信息
         if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelCode)) {
             incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
+            log.info("IncomingQueryBizServiceImpl--getIncomingMessage, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
             if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
                 incomingMessageRespDTO = new IncomingMessageRespDTO();
                 incomingMessageRespDTO.setAccessStatus(0);
@@ -373,6 +378,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             //如果是云商，先查询supplier获取supplierId
             if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(incomingMessageReqDTO.getBusinessType())) {
                 com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result =  tfSupplierApi.getSupplierInfoById(incomingMessageReqDTO.getBusinessId());
+                log.info("IncomingQueryBizServiceImpl--getIncomingMessage, supplierResult:{}", JSONObject.toJSONString(result));
                 if (ObjectUtils.isEmpty(result) || ObjectUtils.isEmpty(result.getData())) {
                     incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
                     return incomingMessageRespDTO;
@@ -380,6 +386,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 acct = result.getData().getSupplierId();
             }
             SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(acct);
+            log.info("IncomingQueryBizServiceImpl--getIncomingMessage, selfSignEntity:{}", JSONObject.toJSONString(selfSignEntity));
             if (ObjectUtils.isEmpty(selfSignEntity)) {
                 incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
             } else {
