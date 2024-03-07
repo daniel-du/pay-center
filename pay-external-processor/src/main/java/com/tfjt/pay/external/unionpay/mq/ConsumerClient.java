@@ -45,8 +45,10 @@ public class ConsumerClient implements ApplicationContextAware {
     /**
      * 入网审核
      */
-    @Value("${rocketmq.group.consumer.signingReviewGroup}")
+    @Value("${rocketmq.group.consumer.signingReview}")
     private String signingReviewGroup;
+    @Value("${rocketmq.topic.signingReviewTopic}")
+    private String signingReviewTopic;
 
     private String shopChangeTopic = "TEST_SHOP_CHANGE_TOPIC";
     private String shopChangeGroup = "TEST_SHOP_CHANGE_GROUP";
@@ -80,7 +82,7 @@ public class ConsumerClient implements ApplicationContextAware {
     /**
      * 入网回调消费
      *
-     * @param mqPropertie
+     * @param properties
      */
     private void consumeSigningReview(Properties properties) {
         properties.put(PropertyKeyConst.GROUP_ID, signingReviewGroup);
@@ -91,7 +93,7 @@ public class ConsumerClient implements ApplicationContextAware {
 
     private void signReviewByTag(Consumer consumer, String tag) {
 
-        consumer.subscribe(shopChangeTopic, tag, (message, context) -> {
+        consumer.subscribe(signingReviewTopic, tag, (message, context) -> {
             log.info("MerchantChangeConsumer_Receive: " + message);
             return processSignReview(message);
         });
@@ -116,7 +118,7 @@ public class ConsumerClient implements ApplicationContextAware {
             // 配置“更新生产者消息状态”的接口url
             retryJob.setUpdateMsgUrl(updateMsgUrl)
                     // 开启幂等处理
-                    .repeatEnable()
+                    .repeatEnableNoTrans()
                     // 设置消费业务逻辑的处理方法
                     .bizFunc(bizFunc)
                     // 设置幂等检查的方法
@@ -125,7 +127,7 @@ public class ConsumerClient implements ApplicationContextAware {
                     .executeMsg(asyncMessage);
         } catch (Exception e) {
             log.error("消费错误", e);
-            return Action.ReconsumeLater;
+            return Action.CommitMessage;
         }
         return Action.CommitMessage;
     }

@@ -181,7 +181,7 @@ public class SignBizServiceImpl implements SignBizService {
             // 调用jar包中保存消息到数据库的方法
             asyncMessageService.saveMessage(messageEntity);
             // rocketMQ发送消息自行实现
-            producerMessageApi.sendMessage(messageEntity.getTopic(), JSON.toJSONString(signingReviewReqDTO), messageEntity.getUniqueNo(),
+            producerMessageApi.sendMessage(messageEntity.getTopic(), JSON.toJSONString(messageEntity), messageEntity.getUniqueNo(),
                     messageEntity.getMsgTag());
         } catch (Exception ex) {
             log.error("保存入网消息异常", ex);
