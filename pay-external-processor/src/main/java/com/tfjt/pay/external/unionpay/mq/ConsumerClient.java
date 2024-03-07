@@ -34,11 +34,12 @@ public class ConsumerClient implements ApplicationContextAware {
     private String dealerChangeTopic;
     @Value("${rocketmq.group.consumer.dealerChange}")
     private String dealerChangeGroup;
+    @Value("${rocketmq.topic.shopChange}")
+    private String shopChangeTopic;
+    @Value("${rocketmq.group.consumer.shopChange}")
+    private String shopChangeGroup;
     @Value("${async-retry-job.product.updateMsgUrl}")
     private String updateMsgUrl;
-
-    private String shopChangeTopic = "TEST_SHOP_CHANGE_TOPIC";
-    private String shopChangeGroup = "TEST_SHOP_CHANGE_GROUP";
 
     private String shopExaminTag = "examine";
     private String shopUpdateTag = "update";
