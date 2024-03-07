@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.aliyun.openservices.shade.org.apache.commons.lang3.StringEscapeUtils;
 import com.tfjt.dto.response.Result;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.biz.SignBizService;
@@ -25,7 +26,6 @@ import com.tfjt.pay.external.unionpay.utils.DESUtil;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -88,13 +88,19 @@ public class SignBizServiceImpl implements SignBizService {
     @Resource
     private AsyncMessageService asyncMessageService;
 
-
     @Value("${rocketmq.topic.signingReviewTopic}")
     private String signingReviewTopic;
 
 
+    /**
+     * 消费入网mq消息
+     *
+     * @param asyncMessageEntity
+     * @return
+     */
     @Override
-    public Result<String> signingReview(SigningReviewReqDTO signingReviewReqDTO) {
+    public Result<String> signingReview(AsyncMessageEntity asyncMessageEntity) {
+        SigningReviewReqDTO signingReviewReqDTO = JSON.parseObject(asyncMessageEntity.getMsgBody(), SigningReviewReqDTO.class);
         SigningReviewLogEntity signingReviewLogEntity = new SigningReviewLogEntity();
         signingReviewLogEntity.setSignData(signingReviewReqDTO.getSignData())
                 .setJsonData(signingReviewReqDTO.getJsonData())
