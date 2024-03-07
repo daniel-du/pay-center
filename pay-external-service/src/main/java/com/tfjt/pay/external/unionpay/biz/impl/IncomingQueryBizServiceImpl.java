@@ -261,7 +261,8 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     private List<SalesAreaIncomingChannelEntity> getIncomingChannels(Set<String> cacheKeys, Set<String> cacheNullCodes, List<String> areaCodes) {
         //批量查询Redis
-        List<String> incomingChannels = redisTemplate.opsForValue().multiGet(cacheKeys);
+        List<JSONObject> incomingChannels = redisTemplate.opsForValue().multiGet(cacheKeys);
+        log.info("IncomingQueryBizServiceImpl--getIncomingChannels, incomingChannels:{}", incomingChannels.toString());
         List<SalesAreaIncomingChannelEntity> areaIncomingChannels = new ArrayList<>();
         //如果缓存查询为空，则查询数据库
         if (CollectionUtils.isEmpty(incomingChannels)) {
@@ -270,8 +271,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             networkTypeCacheUtil.writeCache(cacheNullCodes);
         } else {
             //遍历序列化缓存数据，将缓存中存在的数据从 cacheNullCodes 中移除
-            for (String incomingChannel : incomingChannels) {
-                SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.parseObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
+            for (JSONObject incomingChannel : incomingChannels) {
+                if (ObjectUtils.isEmpty(incomingChannel)){
+                    continue;
+                }
+//                SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.parseObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
+                SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.toJavaObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
                 areaIncomingChannels.add(areaIncomingChannel);
                 cacheNullCodes.remove(areaIncomingChannel.getChannelCode());
             }
