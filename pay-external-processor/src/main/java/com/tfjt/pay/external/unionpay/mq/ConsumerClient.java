@@ -39,8 +39,10 @@ public class ConsumerClient implements ApplicationContextAware {
     private String dealerChangeTopic;
     @Value("${rocketmq.group.consumer.dealerChange}")
     private String dealerChangeGroup;
-    @Value("${async-retry-job.product.updateMsgUrl}")
-    private String updateMsgUrl;
+    @Value("${async-retry-job.product.supply-merchant.updateMsgUrl}")
+    private String merchantUpdateMsgUrl;
+    @Value("${async-retry-job.product.sign.updateMsgUrl}")
+    private String signUpdateMsgUrl;
 
     /**
      * 入网审核
@@ -101,11 +103,11 @@ public class ConsumerClient implements ApplicationContextAware {
 
 
     private Action processSignReview(Message msg) {
-        return commitMsg(msg, signBizService::signingReview);
+        return commitMsg(msg, signBizService::signingReview, signUpdateMsgUrl);
     }
 
 
-    private Action commitMsg(Message msg, Function<AsyncMessageEntity, Result<String>> bizFunc) {
+    private Action commitMsg(Message msg, Function<AsyncMessageEntity, Result<String>> bizFunc, String updateMsgUrl) {
         try {
             String msgId = msg.getMsgID();
             log.info("msgID:{} ", msgId);
@@ -183,7 +185,7 @@ public class ConsumerClient implements ApplicationContextAware {
 
 
     private Action processExport(Message msg) {
-        return commitMsg(msg, pabcBizService::saveChangeInfo);
+        return commitMsg(msg, pabcBizService::saveChangeInfo, merchantUpdateMsgUrl);
     }
 
     @Override
