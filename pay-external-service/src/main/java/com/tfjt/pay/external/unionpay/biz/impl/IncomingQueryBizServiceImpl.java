@@ -33,8 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 
 /**
  * @author Du Penglun
@@ -68,12 +67,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
     private DevConfig devConfig;
 
     @DubboReference(retries = 0, timeout = 2000, check = false)
-    private TfSupplierApiService tfSupplierApiService;
+    private TfSupplierApiService tfSupplierApi;
 
-    @Value("${unionpay.appId.yunshang}")
+    @Value("${unionPay.appId.yunshang}")
     private String yunshangAppId;
 
-    @Value("${unionpay.appId.yundian}")
+    @Value("${unionPay.appId.yundian}")
     private String yundianAppId;
 
     private static final String NO_ACCESS_STATUS = "00";
@@ -373,7 +372,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             String acct = devConfig.isPreOrProd() ? "tfys" + incomingMessageReqDTO.getBusinessId() : incomingMessageReqDTO.getBusinessId().toString();
             //如果是云商，先查询supplier获取supplierId
             if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(incomingMessageReqDTO.getBusinessType())) {
-                com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result =  tfSupplierApiService.getSupplierInfoById(incomingMessageReqDTO.getBusinessId());
+                com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result =  tfSupplierApi.getSupplierInfoById(incomingMessageReqDTO.getBusinessId());
                 if (ObjectUtils.isEmpty(result) || ObjectUtils.isEmpty(result.getData())) {
                     incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
                     return incomingMessageRespDTO;
@@ -580,7 +579,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         }
         List<TfSupplierDTO> tfSuppliers = new ArrayList<>();
         if (!CollectionUtils.isEmpty(supplierIds)) {
-            tfSuppliers = tfSupplierApiService.getTfSupplierList(supplierIds);
+            tfSuppliers = tfSupplierApi.getTfSupplierList(supplierIds);
         }
         if (!CollectionUtils.isEmpty(tfSuppliers)) {
             tfSuppliers.forEach(tfSupplier -> {
