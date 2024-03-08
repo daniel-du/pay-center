@@ -49,7 +49,7 @@ public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEn
     public List<SelfSignEntity> querySelfSignsBySuccess(String accesserAcct) {
         LambdaQueryWrapper<SelfSignEntity> queryWrapper = Wrappers.lambdaQuery(SelfSignEntity.class)
                 .eq(SelfSignEntity::getMerMsRelation, "0")
-                .apply(Objects.isNull(accesserAcct), "TO_DAYS(NOW()-TO_DAYS(sign_success_date)=7)")
+                .apply(Objects.isNull(accesserAcct), "TO_DAYS(NOW()-TO_DAYS(sign_success_date)<=7)")
                 .eq(Objects.nonNull(accesserAcct), SelfSignEntity::getAccesserAcct, accesserAcct);
         return this.baseMapper.selectList(queryWrapper);
     }
