@@ -333,6 +333,7 @@ public class SignBizServiceImpl implements SignBizService {
      * 查询近7天入网成功，没有绑定关系的商户
      * 将有绑定关系的商户通知业务更新
      */
+    @Override
     public void queryMerchantBySignSuccess(String accesserAcct) {
         //查询近7天或指定商户入网成功，没有绑定关系的商户
         List<SelfSignEntity> selfSignList = selfSignService.querySelfSignsBySuccess(accesserAcct);
