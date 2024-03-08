@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.enums.*;
+import com.tfjt.pay.external.unionpay.service.AsyncService;
 import com.tfjt.pay.external.unionpay.service.SalesAreaIncomingChannelService;
 import com.tfjt.pay.external.unionpay.service.SelfSignService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
@@ -62,6 +63,9 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
 
     @Autowired
     private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
+
+    @Autowired
+    private AsyncService asyncService;
 
     @Autowired
     private DevConfig devConfig;
@@ -139,7 +143,6 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         Set<String> channelCacheKeys = new HashSet<>();
         Set<String> incomingCacheKeys = new HashSet<>();
         Set<String> cacheNullCodes = new HashSet<>();
-        Set<String> incomingCacheNullKeys = new HashSet<>();
         Map<String, QueryIncomingStatusReqDTO> pnIncomingReqMap = new HashMap<>();
         Map<String, QueryIncomingStatusReqDTO> unIncomingReqMap = new HashMap<>();
         List<String> areaCodes = new ArrayList<>();
@@ -160,8 +163,6 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                     req.getBusinessType() + ":" + req.getBusinessId();
             req.setAccessChannelType(Integer.parseInt(channelCode));
             incomingCacheKeys.add(cacheKey);
-//            incomingCacheNullKeys.add(channelCode + ":" +
-//                    req.getBusinessType() + ":" + req.getBusinessId());
             if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(Integer.parseInt(channelCode))) {
                 pnIncomingReqMap.put(channelCode + "-" + req.getBusinessType() + "-" + req.getBusinessId(), req);
             } else {
@@ -194,7 +195,8 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         if (!CollectionUtils.isEmpty(pnIncomingReqMap) && !CollectionUtils.isEmpty(unIncomingReqMap)) {
             return Result.ok(incomingMessageMap);
         }
-
+        asyncService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.PINGAN.getCode(), pnIncomingReqMap);
+        asyncService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.UNIONPAY.getCode(), unIncomingReqMap);
         Map<String, QueryIncomingStatusRespDTO> pnStatusMap = batchQueryPnIncomingStatus(pnIncomingReqMap);
         if (!CollectionUtils.isEmpty(pnStatusMap)) {
             incomingMessageMap.putAll(pnStatusMap);
@@ -204,23 +206,6 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         if (!CollectionUtils.isEmpty(unStatusMap)) {
             incomingMessageMap.putAll(unStatusMap);
         }
-        //获取差集查询数据库-异步写入缓存
-
-
-        //根据渠道拆分，各自查询平安或银联渠道
-
-        //查询缓存
-
-        //获取差集
-        //查询数据库-平安入网
-        //写缓存
-
-        //获取差集
-        //--是否云商，获取acct
-        //查询数据库-银联入网
-        //写缓存
-
-
         return Result.ok(incomingMessageMap);
     }
 
