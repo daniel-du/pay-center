@@ -92,65 +92,6 @@ public class SignBizServiceImpl implements SignBizService {
     private String signingReviewTopic;
 
 
-    /**
-     * 消费入网mq消息
-     *
-     * @param asyncMessageEntity
-     * @return
-     */
-    @Override
-    public Result<String> signingReview(AsyncMessageEntity asyncMessageEntity) {
-        SigningReviewReqDTO signingReviewReqDTO = JSON.parseObject(asyncMessageEntity.getMsgBody(), SigningReviewReqDTO.class);
-        SigningReviewLogEntity signingReviewLogEntity = new SigningReviewLogEntity();
-        signingReviewLogEntity.setSignData(signingReviewReqDTO.getSignData())
-                .setJsonData(signingReviewReqDTO.getJsonData())
-                .setAccesserId(signingReviewReqDTO.getAccesserId())
-                .setEnv(env);
-        signingReviewLogService.save(signingReviewLogEntity);
-        //解密jsonData
-        String data = null;
-        if (Objects.equals(signingReviewReqDTO.getAccesserId(), ysAppId)) {
-            try {
-                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), ysAppKey);
-            } catch (Exception ex) {
-                log.error("解密失败", ex);
-                return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
-            }
-        }
-
-        if (Objects.equals(signingReviewReqDTO.getAccesserId(), appId)) {
-            try {
-                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), appKey);
-            } catch (Exception ex) {
-                log.error("解密失败", ex);
-                return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
-            }
-        }
-        log.info("解密后的数据：{}", data);
-        signingReviewLogEntity.setData(data);
-        signingReviewLogService.updateById(signingReviewLogEntity);
-        SelfSignParamDTO selfSignParamDTO = null;
-        if (Objects.nonNull(data)) {
-            SigningReviewRespDTO signingReviewRespDTO = JSON.parseObject(data, SigningReviewRespDTO.class);
-            selfSignParamDTO = new SelfSignParamDTO();
-            selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
-            selfSignParamDTO.setMid(signingReviewRespDTO.getMerNo());
-            selfSignParamDTO.setBusinessNo(signingReviewRespDTO.getCompanyNo());
-
-            if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
-                selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
-                //当供应商没有关联成功时，入网状态修改审核中
-                if (Objects.equals(selfSignParamDTO.getSigningStatus(), "03") && !Objects.equals(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()), "1")) {
-                    selfSignParamDTO.setSigningStatus("02");
-                }
-            }
-        }
-        //处理业务数据
-        if (Objects.nonNull(selfSignParamDTO)) {
-            updateSignStatus(selfSignParamDTO);
-        }
-        return Result.ok();
-    }
 
     /**
      * @param signData
@@ -190,6 +131,75 @@ public class SignBizServiceImpl implements SignBizService {
 
         return new UnionPayResult().setResCode("0000").setResMsg("成功");
     }
+
+
+    /**
+     * 消费入网mq消息
+     *
+     * @param asyncMessageEntity
+     * @return
+     */
+    @Override
+    public Result<String> signingReview(AsyncMessageEntity asyncMessageEntity) {
+        SigningReviewReqDTO signingReviewReqDTO = JSON.parseObject(asyncMessageEntity.getMsgBody(), SigningReviewReqDTO.class);
+        SigningReviewLogEntity signingReviewLogEntity = new SigningReviewLogEntity();
+        signingReviewLogEntity.setSignData(signingReviewReqDTO.getSignData())
+                .setJsonData(signingReviewReqDTO.getJsonData())
+                .setAccesserId(signingReviewReqDTO.getAccesserId())
+                .setEnv(env);
+        signingReviewLogService.save(signingReviewLogEntity);
+        //解密jsonData
+        String data = null;
+        if (Objects.equals(signingReviewReqDTO.getAccesserId(), ysAppId)) {
+            try {
+                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), ysAppKey);
+            } catch (Exception ex) {
+                log.error("解密失败", ex);
+                return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
+            }
+        }
+
+        if (Objects.equals(signingReviewReqDTO.getAccesserId(), appId)) {
+            try {
+                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), appKey);
+            } catch (Exception ex) {
+                log.error("解密失败", ex);
+                return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
+            }
+        }
+        log.info("解密后的数据：{}", data);
+        signingReviewLogEntity.setData(data);
+        signingReviewLogService.updateById(signingReviewLogEntity);
+
+
+        SelfSignParamDTO selfSignParamDTO = null;
+        if (Objects.nonNull(data)) {
+
+            SigningReviewRespDTO signingReviewRespDTO = JSON.parseObject(data, SigningReviewRespDTO.class);
+            //获取入网信息
+            SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(signingReviewRespDTO.getAccesserAcct());
+            selfSignParamDTO = new SelfSignParamDTO();
+            //将推送的入网状态写入参数
+            selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
+            selfSignParamDTO.setMid(selfSignEntity.getMid());
+            selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
+
+            if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
+                selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
+                //当供应商没有关联成功时，入网状态修改审核中
+                if (Objects.equals(selfSignParamDTO.getSigningStatus(), "03") && !Objects.equals(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()), "1")) {
+                    selfSignParamDTO.setSigningStatus("02");
+                }
+            }
+        }
+        //处理业务数据
+        if (Objects.nonNull(selfSignParamDTO)) {
+            log.info("供应商入网状态修改审核中，入参：{}",JSON.toJSONString(selfSignParamDTO));
+            updateSignStatus(selfSignParamDTO);
+        }
+        return Result.ok();
+    }
+
 
 
     /**
