@@ -312,13 +312,4 @@ public class SignBizServiceImpl implements SignBizService {
         return message;
     }
 
-
-    public static void main(String[] args) throws IllegalBlockSizeException, UnsupportedEncodingException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-        //供应商
-        String encrypt = DESUtil.encrypt("{\"accesser_acct\":\"6e5b6f6f-b8fe-41f0-ac00-cb0aa8ba0917\",\"apply_status\":\"04\",\"apply_status_msg\":\"入网失败\",\"fail_reason\":\"自主测试\",\"ums_reg_id\":\"02403040827007933399\"}", "978vna9lg3adfpkdjkcd2m0r");
-        System.out.println("供应商加密结果:" + encrypt);
-        //商户
-        String shopEncrypt = DESUtil.encrypt("111", "7ghjyjl6xwwapg3ug43otlry");
-        System.out.println("商户加密结果:" + encrypt);
-    }
 }
