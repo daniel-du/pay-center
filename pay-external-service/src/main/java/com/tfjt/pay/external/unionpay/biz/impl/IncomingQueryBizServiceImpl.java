@@ -191,7 +191,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             pnIncomingReqMap.remove(mapKey);
             unIncomingReqMap.remove(mapKey);
         });
-        if (CollectionUtils.isEmpty(pnIncomingReqMap) && CollectionUtils.isEmpty(unIncomingReqMap)) {
+        if (!CollectionUtils.isEmpty(pnIncomingReqMap) && !CollectionUtils.isEmpty(unIncomingReqMap)) {
             return Result.ok(incomingMessageMap);
         }
 
