@@ -184,11 +184,11 @@ public class SignBizServiceImpl implements SignBizService {
             if (Objects.nonNull(selfSignEntity)) {
                 selfSignParamDTO = new SelfSignParamDTO();
                 //将推送的入网状态写入参数
-                selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatusMsg());
+                selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
                 selfSignParamDTO.setMid(selfSignEntity.getMid());
                 selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
                 //失败原因
-                selfSignParamDTO.setMsg(signingReviewRespDTO.getFailReason());
+                selfSignParamDTO.setMsg(signingReviewRespDTO.getApplyStatusMsg());
                 if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
                     selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
                     //当供应商没有关联成功时，入网状态修改审核中
