@@ -77,7 +77,7 @@ public class NetworkTypeCacheUtil {
         if (!CollectionUtils.isEmpty(areaIncomingChannels)) {
             //遍历数据库查询结果，写入缓存，移除set中元素
             for (SalesAreaIncomingChannelEntity areaIncomingChannel : areaIncomingChannels) {
-                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaIncomingChannel.getDistrictsCode(), areaIncomingChannel.getChannelCode());
+                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaIncomingChannel.getDistrictsCode(), JSONObject.toJSONString(areaIncomingChannel));
                 areaCodes.remove(areaIncomingChannel.getDistrictsCode());
             }
         }
