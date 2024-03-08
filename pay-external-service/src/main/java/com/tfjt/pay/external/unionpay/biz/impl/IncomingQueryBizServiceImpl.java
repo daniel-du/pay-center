@@ -172,9 +172,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
 
         Map<String, QueryIncomingStatusRespDTO> incomingMessageMap = new HashMap<>();
         //批量查询Redis
-        List<String> incomingChannels = redisTemplate.opsForValue().multiGet(incomingCacheKeys);
+        List<JSONObject> incomingChannels = redisTemplate.opsForValue().multiGet(incomingCacheKeys);
         incomingChannels.forEach(incomingChannel -> {
-            IncomingMessageRespDTO incomingMessageRespDTO = JSONObject.parseObject(incomingChannel, IncomingMessageRespDTO.class);
+            if (ObjectUtils.isEmpty(incomingChannel)) {
+                return;
+            }
+            IncomingMessageRespDTO incomingMessageRespDTO = JSONObject.toJavaObject(incomingChannel, IncomingMessageRespDTO.class);
 //            queryIncomingStatusRespDTO.setIncomingStatus(getAccessStatus(channelCode, incomingMessageRespDTO));
             String mapKey = incomingMessageRespDTO.getAccessChannelType() + "-"
                     + incomingMessageRespDTO.getBusinessType() + "-" + incomingMessageRespDTO.getBusinessId();
