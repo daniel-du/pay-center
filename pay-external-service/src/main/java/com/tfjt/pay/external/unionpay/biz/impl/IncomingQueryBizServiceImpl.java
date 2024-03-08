@@ -278,7 +278,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
 //                SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.parseObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
                 SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.toJavaObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
                 areaIncomingChannels.add(areaIncomingChannel);
-                cacheNullCodes.remove(areaIncomingChannel.getChannelCode());
+                cacheNullCodes.remove(areaIncomingChannel.getDistrictsCode());
             }
             //如果 cacheNullCodes 中剩余元素，即缓存未查到，尝试查询数据库获取
             if (!CollectionUtils.isEmpty(cacheNullCodes)) {
@@ -386,6 +386,9 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 log.info("IncomingQueryBizServiceImpl--getIncomingMessage, supplierResult:{}", JSONObject.toJSONString(result));
                 if (ObjectUtils.isEmpty(result) || ObjectUtils.isEmpty(result.getData())) {
                     incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
+                    incomingMessageRespDTO.setAccessChannelType(channelCode);
+                    incomingMessageRespDTO.setBusinessType(incomingMessageReqDTO.getBusinessType());
+                    incomingMessageRespDTO.setBusinessId(incomingMessageReqDTO.getBusinessId());
                     return incomingMessageRespDTO;
                 }
                 acct = result.getData().getSupplierId();
@@ -504,6 +507,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             flag = channelConfigFlagMap.containsKey(IncomingAccessChannelTypeEnum.PINGAN.getCode().toString()) ?
                     NumberConstant.ONE : NumberConstant.TWO;
         }
+        log.info("IncomingQueryBizServiceImpl--getChannelFlag, flag:{}", flag);
         return flag;
     }
 
