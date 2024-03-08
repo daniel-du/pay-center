@@ -268,9 +268,10 @@ public class AsyncServiceImpl implements AsyncService {
         Map<String, String> incomingMessageStrMap = new HashMap<>();
         for (Map.Entry<String, IncomingMessageRespDTO> entry : incomingMessageMap.entrySet()) {
             incomingMessageStrMap.put(entry.getKey(), JSONObject.toJSONString(entry.getValue()));
+            redisCache.setCacheString(entry.getKey(), JSONObject.toJSONString(entry.getValue()));
         }
         log.info("AsyncServiceImpl--batchWriteIncomingCache, incomingMessageStrMap:{}", JSONObject.toJSONString(incomingMessageStrMap));
-        redisTemplate.opsForValue().multiSet(incomingMessageStrMap);
+//        redisTemplate.opsForValue().multiSet(incomingMessageStrMap);
     }
 
 
