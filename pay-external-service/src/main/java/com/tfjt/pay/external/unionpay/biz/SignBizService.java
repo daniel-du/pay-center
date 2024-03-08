@@ -17,9 +17,8 @@ public interface SignBizService {
     UnionPayResult signingReviewCreateMessage(String signData, String jsonData, String accesserId);
 
     /**
-     *
      * @param accesserAcct
      */
 
-    public void queryMerchantBySignSuccess(String accesserAcct);
+    void queryMerchantBySignSuccess(String accesserAcct);
 }

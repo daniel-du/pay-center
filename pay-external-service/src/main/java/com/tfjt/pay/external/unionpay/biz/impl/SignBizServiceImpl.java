@@ -345,26 +345,27 @@ public class SignBizServiceImpl implements SignBizService {
                 request.setAppId(selfSignEntity.getAppId());
                 // 主动查询签约状态
                 ApplyQueryReturnDTO applyquery = signToNetWorkService.applyquery(request);
-                XxlJobHelper.log("主动查询签约状态，返回参数：{}", JSON.toJSONString(applyquery));
-                SelfSignParamDTO selfSignParamDTO = new SelfSignParamDTO();
-                //签约状态
-                selfSignParamDTO.setSigningStatus(applyquery.getApply_status());
-                //appid
-                selfSignParamDTO.setAppId(selfSignEntity.getAppId());
-                //商户ID
-                selfSignParamDTO.setMid(selfSignEntity.getMid());
-                //签约状态描述
-                selfSignParamDTO.setMsg(applyquery.getApply_status_msg());
-                //接入方账号
-                selfSignParamDTO.setAccesserAcct(selfSignEntity.getAccesserAcct());
-                //绑定关系
-                selfSignParamDTO.setMerMsRelation(applyquery.getMerMsRelation());
-                //企业号
-                selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
-                XxlJobHelper.log("开始通知业务更新状态");
-                updateSignStatus(selfSignParamDTO);
-                XxlJobHelper.log("完成通知业务更新状态");
-
+                if(Objects.nonNull(applyquery)){
+                    XxlJobHelper.log("主动查询签约状态，返回参数：{}", JSON.toJSONString(applyquery));
+                    SelfSignParamDTO selfSignParamDTO = new SelfSignParamDTO();
+                    //签约状态
+                    selfSignParamDTO.setSigningStatus(applyquery.getApply_status());
+                    //appid
+                    selfSignParamDTO.setAppId(selfSignEntity.getAppId());
+                    //商户ID
+                    selfSignParamDTO.setMid(selfSignEntity.getMid());
+                    //签约状态描述
+                    selfSignParamDTO.setMsg(applyquery.getApply_status_msg());
+                    //接入方账号
+                    selfSignParamDTO.setAccesserAcct(selfSignEntity.getAccesserAcct());
+                    //绑定关系
+                    selfSignParamDTO.setMerMsRelation(applyquery.getMerMsRelation());
+                    //企业号
+                    selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
+                    XxlJobHelper.log("开始通知业务更新状态");
+                    updateSignStatus(selfSignParamDTO);
+                    XxlJobHelper.log("完成通知业务更新状态");
+                }
             }
         }
     }
