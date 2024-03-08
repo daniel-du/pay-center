@@ -160,12 +160,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                     req.getBusinessType() + ":" + req.getBusinessId();
             req.setAccessChannelType(Integer.parseInt(channelCode));
             incomingCacheKeys.add(cacheKey);
-            incomingCacheNullKeys.add(channelCode + ":" +
-                    req.getBusinessType() + ":" + req.getBusinessId());
+//            incomingCacheNullKeys.add(channelCode + ":" +
+//                    req.getBusinessType() + ":" + req.getBusinessId());
             if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(Integer.parseInt(channelCode))) {
-                pnIncomingReqMap.put(cacheKey, req);
+                pnIncomingReqMap.put(channelCode + "-" + req.getBusinessType() + "-" + req.getBusinessId(), req);
             } else {
-                unIncomingReqMap.put(cacheKey, req);
+                unIncomingReqMap.put(channelCode + "-" + req.getBusinessType() + "-" + req.getBusinessId(), req);
             }
 
         });
