@@ -376,7 +376,7 @@ public class AsyncServiceImpl implements AsyncService {
         Map<String, IncomingMessageRespDTO> incomingMeaasgeMap = new HashMap<>();
         List<IncomingMessageReqDTO> incomingMessageReqs = new ArrayList<>();
         for (Map.Entry<String, QueryIncomingStatusReqDTO> entry : pnIncomingReqMap.entrySet()) {
-            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX + ":" + entry.getValue().getAccessChannelType() + ":"
+            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  entry.getValue().getAccessChannelType() + ":"
                     + entry.getValue().getBusinessType() + ":" + entry.getValue().getBusinessId();
             IncomingMessageReqDTO  incomingMessageReq = new IncomingMessageReqDTO();
             incomingMessageReq.setAccessChannelType(entry.getValue().getAccessChannelType());
@@ -398,7 +398,7 @@ public class AsyncServiceImpl implements AsyncService {
         }
         //数据库查询到的数据替换返回map中的值
         incomingMessages.forEach(incomingMessage -> {
-            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX + ":" + incomingMessage.getAccessChannelType() + ":"
+            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX  + incomingMessage.getAccessChannelType() + ":"
                     + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
             incomingMeaasgeMap.put(key, incomingMessage);
         });
@@ -411,7 +411,7 @@ public class AsyncServiceImpl implements AsyncService {
         List<Integer> supplierIds = new ArrayList<>();
         Map<String, Integer> supplierIdMap = new HashMap<>();
         for (Map.Entry<String, QueryIncomingStatusReqDTO> entry : unIncomingReqMap.entrySet()) {
-            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  ":" + entry.getValue().getAccessChannelType() + ":"
+            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  entry.getValue().getAccessChannelType() + ":"
                     + entry.getValue().getBusinessType() + ":" + entry.getValue().getBusinessId();
             if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(entry.getValue().getBusinessType())) {
                 supplierIds.add(entry.getValue().getBusinessId().intValue());
@@ -456,7 +456,7 @@ public class AsyncServiceImpl implements AsyncService {
             incomingMessageResp.setUnionpaySignStatus(selfSignEntity.getSigningStatus());
             incomingMessageResp.setAccountNo(selfSignEntity.getMid());
             incomingMessageResp.setAccountNo(selfSignEntity.getBusinessNo());
-            incomingMeaasgeMap.put(RedisConstant.INCOMING_MSG_KEY_PREFIX +  ":" + IncomingAccessChannelTypeEnum.UNIONPAY.getCode() + ":"
+            incomingMeaasgeMap.put(RedisConstant.INCOMING_MSG_KEY_PREFIX + IncomingAccessChannelTypeEnum.UNIONPAY.getCode() + ":"
                     + incomingMessageResp.getBusinessType() + ":"
                     + supplierIdMap.get(selfSignEntity.getAccesserAcct()).longValue(), incomingMessageResp);
         });
