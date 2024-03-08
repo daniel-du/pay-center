@@ -176,26 +176,28 @@ public class SignBizServiceImpl implements SignBizService {
         signingReviewLogEntity.setData(data);
         signingReviewLogService.updateById(signingReviewLogEntity);
 
-
         SelfSignParamDTO selfSignParamDTO = null;
         if (Objects.nonNull(data)) {
-
             SigningReviewRespDTO signingReviewRespDTO = JSON.parseObject(data, SigningReviewRespDTO.class);
             //获取入网信息
             SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(signingReviewRespDTO.getAccesserAcct());
-            selfSignParamDTO = new SelfSignParamDTO();
-            //将推送的入网状态写入参数
-            selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatusMsg());
-            selfSignParamDTO.setMid(selfSignEntity.getMid());
-            selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
-            //失败原因
-            selfSignParamDTO.setMsg(signingReviewRespDTO.getFailReason());
-            if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
-                selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
-                //当供应商没有关联成功时，入网状态修改审核中
-                if (Objects.equals(selfSignParamDTO.getSigningStatus(), "03") && !Objects.equals(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()), "1")) {
-                    selfSignParamDTO.setSigningStatus("02");
+            if (Objects.nonNull(selfSignEntity)) {
+                selfSignParamDTO = new SelfSignParamDTO();
+                //将推送的入网状态写入参数
+                selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatusMsg());
+                selfSignParamDTO.setMid(selfSignEntity.getMid());
+                selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
+                //失败原因
+                selfSignParamDTO.setMsg(signingReviewRespDTO.getFailReason());
+                if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
+                    selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
+                    //当供应商没有关联成功时，入网状态修改审核中
+                    if (Objects.equals(selfSignParamDTO.getSigningStatus(), "03") && !Objects.equals(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()), "1")) {
+                        selfSignParamDTO.setSigningStatus("02");
+                    }
                 }
+            } else {
+                log.info("入网账户不存在{}", signingReviewRespDTO.getAccesserAcct());
             }
         }
         //处理业务数据
@@ -247,7 +249,7 @@ public class SignBizServiceImpl implements SignBizService {
                         JSONObject json = JSONObject.parseObject(rest);
                         if (Objects.equals("0", json.get("code").toString())) {
                             //更新入网签约
-                            log.info("入网表参数：{}",JSON.toJSONString(selfSignEntity));
+                            log.info("入网表参数：{}", JSON.toJSONString(selfSignEntity));
                             selfSignService.updateById(selfSignEntity);
                         }
                     } else {
