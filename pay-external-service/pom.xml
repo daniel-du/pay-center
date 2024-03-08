@@ -348,5 +348,11 @@
             <artifactId>ons-client</artifactId>
             <version>1.8.8.8.Final</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-cloud-pay-interface</artifactId>
+            <version>0.5.16-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

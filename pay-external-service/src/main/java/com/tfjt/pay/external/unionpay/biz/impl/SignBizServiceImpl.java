@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.aliyun.openservices.shade.org.apache.commons.lang3.StringEscapeUtils;
+import com.tfjt.api.SignToNetWorkService;
 import com.tfjt.dto.response.Result;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.biz.SignBizService;
@@ -25,8 +26,12 @@ import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
 import com.tfjt.pay.external.unionpay.utils.DESUtil;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
+import com.tfjt.request.ApplyQueryRequest;
+import com.tfjt.request.ApplyQueryReturnDTO;
+import com.xxl.job.core.context.XxlJobHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -96,6 +101,10 @@ public class SignBizServiceImpl implements SignBizService {
 
     @Value("${rocketmq.topic.signingReviewTopic}")
     private String signingReviewTopic;
+
+
+    @DubboReference
+    SignToNetWorkService signToNetWorkService;
 
 
     /**
@@ -221,6 +230,13 @@ public class SignBizServiceImpl implements SignBizService {
         selfSignEntity.setMsg(selfSignParamDTO.getMsg());
         //设置
         selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
+        //绑定关系
+        selfSignEntity.setMerMsRelation(selfSignParamDTO.getMerMsRelation());
+        //设置入网成功时间
+        if ("03".equals(selfSignParamDTO.getSigningStatus())) {
+            selfSignEntity.setSignSuccessDate(new Date());
+        }
+
         //rpc调用业务
         RestTemplate restTemplate = new RestTemplate();
         //回调地址查询
@@ -310,6 +326,46 @@ public class SignBizServiceImpl implements SignBizService {
         // 业务的唯一序列号
         message.setUniqueNo(uniqueNo);
         return message;
+    }
+
+
+    /**
+     * 查询近7天入网成功，没有绑定关系的商户
+     * 将有绑定关系的商户通知业务更新
+     */
+    public void queryMerchantBySignSuccess(String accesserAcct) {
+        //查询近7天或指定商户入网成功，没有绑定关系的商户
+        List<SelfSignEntity> selfSignList = selfSignService.querySelfSignsBySuccess(accesserAcct);
+        if (CollUtil.isNotEmpty(selfSignList)) {
+            for (SelfSignEntity selfSignEntity : selfSignList) {
+                XxlJobHelper.log("查询{}签约状态", selfSignEntity.getAccesserAcct());
+                ApplyQueryRequest request = new ApplyQueryRequest();
+                request.setAccesser_acct(selfSignEntity.getAccesserAcct());
+                request.setAppId(selfSignEntity.getAppId());
+                // 主动查询签约状态
+                ApplyQueryReturnDTO applyquery = signToNetWorkService.applyquery(request);
+                XxlJobHelper.log("主动查询签约状态，返回参数：{}", JSON.toJSONString(applyquery));
+                SelfSignParamDTO selfSignParamDTO = new SelfSignParamDTO();
+                //签约状态
+                selfSignParamDTO.setSigningStatus(applyquery.getApply_status());
+                //appid
+                selfSignParamDTO.setAppId(selfSignEntity.getAppId());
+                //商户ID
+                selfSignParamDTO.setMid(selfSignEntity.getMid());
+                //签约状态描述
+                selfSignParamDTO.setMsg(applyquery.getApply_status_msg());
+                //接入方账号
+                selfSignParamDTO.setAccesserAcct(selfSignEntity.getAccesserAcct());
+                //绑定关系
+                selfSignParamDTO.setMerMsRelation(applyquery.getMerMsRelation());
+                //企业号
+                selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
+                XxlJobHelper.log("开始通知业务更新状态");
+                updateSignStatus(selfSignParamDTO);
+                XxlJobHelper.log("完成通知业务更新状态");
+
+            }
+        }
     }
 
 }

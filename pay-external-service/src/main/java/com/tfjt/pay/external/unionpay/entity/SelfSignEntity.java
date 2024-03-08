@@ -79,4 +79,13 @@ public class SelfSignEntity implements Serializable {
 	 */
 	private String termAppNoList;
 
+	/**
+	 * 绑定关系
+	 */
+	private String merMsRelation;
+
+	/**
+	 * 入网成功时间
+	 */
+	private Date signSuccessDate;
 }
