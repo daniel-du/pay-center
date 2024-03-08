@@ -35,6 +35,12 @@ import org.springframework.web.client.RestTemplate;
 
 
 import javax.annotation.Resource;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -90,7 +96,6 @@ public class SignBizServiceImpl implements SignBizService {
 
     @Value("${rocketmq.topic.signingReviewTopic}")
     private String signingReviewTopic;
-
 
 
     /**
@@ -183,7 +188,8 @@ public class SignBizServiceImpl implements SignBizService {
             selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
             selfSignParamDTO.setMid(selfSignEntity.getMid());
             selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
-
+            //失败原因
+            selfSignParamDTO.setMsg(signingReviewRespDTO.getFailReason());
             if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
                 selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
                 //当供应商没有关联成功时，入网状态修改审核中
@@ -194,12 +200,11 @@ public class SignBizServiceImpl implements SignBizService {
         }
         //处理业务数据
         if (Objects.nonNull(selfSignParamDTO)) {
-            log.info("供应商入网状态修改审核中，入参：{}",JSON.toJSONString(selfSignParamDTO));
+            log.info("供应商入网状态修改审核中，入参：{}", JSON.toJSONString(selfSignParamDTO));
             updateSignStatus(selfSignParamDTO);
         }
         return Result.ok();
     }
-
 
 
     /**
@@ -209,8 +214,11 @@ public class SignBizServiceImpl implements SignBizService {
      */
     private void updateSignStatus(SelfSignParamDTO selfSignParamDTO) {
 
-        List<SelfSignEntity> selfSignEntityList = selfSignService.selectByMid(selfSignParamDTO.getMid());
-
+        SelfSignEntity selfSignEntity = selfSignService.selectByMid(selfSignParamDTO.getMid());
+        //设置失败原因
+        selfSignEntity.setMsg(selfSignParamDTO.getMsg());
+        //设置
+        selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
         //rpc调用业务
         RestTemplate restTemplate = new RestTemplate();
         //回调地址查询
@@ -219,11 +227,9 @@ public class SignBizServiceImpl implements SignBizService {
         if (CollUtil.isNotEmpty(callbackUrlList)) {
             for (PayApplicationCallbackUrlEntity callbackUrlEntity : callbackUrlList) {
                 List<SelfSignParamDTO> selfSignParamDTOList = new ArrayList<>();
-                for (SelfSignEntity selfSign : selfSignEntityList) {
-                    selfSignParamDTO.setAppId(callbackUrlEntity.getAppId());
-                    selfSignParamDTO.setAccesserAcct(selfSign.getAccesserAcct());
-                    selfSignParamDTOList.add(selfSignParamDTO);
-                }
+                selfSignParamDTO.setAppId(callbackUrlEntity.getAppId());
+                selfSignParamDTO.setAccesserAcct(selfSignEntity.getAccesserAcct());
+                selfSignParamDTOList.add(selfSignParamDTO);
                 SelfSignAppDTO selfSignAppDTO = new SelfSignAppDTO();
                 selfSignAppDTO.setAppId(callbackUrlEntity.getAppId());
                 selfSignAppDTO.setSelfSignParamDTOList(selfSignParamDTOList);
@@ -241,17 +247,16 @@ public class SignBizServiceImpl implements SignBizService {
                         JSONObject json = JSONObject.parseObject(rest);
                         if (Objects.equals("0", json.get("code").toString())) {
                             //更新入网签约
-                            selfSignService.updateBatchById(selfSignEntityList);
+                            log.info("入网表参数：{}",JSON.toJSONString(selfSignEntity));
+                            selfSignService.updateById(selfSignEntity);
                         }
                     } else {
                         log.error("返回接口为空---");
                     }
-
                 } catch (Exception e) {
                     log.error("远程调用业务接口失败", e);
                 }
                 payCallbackLogService.saveCallBackLog(callbackUrlEntity.getUrl(), appId, JSON.toJSONString(selfSignAppDTO), rest, 4, r, "");
-                log.info("入网商户状态更新结束共{}", selfSignEntityList.size());
             }
         }
 
@@ -303,5 +308,15 @@ public class SignBizServiceImpl implements SignBizService {
         // 业务的唯一序列号
         message.setUniqueNo(uniqueNo);
         return message;
+    }
+
+
+    public static void main(String[] args) throws IllegalBlockSizeException, UnsupportedEncodingException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+        //供应商
+        String encrypt = DESUtil.encrypt("{\"accesser_acct\":\"6e5b6f6f-b8fe-41f0-ac00-cb0aa8ba0917\",\"apply_status\":\"04\",\"apply_status_msg\":\"入网失败\",\"fail_reason\":\"自主测试\",\"ums_reg_id\":\"02403040827007933399\"}", "978vna9lg3adfpkdjkcd2m0r");
+        System.out.println("供应商加密结果:" + encrypt);
+        //商户
+        String shopEncrypt = DESUtil.encrypt("111", "7ghjyjl6xwwapg3ug43otlry");
+        System.out.println("商户加密结果:" + encrypt);
     }
 }

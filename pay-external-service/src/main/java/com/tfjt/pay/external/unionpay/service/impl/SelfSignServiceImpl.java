@@ -18,8 +18,8 @@ import java.util.List;
 public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEntity> implements SelfSignService {
 
     @Override
-    public List<SelfSignEntity> selectByMid(String mid) {
-        return this.baseMapper.selectList(Wrappers.<SelfSignEntity>lambdaQuery().eq(SelfSignEntity::getMid, mid));
+    public SelfSignEntity selectByMid(String mid) {
+        return this.baseMapper.selectOne(Wrappers.<SelfSignEntity>lambdaQuery().eq(SelfSignEntity::getMid, mid));
     }
 
     @Override
