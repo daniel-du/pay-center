@@ -99,5 +99,10 @@ public class IncomingController {
         return incomingQueryBizService.batchQueryIncomingStatus(queryIncomingStatusReqDTOS);
     }
 
+    @PostMapping("/queryIncomingMessages")
+    public Result queryIncomingMessages(@RequestBody List<IncomingMessageReqDTO> incomingMessageReqDTOS) {
+        return incomingBizService.queryIncomingMessages(incomingMessageReqDTOS);
+    }
+
 
 }

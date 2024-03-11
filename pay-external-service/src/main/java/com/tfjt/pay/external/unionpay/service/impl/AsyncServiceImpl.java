@@ -274,6 +274,42 @@ public class AsyncServiceImpl implements AsyncService {
 //        redisTemplate.opsForValue().multiSet(incomingMessageStrMap);
     }
 
+    /**
+     * 批量写入进件缓存
+     * @param queryDBReqs
+     */
+    @Override
+    public void batchWriteIncomingCache(List<IncomingMessageReqDTO> queryDBReqs) {
+        Map<String, IncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
+        //查询数据库
+        List<IncomingMessageRespDTO> incomingMessages = tfIncomingInfoService.queryIncomingMessagesByMerchantList(queryDBReqs);
+        queryDBReqs.forEach(queryDBReq -> {
+            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  queryDBReq.getAccessChannelType() + ":"
+                    + queryDBReq.getBusinessType() + ":" + queryDBReq.getBusinessId();
+            //往返回map中放入默认状态“未入网”
+            IncomingMessageRespDTO incomingMessageResp = new IncomingMessageRespDTO();
+            incomingMessageResp.setBusinessId(queryDBReq.getBusinessId());
+            incomingMessageResp.setBusinessType(queryDBReq.getBusinessType());
+            incomingMessageResp.setAccessChannelType(queryDBReq.getAccessChannelType());
+            incomingMessageResp.setAccessStatus(0);
+            incomingMessageMap.put(key, incomingMessageResp);
+        });
+        if (CollectionUtils.isEmpty(incomingMessages)) {
+            for (Map.Entry<String, IncomingMessageRespDTO> entry : incomingMessageMap.entrySet()) {
+                redisCache.setCacheString(entry.getKey(), JSONObject.toJSONString(entry.getValue()));
+            }
+            return;
+        }
+        incomingMessages.forEach(incomingMessage -> {
+            String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  incomingMessage.getAccessChannelType() + ":"
+                    + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
+            incomingMessageMap.put(key, incomingMessage);
+        });
+        for (Map.Entry<String, IncomingMessageRespDTO> entry : incomingMessageMap.entrySet()) {
+            redisCache.setCacheString(entry.getKey(), JSONObject.toJSONString(entry.getValue()));
+        }
+    }
+
 
     private String getIdentityByCode(List<Integer> identifyList) {
         if (CollectionUtil.isNotEmpty(identifyList)){
@@ -410,6 +446,7 @@ public class AsyncServiceImpl implements AsyncService {
         });
         return incomingMeaasgeMap;
     }
+
 
     private Map<String, IncomingMessageRespDTO> queryUnIncomingMessageMap(Map<String, QueryIncomingStatusReqDTO> unIncomingReqMap) {
         Map<String, IncomingMessageRespDTO> incomingMeaasgeMap = new HashMap<>();
