@@ -50,6 +50,11 @@ public class IncomingMessageRespDTO implements Serializable {
     private String accountNo;
 
     /**
+     * 企业用户号
+     */
+    private String accountNo2;
+
+    /**
      * 会员id
      */
     private String memberId;

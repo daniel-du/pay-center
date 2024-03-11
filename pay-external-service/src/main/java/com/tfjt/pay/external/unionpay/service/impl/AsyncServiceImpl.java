@@ -294,6 +294,7 @@ public class AsyncServiceImpl implements AsyncService {
             incomingMessageResp.setAccessStatus(0);
             incomingMessageMap.put(key, incomingMessageResp);
         });
+        //数据库中查询结果为空，直接将未入网状态写入缓存
         if (CollectionUtils.isEmpty(incomingMessages)) {
             for (Map.Entry<String, IncomingMessageRespDTO> entry : incomingMessageMap.entrySet()) {
                 redisCache.setCacheString(entry.getKey(), JSONObject.toJSONString(entry.getValue()));

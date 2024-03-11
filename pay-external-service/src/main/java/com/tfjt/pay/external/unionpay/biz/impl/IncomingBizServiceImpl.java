@@ -200,6 +200,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         //调用实现类方法
         IncomingSubmitMessageRespDTO respDTO = abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
+        //写入缓存
+        writeIncomingCache(incomingSubmitMessageReqDTO.getIncomingId());
         return Result.ok(respDTO);
     }
 
@@ -235,7 +237,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         abstractIncomingService.checkCode(checkCodeMessageDTO);
         //异步发送mq-进件完成事件
         MQProcess(incomingSubmitMessageDTO);
-        //更新进件信息
+        //写入缓存
+        writeIncomingCache(inComingCheckCodeReqDTO.getIncomingId());
         return Result.ok();
     }
 
@@ -326,6 +329,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 incomingMessageMap.put(key, cacheResp);
             }
         }
+        //缓存中查到入参全部数据，返回结果
         if (CollectionUtils.isEmpty(noCacheMap)) {
             return Result.ok(incomingMessageMap);
         }
@@ -890,6 +894,20 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         redisCache.expire(prefix, 24, TimeUnit.HOURS);
         String str = String.format("%05d", incr);
         return prefix + str;
+    }
+
+    /**
+     * 写入缓存
+     * @param incomingId
+     */
+    private void writeIncomingCache(Long incomingId) {
+        IncomingMessageRespDTO incomingMessage = tfIncomingInfoService.queryIncomingMessageRespById(incomingId);
+        if (ObjectUtils.isEmpty(incomingMessage)) {
+            return;
+        }
+        String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  incomingMessage.getAccessChannelType() + ":"
+                + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
+        redisCache.setCacheString(key, JSONObject.toJSONString(incomingMessage));
     }
 
 
