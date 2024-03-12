@@ -94,7 +94,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      * @param businessType
      * @return
      */
-    List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> businessIds, Integer businessType);
+    List<TfIncomingInfoEntity> queryListByBusinessIdsAndType(List<Long> businessIds, Integer businessType);
 
     List<BusinessIsIncomingRespDTO> isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos);
 
@@ -104,4 +104,12 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      * @return
      */
     IncomingMessageRespDTO queryIncomingMessageRespById(Long incomingId);
+
+    /**
+     * 根据商户id、商户类型查询进件信息
+     * @param businessId
+     * @param businessType
+     * @return
+     */
+    List<TfIncomingInfoEntity> queryListByBusinessIdAndType(Long businessId, Integer businessType);
 }

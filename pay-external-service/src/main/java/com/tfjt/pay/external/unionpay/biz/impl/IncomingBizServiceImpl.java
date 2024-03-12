@@ -21,10 +21,8 @@ import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.*;
+import com.tfjt.pay.external.unionpay.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -474,6 +472,43 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     }
 
     /**
+     * 根据商户id、商户类型查询所有渠道入网信息
+     * @param reqDTO
+     * @return
+     */
+    @Override
+    public Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(AllIncomingMessageReqDTO reqDTO) {
+        //查询incoming表入网信息
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(reqDTO.getBusinessId(), reqDTO.getBusinessType());
+        Map<Integer, TfIncomingInfoEntity> incomingInfoMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(incomingInfoEntities)) {
+            incomingInfoEntities.forEach(incomingInfo -> {
+                AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
+                allIncomingMessageRespDTO.setChannelName(IncomingAccessChannelTypeEnum.getDescFromCode(incomingInfo.getAccessChannelType().intValue()));
+                allIncomingMessageRespDTO.setAccessStatusName(IncomingAccessStatusEnum.getNameFromCode(incomingInfo.getAccessStatus()));
+                allIncomingMessageRespDTO.setAccountNo(incomingInfo.getAccountNo());
+                incomingInfoMap.put(incomingInfo.getAccessChannelType().intValue(), incomingInfo);
+            });
+        }
+        //查询self_signing表入网信息
+        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result =  tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
+        if (ObjectUtils.isNotEmpty(result) && ObjectUtils.isNotEmpty(result.getData())) {
+            TfSupplierDTO tfSupplier = result.getData();
+            SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(tfSupplier.getSupplierId());
+            AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
+            allIncomingMessageRespDTO.setChannelName(IncomingAccessChannelTypeEnum.UNIONPAY.getName());
+            if (ObjectUtils.isEmpty(selfSignEntity)) {
+                allIncomingMessageRespDTO.setAccessStatusName("未入网");
+            } else {
+                allIncomingMessageRespDTO.setAccessStatusName("");
+                allIncomingMessageRespDTO.setAccountNo(selfSignEntity.getMid());
+                allIncomingMessageRespDTO.setAccountBusinessNo(selfSignEntity.getBusinessNo());
+            }
+        }
+        return null;
+    }
+
+    /**
      * 根据进行信息获取实现类name
      * @param incomingSubmitMessageDTO
      * @return
@@ -822,7 +857,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
         log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
         //查询平安入网数据
-        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdsAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
         log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
         Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
         Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
@@ -862,7 +897,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
         log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
         //查询平安入网数据
-        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdsAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
         log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
         Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
         Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));

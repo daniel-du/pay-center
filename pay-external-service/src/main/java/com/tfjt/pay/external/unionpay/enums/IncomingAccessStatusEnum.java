@@ -44,4 +44,17 @@ public enum IncomingAccessStatusEnum {
     private Integer code;
 
     private String name;
+
+    /**
+     * 根据code转换name
+     * @return
+     */
+    public static String getNameFromCode(Integer code){
+        for(IncomingAccessStatusEnum inComingAccessStatusEnum : IncomingAccessStatusEnum.values()){
+            if(inComingAccessStatusEnum.code.equals(code)){
+                return inComingAccessStatusEnum.name;
+            }
+        }
+        return null;
+    }
 }

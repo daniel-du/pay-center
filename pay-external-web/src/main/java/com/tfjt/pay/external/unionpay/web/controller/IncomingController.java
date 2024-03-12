@@ -64,6 +64,11 @@ public class IncomingController {
         return incomingBizService.unionpayDataExtract();
     }
 
+    /**
+     * 测试功能
+     * @param incomingMessageReqDTO
+     * @return
+     */
     @PostMapping("/queryIncomingMsg")
     public Result<IncomingMessageRespDTO> queryIncomingMsg(@RequestBody IncomingMessageReqDTO incomingMessageReqDTO) {
         return incomingBizService.queryIncomingMessage(incomingMessageReqDTO);
@@ -74,31 +79,60 @@ public class IncomingController {
         return incomingBizService.bacthIncoming();
     }
 
+    /**
+     * 测试功能
+     * @return
+     */
     @GetMapping("/getActive")
     public Result getActive() {
         return Result.ok(devConfig.getActive());
     }
 
+    /**
+     * 测试功能
+     * @param incomingStatusReqDTO
+     * @return
+     */
     @PostMapping("/queryIncomingStatus")
     public Result queryIncomingStatus(@RequestBody IncomingStatusReqDTO incomingStatusReqDTO) {
         return incomingBizService.queryIncomingStatus(incomingStatusReqDTO);
     }
 
+    /**
+     * 测试功能
+     * @param reqDTO
+     * @return
+     */
     @PostMapping("/getIncomingStatusByCodes")
     public Result getIncomingAreaChannel(@RequestBody QueryIncomingStatusReqDTO reqDTO) {
         return incomingQueryBizService.queryIncomingStatusByAreaCodes(reqDTO);
     }
 
+    /**
+     * 测试功能
+     * @param reqDTO
+     * @return
+     */
     @PostMapping("/getIncomingStatusByCode")
     public Result getIncomingStatus(@RequestBody QueryIncomingStatusReqDTO reqDTO) {
         return incomingQueryBizService.queryIncomingStatus(reqDTO);
     }
 
+    /**
+     * 测试功能
+     * @param queryIncomingStatusReqDTOS
+     * @return
+     */
     @PostMapping("/batchQueryIncomingStatus")
     public Result batchQueryIncomingStatus(@RequestBody List<QueryIncomingStatusReqDTO> queryIncomingStatusReqDTOS) {
         return incomingQueryBizService.batchQueryIncomingStatus(queryIncomingStatusReqDTOS);
     }
 
+    /**
+     * 测试功能
+     * @param incomingMessageReqDTOS
+     * @return
+     */
     @PostMapping("/queryIncomingMessages")
     public Result queryIncomingMessages(@RequestBody List<IncomingMessageReqDTO> incomingMessageReqDTOS) {
         return incomingBizService.queryIncomingMessages(incomingMessageReqDTOS);

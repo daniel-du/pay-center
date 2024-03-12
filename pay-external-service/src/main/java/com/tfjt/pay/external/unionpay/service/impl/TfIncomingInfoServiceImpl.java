@@ -134,7 +134,7 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     }
 
     @Override
-    public List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> businessIds, Integer businessType) {
+    public List<TfIncomingInfoEntity> queryListByBusinessIdsAndType(List<Long> businessIds, Integer businessType) {
         LambdaQueryWrapper<TfIncomingInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TfIncomingInfoEntity::getBusinessType, businessType);
         queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
@@ -164,5 +164,20 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     @Override
     public IncomingMessageRespDTO queryIncomingMessageRespById(Long incomingId) {
         return this.baseMapper.queryIncomingMessageRespById(incomingId);
+    }
+
+    /**
+     * 根据商户id、商户类型查询进件信息
+     * @param businessId
+     * @param businessType
+     * @return
+     */
+    @Override
+    public List<TfIncomingInfoEntity> queryListByBusinessIdAndType(Long businessId, Integer businessType) {
+        LambdaQueryWrapper<TfIncomingInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TfIncomingInfoEntity::getBusinessType, businessType);
+        queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
+        queryWrapper.eq(TfIncomingInfoEntity::getBusinessId, businessId);
+        return this.baseMapper.selectList(queryWrapper);
     }
 }
