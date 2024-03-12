@@ -20,11 +20,7 @@ public enum IncomingAccessChannelTypeEnum {
     /**
      * 银联
      */
-    UNIONPAY(2, "unionpay", "银联"),
-    /**
-     * 银联贷款进件
-     */
-    UNIONPAY_LOAN(3,"unionpayLoan", "银联贷款")
+    UNIONPAY(2, "unionpay", "银联")
     ;
 
     private Integer code;

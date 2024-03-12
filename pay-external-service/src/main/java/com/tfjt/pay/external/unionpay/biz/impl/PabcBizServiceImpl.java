@@ -20,6 +20,7 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
+import com.tfjt.pay.external.unionpay.constants.UnionPayConstant;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.req.MerchantChangeInfoMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ShopExamineMqReqDTO;
@@ -594,10 +595,10 @@ public class PabcBizServiceImpl implements PabcBizService {
         LoanUserEntity loanUser = loanUserService.getOne(wrapper);
         if (null != loanUser) {
             queryAccessBankStatueRespDTO.setStatus(String.valueOf(IncomingStatusEnum.INCOMING.getCode()));
-            queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY_LOAN.getName());
+            queryAccessBankStatueRespDTO.setNetworkChannel(UnionPayConstant.UNIONPAY_LOAN_CHANNEL_NAME);
         } else {
             queryAccessBankStatueRespDTO.setStatus(String.valueOf(IncomingStatusEnum.NOT_INCOMING.getCode()));
-            queryAccessBankStatueRespDTO.setNetworkChannel(IncomingAccessChannelTypeEnum.UNIONPAY_LOAN.getName());
+            queryAccessBankStatueRespDTO.setNetworkChannel(UnionPayConstant.UNIONPAY_LOAN_CHANNEL_NAME);
         }
 
 

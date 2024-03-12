@@ -478,16 +478,24 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      */
     @Override
     public Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(AllIncomingMessageReqDTO reqDTO) {
+        List<AllIncomingMessageRespDTO> messageRespList = new ArrayList<>();
         //查询incoming表入网信息
         List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(reqDTO.getBusinessId(), reqDTO.getBusinessType());
-        Map<Integer, TfIncomingInfoEntity> incomingInfoMap = new HashMap<>();
+        Map<Integer, AllIncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(incomingInfoEntities)) {
             incomingInfoEntities.forEach(incomingInfo -> {
                 AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
                 allIncomingMessageRespDTO.setChannelName(IncomingAccessChannelTypeEnum.getDescFromCode(incomingInfo.getAccessChannelType().intValue()));
+                if (IncomingAccessStatusEnum.IMPORTS_CLOSURE.getCode().equals(incomingInfo.getAccessStatus())) {
+                    allIncomingMessageRespDTO.setAccessStatusName("未入网");
+                } else if (IncomingAccessStatusEnum.ACCESS_SUCCESS.getCode().equals(incomingInfo.getAccessStatus())) {
+                    allIncomingMessageRespDTO.setAccessStatusName("入网成功");
+                } else {
+                    allIncomingMessageRespDTO.setAccessStatusName("入网中");
+                }
                 allIncomingMessageRespDTO.setAccessStatusName(IncomingAccessStatusEnum.getNameFromCode(incomingInfo.getAccessStatus()));
                 allIncomingMessageRespDTO.setAccountNo(incomingInfo.getAccountNo());
-                incomingInfoMap.put(incomingInfo.getAccessChannelType().intValue(), incomingInfo);
+                incomingMessageMap.put(incomingInfo.getAccessChannelType().intValue(), allIncomingMessageRespDTO);
             });
         }
         //查询self_signing表入网信息
@@ -500,12 +508,29 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             if (ObjectUtils.isEmpty(selfSignEntity)) {
                 allIncomingMessageRespDTO.setAccessStatusName("未入网");
             } else {
-                allIncomingMessageRespDTO.setAccessStatusName("");
+                if ("-1".equals(selfSignEntity.getSigningStatus())) {
+                    allIncomingMessageRespDTO.setAccessStatusName("未入网");
+                } else if ("03".equals(selfSignEntity.getSigningStatus())) {
+                    allIncomingMessageRespDTO.setAccessStatusName("入网成功");
+                } else {
+                    allIncomingMessageRespDTO.setAccessStatusName("入网中");
+                }
                 allIncomingMessageRespDTO.setAccountNo(selfSignEntity.getMid());
                 allIncomingMessageRespDTO.setAccountBusinessNo(selfSignEntity.getBusinessNo());
             }
+            incomingMessageMap.put(IncomingAccessChannelTypeEnum.UNIONPAY.getCode(), allIncomingMessageRespDTO);
         }
-        return null;
+        for (IncomingAccessChannelTypeEnum accessChannelTypeEnum : IncomingAccessChannelTypeEnum.values()) {
+            if (incomingMessageMap.containsKey(accessChannelTypeEnum.getCode())) {
+                messageRespList.add(incomingMessageMap.get(accessChannelTypeEnum.getCode()));
+            } else {
+                AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
+                allIncomingMessageRespDTO.setChannelName(accessChannelTypeEnum.getName());
+                allIncomingMessageRespDTO.setAccessStatusName("未入网");
+                messageRespList.add(allIncomingMessageRespDTO);
+            }
+        }
+        return Result.ok(messageRespList);
     }
 
     /**

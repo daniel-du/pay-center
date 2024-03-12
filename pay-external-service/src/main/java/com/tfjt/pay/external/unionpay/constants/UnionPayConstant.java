@@ -14,6 +14,8 @@ public class UnionPayConstant {
 
     public static final String CONTENT_TYPE_VAL = "application/json; charset=utf-8";
 
+    public static final String UNIONPAY_LOAN_CHANNEL_NAME = "银联贷款";
+
 
 }
 

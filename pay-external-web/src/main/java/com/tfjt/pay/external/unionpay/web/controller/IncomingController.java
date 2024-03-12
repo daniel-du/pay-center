@@ -7,10 +7,8 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.biz.IncomingQueryBizService;
 import com.tfjt.pay.external.unionpay.config.DevConfig;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.*;
+import com.tfjt.pay.external.unionpay.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +75,11 @@ public class IncomingController {
     @PostMapping("/bacthIncoming")
     public Result bacthIncoming() {
         return incomingBizService.bacthIncoming();
+    }
+
+    @PostMapping("/queryAllIncomingMessage")
+    public Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(@RequestBody AllIncomingMessageReqDTO reqDTO) {
+        return incomingBizService.queryAllIncomingMessage(reqDTO);
     }
 
     /**
