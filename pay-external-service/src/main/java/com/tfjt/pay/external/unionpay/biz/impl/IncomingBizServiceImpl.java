@@ -1,12 +1,14 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.tfjt.api.TfSupplierApiService;
 import com.tfjt.constant.MessageStatusEnum;
 import com.tfjt.dto.TfSupplierDTO;
 import com.tfjt.entity.AsyncMessageEntity;
+import com.tfjt.pay.external.query.api.dto.req.QueryIncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
@@ -43,6 +45,9 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.connection.StringRedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -112,17 +117,32 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private SelfSignService selfSignService;
 
+    @Autowired
+    private AsyncService asyncService;
+
     @DubboReference
     private TfSupplierApiService tfSupplierApiService;
 
     @Value("${rocketmq.topic.incomingFinish}")
     private String incomingFinishTopic;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     private static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
 
     private static final String MQ_TO_SERVER = "tf-cloud-shop";
 
     private final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
+
+    private static final Set<Integer> PN_OPEN_ACCOUNT_STATUS_SET = new HashSet<>();
+
+    static {
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.SIGN_SUCCESS.getCode());
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.ACCESS_SUCCESS.getCode());
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.SMS_VERIFICATION_SUCCESS.getCode());
+    }
 
     @Override
     public Result incomingSave(IncomingInfoReqDTO incomingInfoReqDTO) {
@@ -180,6 +200,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         //调用实现类方法
         IncomingSubmitMessageRespDTO respDTO = abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
+        //写入缓存
+        writeIncomingCache(incomingSubmitMessageReqDTO.getIncomingId());
         return Result.ok(respDTO);
     }
 
@@ -215,7 +237,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         abstractIncomingService.checkCode(checkCodeMessageDTO);
         //异步发送mq-进件完成事件
         MQProcess(incomingSubmitMessageDTO);
-        //更新进件信息
+        //写入缓存
+        writeIncomingCache(inComingCheckCodeReqDTO.getIncomingId());
         return Result.ok();
     }
 
@@ -244,7 +267,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMsgStr:{}", incomingMsgStr);
         if (StringUtils.isNotBlank(incomingMsgStr)) {
             incomingMessageRespDTO = JSONObject.parseObject(incomingMsgStr, IncomingMessageRespDTO.class);
-            return Result.ok(incomingMessageRespDTO);
+            if (PN_OPEN_ACCOUNT_STATUS_SET.contains(incomingMessageRespDTO.getAccessStatus())) {
+                return Result.ok(incomingMessageRespDTO);
+            }
         }
         incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
         log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
@@ -258,7 +283,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             incomingMessageRespDTO.setMemberName(incomingMessageRespDTO.getLegalName());
         }
         //设置缓存，10分钟
-        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO), NumberConstant.TEN, TimeUnit.MINUTES);
+        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO));
         return Result.ok(incomingMessageRespDTO);
     }
 
@@ -273,17 +298,58 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         if (incomingMessageReqs.isEmpty()) {
             return Result.failed(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
         }
-        List<IncomingMessageRespDTO>  incomingMessageRespDTOS = tfIncomingInfoService.queryIncomingMessagesByMerchantList(incomingMessageReqs);
+        Map<String, IncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
+        Set<String> incomingCacheKeys = new HashSet<>();
+        Map<String, IncomingMessageReqDTO> noCacheMap = new HashMap<>();
+        //遍历入参获取缓存key集合
+        incomingMessageReqs.forEach(incomingMessageReqDTO -> {
+            incomingCacheKeys.add(RedisConstant.INCOMING_MSG_KEY_PREFIX + incomingMessageReqDTO.getAccessChannelType() + ":" +
+                    incomingMessageReqDTO.getBusinessType() + ":" + incomingMessageReqDTO.getBusinessId());
+            noCacheMap.put(incomingMessageReqDTO.getAccessChannelType() + "-" +
+                    incomingMessageReqDTO.getBusinessType() + "-" + incomingMessageReqDTO.getBusinessId(), incomingMessageReqDTO);
+        });
+        //批量查询缓存
+        List<JSONObject> cacheJSONS =  redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            for (String key : incomingCacheKeys) {
+                connection.get(redisTemplate.getKeySerializer().serialize(key));
+            }
+            return null;
+        });
+        log.info("IncomingBizServiceImpl--queryIncomingMessages, cacheJSONS:{}", JSONObject.toJSONString(cacheJSONS));
+        //遍历缓存中查询集合
+        for (JSONObject cacheJSON : cacheJSONS) {
+            if (ObjectUtils.isEmpty(cacheJSON)) {
+                continue;
+            }
+            IncomingMessageRespDTO cacheResp = JSONObject.toJavaObject(cacheJSON, IncomingMessageRespDTO.class);
+            String key = cacheResp.getAccessChannelType() + "-" + cacheResp.getBusinessType() +"-"+ cacheResp.getBusinessId();
+            //移除数据不为空的key，最终剩余参数查询数据库
+            noCacheMap.remove(key);
+            if (PN_OPEN_ACCOUNT_STATUS_SET.contains(cacheResp.getAccessStatus())) {
+                incomingMessageMap.put(key, cacheResp);
+            }
+        }
+        //缓存中查到入参全部数据，返回结果
+        if (CollectionUtils.isEmpty(noCacheMap)) {
+            return Result.ok(incomingMessageMap);
+        }
+        List<IncomingMessageReqDTO> queryDBReqs = new ArrayList<>();
+        //遍历缓存中未查询到的key集合，组合数据库查询参数
+        for (Map.Entry<String, IncomingMessageReqDTO> entry : noCacheMap.entrySet()) {
+            queryDBReqs.add(entry.getValue());
+        }
+        List<IncomingMessageRespDTO> incomingMessageRespDTOS = tfIncomingInfoService.queryIncomingMessagesByMerchantList(queryDBReqs);
         log.info("IncomingBizServiceImpl--queryIncomingMessages, incomingMessageRespDTOS:{}", JSONObject.toJSONString(incomingMessageRespDTOS));
         if (CollectionUtils.isEmpty(incomingMessageRespDTOS)) {
-            return Result.failed(ExceptionCodeEnum.IS_NULL);
+            return Result.ok(incomingMessageMap);
         }
-        Map<String, IncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
         //将查询到的数据集合，以“入网渠道”-“商户类型”-“商户id”为key放入map
         incomingMessageRespDTOS.forEach(incomingMessage -> {
             String key = incomingMessage.getAccessChannelType() + "-" + incomingMessage.getBusinessType() +"-"+ incomingMessage.getBusinessId();
             incomingMessageMap.put(key, incomingMessage);
         });
+        //异步写入进件缓存
+        asyncService.batchWriteIncomingCache(queryDBReqs);
         return Result.ok(incomingMessageMap);
     }
 
@@ -828,6 +894,20 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         redisCache.expire(prefix, 24, TimeUnit.HOURS);
         String str = String.format("%05d", incr);
         return prefix + str;
+    }
+
+    /**
+     * 写入缓存
+     * @param incomingId
+     */
+    private void writeIncomingCache(Long incomingId) {
+        IncomingMessageRespDTO incomingMessage = tfIncomingInfoService.queryIncomingMessageRespById(incomingId);
+        if (ObjectUtils.isEmpty(incomingMessage)) {
+            return;
+        }
+        String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  incomingMessage.getAccessChannelType() + ":"
+                + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
+        redisCache.setCacheString(key, JSONObject.toJSONString(incomingMessage));
     }
 
 

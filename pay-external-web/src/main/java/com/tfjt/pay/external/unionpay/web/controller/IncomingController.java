@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author Du Penglun
  * @version 1.0
@@ -82,9 +84,24 @@ public class IncomingController {
         return incomingBizService.queryIncomingStatus(incomingStatusReqDTO);
     }
 
-    @PostMapping("/getIncomingAreaChannel")
+    @PostMapping("/getIncomingStatusByCodes")
     public Result getIncomingAreaChannel(@RequestBody QueryIncomingStatusReqDTO reqDTO) {
         return incomingQueryBizService.queryIncomingStatusByAreaCodes(reqDTO);
+    }
+
+    @PostMapping("/getIncomingStatusByCode")
+    public Result getIncomingStatus(@RequestBody QueryIncomingStatusReqDTO reqDTO) {
+        return incomingQueryBizService.queryIncomingStatus(reqDTO);
+    }
+
+    @PostMapping("/batchQueryIncomingStatus")
+    public Result batchQueryIncomingStatus(@RequestBody List<QueryIncomingStatusReqDTO> queryIncomingStatusReqDTOS) {
+        return incomingQueryBizService.batchQueryIncomingStatus(queryIncomingStatusReqDTOS);
+    }
+
+    @PostMapping("/queryIncomingMessages")
+    public Result queryIncomingMessages(@RequestBody List<IncomingMessageReqDTO> incomingMessageReqDTOS) {
+        return incomingBizService.queryIncomingMessages(incomingMessageReqDTOS);
     }
 
 

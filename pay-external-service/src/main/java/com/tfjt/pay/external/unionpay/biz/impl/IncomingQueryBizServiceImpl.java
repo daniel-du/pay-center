@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.enums.*;
+import com.tfjt.pay.external.unionpay.service.AsyncService;
 import com.tfjt.pay.external.unionpay.service.SalesAreaIncomingChannelService;
 import com.tfjt.pay.external.unionpay.service.SelfSignService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
@@ -64,6 +65,9 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
     private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
 
     @Autowired
+    private AsyncService asyncService;
+
+    @Autowired
     private DevConfig devConfig;
 
     @DubboReference(retries = 0, timeout = 2000, check = false)
@@ -110,6 +114,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         }
         //根据区域获取入网渠道
         Integer channelCode = networkTypeCacheUtil.getNetworkTypeCacheList(queryIncomingStatusReqDTO.getAreaCode());
+        log.info("IncomingQueryBizServiceImpl--queryIncomingStatus, channelCode:{}", channelCode);
         QueryIncomingStatusRespDTO queryIncomingStatusRespDTO =
                 getIncomingStatusResp(channelCode, queryIncomingStatusReqDTO.getBusinessType(), queryIncomingStatusReqDTO.getBusinessId());
 
@@ -138,7 +143,6 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         Set<String> channelCacheKeys = new HashSet<>();
         Set<String> incomingCacheKeys = new HashSet<>();
         Set<String> cacheNullCodes = new HashSet<>();
-        Set<String> incomingCacheNullKeys = new HashSet<>();
         Map<String, QueryIncomingStatusReqDTO> pnIncomingReqMap = new HashMap<>();
         Map<String, QueryIncomingStatusReqDTO> unIncomingReqMap = new HashMap<>();
         List<String> areaCodes = new ArrayList<>();
@@ -159,21 +163,22 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                     req.getBusinessType() + ":" + req.getBusinessId();
             req.setAccessChannelType(Integer.parseInt(channelCode));
             incomingCacheKeys.add(cacheKey);
-            incomingCacheNullKeys.add(channelCode + ":" +
-                    req.getBusinessType() + ":" + req.getBusinessId());
             if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(Integer.parseInt(channelCode))) {
-                pnIncomingReqMap.put(cacheKey, req);
+                pnIncomingReqMap.put(channelCode + "-" + req.getBusinessType() + "-" + req.getBusinessId(), req);
             } else {
-                unIncomingReqMap.put(cacheKey, req);
+                unIncomingReqMap.put(channelCode + "-" + req.getBusinessType() + "-" + req.getBusinessId(), req);
             }
 
         });
 
         Map<String, QueryIncomingStatusRespDTO> incomingMessageMap = new HashMap<>();
         //批量查询Redis
-        List<String> incomingChannels = redisTemplate.opsForValue().multiGet(incomingCacheKeys);
+        List<JSONObject> incomingChannels = redisTemplate.opsForValue().multiGet(incomingCacheKeys);
         incomingChannels.forEach(incomingChannel -> {
-            IncomingMessageRespDTO incomingMessageRespDTO = JSONObject.parseObject(incomingChannel, IncomingMessageRespDTO.class);
+            if (ObjectUtils.isEmpty(incomingChannel)) {
+                return;
+            }
+            IncomingMessageRespDTO incomingMessageRespDTO = JSONObject.toJavaObject(incomingChannel, IncomingMessageRespDTO.class);
 //            queryIncomingStatusRespDTO.setIncomingStatus(getAccessStatus(channelCode, incomingMessageRespDTO));
             String mapKey = incomingMessageRespDTO.getAccessChannelType() + "-"
                     + incomingMessageRespDTO.getBusinessType() + "-" + incomingMessageRespDTO.getBusinessId();
@@ -187,10 +192,11 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             pnIncomingReqMap.remove(mapKey);
             unIncomingReqMap.remove(mapKey);
         });
-        if (CollectionUtils.isEmpty(pnIncomingReqMap) && CollectionUtils.isEmpty(unIncomingReqMap)) {
+        if (!CollectionUtils.isEmpty(pnIncomingReqMap) && !CollectionUtils.isEmpty(unIncomingReqMap)) {
             return Result.ok(incomingMessageMap);
         }
-
+        asyncService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.PINGAN.getCode(), pnIncomingReqMap);
+        asyncService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.UNIONPAY.getCode(), unIncomingReqMap);
         Map<String, QueryIncomingStatusRespDTO> pnStatusMap = batchQueryPnIncomingStatus(pnIncomingReqMap);
         if (!CollectionUtils.isEmpty(pnStatusMap)) {
             incomingMessageMap.putAll(pnStatusMap);
@@ -200,23 +206,6 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         if (!CollectionUtils.isEmpty(unStatusMap)) {
             incomingMessageMap.putAll(unStatusMap);
         }
-        //获取差集查询数据库-异步写入缓存
-
-
-        //根据渠道拆分，各自查询平安或银联渠道
-
-        //查询缓存
-
-        //获取差集
-        //查询数据库-平安入网
-        //写缓存
-
-        //获取差集
-        //--是否云商，获取acct
-        //查询数据库-银联入网
-        //写缓存
-
-
         return Result.ok(incomingMessageMap);
     }
 
@@ -260,7 +249,8 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     private List<SalesAreaIncomingChannelEntity> getIncomingChannels(Set<String> cacheKeys, Set<String> cacheNullCodes, List<String> areaCodes) {
         //批量查询Redis
-        List<String> incomingChannels = redisTemplate.opsForValue().multiGet(cacheKeys);
+        List<JSONObject> incomingChannels = redisTemplate.opsForValue().multiGet(cacheKeys);
+        log.info("IncomingQueryBizServiceImpl--getIncomingChannels, incomingChannels:{}", incomingChannels.toString());
         List<SalesAreaIncomingChannelEntity> areaIncomingChannels = new ArrayList<>();
         //如果缓存查询为空，则查询数据库
         if (CollectionUtils.isEmpty(incomingChannels)) {
@@ -269,10 +259,14 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             networkTypeCacheUtil.writeCache(cacheNullCodes);
         } else {
             //遍历序列化缓存数据，将缓存中存在的数据从 cacheNullCodes 中移除
-            for (String incomingChannel : incomingChannels) {
-                SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.parseObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
+            for (JSONObject incomingChannel : incomingChannels) {
+                if (ObjectUtils.isEmpty(incomingChannel)){
+                    continue;
+                }
+//                SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.parseObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
+                SalesAreaIncomingChannelEntity areaIncomingChannel = JSONObject.toJavaObject(incomingChannel, SalesAreaIncomingChannelEntity.class);
                 areaIncomingChannels.add(areaIncomingChannel);
-                cacheNullCodes.remove(areaIncomingChannel.getChannelCode());
+                cacheNullCodes.remove(areaIncomingChannel.getDistrictsCode());
             }
             //如果 cacheNullCodes 中剩余元素，即缓存未查到，尝试查询数据库获取
             if (!CollectionUtils.isEmpty(cacheNullCodes)) {
@@ -302,7 +296,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         queryIncomingStatusRespDTO.setAccessChannelType(channelCode);
         //获取缓存
         String incomingMsgStr = redisCache.getCacheString(cacheKey);
-        log.info("IncomingQueryBizServiceImpl--queryIncomingStatus, incomingMsgStr:{}", incomingMsgStr);
+        log.info("IncomingQueryBizServiceImpl--getIncomingStatusResp, incomingMsgStr:{}", incomingMsgStr);
         //缓存命中
         if (StringUtils.isNotBlank(incomingMsgStr)) {
             IncomingMessageRespDTO incomingMessageRespDTO = JSONObject.parseObject(incomingMsgStr, IncomingMessageRespDTO.class);
@@ -331,6 +325,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     private String getAccessStatus(Integer channelCode, IncomingMessageRespDTO incomingMessageRespDTO) {
         String accessStatus = NO_ACCESS_STATUS;
+        log.info("IncomingQueryBizServiceImpl--getAccessStatus, channelCode:{}", channelCode);
         //根据渠道判断是否入网成功
         if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelCode)) {
             if (PN_OPEN_ACCOUNT_STATUS_SET.contains(incomingMessageRespDTO.getAccessStatus())) {
@@ -342,6 +337,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 accessStatus = HAS_ACCESS_STATUS;
             }
         }
+        log.info("IncomingQueryBizServiceImpl--getAccessStatus, accessStatus:{}", accessStatus);
         return accessStatus;
     }
 
@@ -352,10 +348,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      * @return
      */
     private IncomingMessageRespDTO getIncomingMessage(Integer channelCode, IncomingMessageReqDTO incomingMessageReqDTO) {
+        log.info("IncomingQueryBizServiceImpl--getIncomingMessage, channelCode:{}, incomingMessageReqDTO:{}", channelCode, JSONObject.toJSONString(incomingMessageReqDTO));
         IncomingMessageRespDTO incomingMessageRespDTO = new IncomingMessageRespDTO();
         //查询平安入网进件信息
         if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelCode)) {
             incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
+            log.info("IncomingQueryBizServiceImpl--getIncomingMessage, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
             if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
                 incomingMessageRespDTO = new IncomingMessageRespDTO();
                 incomingMessageRespDTO.setAccessStatus(0);
@@ -373,13 +371,18 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             //如果是云商，先查询supplier获取supplierId
             if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(incomingMessageReqDTO.getBusinessType())) {
                 com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result =  tfSupplierApi.getSupplierInfoById(incomingMessageReqDTO.getBusinessId());
+                log.info("IncomingQueryBizServiceImpl--getIncomingMessage, supplierResult:{}", JSONObject.toJSONString(result));
                 if (ObjectUtils.isEmpty(result) || ObjectUtils.isEmpty(result.getData())) {
                     incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
+                    incomingMessageRespDTO.setAccessChannelType(channelCode);
+                    incomingMessageRespDTO.setBusinessType(incomingMessageReqDTO.getBusinessType());
+                    incomingMessageRespDTO.setBusinessId(incomingMessageReqDTO.getBusinessId());
                     return incomingMessageRespDTO;
                 }
                 acct = result.getData().getSupplierId();
             }
             SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(acct);
+            log.info("IncomingQueryBizServiceImpl--getIncomingMessage, selfSignEntity:{}", JSONObject.toJSONString(selfSignEntity));
             if (ObjectUtils.isEmpty(selfSignEntity)) {
                 incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
             } else {
@@ -492,6 +495,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             flag = channelConfigFlagMap.containsKey(IncomingAccessChannelTypeEnum.PINGAN.getCode().toString()) ?
                     NumberConstant.ONE : NumberConstant.TWO;
         }
+        log.info("IncomingQueryBizServiceImpl--getChannelFlag, flag:{}", flag);
         return flag;
     }
 

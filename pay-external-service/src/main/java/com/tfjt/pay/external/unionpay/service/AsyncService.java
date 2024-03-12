@@ -1,10 +1,13 @@
 package com.tfjt.pay.external.unionpay.service;
 
+import com.tfjt.pay.external.query.api.dto.req.QueryIncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author zxy
@@ -21,4 +24,17 @@ public interface AsyncService {
      * @param incomingSubmitMessageDTO
      */
     void writeIncomingCache(IncomingSubmitMessageDTO incomingSubmitMessageDTO);
+
+    /**
+     * 批量写入进件缓存
+     * @param accessChannel
+     * @param incomingReqMap
+     */
+    void batchWriteIncomingCache(Integer accessChannel, Map<String, QueryIncomingStatusReqDTO> incomingReqMap);
+
+    /**
+     * 批量写入进件缓存
+     * @param queryDBReqs
+     */
+    void batchWriteIncomingCache(List<IncomingMessageReqDTO> queryDBReqs);
 }

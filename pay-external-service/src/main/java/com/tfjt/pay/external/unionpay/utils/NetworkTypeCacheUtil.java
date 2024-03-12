@@ -77,8 +77,8 @@ public class NetworkTypeCacheUtil {
         if (!CollectionUtils.isEmpty(areaIncomingChannels)) {
             //遍历数据库查询结果，写入缓存，移除set中元素
             for (SalesAreaIncomingChannelEntity areaIncomingChannel : areaIncomingChannels) {
-                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaIncomingChannel.getDistrictsCode(), areaIncomingChannel.getChannelCode());
-                areaCodes.remove(areaIncomingChannel.getChannelCode());
+                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaIncomingChannel.getDistrictsCode(), JSONObject.toJSONString(areaIncomingChannel));
+                areaCodes.remove(areaIncomingChannel.getDistrictsCode());
             }
         }
         //剩余set中元素不为空时，剩余区域未配置渠道，默认为银联，写入缓存

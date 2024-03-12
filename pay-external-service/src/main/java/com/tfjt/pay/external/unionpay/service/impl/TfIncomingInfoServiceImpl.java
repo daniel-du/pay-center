@@ -155,4 +155,14 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
         wrapper.apply("( business_id, business_type ) IN "+sql);
         return super.list(BusinessIsIncomingRespDTO.class,wrapper);
     }
+
+    /**
+     * 根据入网id查询
+     * @param incomingId
+     * @return
+     */
+    @Override
+    public IncomingMessageRespDTO queryIncomingMessageRespById(Long incomingId) {
+        return this.baseMapper.queryIncomingMessageRespById(incomingId);
+    }
 }
