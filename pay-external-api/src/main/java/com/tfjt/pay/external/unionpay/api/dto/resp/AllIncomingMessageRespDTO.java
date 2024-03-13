@@ -1,6 +1,8 @@
-package com.tfjt.pay.external.unionpay.dto.resp;
+package com.tfjt.pay.external.unionpay.api.dto.resp;
 
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * @author Du Penglun
@@ -9,7 +11,7 @@ import lombok.Data;
  * @description 供应商查询所有渠道入网状态、商户号信息 返参
  */
 @Data
-public class AllIncomingMessageRespDTO {
+public class AllIncomingMessageRespDTO implements Serializable {
 
     /**
      * 渠道名称

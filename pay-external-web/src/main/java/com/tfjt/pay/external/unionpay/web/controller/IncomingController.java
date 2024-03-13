@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.web.controller;
 
 import com.tfjt.pay.external.query.api.dto.req.QueryIncomingStatusReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.AllIncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
@@ -8,7 +9,7 @@ import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.biz.IncomingQueryBizService;
 import com.tfjt.pay.external.unionpay.config.DevConfig;
 import com.tfjt.pay.external.unionpay.dto.req.*;
-import com.tfjt.pay.external.unionpay.dto.resp.AllIncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
