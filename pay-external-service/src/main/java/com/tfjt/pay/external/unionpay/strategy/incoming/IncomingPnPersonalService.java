@@ -3,7 +3,7 @@ package com.tfjt.pay.external.unionpay.strategy.incoming;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.config.DevConfig;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
+import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
@@ -97,7 +97,7 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
                 //调用回填验证码接口
                 JSONObject resultJson = pnHeadUtils.send(jsonObject,
                         PnApiEnum.CHECK_CODE_PERSONAL.getServiceCode(), PnApiEnum.CHECK_CODE_PERSONAL.getServiceId());
-                JSONObject dataJson = resultJson.getJSONObject(PnSdkConstant.RESULT_DATA_FIELD);
+                JSONObject dataJson = resultJson.getJSONObject(IncomingConstant.RESULT_DATA_FIELD);
                 TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
                 tfIncomingInfoEntity.setId(checkCodeMessageDTO.getId());
                 log.info("IncomingBindCardPnPersonalServiceImpl--checkCode, dataJson:{}", JSONObject.toJSONString(dataJson));
@@ -107,7 +107,7 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
                     tfIncomingInfoEntity.setFailReason(errorJson.toJSONString());
                     tfIncomingInfoEntity.setFailTime(LocalDateTime.now());
                     tfIncomingInfoService.updateById(tfIncomingInfoEntity);
-                    throw new TfException(errorJson.getString(PnSdkConstant.RESULT_ERROR_MSG_FIELD));
+                    throw new TfException(errorJson.getString(IncomingConstant.RESULT_ERROR_MSG_FIELD));
                 }
                 tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.SMS_VERIFICATION_SUCCESS.getCode());
                 tfIncomingInfoService.updateById(tfIncomingInfoEntity);
@@ -144,7 +144,7 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
             JSONObject resultJson = pnHeadUtils.send(covertBinkCardJson(incomingSubmitMessageDTO),
                     PnApiEnum.BIND_CARD_PERSONAL.getServiceCode(), PnApiEnum.BIND_CARD_PERSONAL.getServiceId());
             //平安api返回标识非成功
-            JSONObject dataJson = resultJson.getJSONObject(PnSdkConstant.RESULT_DATA_FIELD);
+            JSONObject dataJson = resultJson.getJSONObject(IncomingConstant.RESULT_DATA_FIELD);
             log.info("IncomingBindCardPnPersonalServiceImpl--binkCard, dataJson:{}", JSONObject.toJSONString(dataJson));
             if (ObjectUtils.isEmpty(dataJson)) {
                 //记录错误原因
@@ -154,7 +154,7 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
                 tfIncomingInfoEntity.setFailReason(errorJson.toJSONString());
                 tfIncomingInfoEntity.setFailTime(LocalDateTime.now());
                 tfIncomingInfoService.updateById(tfIncomingInfoEntity);
-                throw new TfException(errorJson.getString(PnSdkConstant.RESULT_ERROR_MSG_FIELD));
+                throw new TfException(errorJson.getString(IncomingConstant.RESULT_ERROR_MSG_FIELD));
             }
         } catch (TfException e) {
             log.error("IncomingBindCardPnCorporateServiceImpl--binkCard exception", e);
@@ -241,11 +241,11 @@ public class IncomingPnPersonalService extends AbstractIncomingService {
         //会员账号:提现的银行卡
         jsonObject.put("MemberAcctNo", incomingSubmitMessageDTO.getBankCardNo());
         //银行类型:1：本行 2：他行
-        jsonObject.put("BankType", PnSdkConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankCode()) ? NumberConstant.ONE : NumberConstant.TWO);
+        jsonObject.put("BankType", IncomingConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankCode()) ? NumberConstant.ONE : NumberConstant.TWO);
         //开户行名称
         jsonObject.put("AcctOpenBranchName", incomingSubmitMessageDTO.getBankName());
         //大小额行号：大小额行号和超级网银行号两者二选一必填。
-        if (!PnSdkConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankCode())) {
+        if (!IncomingConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankCode())) {
             jsonObject.put("CnapsBranchId", incomingSubmitMessageDTO.getBankBranchCode());
         }
 //        //超级网银行号

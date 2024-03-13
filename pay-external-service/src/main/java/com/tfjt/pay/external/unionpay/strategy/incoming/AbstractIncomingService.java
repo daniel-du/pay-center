@@ -1,12 +1,9 @@
 package com.tfjt.pay.external.unionpay.strategy.incoming;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
-import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
+import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
@@ -71,19 +68,19 @@ public abstract class AbstractIncomingService {
 //                tfIncomingInfoService.updateById(tfIncomingInfoEntity);
 //                throw new TfException(errorJson.getString(PnSdkConstant.RESULT_ERROR_MSG_FIELD));
 //            }
-            JSONObject dataJson = resultJson.getJSONObject(PnSdkConstant.RESULT_DATA_FIELD);
+            JSONObject dataJson = resultJson.getJSONObject(IncomingConstant.RESULT_DATA_FIELD);
             if (ObjectUtils.isEmpty(dataJson)) {
                 JSONObject errorJson = PnHeadUtils.getError(resultJson);
                 tfIncomingInfoEntity.setFailReason(errorJson.toJSONString());
                 tfIncomingInfoEntity.setFailTime(LocalDateTime.now());
                 tfIncomingInfoService.updateById(tfIncomingInfoEntity);
-                throw new TfException(errorJson.getString(PnSdkConstant.RESULT_ERROR_MSG_FIELD));
+                throw new TfException(errorJson.getString(IncomingConstant.RESULT_ERROR_MSG_FIELD));
 //                throw new TfException("返回数据为空");
             }
-            if (StringUtils.isBlank(dataJson.getString(PnSdkConstant.RESULT_SUB_ACCT_NO_FIELD))) {
+            if (StringUtils.isBlank(dataJson.getString(IncomingConstant.RESULT_SUB_ACCT_NO_FIELD))) {
                 throw new TfException("返回子账户号为空");
             }
-            return dataJson.getString(PnSdkConstant.RESULT_SUB_ACCT_NO_FIELD);
+            return dataJson.getString(IncomingConstant.RESULT_SUB_ACCT_NO_FIELD);
         } catch (TfException e) {
             log.error("IncomingBindCardService--openAccount exception", e);
             throw new TfException(e.getCode(), e.getMessage());
@@ -103,7 +100,7 @@ public abstract class AbstractIncomingService {
             JSONObject resultJson = pnHeadUtils.send(covertConfirmAgreementJson(checkCodeMessageDTO),
                     PnApiEnum.REGISTER_BEHAVIOR.getServiceCode(), PnApiEnum.REGISTER_BEHAVIOR.getServiceId());
             //平安api返回标识非成功
-            JSONObject dataJson = resultJson.getJSONObject(PnSdkConstant.RESULT_DATA_FIELD);
+            JSONObject dataJson = resultJson.getJSONObject(IncomingConstant.RESULT_DATA_FIELD);
             TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
             tfIncomingInfoEntity.setId(checkCodeMessageDTO.getId());
             if (ObjectUtils.isEmpty(dataJson)) {
@@ -112,7 +109,7 @@ public abstract class AbstractIncomingService {
                 tfIncomingInfoEntity.setFailReason(errorJson.toJSONString());
                 tfIncomingInfoEntity.setFailTime(LocalDateTime.now());
                 tfIncomingInfoService.updateById(tfIncomingInfoEntity);
-                throw new TfException(errorJson.getString(PnSdkConstant.RESULT_ERROR_MSG_FIELD));
+                throw new TfException(errorJson.getString(IncomingConstant.RESULT_ERROR_MSG_FIELD));
             }
             tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.ACCESS_SUCCESS.getCode());
             tfIncomingInfoService.updateById(tfIncomingInfoEntity);

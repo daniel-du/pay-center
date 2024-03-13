@@ -14,6 +14,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
@@ -487,11 +488,11 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
                 allIncomingMessageRespDTO.setChannelName(IncomingAccessChannelTypeEnum.getDescFromCode(incomingInfo.getAccessChannelType().intValue()));
                 if (IncomingAccessStatusEnum.IMPORTS_CLOSURE.getCode().equals(incomingInfo.getAccessStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName("未入网");
-                } else if (IncomingAccessStatusEnum.ACCESS_SUCCESS.getCode().equals(incomingInfo.getAccessStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName("入网成功");
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
+                } else if (PN_OPEN_ACCOUNT_STATUS_SET.contains(incomingInfo.getAccessStatus())) {
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.HAS_ACCESS_STATUS_NAME);
                 } else {
-                    allIncomingMessageRespDTO.setAccessStatusName("入网中");
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.ACCESSING_STATUS_NAME);
                 }
                 allIncomingMessageRespDTO.setAccountNo(incomingInfo.getAccountNo());
                 incomingMessageMap.put(incomingInfo.getAccessChannelType().intValue(), allIncomingMessageRespDTO);
@@ -505,14 +506,14 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
             allIncomingMessageRespDTO.setChannelName(IncomingAccessChannelTypeEnum.UNIONPAY.getDesc());
             if (ObjectUtils.isEmpty(selfSignEntity)) {
-                allIncomingMessageRespDTO.setAccessStatusName("未入网");
+                allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
             } else {
                 if ("-1".equals(selfSignEntity.getSigningStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName("未入网");
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
                 } else if ("03".equals(selfSignEntity.getSigningStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName("入网成功");
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.HAS_ACCESS_STATUS_NAME);
                 } else {
-                    allIncomingMessageRespDTO.setAccessStatusName("入网中");
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.ACCESSING_STATUS_NAME);
                 }
                 allIncomingMessageRespDTO.setAccountNo(selfSignEntity.getMid());
                 allIncomingMessageRespDTO.setAccountBusinessNo(selfSignEntity.getBusinessNo());
@@ -525,7 +526,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             } else {
                 AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
                 allIncomingMessageRespDTO.setChannelName(accessChannelTypeEnum.getDesc());
-                allIncomingMessageRespDTO.setAccessStatusName("未入网");
+                allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
                 messageRespList.add(allIncomingMessageRespDTO);
             }
         }

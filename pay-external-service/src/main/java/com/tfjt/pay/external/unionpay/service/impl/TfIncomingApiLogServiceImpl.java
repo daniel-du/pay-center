@@ -3,13 +3,12 @@ package com.tfjt.pay.external.unionpay.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.pingan.openbank.api.sdk.common.http.HttpResult;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
+import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingApiLogEntity;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingApiLogDao;
 import com.tfjt.pay.external.unionpay.enums.IncomingAccessChannelTypeEnum;
 import com.tfjt.pay.external.unionpay.enums.IncomingAccessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingApiLogService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tfjt.tfcommon.mybatis.BaseServiceImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -44,11 +43,11 @@ public class TfIncomingApiLogServiceImpl extends BaseServiceImpl<TfIncomingApiLo
         incomingApiLogEntity.setStatus(NumberConstant.ONE);
         incomingApiLogEntity.setAccessChannelType(IncomingAccessChannelTypeEnum.PINGAN.getCode().byteValue());
         incomingApiLogEntity.setAccessType(IncomingAccessTypeEnum.COMMON.getCode().byteValue());
-        if (!PnSdkConstant.HTTP_SUCCESS_CODE.equals(httpResult.getCode())) {
+        if (!IncomingConstant.HTTP_SUCCESS_CODE.equals(httpResult.getCode())) {
             incomingApiLogEntity.setStatus(NumberConstant.TWO);
         }
         JSONObject resultJson = JSONObject.parseObject(httpResult.getData());
-        if (!PnSdkConstant.API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
+        if (!IncomingConstant.API_SUCCESS_CODE.equals(resultJson.getString("Code"))) {
             incomingApiLogEntity.setStatus(NumberConstant.TWO);
         }
         this.baseMapper.insert(incomingApiLogEntity);
