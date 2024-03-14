@@ -381,6 +381,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
                 }
                 acct = result.getData().getSupplierId();
             }
+            //查询银联进件表
             SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(acct);
             log.info("IncomingQueryBizServiceImpl--getIncomingMessage, selfSignEntity:{}", JSONObject.toJSONString(selfSignEntity));
             if (ObjectUtils.isEmpty(selfSignEntity)) {

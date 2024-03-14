@@ -117,7 +117,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private AsyncService asyncService;
 
-    @DubboReference
+    @DubboReference(retries = 0, timeout = 2000, check = false)
     private TfSupplierApiService tfSupplierApiService;
 
     @Value("${rocketmq.topic.incomingFinish}")
@@ -256,6 +256,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         if (ObjectUtils.isEmpty(incomingMessageReqDTO.getAccessChannelType())) {
             incomingMessageReqDTO.setAccessChannelType(getAccessChannelType(incomingMessageReqDTO.getAreaCode()));
         }
+
         IncomingMessageRespDTO incomingMessageRespDTO;
         String cacheKey = RedisConstant.INCOMING_MSG_KEY_PREFIX + incomingMessageReqDTO.getAccessChannelType() + ":" +
                 incomingMessageReqDTO.getBusinessType() + ":" + incomingMessageReqDTO.getBusinessId();
