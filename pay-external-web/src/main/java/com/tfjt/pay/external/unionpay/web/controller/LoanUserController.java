@@ -128,7 +128,7 @@ public class LoanUserController {
      *
      * @param busId 类型1商家2供应商
      * @return
-     * @Param busId 业务ID
+     * @Param   busId 业务ID
      */
     @GetMapping("/isIncoming")
     public Result<?> isIncoming(@RequestParam String busId) {
