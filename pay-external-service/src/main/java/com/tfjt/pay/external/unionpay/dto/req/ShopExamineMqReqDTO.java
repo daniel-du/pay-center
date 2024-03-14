@@ -16,6 +16,6 @@ public class ShopExamineMqReqDTO implements Serializable {
     private String phone;
     private String beforeDistractCode;
     private String afterDistractCode;
-    private String operator;
+    private String operatorName;
     private String operatorId;
 }

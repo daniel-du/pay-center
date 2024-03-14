@@ -16,5 +16,5 @@ public class ShopUpdateMqReqDTO implements Serializable {
     private String beforeDistractCode;
     private String afterDistractCode;
     private String operator;
-    private String operatorId;
+    private String operatorName;
 }
