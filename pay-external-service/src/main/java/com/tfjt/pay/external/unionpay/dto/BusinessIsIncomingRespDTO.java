@@ -10,5 +10,5 @@ import lombok.Data;
 public class BusinessIsIncomingRespDTO {
     private String accountNo;
     private Long businessId;
-    private Integer businessType;
+    private Byte businessType;
 }
