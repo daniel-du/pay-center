@@ -13,4 +13,20 @@ public class RedisConstant {
     public static final String PAY_GENERATE_ORDER_NO = "pay:generate_order_no";
 
     public static final String MOBILE_VERIFICATION_CODE = "smsCode:";
+
+    public static final String NETWORK_TYPE_BY_AREA_CODE = "pay:incoming:channel:";
+    public static final String NETWORK_TYPE_BY_AREA_CODE_All = "pay:incoming:all";
+
+    /**
+     * 进件信息缓存key前缀
+     */
+    public static final String INCOMING_MSG_KEY_PREFIX = "PAY:EXTERNAL:INCOMING:";
+
+    /**
+     * 进件信息缓存key前缀
+     */
+    public static final String INCOMING_BINK_CARD_KEY_PREFIX = "PAY:EXTERNAL:INCOMING:BINKCARD:";
+
+
+    public static final String SALE_AREA_KEY_PREFIX = "PAY:EXTERNAL:SALE_AREA:";
 }

@@ -18,5 +18,29 @@ public class RegularConstants {
 
     public static final String LICENSE_PATTERN="(^(?:(?![IOZSV])[\\dA-Z]){2}\\d{6}(?:(?![IOZSV])[\\dA-Z]){10}$)|(^\\d{15}$)"; //营业执照号码校验（15位、18位数字或字母大写）
 
+    /**
+     * 手机号正则表达式
+     */
+    public static final String MOBILE = "^[1][2,3,4,5,6,7,8,9][0-9]{9}$";
+
+    /**
+     * 18位身份证号正则表达式
+     */
+    public static final String ID_CARD_NEW = "^[1-9][0-9]{5}(18|19|20)[0-9]{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)[0-9]{3}([0-9]|(X))";
+
+    /**
+     * 15位身份证号正则表达式
+     */
+    public static final String ID_CARD_OLD = "^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{2}[0-9Xx]$";
+
+    /**
+     * 邮箱正则表达式
+     */
+    public static final String EMAIL = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
+
+    /**
+     * 统一社会信用码正则表达式
+     */
+    public static final String SOCIAL_CREDIT_CODE = "[0-9A-Z]{18}";
 
 }

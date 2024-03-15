@@ -39,13 +39,13 @@ mybatis-plus:
     cache-enabled: false
     # 开发模式控制台打印日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-#分布式锁
-lock4j:
-  acquire-timeout: 3000 #默认值3s，可不设置
-  expire: 30000 #默认值30s，可不设置
-  primary-executor: com.baomidou.lock.executor.RedisTemplateLockExecutor #默认redisson>redisTemplate>zookeeper，可不设置
-  lock-key-prefix: lock4j #锁key前缀, 默认值lock4j，可不设置
-
+##分布式锁
+#lock4j:
+#  acquire-timeout: 3000 #默认值3s，可不设置
+#  expire: 30000 #默认值30s，可不设置
+#  primary-executor: com.baomidou.lock.executor.RedisTemplateLockExecutor #默认redisson>redisTemplate>zookeeper，可不设置
+#  lock-key-prefix: lock4j #锁key前缀, 默认值lock4j，可不设置
+#
 xxl:
   job:
     admin:

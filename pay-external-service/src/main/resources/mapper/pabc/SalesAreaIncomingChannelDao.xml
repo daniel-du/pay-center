@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.SalesAreaIncomingChannelDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity" id="salesAreaMap">
+        <result property="id" column="id"/>
+        <result property="province" column="province"/>
+        <result property="provinceCode" column="province_code"/>
+        <result property="city" column="city"/>
+        <result property="cityCode" column="city_code"/>
+        <result property="districts" column="districts"/>
+        <result property="districtsCode" column="districts_code"/>
+        <result property="area" column="area"/>
+        <result property="channel" column="channel"/>
+        <result property="channelCode" column="channel_code"/>
+    </resultMap>
+
+
+</mapper>
