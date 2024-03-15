@@ -417,10 +417,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelFlag)
                     && NO_ACCESS_STATUS.equals(statusResp.getIncomingStatus())) {
                 incomingStatusResp.setNoIncomingReason(PN_NO_INCOMING_REASON);
+                incomingStatusResp.setNoIncomingFlag(1);
             }
             if (IncomingAccessChannelTypeEnum.UNIONPAY.getCode().equals(channelFlag)
                     && NO_ACCESS_STATUS.equals(statusResp.getIncomingStatus())) {
                 incomingStatusResp.setNoIncomingReason(UNIONPAY_NO_INCOMING_REASON);
+                incomingStatusResp.setNoIncomingFlag(2);
             }
             incomingStatusResp.setIncomingStatus(statusResp.getIncomingStatus());
             log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, statusResp:{}", JSONObject.toJSONString(statusResp));
@@ -439,12 +441,15 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         } else if (NO_ACCESS_STATUS.equals(pnResp.getIncomingStatus()) && HAS_ACCESS_STATUS.equals(unResp.getIncomingStatus())) {
             incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
             incomingStatusResp.setNoIncomingReason(PN_NO_INCOMING_REASON);
+            incomingStatusResp.setNoIncomingFlag(1);
         } else if (HAS_ACCESS_STATUS.equals(pnResp.getIncomingStatus()) && NO_ACCESS_STATUS.equals(unResp.getIncomingStatus())) {
             incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
             incomingStatusResp.setNoIncomingReason(UNIONPAY_NO_INCOMING_REASON);
+            incomingStatusResp.setNoIncomingFlag(2);
         } else {
             incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
             incomingStatusResp.setNoIncomingReason(ALL_NO_INCOMING_REASON);
+            incomingStatusResp.setNoIncomingFlag(0);
         }
         return incomingStatusResp;
     }

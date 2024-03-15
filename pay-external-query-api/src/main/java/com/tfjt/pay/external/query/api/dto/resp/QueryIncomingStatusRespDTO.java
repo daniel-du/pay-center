@@ -37,4 +37,9 @@ public class QueryIncomingStatusRespDTO implements Serializable {
      * 未入网原因
      */
     private String noIncomingReason;
+
+    /**
+     * 未入网标识，0：所有渠道均未入网，1：平安未入网，2：银联未入网
+     */
+    private Integer noIncomingFlag;
 }
