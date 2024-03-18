@@ -82,7 +82,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             if (Objects.nonNull(shopDetailInfoRpcRespDto.getCard())){
                 respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
             }
-            if (Objects.nonNull(shopDetailInfoRpcRespDto.getName())){
+            if (Objects.nonNull(shopDetailInfoRpcRespDto.getRealName())){
                 respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getName()));
             }
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
