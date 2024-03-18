@@ -961,11 +961,13 @@ public class IncomingBizServiceImpl implements IncomingBizService {
      */
     private void writeIncomingCache(Long incomingId) {
         IncomingMessageRespDTO incomingMessage = tfIncomingInfoService.queryIncomingMessageRespById(incomingId);
+        log.info("IncomingBizServiceImpl--writeIncomingCache, incomingMessage:{}", JSONObject.toJSONString(incomingMessage));
         if (ObjectUtils.isEmpty(incomingMessage)) {
             return;
         }
         String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  incomingMessage.getAccessChannelType() + ":"
                 + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
+
         redisCache.setCacheString(key, JSONObject.toJSONString(incomingMessage));
     }
 
