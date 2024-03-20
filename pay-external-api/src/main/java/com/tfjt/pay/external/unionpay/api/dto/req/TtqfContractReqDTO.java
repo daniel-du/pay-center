@@ -16,7 +16,7 @@ public class TtqfContractReqDTO implements Serializable {
     /**
      * 会员id
      */
-    private String businessId;
+    private Long businessId;
 
     /**
      * 身份证号

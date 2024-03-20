@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.api.dto.req;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author Du Penglun
@@ -16,12 +17,22 @@ public class TtqfSignReqDTO implements Serializable {
     /**
      * 会员id
      */
-    private String businessId;
+    private Long businessId;
 
     /**
-     * 业务类型
+     * 业务类型-3：会员体系
      */
     private Integer businessType;
+
+    /**
+     * 会员注册时间
+     */
+    private LocalDateTime registerTime;
+
+    /**
+     * 姓名
+     */
+    private String userName;
 
     /**
      * 身份证号
@@ -52,4 +63,9 @@ public class TtqfSignReqDTO implements Serializable {
      * 身份证背面照片url
      */
     private String idCardPicBFileId;
+
+    /**
+     * 银行卡号
+     */
+    private String bankCardNo;
 }
