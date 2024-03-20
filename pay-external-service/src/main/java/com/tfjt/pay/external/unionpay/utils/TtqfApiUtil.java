@@ -5,8 +5,20 @@ import com.ipaynow.jiaxin.TangClient;
 import com.ipaynow.jiaxin.domain.PresignModel;
 import com.ipaynow.jiaxin.request.PresignRequest;
 import com.ipaynow.jiaxin.response.PresignResponse;
+import com.pingan.openbank.api.sdk.client.ApiClient;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.net.ssl.*;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import static com.ipaynow.jiaxin.TangConstants.DEV_HOST;
 
@@ -16,14 +28,33 @@ import static com.ipaynow.jiaxin.TangConstants.DEV_HOST;
  * @date 2024/3/19 15:44
  * @description
  */
+@Slf4j
+@Component
 public class TtqfApiUtil {
 
-    public static final String mchPrivateKey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDXsdBOhA3fuo8+ilcZsbxl3/FI0ISP0DraWD5+DDtZHphJum+LkDjluqekDPVMZkz9B/a9lZT3Uhk2wSQ2lBS+IVwJEQB6h3ejcpKcaYG/F0s3lx8ArxEbJD8mGy1sId7yjg13fBgIzBbAJ4AvQw4rzbNKRdNox8pzRA6swKIy8ovT3df7B5utoNHKGOZTrwNQcrjGGQuIlvJxktpxWQfHdhy5m+MDNLYJAytLTNoiclp2Erdej8BQPbfcpqqr6CCGOvBm+zZ7VN4wbKQHaONwuPOE+iaYuJbR0O74bTmPGGSKwdNf86VJp5DWxPmwlYxgBLsm/BA71kxxNgcQ9L4NAgMBAAECggEAJb/7IyK9guCV3W483ERdIr9U7VeBO+JHypsTJOBjKq/OG2lDyHtPWfWXDYEvFVX6N3bDWl7pmXeG7ixTeDHmh3gzMWsGWGuJJtQQkMtuZ9Fd2rbaODZrmgJ4AuVSx9ANwwnVlYnkcvW1LaA8MQldW5E+xcr+uyHsbswEfXuhZ6T1RFZnDBBYQbAAYTMAlS5cUqlVFF71GYMS3jpR4Dp7ddMPXcpOFZ/6t65vGrQkYgGHUHBIKzLh1BBioG/RaimmZPeRDUrED0ENuZkP6fPuAunPcdrIAHOueZde4AgTEiQCDYZjtT9KCoBpKQxwDAQpJVVjbvCZUk+CULy5i2+2QQKBgQDyojIMue3BJEZeh5Cyu9gBGGlhUegssJ/CcIQG1HvI18OY4z2T0o7LVvgNqn7sJ4nJHfn5hrfkVk2a+SwEd22WCNtXc+cU3JNnHyenX3xwbLDY8oUS6SXmv4GqQXy4O8LxKoZAtBVbteDs00ybptA/1PH2mf1BMBBsVQEcaQlumQKBgQDjk7QzHfCOYhDij4v0vQwMxnwRSg03ZTJp9chXMaKkkhRV11ApbX0QsK23EZ82vK9P58BYKz+ewZmLQq6zX6ooUQxvo9mUm4/Czc25f1nbt9aXkQYcDN+2bSbcRkvPcAMWwxiu2J4/XBofI0L0oySTWcfkdbGIw+MOCZHB/Ki3lQKBgE5F0MuWN4L1RtY7+YwPWTGRRH2mxLWWDRPW5GCnr38tS+ZIeJb1eCdU2RTfia55WtPMndXHhg9dYA+8jlyqgmnCVbAyrbtnJQ5BWLN/9E74YVy7b/6XxChaY2QfWDK+5LaUN1csQS+izvrXd4FHIStWcPBS4QZkkQfBrGgT4n0RAoGAWW1cPU4BjmHY0r6nt5dmGcsRS9X2lZMNmXe8rw7RI6xHk2fVl0HwCFP1H2AsWV0R4utluP/dsyvOg1vDvLbV7ZvTsDcJtAzhFCK9OaxiiiWWjN6vMOyaKFyCDcMN3Ujd3d7yXxq+LJWrqhq4H9vP7ps0IoFhLyYSnhyCi2EWh3UCgYEAgEmImF2I6BnQnhKz/5tdzr95ZXGiHDeO7UpFJTJrOmJIyLMgCOy2jIK8TjdE3yzWXics46/ZLicumwsjTzyByoALhuUrfFnCvdYeD+POHFFDcKCkFROQsKosQKWkREc2J2fF18E9m0D46LpeqtuWWxI4aRjgfKjQrYQaxU5lcO8=";
-    // 平台方公钥
-    public static final String platformPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo/PmfNo3v8+VIT2oSUMXtZJGtGiBfqjVQAeKjppXkZ9jgzNjVbRAnWdTXKifyQQa5QhGeFCjJ9RS5WwLyZMBdwbhJJ2YkVDDXDc284CuXf5J3TDodkexfDwyPf3SvSVemRej5muhju1DOzLAyvx4GRKbDOEQqNiFxmn7HnQ2U6HsnQKa/LkB4ydogauI81q/taOcLyZsxz+uiIxYHQ2kujDBYncH3ncBeNQ7rWh7trWvCZ2sbtmUjbU2FC/cpp1oFBQbiQAuVA+4NBjobT/Ig7hGT9NiJ0elzOX5vWKvZelu6zD8z/frqXKSeyDWdjE9TB53pvCCuCiZSyOEwLJ0uwIDAQAB";
-    public static final String mch_id = "000000100543062";
+    @Value("${ttqf.mchPrivateKey}")
+    private String mchPrivateKeyValue;
 
-    static TangClient client = new DefaultTangClient(DEV_HOST, mchPrivateKey, platformPublicKey, mch_id);//new DefaultTangClient(DEV_HOST, mchPrivateKey, platformPublicKey, mch_id);
+    @Value("${ttqf.platformPublicKey}")
+    private String platformPublicKeyValue;
+
+    @Value("${ttqf.mchIdValue}")
+    private String mchIdValue;
+
+    public static  String mchPrivateKey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDXsdBOhA3fuo8+ilcZsbxl3/FI0ISP0DraWD5+DDtZHphJum+LkDjluqekDPVMZkz9B/a9lZT3Uhk2wSQ2lBS+IVwJEQB6h3ejcpKcaYG/F0s3lx8ArxEbJD8mGy1sId7yjg13fBgIzBbAJ4AvQw4rzbNKRdNox8pzRA6swKIy8ovT3df7B5utoNHKGOZTrwNQcrjGGQuIlvJxktpxWQfHdhy5m+MDNLYJAytLTNoiclp2Erdej8BQPbfcpqqr6CCGOvBm+zZ7VN4wbKQHaONwuPOE+iaYuJbR0O74bTmPGGSKwdNf86VJp5DWxPmwlYxgBLsm/BA71kxxNgcQ9L4NAgMBAAECggEAJb/7IyK9guCV3W483ERdIr9U7VeBO+JHypsTJOBjKq/OG2lDyHtPWfWXDYEvFVX6N3bDWl7pmXeG7ixTeDHmh3gzMWsGWGuJJtQQkMtuZ9Fd2rbaODZrmgJ4AuVSx9ANwwnVlYnkcvW1LaA8MQldW5E+xcr+uyHsbswEfXuhZ6T1RFZnDBBYQbAAYTMAlS5cUqlVFF71GYMS3jpR4Dp7ddMPXcpOFZ/6t65vGrQkYgGHUHBIKzLh1BBioG/RaimmZPeRDUrED0ENuZkP6fPuAunPcdrIAHOueZde4AgTEiQCDYZjtT9KCoBpKQxwDAQpJVVjbvCZUk+CULy5i2+2QQKBgQDyojIMue3BJEZeh5Cyu9gBGGlhUegssJ/CcIQG1HvI18OY4z2T0o7LVvgNqn7sJ4nJHfn5hrfkVk2a+SwEd22WCNtXc+cU3JNnHyenX3xwbLDY8oUS6SXmv4GqQXy4O8LxKoZAtBVbteDs00ybptA/1PH2mf1BMBBsVQEcaQlumQKBgQDjk7QzHfCOYhDij4v0vQwMxnwRSg03ZTJp9chXMaKkkhRV11ApbX0QsK23EZ82vK9P58BYKz+ewZmLQq6zX6ooUQxvo9mUm4/Czc25f1nbt9aXkQYcDN+2bSbcRkvPcAMWwxiu2J4/XBofI0L0oySTWcfkdbGIw+MOCZHB/Ki3lQKBgE5F0MuWN4L1RtY7+YwPWTGRRH2mxLWWDRPW5GCnr38tS+ZIeJb1eCdU2RTfia55WtPMndXHhg9dYA+8jlyqgmnCVbAyrbtnJQ5BWLN/9E74YVy7b/6XxChaY2QfWDK+5LaUN1csQS+izvrXd4FHIStWcPBS4QZkkQfBrGgT4n0RAoGAWW1cPU4BjmHY0r6nt5dmGcsRS9X2lZMNmXe8rw7RI6xHk2fVl0HwCFP1H2AsWV0R4utluP/dsyvOg1vDvLbV7ZvTsDcJtAzhFCK9OaxiiiWWjN6vMOyaKFyCDcMN3Ujd3d7yXxq+LJWrqhq4H9vP7ps0IoFhLyYSnhyCi2EWh3UCgYEAgEmImF2I6BnQnhKz/5tdzr95ZXGiHDeO7UpFJTJrOmJIyLMgCOy2jIK8TjdE3yzWXics46/ZLicumwsjTzyByoALhuUrfFnCvdYeD+POHFFDcKCkFROQsKosQKWkREc2J2fF18E9m0D46LpeqtuWWxI4aRjgfKjQrYQaxU5lcO8=";
+    // 平台方公钥
+    public static  String platformPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo/PmfNo3v8+VIT2oSUMXtZJGtGiBfqjVQAeKjppXkZ9jgzNjVbRAnWdTXKifyQQa5QhGeFCjJ9RS5WwLyZMBdwbhJJ2YkVDDXDc284CuXf5J3TDodkexfDwyPf3SvSVemRej5muhju1DOzLAyvx4GRKbDOEQqNiFxmn7HnQ2U6HsnQKa/LkB4ydogauI81q/taOcLyZsxz+uiIxYHQ2kujDBYncH3ncBeNQ7rWh7trWvCZ2sbtmUjbU2FC/cpp1oFBQbiQAuVA+4NBjobT/Ig7hGT9NiJ0elzOX5vWKvZelu6zD8z/frqXKSeyDWdjE9TB53pvCCuCiZSyOEwLJ0uwIDAQAB";
+    public static  String mch_id = "000000100543062";
+
+    static TangClient client;//new DefaultTangClient(DEV_HOST, mchPrivateKey, platformPublicKey, mch_id);
+
+    @PostConstruct
+    public void init() {
+        client = new DefaultTangClient(DEV_HOST, mchPrivateKey, platformPublicKey, mch_id);
+        mchPrivateKey = mchPrivateKeyValue;
+        platformPublicKey = platformPublicKeyValue;
+        mch_id = mchIdValue;
+    }
 
     public static void main(String[] args) throws IOException {
         // todo 3.1 用户预签约接口
@@ -72,6 +103,77 @@ public class TtqfApiUtil {
         } else {
             System.out.println("失败" + response);
         }
+    }
+
+    public static byte[] getFileStream(String url){
+        try {
+            URL httpUrl = new URL(url);
+            if("https".equalsIgnoreCase(httpUrl.getProtocol())){
+                ignoreSsl();
+            }
+            HttpURLConnection conn = (HttpURLConnection)httpUrl.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5 * 1000);
+            InputStream inStream = conn.getInputStream();//通过输入流获取图片数据
+            byte[] btImg = readInputStream(inStream);//得到图片的二进制数据
+            return btImg;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static byte[] readInputStream(InputStream inStream) throws Exception{
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len = 0;
+        while( (len=inStream.read(buffer)) != -1 ){
+            outStream.write(buffer, 0, len);
+        }
+        inStream.close();
+        return outStream.toByteArray();
+    }
+
+    private static void trustAllHttpsCertificates() throws Exception {
+        TrustManager[] trustAllCerts = new TrustManager[1];
+        TrustManager tm = new miTM();
+        trustAllCerts[0] = tm;
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, null);
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    }
+    static class miTM implements TrustManager, X509TrustManager {
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+        public boolean isServerTrusted(X509Certificate[] certs) {
+            return true;
+        }
+        public boolean isClientTrusted(X509Certificate[] certs) {
+            return true;
+        }
+        public void checkServerTrusted(X509Certificate[] certs, String authType)
+                throws CertificateException {
+            return;
+        }
+        public void checkClientTrusted(X509Certificate[] certs, String authType)
+                throws CertificateException {
+            return;
+        }
+    }
+    /**
+     * 忽略HTTPS请求的SSL证书，必须在openConnection之前调用
+     * @throws Exception
+     */
+    public static void ignoreSsl() throws Exception{
+        HostnameVerifier hv = new HostnameVerifier() {
+            public boolean verify(String urlHostName, SSLSession session) {
+                System.out.println("Warning: URL Host: " + urlHostName + " vs. " + session.getPeerHost());
+                return true;
+            }
+        };
+        trustAllHttpsCertificates();
+        HttpsURLConnection.setDefaultHostnameVerifier(hv);
     }
 
 }

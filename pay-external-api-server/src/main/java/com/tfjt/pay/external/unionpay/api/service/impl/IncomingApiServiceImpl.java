@@ -2,8 +2,12 @@ package com.tfjt.pay.external.unionpay.api.service.impl;
 
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.TtqfSignReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfContractRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfSignRespDTO;
 import com.tfjt.pay.external.unionpay.api.service.IncomingApiService;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -44,5 +48,15 @@ public class IncomingApiServiceImpl implements IncomingApiService {
     @Override
     public Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReq) {
         return incomingBizService.queryIncomingStatus(incomingStatusReq);
+    }
+
+    @Override
+    public Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO) {
+        return null;
+    }
+
+    @Override
+    public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
+        return null;
     }
 }
