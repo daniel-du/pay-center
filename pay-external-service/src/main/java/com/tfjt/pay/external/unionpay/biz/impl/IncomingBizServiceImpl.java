@@ -967,7 +967,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  incomingMessage.getAccessChannelType() + ":"
                 + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
-
+        log.info("IncomingBizServiceImpl--writeIncomingCache, key:{}", key);
         redisCache.setCacheString(key, JSONObject.toJSONString(incomingMessage));
     }
 

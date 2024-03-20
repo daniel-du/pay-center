@@ -109,7 +109,7 @@
     <select id="queryIncomingMessageRespById"
             resultType="com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO">
         select a.id,a.access_channel_type,a.access_main_type,a.access_type,a.member_id,
-        a.access_status,a.account_no,a.business_type,a.access_channel_type,
+        a.access_status,a.account_no,a.business_type,a.business_id,
         b.legal_mobile,b.agent_mobile,c.`name` legalName,c.id_no legalIdNo,
         d.`name` agentName,d.id_no agentIdNo, f.business_name,f.business_license_no,
         g.settlement_account_type, h.bank_account_name, h.bank_card_no,
