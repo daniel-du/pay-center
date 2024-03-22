@@ -12,6 +12,11 @@ import lombok.Getter;
 public enum PabcUnionNetworkStatusMappingEnum {
 
     /**
+     * 未入网
+     */
+    NO_SIGN("-1", 0),
+
+    /**
      * 信息填写
      */
     INFORMATION_FILLING("07",1),

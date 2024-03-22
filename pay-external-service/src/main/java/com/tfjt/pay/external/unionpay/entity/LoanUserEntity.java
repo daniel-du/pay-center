@@ -129,8 +129,8 @@ failed：被驳回
 	private String settleAcctId;
 
 	private	String bindAcctName;
-
-	private String mchApplicationId; //二级商户系统订单号
+	//二级商户系统订单号
+	private String mchApplicationId;
 
 
 	/**

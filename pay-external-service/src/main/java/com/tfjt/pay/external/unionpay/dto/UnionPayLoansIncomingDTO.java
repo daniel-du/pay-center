@@ -12,10 +12,15 @@ import java.io.Serializable;
 @Builder
 public class UnionPayLoansIncomingDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String outRequestNo;//	平台订单号;
-    private IdCardDTO idCard;//身份证信息
-    private String mobileNumber;//手机号码
-    private SettleAcctDTO settleAcct;//银行卡信息
-    private String smsCode;//	手机号验证码;
+    //	平台订单号;
+    private String outRequestNo;
+    //身份证信息
+    private IdCardDTO idCard;
+    //手机号码
+    private String mobileNumber;
+    //银行卡信息
+    private SettleAcctDTO settleAcct;
+    //	手机号验证码;
+    private String smsCode;
 
 }

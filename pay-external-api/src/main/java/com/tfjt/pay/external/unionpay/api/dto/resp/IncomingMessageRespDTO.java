@@ -50,6 +50,11 @@ public class IncomingMessageRespDTO implements Serializable {
     private String accountNo;
 
     /**
+     * 企业用户号
+     */
+    private String accountNo2;
+
+    /**
      * 会员id
      */
     private String memberId;
@@ -114,4 +119,9 @@ public class IncomingMessageRespDTO implements Serializable {
      * 银行编号
      */
     private String bankCode;
+
+    /**
+     * 老银联进件状态
+     */
+    private String unionpaySignStatus;
 }

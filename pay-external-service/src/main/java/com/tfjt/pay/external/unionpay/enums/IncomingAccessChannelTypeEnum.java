@@ -16,19 +16,16 @@ public enum IncomingAccessChannelTypeEnum {
     /**
      * 平安
      */
-    PINGAN(1, "pingan"),
+    PINGAN(1, "pingan", "平安"),
     /**
      * 银联
      */
-    UNIONPAY(2, "unionpay"),
-    /**
-     * 银联贷款进件
-     */
-    UNIONPAY_LOAN(3,"unionpayLoan")
+    UNIONPAY(2, "unionpay", "银联")
     ;
 
     private Integer code;
     private String name;
+    private String desc;
 
     /**
      * 根据code转换为指定枚举
@@ -51,6 +48,19 @@ public enum IncomingAccessChannelTypeEnum {
         for(IncomingAccessChannelTypeEnum inComingAccessChannelTypeEnum : IncomingAccessChannelTypeEnum.values()){
             if(inComingAccessChannelTypeEnum.code.equals(code)){
                 return inComingAccessChannelTypeEnum.name;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 根据code转换desc
+     * @return
+     */
+    public static String getDescFromCode(Integer code){
+        for(IncomingAccessChannelTypeEnum inComingAccessChannelTypeEnum : IncomingAccessChannelTypeEnum.values()){
+            if(inComingAccessChannelTypeEnum.code.equals(code)){
+                return inComingAccessChannelTypeEnum.desc;
             }
         }
         return null;

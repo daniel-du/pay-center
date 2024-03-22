@@ -266,7 +266,8 @@ public final class DateUtil extends DateUtils {
             }
             Long starTime = startDate.getTime();
             Long endTime = endDate.getTime();
-            Long num = endTime - starTime;//时间戳相差的毫秒数
+            //时间戳相差的毫秒数
+            Long num = endTime - starTime;
             result = num / 24 / 60 / 60 / 1000;
         } catch (Exception e) {
             e.printStackTrace();

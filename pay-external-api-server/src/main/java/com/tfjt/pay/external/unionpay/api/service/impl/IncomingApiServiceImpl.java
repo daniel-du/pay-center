@@ -1,5 +1,11 @@
 package com.tfjt.pay.external.unionpay.api.service.impl;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.AllIncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.IncomingApiService;
@@ -47,6 +53,11 @@ public class IncomingApiServiceImpl implements IncomingApiService {
     @Override
     public Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReq) {
         return incomingBizService.queryIncomingStatus(incomingStatusReq);
+    }
+
+    @Override
+    public Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(AllIncomingMessageReqDTO reqDTO) {
+        return incomingBizService.queryAllIncomingMessage(reqDTO);
     }
 
     @Override

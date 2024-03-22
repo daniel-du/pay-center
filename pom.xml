@@ -25,6 +25,8 @@
         <module>pay-trade-processor</module>
         <module>pay-trade-service</module>
         <module>pay-trade-web</module>
+        <module>pay-external-query-api</module>
+        <module>pay-external-query-api-server</module>
     </modules>
 
     <properties>
@@ -33,6 +35,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.version>1.0-SNAPSHOT</project.version>
         <project.external.api.version>1.2.4-SNAPSHOT</project.external.api.version>
+        <project.external.query.api.version>1.0.0-SNAPSHOT</project.external.query.api.version>
         <project.trade.api.version>1.0-SNAPSHOT</project.trade.api.version>
         <dubbo.version>3.0.7</dubbo.version>
     </properties>

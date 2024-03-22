@@ -8,11 +8,15 @@ import com.tfjt.pay.external.unionpay.dto.req.IncomingBusinessReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfBusinessLicenseInfoEntity;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingBusinessInfoEntity;
+import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.enums.IdTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingAccessMainTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfBusinessLicenseInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingBusinessInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
+import com.tfjt.pay.external.unionpay.validator.group.IncomingBusinessSmallAdd;
+import com.tfjt.pay.external.unionpay.validator.group.IncomingBusinessSmallUpdate;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.util.BeanUtils;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
@@ -70,8 +74,20 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result save(IncomingBusinessReqDTO incomingBusinessReqDTO) {
         log.info("IncomingBusinessBizServiceImpl---save, incomingBusinessReqDTO:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
-        ValidatorUtils.validateEntity(incomingBusinessReqDTO, AddGroup.class);
-        validateBusinessEntity(incomingBusinessReqDTO);
+        //查询进件主表信息
+        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingBusinessReqDTO.getIncomingId());
+        if (ObjectUtils.isEmpty(tfIncomingInfoEntity)) {
+            log.error("查询进件主表信息为空:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
+            throw new TfException(ExceptionCodeEnum.INCOMING_INFO_IS_NULL);
+        }
+        //“小微”主体进件时，营业信息字段单独校验
+        if (IncomingAccessMainTypeEnum.SMALL.getCode().equals(tfIncomingInfoEntity.getAccessMainType().intValue())) {
+            ValidatorUtils.validateEntity(incomingBusinessReqDTO, IncomingBusinessSmallAdd.class);
+        } else {
+            ValidatorUtils.validateEntity(incomingBusinessReqDTO, AddGroup.class);
+            validateBusinessEntity(incomingBusinessReqDTO);
+        }
+
         tfIncomingInfoService.updateTimeById(incomingBusinessReqDTO.getIncomingId());
         TfBusinessLicenseInfoEntity tfBusinessLicenseInfoEntity = new TfBusinessLicenseInfoEntity();
         BeanUtils.copyProperties(incomingBusinessReqDTO, tfBusinessLicenseInfoEntity);
@@ -102,8 +118,19 @@ public class IncomingBusinessBizServiceImpl implements IncomingBusinessBizServic
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result update(IncomingBusinessReqDTO incomingBusinessReqDTO) {
         log.info("IncomingBusinessBizServiceImpl---update, incomingBusinessReqDTO:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
-        ValidatorUtils.validateEntity(incomingBusinessReqDTO, UpdateGroup.class);
-        validateBusinessEntity(incomingBusinessReqDTO);
+        //查询进件主表信息
+        TfIncomingInfoEntity tfIncomingInfoEntity = tfIncomingInfoService.queryIncomingInfoById(incomingBusinessReqDTO.getIncomingId());
+        if (ObjectUtils.isEmpty(tfIncomingInfoEntity)) {
+            log.error("查询进件主表信息为空:{}", JSONObject.toJSONString(incomingBusinessReqDTO));
+            throw new TfException(ExceptionCodeEnum.INCOMING_INFO_IS_NULL);
+        }
+        //“小微”主体进件时，营业信息字段单独校验
+        if (IncomingAccessMainTypeEnum.SMALL.getCode().equals(tfIncomingInfoEntity.getAccessMainType().intValue())) {
+            ValidatorUtils.validateEntity(incomingBusinessReqDTO, IncomingBusinessSmallUpdate.class);
+        } else {
+            ValidatorUtils.validateEntity(incomingBusinessReqDTO, UpdateGroup.class);
+            validateBusinessEntity(incomingBusinessReqDTO);
+        }
         if (incomingBusinessReqDTO.getId() == null || incomingBusinessReqDTO.getBusinessLicenseId() == null) {
             throw new TfException(ExceptionCodeEnum.INCOMING_BUSINESS_ID_IS_NULL);
         }

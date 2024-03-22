@@ -9,7 +9,7 @@ import com.pingan.openbank.api.sdk.common.http.HttpResult;
 import com.pingan.openbank.api.sdk.entity.SdkRequest;
 import com.pingan.openbank.api.sdk.exception.OpenBankSdkException;
 import com.tfjt.pay.external.unionpay.config.PnClientConfig;
-import com.tfjt.pay.external.unionpay.constants.PnSdkConstant;
+import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingApiLogService;
 import com.tfjt.tfcommon.core.exception.TfException;
@@ -134,7 +134,7 @@ public class PnHeadUtils {
     }
 
     public static JSONObject getError(JSONObject resultJson) {
-        JSONArray errorArray = resultJson.getJSONArray(PnSdkConstant.RESULT_ERRORS_FIELD);
+        JSONArray errorArray = resultJson.getJSONArray(IncomingConstant.RESULT_ERRORS_FIELD);
         if (CollectionUtils.isEmpty(errorArray)) {
             return new JSONObject();
         }

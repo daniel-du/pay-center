@@ -5,6 +5,7 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Author zxy
@@ -12,4 +13,18 @@ import java.util.List;
  */
 public interface SalesAreaIncomingChannelService extends IService<SalesAreaIncomingChannelEntity> {
     List<AllSalesAreaRespDTO> getAllSaleAreas();
+
+    /**
+     * 根据区code集合批量查询入网渠道配置
+     * @param codes
+     * @return
+     */
+    List<SalesAreaIncomingChannelEntity> queryByDistrictsCodes(List<String> codes);
+
+    /**
+     * 根据区code集合批量查询入网渠道配置
+     * @param codes
+     * @return
+     */
+    List<SalesAreaIncomingChannelEntity> queryByDistrictsCodesSet(Set<String> codes);
 }

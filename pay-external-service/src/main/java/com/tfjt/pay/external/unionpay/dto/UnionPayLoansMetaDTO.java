@@ -10,7 +10,9 @@ import java.io.Serializable;
 @Data
 public class UnionPayLoansMetaDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String filename;//名称;
-    private String sha256;//加密后参数;
+    //名称;
+    private String filename;
+    //加密后参数;
+    private String sha256;
 
 }

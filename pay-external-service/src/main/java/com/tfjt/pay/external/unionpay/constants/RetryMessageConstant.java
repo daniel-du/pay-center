@@ -13,5 +13,14 @@ public class RetryMessageConstant {
      */
     public static final String INCOMING_FINISH = "1";
 
+    public static final String SIGN_REVIEW = "SIGN_REVIEW";
+
+
+    public static final String MQ_FROM_SERVER = "tf-cloud-pay-external";
+
+    public static final String MQ_TO_SERVER = "tf-cloud-pay-external";
+    public static final String SIGN_TAG = "sign";
+
+
     public static final String SETTLE_CENTER_APPLICATION_NAME = "tf-cloud-settle-center";
 }

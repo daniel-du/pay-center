@@ -4,6 +4,7 @@ import com.tfjt.pay.external.unionpay.biz.IncomingBusinessBizService;
 import com.tfjt.pay.external.unionpay.biz.IncomingSettleBizService;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingBusinessReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSettleReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.QueryIncomingSettleByMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
@@ -51,5 +52,15 @@ public class IncomingSettleController {
     @PostMapping("/update")
     public Result update(@RequestBody IncomingSettleReqDTO incomingSettleReqDTO) {
         return incomingSettleBizService.update(incomingSettleReqDTO);
+    }
+
+    /**
+     * 根据id查询进件商户身份信息
+     * @param reqDTO
+     * @return
+     */
+    @PostMapping("/getByMerchant")
+    public Result<IncomingSettleRespDTO> getByMerchant(@RequestBody QueryIncomingSettleByMerchantReqDTO reqDTO) {
+        return incomingSettleBizService.getByMerchant(reqDTO);
     }
 }
