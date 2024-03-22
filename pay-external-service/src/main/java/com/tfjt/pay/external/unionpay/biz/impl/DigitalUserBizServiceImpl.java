@@ -20,6 +20,7 @@ import com.tfjt.pay.external.unionpay.service.DigitalUserService;
 import com.tfjt.supplier.dto.SupplierAddDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -75,16 +76,12 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             log.info("查询数币店铺id信息:{}",shopId);
             ShopDetailInfoRpcRespDto shopDetailInfoRpcRespDto = dbShopService.searchShopDetailInfoById(shopId.intValue());
             log.info("查询数币店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
-
-            if(Objects.isNull(shopDetailInfoRpcRespDto)){
+            if(Objects.isNull(shopDetailInfoRpcRespDto) || StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
+                StringUtils.isBlank(shopDetailInfoRpcRespDto.getName())){
                 return selectByAccountResult(false,respDTO);
             }
-            if (Objects.nonNull(shopDetailInfoRpcRespDto.getCard())){
-                respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
-            }
-            if (Objects.nonNull(shopDetailInfoRpcRespDto.getRealName())){
-                respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getRealName()));
-            }
+            respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
+            respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getName()));
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
         }catch (Exception e){
             log.error("查询手机是否注册dubbo异常:",e);
