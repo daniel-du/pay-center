@@ -1,8 +1,10 @@
 package com.tfjt.pay.external.unionpay.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryTtqfSignMsgReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfCallbackRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfContractRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -32,4 +34,13 @@ public interface IncomingTtqfBizService {
      * 批量更新天天企赋签约状态
      */
     void updateTtqfSignStatus();
+
+    /**
+     * 接收天天企赋回调通知
+     * @param reqJSON
+     * @return
+     */
+    TtqfCallbackRespDTO receviceCallbackMsg(JSONObject reqJSON);
+
+
 }

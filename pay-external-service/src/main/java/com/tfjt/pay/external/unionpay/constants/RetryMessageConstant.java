@@ -12,4 +12,6 @@ public class RetryMessageConstant {
      * 进件完成
      */
     public static final String INCOMING_FINISH = "1";
+
+    public static final String SETTLE_CENTER_APPLICATION_NAME = "tf-cloud-settle-center";
 }

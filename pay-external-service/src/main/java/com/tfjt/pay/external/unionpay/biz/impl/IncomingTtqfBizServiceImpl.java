@@ -1,21 +1,34 @@
 package com.tfjt.pay.external.unionpay.biz.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.ipaynow.jiaxin.domain.QueryPresignResultModel;
+import com.tfjt.constant.MessageStatusEnum;
+import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryTtqfSignMsgReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfCallbackRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfContractRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingTtqfBizService;
+import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
+import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
+import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingExtendInfoEntity;
+import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingExtendInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.utils.TtqfApiUtil;
+import com.tfjt.producter.ProducerMessageApi;
+import com.tfjt.producter.service.AsyncMessageService;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -37,6 +50,25 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
     @Autowired
     private TfIncomingExtendInfoService incomingExtendInfoService;
 
+    @Autowired
+    private AsyncMessageService asyncMessageService;
+
+    @Autowired
+    private ProducerMessageApi producerMessageApi;
+
+    @Autowired
+    private IdentifierGenerator identifierGenerator;
+
+    @Value("${rocketmq.topic.ttqfCallback}")
+    private String ttqfCallbackTopic;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
+    private static final String BIZ_CODE_SUCCESS = "0000";
+
+    private static final String BIZ_CODE_FAIL = "5000";
+
     @Override
     public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
         String signUrl = TtqfApiUtil.contractH5(ttqfContractReqDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
@@ -55,6 +87,7 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
      */
     @Override
     public void updateTtqfSignStatus() {
+        //获取初始id
         TfIncomingExtendInfoEntity extendInfo = incomingExtendInfoService.queryNotSignMinIdData();
         log.info("IncomingTtqfBizServiceImpl--updateTtqfSignStatus, extendInfo:{}", JSONObject.toJSONString(extendInfo));
         if (ObjectUtils.isEmpty(extendInfo)) {
@@ -63,13 +96,31 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
         boolean updateFlag = true;
         long startId = extendInfo.getIncomingId();
         while(updateFlag) {
+            //根据初始id批量查询
             List<TtqfSignMsgDTO> signMsgList = incomingInfoService.querySignMsgStartByIncomingId(startId);
             if (CollectionUtils.isEmpty(signMsgList)) {
                 break;
             }
             queryAndUpdatePresignStatus(signMsgList);
-
+            startId = signMsgList.get(signMsgList.size() - 1).getId();
         }
+    }
+
+    /**
+     * 接收天天企赋回调通知
+     * @param reqJSON
+     * @return
+     */
+    @Override
+    public TtqfCallbackRespDTO receviceCallbackMsg(JSONObject reqJSON) {
+        log.error("IncomingTtqfBizServiceImpl--receviceCallbackMsg, req:{}", JSONObject.toJSONString(reqJSON));
+        if (ObjectUtils.isEmpty(reqJSON) || StringUtils.isBlank(reqJSON.getString("type"))) {
+            log.error("IncomingTtqfBizServiceImpl--receviceCallbackMsgError");
+            return new TtqfCallbackRespDTO(BIZ_CODE_FAIL);
+        }
+        //发送mq
+        MQProcess(reqJSON);
+        return new TtqfCallbackRespDTO(BIZ_CODE_SUCCESS);
     }
 
     /**
@@ -101,6 +152,43 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
                 log.error("IncomingTtqfBizServiceImpl--queryAndUpdatePresignStatus, error", e);
             }
         });
+    }
+
+    /**
+     * 异步发送消息
+     * @param jsonObject
+     */
+    public void MQProcess(JSONObject jsonObject){
+        log.info("IncomingTtqfBizServiceImpl--MQProcess, start jsonObject:{}", JSONObject.toJSONString(jsonObject));
+
+        // 创建消息
+        AsyncMessageEntity messageEntity = createMessage(RetryMessageConstant.INCOMING_FINISH,
+                jsonObject, identifierGenerator.nextId(AsyncMessageEntity.class).toString());
+        // 调用jar包中保存消息到数据库的方法
+        asyncMessageService.saveMessage(messageEntity);
+        // rocketMQ发送消息自行实现
+        boolean result = producerMessageApi.sendMessage(messageEntity.getTopic(), JSONUtil.toJsonStr(messageEntity),messageEntity.getUniqueNo(),
+                messageEntity.getMsgTag());
+        log.info("IncomingBizServiceImpl--MQProcess, end");
+    }
+
+    private AsyncMessageEntity createMessage(String messageType,JSONObject messageBody,String uniqueNo){
+        AsyncMessageEntity message = new AsyncMessageEntity();
+        // 生产者application name
+        message.setFromServerName(applicationName);
+        // 消费者application name
+        message.setToServerName("order".equals(messageBody.getString("type")) ? RetryMessageConstant.SETTLE_CENTER_APPLICATION_NAME : applicationName);
+        // 消息队列的topic
+        message.setTopic(ttqfCallbackTopic);
+        // 消息队列的tag
+        message.setMsgTag(messageBody.getString("type"));
+        // 定义的业务消息类型
+        message.setMsgType(messageType);
+        // 消息内容
+        message.setMsgBody(JSONObject.toJSONString(messageBody));
+        // 业务的唯一序列号
+        message.setUniqueNo(uniqueNo);
+        return message;
     }
 
 
