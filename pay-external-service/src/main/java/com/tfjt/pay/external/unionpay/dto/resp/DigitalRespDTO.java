@@ -49,6 +49,10 @@ public class DigitalRespDTO implements Serializable {
      * 客户名称
      */
     private String customerName;
+    /**
+     * 签约号
+     */
+    private String signContract;
 
     public DigitalRespDTO(DigitalTransactionStatusEnum digitalTransactionStatusEnum){
         this.bussReceiptStat = digitalTransactionStatusEnum.getCode();

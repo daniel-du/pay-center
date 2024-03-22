@@ -140,7 +140,9 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         digitalUserEntity.setStatus(NumberConstant.ONE);
         digitalUserEntity.setId(id);
         boolean result = isUpdate ? digitalUserService.updateById(digitalUserEntity) : digitalUserService.save(digitalUserEntity);
-        return Result.ok(new DigitalRespDTO(result ? DigitalTransactionStatusEnum.DIGITAL_SUCCESS : DigitalTransactionStatusEnum.DIGITAL_FAILED));
+        DigitalRespDTO digitalRespDTO = new DigitalRespDTO(result ? DigitalTransactionStatusEnum.DIGITAL_SUCCESS : DigitalTransactionStatusEnum.DIGITAL_FAILED);
+        digitalRespDTO.setSignContract(digitalUserEntity.getSignContract());
+        return Result.ok(digitalRespDTO);
     }
 
     /**
