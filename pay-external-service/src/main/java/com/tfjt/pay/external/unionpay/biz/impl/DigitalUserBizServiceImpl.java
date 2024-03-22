@@ -93,8 +93,8 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     }
 
     private Result<DigitalRespDTO> selectByAccountResult(Boolean data, DigitalRespDTO respDTO) {
-        respDTO.setMchntSideRegisterFlag(data ? DigitalCodeEnum.EF00.getCode()
-                : DigitalCodeEnum.EF01.getCode());
+        respDTO.setMchntSideRegisterFlag(data ? DigitalCodeEnum.EF01.getCode()
+                : DigitalCodeEnum.EF00.getCode());
         return Result.ok(respDTO);
     }
 
