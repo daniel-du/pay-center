@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tfjt.pay.external.unionpay.dao.TfIncomingExtendInfoDao">
+    <update id="updateByIncomingId">
+        update tf_incoming_extend_info
+        set auth_status = {incomingExtend.authStatus},
+            sign_status = {incomingExtend.signStatus},
+            bind_status = {incomingExtend.bindStatus}
+        where incoming_id = {incomingExtend.id}
+    </update>
+</mapper>

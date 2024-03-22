@@ -5,10 +5,12 @@ import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingInfoDao;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
+import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.DeleteStatusEnum;
 import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
@@ -154,5 +156,15 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
         sql+=")";
         wrapper.apply("( business_id, business_type ) IN "+sql);
         return super.list(BusinessIsIncomingRespDTO.class,wrapper);
+    }
+
+    @Override
+    public QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId) {
+        return this.baseMapper.queryTtqfSignMsg(businessId);
+    }
+
+    @Override
+    public List<TtqfSignMsgDTO> querySignMsgStartByIncomingId(Long id) {
+        return this.baseMapper.querySignMsgStartByIncomingId(id);
     }
 }

@@ -5,9 +5,11 @@ import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
+import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 
 import java.util.List;
@@ -97,4 +99,18 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
     List<TfIncomingInfoEntity> queryListByBusinessIdAndType(List<Long> businessIds, Integer businessType);
 
     List<BusinessIsIncomingRespDTO> isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos);
+
+    /**
+     * 根据会员id查询天天企赋签约信息
+     * @param businessId
+     * @return
+     */
+    QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId);
+
+    /**
+     * 根据起始id批量查询“天天企赋”未签约、未绑卡状态数据
+     * @param id
+     * @return
+     */
+    List<TtqfSignMsgDTO> querySignMsgStartByIncomingId(Long id);
 }

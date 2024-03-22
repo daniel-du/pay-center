@@ -1,6 +1,9 @@
 package com.tfjt.pay.external.unionpay.api.dto.resp;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -11,12 +14,15 @@ import java.io.Serializable;
  * @description 天天企赋签约页面唤起请求返参
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class TtqfContractRespDTO implements Serializable {
 
     /**
      * H5签约连接
      */
-    private Integer signUrl;
+    private String signUrl;
 
     /**
      * 业务状态码

@@ -1,11 +1,22 @@
 package com.tfjt.pay.external.unionpay.utils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.ipaynow.jiaxin.DefaultTangClient;
 import com.ipaynow.jiaxin.TangClient;
-import com.ipaynow.jiaxin.domain.PresignModel;
+import com.ipaynow.jiaxin.domain.*;
+import com.ipaynow.jiaxin.request.ContractH5Request;
+import com.ipaynow.jiaxin.request.PictureUploadRequest;
 import com.ipaynow.jiaxin.request.PresignRequest;
+import com.ipaynow.jiaxin.request.QueryPresignRequest;
+import com.ipaynow.jiaxin.response.ContractH5Response;
+import com.ipaynow.jiaxin.response.PictureUploadResponse;
 import com.ipaynow.jiaxin.response.PresignResponse;
+import com.ipaynow.jiaxin.response.QueryPresignResponse;
+import com.ipaynow.jiaxin.util.Base64;
 import com.pingan.openbank.api.sdk.client.ApiClient;
+import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
+import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,6 +30,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static com.ipaynow.jiaxin.TangConstants.DEV_HOST;
 
@@ -56,6 +71,10 @@ public class TtqfApiUtil {
         mch_id = mchIdValue;
     }
 
+    DateFormat format = new SimpleDateFormat("yyyyMMdd");
+
+    DateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
+
     public static void main(String[] args) throws IOException {
         // todo 3.1 用户预签约接口
 //        testPresign();
@@ -85,24 +104,58 @@ public class TtqfApiUtil {
         // testOrderNotify();
     }
 
-    public static void testPresign() {
+    public static PresignResultModel presign(PresignModel model) {
         PresignRequest request = new PresignRequest();
-        PresignModel model = PresignModel.builder().name("王灿烂")
-                .idCardNo("130104196207204711")
-                .mobile("15130610501")
-                .bankCardNo("6214833401328888")
-                .expiryStart("2020-03-18")
-                .expiryEnd("2030-03-18")
-                .idCardPicAFileId("1769621785804992513")
-                .idCardPicBFileId("1769621841157222401").build();
         request.setBizModel(model);
         request.setRequestId(String.valueOf(System.currentTimeMillis()));
         PresignResponse response = client.execute(request);
-        if (response.isSuccess()) {
-            System.out.println("成功 ====> " + response.getResultModel());
-        } else {
-            System.out.println("失败" + response);
+        if (!"0000".equals(response.getCode())) {
+            log.error("ttqfApi--presign, error:{}", JSONObject.toJSONString(response));
+            throw new TfException(response.getMsg());
         }
+        log.info("ttqfApi--presign, result:{}", JSONObject.toJSONString(response.getResultModel()));
+        return response.getResultModel();
+    }
+
+    public static String pictureUpload(String url)  {
+        PictureUploadRequest request = new PictureUploadRequest();
+        //2 - 2020-10
+        PictureUploadModel model = PictureUploadModel.builder().picture(Base64.encode(getFileStream(url))).build();
+        request.setBizModel(model);
+        request.setRequestId(System.currentTimeMillis() + "");
+        System.out.println(JSON.toJSONString(request));
+        PictureUploadResponse response = client.execute(request);
+        if (!"0000".equals(response.getCode())) {
+            log.error("ttqfApi--pictureUpload, error:{}", JSONObject.toJSONString(response));
+            throw new TfException(response.getMsg());
+        }
+        log.info("ttqfApi--pictureUpload, result:{}", JSONObject.toJSONString(response.getResultModel()));
+        System.out.println(response);
+        return response.getResultModel().getFileId();
+    }
+
+    public static String contractH5(String idCardNo, String returnUrl) {
+        ContractH5Response response = client.execute(ContractH5Request.builder()
+                .requestId(System.currentTimeMillis() + "").bizModel(ContractH5Model.builder()
+                        .idCardNo(idCardNo).mchReturnUrl(returnUrl).build())
+                .build());
+        if (!"0000".equals(response.getCode())) {
+            log.error("ttqfApi--contractH5, error:{}", JSONObject.toJSONString(response));
+            throw new TfException(response.getMsg());
+        }
+        log.info("ttqfApi--contractH5, result:{}", JSONObject.toJSONString(response.getResultModel()));
+        return response.getResultModel().getSignUrl();
+    }
+
+    public static QueryPresignResultModel queryPresign(String idCardNo) {
+        QueryPresignResponse response = client.execute(QueryPresignRequest.builder().requestId(System.currentTimeMillis() + "")
+                .bizModel(new QueryPresignModel(idCardNo)).build());
+        if (!"0000".equals(response.getCode())) {
+            log.error("ttqfApi--queryPresign, error:{}", JSONObject.toJSONString(response));
+            throw new TfException(response.getMsg());
+        }
+        log.info("ttqfApi--queryPresign, result:{}", JSONObject.toJSONString(response.getResultModel()));
+        return response.getResultModel();
     }
 
     public static byte[] getFileStream(String url){

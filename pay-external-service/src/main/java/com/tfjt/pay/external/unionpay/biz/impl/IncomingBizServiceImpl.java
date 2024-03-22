@@ -424,10 +424,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         tfIncomingInfoEntity.setBusinessId(ttqfSignReqDTO.getBusinessId());
 //        BeanUtils.copyProperties(incomingInfoReqDTO, tfIncomingInfoEntity);
         String memberId = generateMemberId(ttqfSignReqDTO.getBusinessType().intValue());
-        tfIncomingInfoEntity.setAccessChannelType(IncomingAccessChannelTypeEnum.UNIONPAY.getCode().byteValue());
+        tfIncomingInfoEntity.setAccessChannelType((byte) 3);
         tfIncomingInfoEntity.setAccessType(IncomingAccessTypeEnum.COMMON.getCode().byteValue());
         tfIncomingInfoEntity.setAccessMainType(IncomingAccessMainTypeEnum.SMALL.getCode().byteValue());
-        tfIncomingInfoEntity.setAccessChannelType();
+
 
         tfIncomingInfoEntity.setMemberId(memberId);
         tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
@@ -456,7 +456,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
 
-aa
+
 
         //保存结算信息
         TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
@@ -477,8 +477,19 @@ aa
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
         //调用签约策略
+        AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get("ttqf_common_personal");
+        IncomingSubmitMessageDTO incomingSubmitMessageDTO =  IncomingSubmitMessageDTO.builder()
+                .incomingId(tfIncomingInfoEntity.getId())
+                .legalName(ttqfSignReqDTO.getUserName())
+                .legalMobile(ttqfSignReqDTO.getMobile())
+                .legalIdNo(ttqfSignReqDTO.getIdCardNo())
+                .bankCardNo(ttqfSignReqDTO.getBankCardNo())
+                .legalIdExpiryStart(ttqfSignReqDTO.getExpiryStart())
+                .legalIdExpiryEnd(ttqfSignReqDTO.getExpiryEnd())
+                .legalIdFrontUrl(ttqfSignReqDTO.getIdCardPicAFileId())
+                .legalIdBackUrl(ttqfSignReqDTO.getIdCardPicBFileId()).build();
 
-
+        abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
         return null;
     }
 
