@@ -78,11 +78,13 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             log.info("查询数币店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
             if(Objects.isNull(shopDetailInfoRpcRespDto) || StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
                 StringUtils.isBlank(shopDetailInfoRpcRespDto.getName())){
+                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
                 return selectByAccountResult(false,respDTO);
             }
             respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
             respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getName()));
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
+            exit = true;
         }catch (Exception e){
             log.error("查询手机是否注册dubbo异常:",e);
             respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_FAILED.getCode());
