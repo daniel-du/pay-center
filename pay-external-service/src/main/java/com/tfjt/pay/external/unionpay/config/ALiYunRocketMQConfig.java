@@ -20,7 +20,8 @@ public class ALiYunRocketMQConfig {
     private String secretKey;
     private String nameSrvAddr;
     private String groupId;
-    private String consumeThreadNums; // 公共消费线程数
+    // 公共消费线程数
+    private String consumeThreadNums;
 
     public Properties getMqPropertie() {
         Properties properties = new Properties();

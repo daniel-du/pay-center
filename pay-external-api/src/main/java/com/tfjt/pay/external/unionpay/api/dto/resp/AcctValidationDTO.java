@@ -7,12 +7,12 @@ import java.io.Serializable;
 @Data
 public class AcctValidationDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    private String destAcctNo;//收款账户账号
-
-    private String acctNo;//付款账户号
-
-    private String destAcctName;//收款账户户名
+    //收款账户账号
+    private String destAcctNo;
+    //付款账户号
+    private String acctNo;
+    //收款账户户名
+    private String destAcctName;
 
     /**
      * 1:平台用户向银行汇款指定金额
@@ -20,11 +20,11 @@ public class AcctValidationDTO implements Serializable {
      * 3:四要素鉴权(对私银行卡)
      */
     private String type;
-
-    private String acctName;//付款户名
-
-    private String deadline;//账户验证截止时间
-
-    private String destAcctBankBranchCode;//收款账户开户银行联行号
+    //付款户名
+    private String acctName;
+    //账户验证截止时间
+    private String deadline;
+    //收款账户开户银行联行号
+    private String destAcctBankBranchCode;
 
 }

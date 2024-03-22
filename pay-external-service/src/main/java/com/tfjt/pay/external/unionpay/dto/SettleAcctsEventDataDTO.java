@@ -10,8 +10,11 @@ import java.io.Serializable;
 @Data
 public class SettleAcctsEventDataDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String settleAcctId;//绑定账户编号
-    private String outRequestNo;//平台订单号
-    private AcctValidationParamDTO acctValidationParam; //账户验证信息
+    //绑定账户编号
+    private String settleAcctId;
+    //平台订单号
+    private String outRequestNo;
+    //账户验证信息
+    private AcctValidationParamDTO acctValidationParam;
 
 }

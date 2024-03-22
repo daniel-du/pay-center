@@ -403,12 +403,12 @@ public class LoanOrderBizServiceImpl implements LoanOrderBizService {
     private ConsumerPoliciesReqDTO buildTransferUnionPayParam(UnionPayTransferRespDTO payTransferDTO, String tradeOrderNo) {
         ConsumerPoliciesReqDTO consumerPoliciesReqDTO = new ConsumerPoliciesReqDTO();
         consumerPoliciesReqDTO.setCombinedOutOrderNo(tradeOrderNo);
-        consumerPoliciesReqDTO.setPayBalanceAcctId(payTransferDTO.getOutBalanceAcctId()); //2008362494748960292
+        consumerPoliciesReqDTO.setPayBalanceAcctId(payTransferDTO.getOutBalanceAcctId());
         //担保消费参数
         List<GuaranteePaymentDTO> list = new ArrayList<>();
         GuaranteePaymentDTO guaranteePaymentDTO = new GuaranteePaymentDTO();
         guaranteePaymentDTO.setAmount(payTransferDTO.getAmount());
-        guaranteePaymentDTO.setRecvBalanceAcctId(payTransferDTO.getInBalanceAcctId()); //2008349494890702347
+        guaranteePaymentDTO.setRecvBalanceAcctId(payTransferDTO.getInBalanceAcctId());
         guaranteePaymentDTO.setOutOrderNo(tradeOrderNo);
         //扩展字段集合
         List<ExtraDTO> list2 = new ArrayList<>();
@@ -425,7 +425,7 @@ public class LoanOrderBizServiceImpl implements LoanOrderBizService {
         consumerPoliciesReqDTO.setRemark("转账");
         consumerPoliciesReqDTO.setGuaranteePaymentParams(list);
         Map<String, Object> extra = new HashMap<>();
-        extra.put("notifyUrl", notifyUrl);  //回调地址
+        extra.put("notifyUrl", notifyUrl);
         consumerPoliciesReqDTO.setExtra(extra);
         return consumerPoliciesReqDTO;
     }

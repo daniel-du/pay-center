@@ -220,11 +220,14 @@ public class UnionPayLoansBizServiceImpl implements UnionPayLoansBizService {
         withdrawalCreateReqDTO.setSentAt(DateUtil.getByRFC3339(now));
         withdrawalCreateReqDTO.setAmount(withdrawalReqDTO.getAmount());
         withdrawalCreateReqDTO.setServiceFee(null);
-        withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());//电子账簿ID
+        //电子账簿ID
+        withdrawalCreateReqDTO.setBalanceAcctId(accountBook.getBalanceAcctId());
         withdrawalCreateReqDTO.setBusinessType(UnionPayBusinessTypeEnum.WITHDRAWAL.getCode());
-        withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));//提现目标银行账号 提现目标银行账号需要加密处理  6228480639353401873
+        //提现目标银行账号 提现目标银行账号需要加密处理
+        withdrawalCreateReqDTO.setBankAcctNo(UnionPaySignUtil.SM2(encodedPub, bankInfo.getBankCardNo()));
         if (Objects.nonNull(bankInfo.getPhone())) {
-            withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone())); //手机号 需要加密处理
+            //手机号 需要加密处理
+            withdrawalCreateReqDTO.setMobileNumber(UnionPaySignUtil.SM2(encodedPub, bankInfo.getPhone()));
         }
         withdrawalCreateReqDTO.setRemark("");
         Map<String, Object> map = new HashMap<>();

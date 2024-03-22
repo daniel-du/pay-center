@@ -18,10 +18,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class MybatisRedisCache implements Cache {
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    private final String id; // cache instance id
+    // cache instance id
+    private final String id;
     private RedisTemplate redisTemplate;
-
-    private static final long EXPIRE_TIME_IN_MINUTES = 30; // redis过期时间
+    // redis过期时间
+    private static final long EXPIRE_TIME_IN_MINUTES = 30;
 
     public MybatisRedisCache(String id) {
         if (id == null) {

@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 public class UnionPayLoansImagesDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String file;//	图片;
-    private UnionPayLoansMetaDTO meta;//	图片;
+    private String file;
+    private UnionPayLoansMetaDTO meta;
 
 }

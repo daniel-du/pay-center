@@ -26,8 +26,8 @@ public class LoanUserInfoDTO {
      * 2-个体工商户
      */
     private Integer loanUserType;
-
-    private String mchApplicationId; //二级商户系统订单号
+    //二级商户系统订单号
+    private String mchApplicationId;
 
     /**
      * 平台订单号

@@ -48,10 +48,10 @@ public class LoanCallbackEntity implements Serializable {
 	 * 事件内容
 	 */
 	private String eventData;
-
-	private Integer type;//类型1 打款验证 2 二级进件
-
-	private String destAcctNo;//收款账户账号
+	//类型1 打款验证 2 二级进件
+	private Integer type;
+	//收款账户账号
+	private String destAcctNo;
 
 	/**
 	 * 关联业务表id
