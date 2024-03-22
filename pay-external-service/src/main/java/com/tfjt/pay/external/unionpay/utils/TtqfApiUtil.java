@@ -53,7 +53,7 @@ public class TtqfApiUtil {
     @Value("${ttqf.platformPublicKey}")
     private String platformPublicKeyValue;
 
-    @Value("${ttqf.mchIdValue}")
+    @Value("${ttqf.mchId}")
     private String mchIdValue;
 
     public static  String mchPrivateKey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDXsdBOhA3fuo8+ilcZsbxl3/FI0ISP0DraWD5+DDtZHphJum+LkDjluqekDPVMZkz9B/a9lZT3Uhk2wSQ2lBS+IVwJEQB6h3ejcpKcaYG/F0s3lx8ArxEbJD8mGy1sId7yjg13fBgIzBbAJ4AvQw4rzbNKRdNox8pzRA6swKIy8ovT3df7B5utoNHKGOZTrwNQcrjGGQuIlvJxktpxWQfHdhy5m+MDNLYJAytLTNoiclp2Erdej8BQPbfcpqqr6CCGOvBm+zZ7VN4wbKQHaONwuPOE+iaYuJbR0O74bTmPGGSKwdNf86VJp5DWxPmwlYxgBLsm/BA71kxxNgcQ9L4NAgMBAAECggEAJb/7IyK9guCV3W483ERdIr9U7VeBO+JHypsTJOBjKq/OG2lDyHtPWfWXDYEvFVX6N3bDWl7pmXeG7ixTeDHmh3gzMWsGWGuJJtQQkMtuZ9Fd2rbaODZrmgJ4AuVSx9ANwwnVlYnkcvW1LaA8MQldW5E+xcr+uyHsbswEfXuhZ6T1RFZnDBBYQbAAYTMAlS5cUqlVFF71GYMS3jpR4Dp7ddMPXcpOFZ/6t65vGrQkYgGHUHBIKzLh1BBioG/RaimmZPeRDUrED0ENuZkP6fPuAunPcdrIAHOueZde4AgTEiQCDYZjtT9KCoBpKQxwDAQpJVVjbvCZUk+CULy5i2+2QQKBgQDyojIMue3BJEZeh5Cyu9gBGGlhUegssJ/CcIQG1HvI18OY4z2T0o7LVvgNqn7sJ4nJHfn5hrfkVk2a+SwEd22WCNtXc+cU3JNnHyenX3xwbLDY8oUS6SXmv4GqQXy4O8LxKoZAtBVbteDs00ybptA/1PH2mf1BMBBsVQEcaQlumQKBgQDjk7QzHfCOYhDij4v0vQwMxnwRSg03ZTJp9chXMaKkkhRV11ApbX0QsK23EZ82vK9P58BYKz+ewZmLQq6zX6ooUQxvo9mUm4/Czc25f1nbt9aXkQYcDN+2bSbcRkvPcAMWwxiu2J4/XBofI0L0oySTWcfkdbGIw+MOCZHB/Ki3lQKBgE5F0MuWN4L1RtY7+YwPWTGRRH2mxLWWDRPW5GCnr38tS+ZIeJb1eCdU2RTfia55WtPMndXHhg9dYA+8jlyqgmnCVbAyrbtnJQ5BWLN/9E74YVy7b/6XxChaY2QfWDK+5LaUN1csQS+izvrXd4FHIStWcPBS4QZkkQfBrGgT4n0RAoGAWW1cPU4BjmHY0r6nt5dmGcsRS9X2lZMNmXe8rw7RI6xHk2fVl0HwCFP1H2AsWV0R4utluP/dsyvOg1vDvLbV7ZvTsDcJtAzhFCK9OaxiiiWWjN6vMOyaKFyCDcMN3Ujd3d7yXxq+LJWrqhq4H9vP7ps0IoFhLyYSnhyCi2EWh3UCgYEAgEmImF2I6BnQnhKz/5tdzr95ZXGiHDeO7UpFJTJrOmJIyLMgCOy2jIK8TjdE3yzWXics46/ZLicumwsjTzyByoALhuUrfFnCvdYeD+POHFFDcKCkFROQsKosQKWkREc2J2fF18E9m0D46LpeqtuWWxI4aRjgfKjQrYQaxU5lcO8=";
@@ -111,7 +111,7 @@ public class TtqfApiUtil {
         PresignResponse response = client.execute(request);
         if (!"0000".equals(response.getCode())) {
             log.error("ttqfApi--presign, error:{}", JSONObject.toJSONString(response));
-            throw new TfException(response.getMsg());
+            throw new TfException(response.getBizMsg());
         }
         log.info("ttqfApi--presign, result:{}", JSONObject.toJSONString(response.getResultModel()));
         return response.getResultModel();
@@ -127,7 +127,7 @@ public class TtqfApiUtil {
         PictureUploadResponse response = client.execute(request);
         if (!"0000".equals(response.getCode())) {
             log.error("ttqfApi--pictureUpload, error:{}", JSONObject.toJSONString(response));
-            throw new TfException(response.getMsg());
+            throw new TfException(response.getBizMsg());
         }
         log.info("ttqfApi--pictureUpload, result:{}", JSONObject.toJSONString(response.getResultModel()));
         System.out.println(response);
@@ -141,7 +141,7 @@ public class TtqfApiUtil {
                 .build());
         if (!"0000".equals(response.getCode())) {
             log.error("ttqfApi--contractH5, error:{}", JSONObject.toJSONString(response));
-            throw new TfException(response.getMsg());
+            throw new TfException(response.getBizMsg());
         }
         log.info("ttqfApi--contractH5, result:{}", JSONObject.toJSONString(response.getResultModel()));
         return response.getResultModel().getSignUrl();
@@ -152,7 +152,7 @@ public class TtqfApiUtil {
                 .bizModel(new QueryPresignModel(idCardNo)).build());
         if (!"0000".equals(response.getCode())) {
             log.error("ttqfApi--queryPresign, error:{}", JSONObject.toJSONString(response));
-            throw new TfException(response.getMsg());
+            throw new TfException(response.getBizMsg());
         }
         log.info("ttqfApi--queryPresign, result:{}", JSONObject.toJSONString(response.getResultModel()));
         return response.getResultModel();

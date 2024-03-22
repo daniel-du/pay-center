@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.api.dto.req;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -16,6 +17,7 @@ public class QueryTtqfSignMsgReqDTO implements Serializable {
     /**
      * 会员id
      */
+    @NotNull(message = "会员id不能为空")
     private Long businessId;
 
 

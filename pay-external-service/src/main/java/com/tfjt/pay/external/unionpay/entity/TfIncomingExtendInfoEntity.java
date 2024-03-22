@@ -7,8 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
 
 /**
  * <p>
@@ -20,6 +20,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @TableName("tf_incoming_extend_info")
 public class TfIncomingExtendInfoEntity implements Serializable {
 

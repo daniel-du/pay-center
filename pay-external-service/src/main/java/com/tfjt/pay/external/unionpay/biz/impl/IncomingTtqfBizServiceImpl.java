@@ -16,6 +16,7 @@ import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
+import com.tfjt.pay.external.unionpay.dto.message.PresignCallbackDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingExtendInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingExtendInfoService;
@@ -23,6 +24,7 @@ import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.utils.TtqfApiUtil;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
+import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -32,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -71,6 +74,7 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
 
     @Override
     public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
+        ValidatorUtils.validateEntity(ttqfContractReqDTO);
         String signUrl = TtqfApiUtil.contractH5(ttqfContractReqDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
         TtqfContractRespDTO ttqfContractRespDTO = TtqfContractRespDTO.builder().signUrl(signUrl).build();
         return Result.ok(ttqfContractRespDTO);
@@ -78,6 +82,7 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
 
     @Override
     public Result<QueryTtqfSignMsgRespDTO> queryTtqfSignMsg(QueryTtqfSignMsgReqDTO queryTtqfSignMsgReqDTO) {
+        ValidatorUtils.validateEntity(queryTtqfSignMsgReqDTO);
         log.info("IncomingTtqfBizServiceImpl--queryTtqfSignMsg, req:{}", JSONObject.toJSONString(queryTtqfSignMsgReqDTO));
         return Result.ok(incomingInfoService.queryTtqfSignMsg(queryTtqfSignMsgReqDTO.getBusinessId()));
     }
@@ -102,7 +107,7 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
                 break;
             }
             queryAndUpdatePresignStatus(signMsgList);
-            startId = signMsgList.get(signMsgList.size() - 1).getId();
+            startId = signMsgList.get(signMsgList.size() - 1).getIncomingId();
         }
     }
 
@@ -113,7 +118,7 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
      */
     @Override
     public TtqfCallbackRespDTO receviceCallbackMsg(JSONObject reqJSON) {
-        log.error("IncomingTtqfBizServiceImpl--receviceCallbackMsg, req:{}", JSONObject.toJSONString(reqJSON));
+        log.info("IncomingTtqfBizServiceImpl--receviceCallbackMsg, req:{}", JSONObject.toJSONString(reqJSON));
         if (ObjectUtils.isEmpty(reqJSON) || StringUtils.isBlank(reqJSON.getString("type"))) {
             log.error("IncomingTtqfBizServiceImpl--receviceCallbackMsgError");
             return new TtqfCallbackRespDTO(BIZ_CODE_FAIL);
@@ -121,6 +126,29 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
         //发送mq
         MQProcess(reqJSON);
         return new TtqfCallbackRespDTO(BIZ_CODE_SUCCESS);
+    }
+
+    @Override
+    public com.tfjt.dto.response.Result<String> consumerCallbackMsg(AsyncMessageEntity asyncMessageEntity) {
+        log.info("IncomingTtqfBizServiceImpl--consumerCallbackMsg, asyncMessageEntity:{}", JSONObject.toJSONString(asyncMessageEntity));
+        PresignCallbackDTO callbackDTO = JSONObject.parseObject(asyncMessageEntity.getMsgBody(), PresignCallbackDTO.class);
+        List<TtqfSignMsgDTO> signMsgDTOS = incomingInfoService
+                .querySignMsgByIdCardAndBankCard(callbackDTO.getIdCardNo(), callbackDTO.getBankCardNo());
+        log.info("IncomingTtqfBizServiceImpl--consumerCallbackMsg, signMsgDTOS:{}", JSONObject.toJSONString(signMsgDTOS));
+        if (CollectionUtils.isEmpty(signMsgDTOS)) {
+            return com.tfjt.dto.response.Result.ok();
+        }
+        List<TfIncomingExtendInfoEntity> extendInfoEntities = new ArrayList<>();
+        signMsgDTOS.forEach(signMsg -> {
+            TfIncomingExtendInfoEntity tfIncomingExtendInfoEntity = TfIncomingExtendInfoEntity.builder()
+                    .id(signMsg.getId())
+                    .authStatus(signMsg.getAuthStatus().byteValue())
+                    .signStatus(signMsg.getSignStatus().byteValue())
+                    .bindStatus(signMsg.getBindStatus().byteValue()).build();
+            extendInfoEntities.add(tfIncomingExtendInfoEntity);
+        });
+        incomingExtendInfoService.updateBatchById(extendInfoEntities);
+        return com.tfjt.dto.response.Result.ok();
     }
 
     /**
@@ -135,7 +163,7 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
                     return;
                 }
                 TfIncomingExtendInfoEntity extendInfoEntity = new TfIncomingExtendInfoEntity();
-                extendInfoEntity.setIncomingId(signMsg.getId());
+                extendInfoEntity.setIncomingId(signMsg.getIncomingId());
                 extendInfoEntity.setSignStatus(presignResult.getSignStatus().byteValue());
                 extendInfoEntity.setAuthStatus(presignResult.getAuthStatus().byteValue());
                 if (CollectionUtils.isEmpty(presignResult.getCards())) {

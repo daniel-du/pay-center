@@ -1,6 +1,7 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import com.alibaba.fastjson.JSONObject;
+import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryTtqfSignMsgReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
@@ -41,6 +42,13 @@ public interface IncomingTtqfBizService {
      * @return
      */
     TtqfCallbackRespDTO receviceCallbackMsg(JSONObject reqJSON);
+
+    /**
+     *
+     * @param asyncMessageEntity
+     * @return
+     */
+    com.tfjt.dto.response.Result<String> consumerCallbackMsg(AsyncMessageEntity asyncMessageEntity);
 
 
 }

@@ -128,4 +128,12 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      * @return
      */
     List<TtqfSignMsgDTO> querySignMsgStartByIncomingId(Long id);
+
+    /**
+     * 根据身份证号码、银行卡号码查询“天天企赋”签约数据
+     * @param idCardNo
+     * @param bankCardNo
+     * @return
+     */
+    List<TtqfSignMsgDTO> querySignMsgByIdCardAndBankCard(String idCardNo, String bankCardNo);
 }

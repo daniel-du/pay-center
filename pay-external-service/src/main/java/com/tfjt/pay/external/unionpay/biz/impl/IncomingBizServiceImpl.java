@@ -544,14 +544,15 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Override
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO) {
+        ValidatorUtils.validateEntity(ttqfSignReqDTO);
         //保存进件主表信息
         TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
         tfIncomingInfoEntity.setBusinessId(ttqfSignReqDTO.getBusinessId());
-//        BeanUtils.copyProperties(incomingInfoReqDTO, tfIncomingInfoEntity);
         String memberId = generateMemberId(ttqfSignReqDTO.getBusinessType().intValue());
-        tfIncomingInfoEntity.setAccessChannelType((byte) 3);
+        tfIncomingInfoEntity.setAccessChannelType(IncomingAccessChannelTypeEnum.TTQF.getCode().byteValue());
         tfIncomingInfoEntity.setAccessType(IncomingAccessTypeEnum.COMMON.getCode().byteValue());
         tfIncomingInfoEntity.setAccessMainType(IncomingAccessMainTypeEnum.SMALL.getCode().byteValue());
+        tfIncomingInfoEntity.setBusinessType(ttqfSignReqDTO.getBusinessType().byteValue());
 
 
         tfIncomingInfoEntity.setMemberId(memberId);
@@ -615,7 +616,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 .legalIdBackUrl(ttqfSignReqDTO.getIdCardPicBFileId()).build();
 
         abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
-        return null;
+        return Result.ok();
     }
 
     /**

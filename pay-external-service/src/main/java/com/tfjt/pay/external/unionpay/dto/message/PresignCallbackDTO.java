@@ -1,37 +1,25 @@
-package com.tfjt.pay.external.unionpay.dto;
+package com.tfjt.pay.external.unionpay.dto.message;
 
 import lombok.Data;
-
-import java.io.Serializable;
 
 /**
  * @author Du Penglun
  * @version 1.0
- * @date 2024/3/20 17:40
- * @description
+ * @date 2024/3/22 15:33
+ * @description 天天企赋-签约状态变更回调实体
  */
 @Data
-public class TtqfSignMsgDTO implements Serializable {
+public class PresignCallbackDTO {
 
     /**
-     * id
+     * 通知类型
      */
-    private Long id;
+    private String type;
 
     /**
-     * 入网id
+     * 最后一次请求id
      */
-    private Long incomingId;
-
-    /**
-     * 姓名
-     */
-    private String userName;
-
-    /**
-     * 身份证号
-     */
-    private String idCardNo;
+    private String orgReqId;
 
     /**
      * 手机号
@@ -39,9 +27,19 @@ public class TtqfSignMsgDTO implements Serializable {
     private String mobile;
 
     /**
+     * 身份证号
+     */
+    private String idCardNo;
+
+    /**
      * 银行卡号
      */
     private String bankCardNo;
+
+    /**
+     * 银行名称
+     */
+    private String bankName;
 
     /**
      * 实名认证状态
@@ -57,6 +55,4 @@ public class TtqfSignMsgDTO implements Serializable {
      * 绑卡状态
      */
     private Integer bindStatus;
-
-
 }
