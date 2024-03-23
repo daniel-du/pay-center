@@ -356,8 +356,8 @@ public class PabcBizServiceImpl implements PabcBizService {
             reqDTO.setBeforChange(oldSales);
             reqDTO.setChangeField("销售区域");
             reqDTO.setChangeTime(new Date());
-            reqDTO.setOperator(dto.getOperator());
-            reqDTO.setOperatorId(dto.getOperatorId());
+            reqDTO.setOperator(dto.getOperatorName());
+            reqDTO.setOperatorId(dto.getOperator());
             reqDTO.setMerchantId(dto.getShopId());
             reqDTO.setMerchantType(NumberConstant.ONE);
             saveList.add(reqDTO);
@@ -370,7 +370,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         String shopName = dto.getShopName();
         String phone = dto.getPhone();
         String afterDistractCode = dto.getAfterDistractCode();
-        String operator = dto.getOperator();
+        String operator = dto.getOperatorName();
         String operatorId = dto.getOperatorId();
         Long shopId = dto.getShopId();
         if (StringUtils.isNotBlank(shopName)) {
