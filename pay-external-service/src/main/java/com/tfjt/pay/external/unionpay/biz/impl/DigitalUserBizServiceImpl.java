@@ -129,7 +129,9 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             id = old.getId();
         }else if (Objects.nonNull(old)){
             //如果之前有记录则不再更新
-            return Result.ok(new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS));
+            DigitalRespDTO digitalRespDTO = new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS);
+            digitalRespDTO.setSignContract(digitalUserEntity.getSignContract());
+            return Result.ok(digitalRespDTO);
         }
         digitalUserEntity.setMchntSideAccount(decryptStr(digitalUserEntity.getMchntSideAccount()));
         DigitalBankCodeEnum bank = DigitalBankCodeEnum.getByCode(digitalUserEntity.getOperatorId());
