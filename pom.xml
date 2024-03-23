@@ -36,7 +36,6 @@
         <project.version>1.0-SNAPSHOT</project.version>
         <project.external.api.version>1.2.3-SNAPSHOT</project.external.api.version>
         <project.external.query.api.version>1.0.0-SNAPSHOT</project.external.query.api.version>
-        <project.external.api.version>1.2.2-RELEASE</project.external.api.version>
         <project.trade.api.version>1.0-SNAPSHOT</project.trade.api.version>
         <dubbo.version>3.0.7</dubbo.version>
     </properties>

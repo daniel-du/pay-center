@@ -143,16 +143,14 @@ public class ConsumerClient implements ApplicationContextAware {
         Consumer consumer = ONSFactory.createConsumer(properties);
         // 订阅另外一个Topic，如需取消订阅该Topic，请删除该部分的订阅代码，重新启动消费端即可。
         // 订阅Tag。
-        shopChangeBYTag(consumer, shopExaminTag);
-        shopChangeBYTag(consumer, shopUpdateTag);
-        shopChangeBYTag(consumer, shopchangeDistrictTag);
+        shopChangeBYTag(consumer);
         consumer.start();
     }
 
-    private void shopChangeBYTag(Consumer consumer, String shopExaminTag) {
-        consumer.subscribe(shopChangeTopic, shopExaminTag, (message, context) -> {
+    private void shopChangeBYTag(Consumer consumer) {
+        consumer.subscribe(shopChangeTopic, "*", (message, context) -> {
             log.info("MerchantChangeConsumer_Receive: " + message);
-            return processShopChange(message, shopExaminTag);
+            return processShopChange(message);
         });
     }
 
@@ -169,16 +167,17 @@ public class ConsumerClient implements ApplicationContextAware {
         consumer.start();
     }
 
-    private Action processShopChange(Message msg, String tag) {
+    private Action processShopChange(Message msg) {
         String msgID = msg.getMsgID();
+        String tag = msg.getTag();
         log.info("msgID: " + msgID);
         String message = new String(msg.getBody());
         log.info("message: " + message);
-        if (tag.equals(shopExaminTag)) {
+        if (shopExaminTag.equals(tag)) {
             ShopExamineMqReqDTO dto = JSONObject.parseObject(message, ShopExamineMqReqDTO.class);
             pabcBizService.saveShopExamineInfo(dto);
         }
-        if (tag.equals(shopUpdateTag) || tag.equals(shopchangeDistrictTag)) {
+        if (shopUpdateTag.equals(tag) || shopchangeDistrictTag.equals(tag)) {
             ShopUpdateMqReqDTO dto = JSONObject.parseObject(message, ShopUpdateMqReqDTO.class);
             pabcBizService.saveShopUpdateInfo(dto);
         }
