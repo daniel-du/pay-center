@@ -25,14 +25,11 @@ public class TtqfContractRespDTO implements Serializable {
     private String signUrl;
 
     /**
-     * 业务状态码
+     * 签约状态,0：未签约，1：已签约，2：签约中
      */
-    private String bizCode;
+    private Integer signStatus;
 
-    /**
-     * 成功信息或失败原因
-     */
-    private String bizMsg;
+
 
 
 }

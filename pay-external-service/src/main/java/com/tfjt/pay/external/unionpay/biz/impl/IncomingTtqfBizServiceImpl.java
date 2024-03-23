@@ -12,6 +12,7 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfCallbackRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfContractRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingTtqfBizService;
+import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
@@ -24,6 +25,7 @@ import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.utils.TtqfApiUtil;
 import com.tfjt.producter.ProducerMessageApi;
 import com.tfjt.producter.service.AsyncMessageService;
+import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -75,8 +77,17 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
     @Override
     public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
         ValidatorUtils.validateEntity(ttqfContractReqDTO);
-        String signUrl = TtqfApiUtil.contractH5(ttqfContractReqDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
-        TtqfContractRespDTO ttqfContractRespDTO = TtqfContractRespDTO.builder().signUrl(signUrl).build();
+        TtqfContractRespDTO ttqfContractRespDTO = TtqfContractRespDTO.builder().signStatus(NumberConstant.ZERO).build();
+        try {
+            String signUrl = TtqfApiUtil.contractH5(ttqfContractReqDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
+            ttqfContractRespDTO.setSignUrl(signUrl);
+            QueryPresignResultModel presignResult = TtqfApiUtil.queryPresign(ttqfContractReqDTO.getIdCardNo());
+            if (NumberConstant.ONE.equals(presignResult.getSignStatus())) {
+                ttqfContractRespDTO.setSignStatus(NumberConstant.TWO);
+            }
+        } catch (TfException e) {
+            ttqfContractRespDTO.setSignStatus(NumberConstant.TWO);
+        }
         return Result.ok(ttqfContractRespDTO);
     }
 

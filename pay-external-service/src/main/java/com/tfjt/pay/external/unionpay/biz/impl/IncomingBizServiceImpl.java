@@ -553,8 +553,6 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         tfIncomingInfoEntity.setAccessType(IncomingAccessTypeEnum.COMMON.getCode().byteValue());
         tfIncomingInfoEntity.setAccessMainType(IncomingAccessMainTypeEnum.SMALL.getCode().byteValue());
         tfIncomingInfoEntity.setBusinessType(ttqfSignReqDTO.getBusinessType().byteValue());
-
-
         tfIncomingInfoEntity.setMemberId(memberId);
         tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
         if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
@@ -562,46 +560,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
         //保存身份信息
-        TfIdcardInfoEntity legalIdcardInfoEntity = TfIdcardInfoEntity.builder().
-                idType(IdTypeEnum.ID_CARD.getCode()).
-                idNo(ttqfSignReqDTO.getIdCardNo()).name(ttqfSignReqDTO.getUserName()).
-                frontIdCardUrl(ttqfSignReqDTO.getIdCardPicAFileId()).
-                backIdCardUrl(ttqfSignReqDTO.getIdCardPicBFileId()).
-                idEffectiveDate(ttqfSignReqDTO.getExpiryStart()).
-                idExpiryDate(ttqfSignReqDTO.getExpiryEnd()).build();
-        if (!tfIdcardInfoService.saveOrUpdate(legalIdcardInfoEntity)) {
-            log.error("IncomingBizServiceImpl--saveLegal，保存法人身份信息失败:{}", JSONObject.toJSONString(legalIdcardInfoEntity));
-            throw new TfException(ExceptionCodeEnum.FAIL);
-        }
-        TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = new TfIncomingMerchantInfoEntity();
-        tfIncomingMerchantInfoEntity.setIncomingId(tfIncomingInfoEntity.getId());
-        tfIncomingMerchantInfoEntity.setLegalMobile(ttqfSignReqDTO.getMobile());
-        tfIncomingMerchantInfoEntity.setLegalIdCard(legalIdcardInfoEntity.getId());
-        if (!tfIncomingMerchantInfoService.save(tfIncomingMerchantInfoEntity)) {
-            log.error("IncomingBizServiceImpl--saveMerchantInfo，保存商户身份信息失败:{}", JSONObject.toJSONString(tfIncomingMerchantInfoEntity));
-            throw new TfException(ExceptionCodeEnum.FAIL);
-        }
-
-
-
+        saveTtqfMerchantInfo(ttqfSignReqDTO, tfIncomingInfoEntity);
         //保存结算信息
-        TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
-        tfBankCardInfoEntity.setBankCardNo(ttqfSignReqDTO.getBankCardNo());
-        //保存银行卡表信息
-        if (!tfBankCardInfoService.save(tfBankCardInfoEntity)) {
-            log.error("IncomingBizServiceImpl--saveSettleInfo，保存结算银行卡信息失败:{}", JSONObject.toJSONString(tfBankCardInfoEntity));
-            throw new TfException(ExceptionCodeEnum.FAIL);
-        }
-        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = TfIncomingSettleInfoEntity.builder().
-                incomingId(tfIncomingInfoEntity.getId()).
-                settlementAccountType(IncomingSettleTypeEnum.PERSONAL.getCode().byteValue()).
-                bankCardId(tfBankCardInfoEntity.getId()).
-                build();
-        //保存结算表信息
-        if (!tfIncomingSettleInfoService.save(tfIncomingSettleInfoEntity)) {
-            log.error("IncomingBizServiceImpl--saveSettleInfo，保存结算信息失败:{}", JSONObject.toJSONString(tfIncomingSettleInfoEntity));
-            throw new TfException(ExceptionCodeEnum.FAIL);
-        }
+        saveTtqfSettleInfo(ttqfSignReqDTO, tfIncomingInfoEntity);
         //调用签约策略
         AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get("ttqf_common_personal");
         IncomingSubmitMessageDTO incomingSubmitMessageDTO =  IncomingSubmitMessageDTO.builder()
@@ -614,7 +575,6 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 .legalIdExpiryEnd(ttqfSignReqDTO.getExpiryEnd())
                 .legalIdFrontUrl(ttqfSignReqDTO.getIdCardPicAFileId())
                 .legalIdBackUrl(ttqfSignReqDTO.getIdCardPicBFileId()).build();
-
         abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
         return Result.ok();
     }
@@ -1067,6 +1027,54 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
         log.info("IncomingBizServiceImpl--writeIncomingCache, key:{}", key);
         redisCache.setCacheString(key, JSONObject.toJSONString(incomingMessage));
+    }
+
+    /**
+     * 天天企赋签约-保存身份信息
+     */
+    private void saveTtqfMerchantInfo(TtqfSignReqDTO ttqfSignReqDTO, TfIncomingInfoEntity tfIncomingInfoEntity) {
+        TfIdcardInfoEntity legalIdcardInfoEntity = TfIdcardInfoEntity.builder().
+                idType(IdTypeEnum.ID_CARD.getCode()).
+                idNo(ttqfSignReqDTO.getIdCardNo()).name(ttqfSignReqDTO.getUserName()).
+                frontIdCardUrl(ttqfSignReqDTO.getIdCardPicAFileId()).
+                backIdCardUrl(ttqfSignReqDTO.getIdCardPicBFileId()).
+                idEffectiveDate(ttqfSignReqDTO.getExpiryStart()).
+                idExpiryDate(ttqfSignReqDTO.getExpiryEnd()).build();
+        if (!tfIdcardInfoService.saveOrUpdate(legalIdcardInfoEntity)) {
+            log.error("IncomingBizServiceImpl--saveTtqfMerchantInfo，保存法人身份信息失败:{}", JSONObject.toJSONString(legalIdcardInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfIncomingMerchantInfoEntity tfIncomingMerchantInfoEntity = new TfIncomingMerchantInfoEntity();
+        tfIncomingMerchantInfoEntity.setIncomingId(tfIncomingInfoEntity.getId());
+        tfIncomingMerchantInfoEntity.setLegalMobile(ttqfSignReqDTO.getMobile());
+        tfIncomingMerchantInfoEntity.setLegalIdCard(legalIdcardInfoEntity.getId());
+        if (!tfIncomingMerchantInfoService.save(tfIncomingMerchantInfoEntity)) {
+            log.error("IncomingBizServiceImpl--saveTtqfMerchantInfo，保存商户身份信息失败:{}", JSONObject.toJSONString(tfIncomingMerchantInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+    }
+
+    /**
+     * 天天企赋签约-保存结算信息
+     */
+    private void saveTtqfSettleInfo(TtqfSignReqDTO ttqfSignReqDTO, TfIncomingInfoEntity tfIncomingInfoEntity) {
+        TfBankCardInfoEntity tfBankCardInfoEntity = new TfBankCardInfoEntity();
+        tfBankCardInfoEntity.setBankCardNo(ttqfSignReqDTO.getBankCardNo());
+        //保存银行卡表信息
+        if (!tfBankCardInfoService.save(tfBankCardInfoEntity)) {
+            log.error("IncomingBizServiceImpl--saveTtqfSettleInfo，保存结算银行卡信息失败:{}", JSONObject.toJSONString(tfBankCardInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
+        TfIncomingSettleInfoEntity tfIncomingSettleInfoEntity = TfIncomingSettleInfoEntity.builder().
+                incomingId(tfIncomingInfoEntity.getId()).
+                settlementAccountType(IncomingSettleTypeEnum.PERSONAL.getCode().byteValue()).
+                bankCardId(tfBankCardInfoEntity.getId()).
+                build();
+        //保存结算表信息
+        if (!tfIncomingSettleInfoService.save(tfIncomingSettleInfoEntity)) {
+            log.error("IncomingBizServiceImpl--saveTtqfSettleInfo，保存结算信息失败:{}", JSONObject.toJSONString(tfIncomingSettleInfoEntity));
+            throw new TfException(ExceptionCodeEnum.FAIL);
+        }
     }
 
 

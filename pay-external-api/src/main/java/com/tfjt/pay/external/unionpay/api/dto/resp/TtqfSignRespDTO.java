@@ -28,15 +28,7 @@ public class TtqfSignRespDTO implements Serializable {
      */
     private Integer bindStatus;
 
-    /**
-     * 业务状态码
-     */
-    private String bizCode;
 
-    /**
-     * 成功信息或失败原因
-     */
-    private String bizMsg;
 
 
 }
