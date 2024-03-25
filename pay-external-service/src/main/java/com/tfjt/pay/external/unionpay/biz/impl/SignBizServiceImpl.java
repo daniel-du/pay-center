@@ -18,10 +18,7 @@ import com.tfjt.pay.external.unionpay.entity.PayApplicationCallbackUrlEntity;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.entity.SigningReviewLogEntity;
 import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
-import com.tfjt.pay.external.unionpay.service.PayCallbackLogService;
-import com.tfjt.pay.external.unionpay.service.SelfSignService;
-import com.tfjt.pay.external.unionpay.service.SigningReviewLogService;
-import com.tfjt.pay.external.unionpay.service.UnionPayCallbackUrlService;
+import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
 import com.tfjt.pay.external.unionpay.utils.DESUtil;
 import com.tfjt.producter.ProducerMessageApi;
@@ -32,6 +29,7 @@ import com.xxl.job.core.context.XxlJobHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -105,6 +103,9 @@ public class SignBizServiceImpl implements SignBizService {
 
     @DubboReference
     SignToNetWorkService signToNetWorkService;
+
+    @Autowired
+    private IncomingCacheService incomingCacheService;
 
 
     /**
@@ -267,6 +268,8 @@ public class SignBizServiceImpl implements SignBizService {
                             //更新入网签约
                             log.info("入网表参数：{}", JSON.toJSONString(selfSignEntity));
                             selfSignService.updateById(selfSignEntity);
+                            //更新缓存
+                            incomingCacheService.writeIncomingCacheBySelfSign(selfSignEntity);
                         }
                     } else {
                         log.error("返回接口为空---");

@@ -117,6 +117,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private AsyncService asyncService;
 
+    @Autowired
+    private IncomingCacheService incomingCacheService;
+
     @DubboReference(retries = 0, timeout = 2000, check = false)
     private TfSupplierApiService tfSupplierApiService;
 
@@ -347,7 +350,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             incomingMessageMap.put(key, incomingMessage);
         });
         //异步写入进件缓存
-        asyncService.batchWriteIncomingCache(queryDBReqs);
+        incomingCacheService.batchWriteIncomingCache(queryDBReqs);
         return Result.ok(incomingMessageMap);
     }
 
