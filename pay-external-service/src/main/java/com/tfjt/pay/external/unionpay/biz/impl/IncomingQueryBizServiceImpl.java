@@ -133,6 +133,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     @Override
     public Result<Map<String, QueryIncomingStatusRespDTO>> batchQueryIncomingStatus(List<QueryIncomingStatusReqDTO> queryIncomingStatusReqDTOS) {
+        log.info("IncomingQueryBizServiceImpl--batchQueryIncomingStatus, reqDTO:{}", JSONObject.toJSONString(queryIncomingStatusReqDTOS));
         //判断入参集合是否为空
         if (CollectionUtils.isEmpty(queryIncomingStatusReqDTOS)) {
             return Result.failed();
@@ -204,6 +205,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         if (!CollectionUtils.isEmpty(unStatusMap)) {
             incomingMessageMap.putAll(unStatusMap);
         }
+        log.info("IncomingQueryBizServiceImpl--batchQueryIncomingStatus, incomingMessageMap:{}", JSONObject.toJSONString(incomingMessageMap));
         return Result.ok(incomingMessageMap);
     }
 
@@ -214,6 +216,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     @Override
     public Result<QueryIncomingStatusRespDTO> queryIncomingStatusByAreaCodes(QueryIncomingStatusReqDTO queryIncomingStatusReqDTO) {
+        log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, reqDTO:{}", JSONObject.toJSONString(queryIncomingStatusReqDTO));
         Set<String> cacheKeys = new HashSet<>();
         Set<String> cacheNullCodes = new HashSet<>();
         queryIncomingStatusReqDTO.getAreaCodes().forEach(areaCode -> {
