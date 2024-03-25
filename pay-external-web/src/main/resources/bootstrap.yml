@@ -52,7 +52,7 @@ xxl:
       addresses: ${xxl-job.addr}
     accessToken: default_token
     executor:
-      appname: ${spring.application.name}
+      appname: ${xxl-job.appname}
       ip:
       port: -1
       logpath: ${xxl-job.log.path}
