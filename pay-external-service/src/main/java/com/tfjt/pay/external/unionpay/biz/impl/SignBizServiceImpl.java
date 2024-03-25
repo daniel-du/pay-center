@@ -232,7 +232,7 @@ public class SignBizServiceImpl implements SignBizService {
         //设置
         selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
         //绑定关系
-        selfSignEntity.setMerMsRelation(selfSignParamDTO.getMerMsRelation());
+        selfSignEntity.setMerMsRelation(getMerMsRelation(selfSignParamDTO.getMerMsRelation()));
         //设置入网成功时间
         if ("03".equals(selfSignParamDTO.getSigningStatus())) {
             selfSignEntity.setSignSuccessDate(new Date());
