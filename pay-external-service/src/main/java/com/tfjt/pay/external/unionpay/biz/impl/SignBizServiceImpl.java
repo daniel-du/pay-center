@@ -232,7 +232,7 @@ public class SignBizServiceImpl implements SignBizService {
         //设置
         selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
         //绑定关系
-        selfSignEntity.setMerMsRelation(getMerMsRelation(selfSignParamDTO.getMerMsRelation()));
+        selfSignEntity.setMerMsRelation(selfSignParamDTO.getMerMsRelation());
         //设置入网成功时间
         if ("03".equals(selfSignParamDTO.getSigningStatus())) {
             selfSignEntity.setSignSuccessDate(new Date());
@@ -362,7 +362,7 @@ public class SignBizServiceImpl implements SignBizService {
                     //接入方账号
                     selfSignParamDTO.setAccesserAcct(selfSignEntity.getAccesserAcct());
                     //绑定关系
-                    selfSignParamDTO.setMerMsRelation(applyquery.getMerMsRelation());
+                    selfSignParamDTO.setMerMsRelation(getMerMsRelation(applyquery.getMerMsRelation()));
                     //企业号
                     selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
                     XxlJobHelper.log("开始通知业务更新状态");
