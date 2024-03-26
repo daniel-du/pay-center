@@ -23,9 +23,9 @@ public class AsyncConfig implements AsyncConfigurer {
     @Bean
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5); // 核心线程数
-        executor.setMaxPoolSize(10); // 最大线程数
-        executor.setQueueCapacity(100000); // 队列大小
+        executor.setCorePoolSize(4); // 核心线程数
+        executor.setMaxPoolSize(8); // 最大线程数
+        executor.setQueueCapacity(10000); // 队列大小
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         executor.initialize();
         return executor;
