@@ -332,7 +332,7 @@ public class PabcBizServiceImpl implements PabcBizService {
             BusinessIsIncomingRespDTO businessIsIncomingRespDTO = BusinessIsIncomingRespDTO.builder()
                     .businessType(req.getBusinessType().byteValue())
                     .businessId(req.getBusinessId()).build();
-            incomingMap.put(req.getBusinessType() + "-" + req.getBusinessId(), businessIsIncomingRespDTO);
+            incomingMap.put(req.getBusinessId() + "-" + req.getBusinessType(), businessIsIncomingRespDTO);
         });
 
         //批量查询Redis
@@ -351,11 +351,11 @@ public class PabcBizServiceImpl implements PabcBizService {
                     .businessType(incomingMessageRespDTO.getBusinessType().byteValue())
                     .businessId(incomingMessageRespDTO.getBusinessId())
                     .accountNo(incomingMessageRespDTO.getAccountNo()).build();
-            incomingMap.put(incomingMessageRespDTO.getBusinessType() + "-" + incomingMessageRespDTO.getBusinessId(), businessIsIncomingRespDTO);
+            incomingMap.put(incomingMessageRespDTO.getBusinessId() + "-" + incomingMessageRespDTO.getBusinessType(), businessIsIncomingRespDTO);
         }
-        for (Map.Entry<String, BusinessIsIncomingRespDTO> entry : incomingMap.entrySet()) {
-            businessList.add(entry.getValue());
-        }
+//        for (Map.Entry<String, BusinessIsIncomingRespDTO> entry : incomingMap.entrySet()) {
+//            businessList.add(entry.getValue());
+//        }
 
 //        List<BusinessIsIncomingRespDTO> businessList =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
 //
@@ -367,7 +367,7 @@ public class PabcBizServiceImpl implements PabcBizService {
 //        }
         if (!flag) {
             //钉钉报警
-            asyncService.dingWarning(dtos,businessList);
+            asyncService.dingWarningNew(dtos,incomingMap);
         }
         return flag;
     }

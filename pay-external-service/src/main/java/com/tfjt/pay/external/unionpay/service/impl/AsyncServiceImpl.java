@@ -194,7 +194,49 @@ public class AsyncServiceImpl implements AsyncService {
         }
     }
 
+    @Async
+    @Override
+    public void dingWarningNew(List<BusinessBasicInfoReqDTO> dtos, Map<String, BusinessIsIncomingRespDTO> map) {
+        List<BusinessBasicInfoReqDTO> warningList = new ArrayList<>();
+        if (CollectionUtil.isEmpty(map)) {
+            warningList = dtos;
+        }else {
+//            Map<String, BusinessIsIncomingRespDTO> map = new HashMap<>();
+//            for (BusinessIsIncomingRespDTO businessIsIncomingRespDTO : businessList) {
+//                if (businessIsIncomingRespDTO.getBusinessType() != null) {
+//                    map.put(businessIsIncomingRespDTO.getBusinessId()+"-"+businessIsIncomingRespDTO.getBusinessType(),businessIsIncomingRespDTO);
+//                }
+//            }
 
+            for (BusinessBasicInfoReqDTO dto : dtos) {
+                String key = dto.getBusinessId()+"-"+dto.getBusinessType();
+                BusinessIsIncomingRespDTO businessIsIncomingRespDTO = map.get(key);
+                if (null == businessIsIncomingRespDTO) {
+                    warningList.add(dto);
+                }else {
+                    if (StringUtils.isBlank(businessIsIncomingRespDTO.getAccountNo())) {
+                        warningList.add(dto);
+                    }
+                }
+            }
+
+        }
+        if (CollectionUtil.isNotEmpty(warningList)) {
+            //发送钉钉
+            String title = "未入网通知";
+            String msg = "";
+            for (BusinessBasicInfoReqDTO dto : warningList) {
+                if (dto.getBusinessType() == 1) {
+                    msg = "商户身份为：经销商或供应商的商户，ID为【"+dto.getBusinessId()+"】的商户还未入网";
+                }
+                if (dto.getBusinessType() == 2) {
+                    msg = "商户身份为：云商，ID为【"+dto.getBusinessId()+"】的商户还未入网";
+                }
+                log.info(msg);
+                sendMessage(title,msg);
+            }
+        }
+    }
 
 
     private String getIdentityByCode(List<Integer> identifyList) {
