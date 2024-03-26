@@ -109,7 +109,7 @@ public class TtqfApiUtil {
         request.setBizModel(model);
         request.setRequestId(String.valueOf(System.currentTimeMillis()));
         PresignResponse response = client.execute(request);
-        if (!"0000".equals(response.getCode())) {
+        if (!response.isSuccess()) {
             log.error("ttqfApi--presign, error:{}", JSONObject.toJSONString(response));
             throw new TfException(response.getBizMsg());
         }
@@ -125,7 +125,7 @@ public class TtqfApiUtil {
         request.setRequestId(System.currentTimeMillis() + "");
         System.out.println(JSON.toJSONString(request));
         PictureUploadResponse response = client.execute(request);
-        if (!"0000".equals(response.getCode())) {
+        if (!response.isSuccess()) {
             log.error("ttqfApi--pictureUpload, error:{}", JSONObject.toJSONString(response));
             throw new TfException(response.getBizMsg());
         }
@@ -139,7 +139,7 @@ public class TtqfApiUtil {
                 .requestId(System.currentTimeMillis() + "").bizModel(ContractH5Model.builder()
                         .idCardNo(idCardNo).mchReturnUrl(returnUrl).build())
                 .build());
-        if (!"0000".equals(response.getCode())) {
+        if (!response.isSuccess()) {
             log.error("ttqfApi--contractH5, error:{}", JSONObject.toJSONString(response));
             throw new TfException(response.getBizMsg());
         }
@@ -150,7 +150,7 @@ public class TtqfApiUtil {
     public static QueryPresignResultModel queryPresign(String idCardNo) {
         QueryPresignResponse response = client.execute(QueryPresignRequest.builder().requestId(System.currentTimeMillis() + "")
                 .bizModel(new QueryPresignModel(idCardNo)).build());
-        if (!"0000".equals(response.getCode())) {
+        if (!response.isSuccess()) {
             log.error("ttqfApi--queryPresign, error:{}", JSONObject.toJSONString(response));
             throw new TfException(response.getBizMsg());
         }
