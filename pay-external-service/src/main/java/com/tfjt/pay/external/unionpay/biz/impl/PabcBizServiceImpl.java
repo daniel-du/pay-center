@@ -348,8 +348,8 @@ public class PabcBizServiceImpl implements PabcBizService {
             MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
             List<String> oldSalesList = new ArrayList<>();
             List<String> newSalesList = new ArrayList<>();
-            oldSalesList.add(dto.getAfterDistractCode());
-            newSalesList.add(dto.getBeforeDistractCode());
+            oldSalesList.add(dto.getBeforeDistractCode());
+            newSalesList.add(dto.getAfterDistractCode());
             String oldSales = getSalesByCodes(oldSalesList);
             String newSales = getSalesByCodes(newSalesList);
             reqDTO.setAfterChange(newSales);
