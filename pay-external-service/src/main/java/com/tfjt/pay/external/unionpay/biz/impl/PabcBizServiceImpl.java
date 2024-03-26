@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
+import com.tfjt.pay.external.query.api.dto.req.QueryIncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
@@ -35,11 +36,14 @@ import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +91,9 @@ public class PabcBizServiceImpl implements PabcBizService {
     private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
     @DubboReference(retries = 0)
     private SupplierApiService supplierApiService;
 
@@ -311,14 +318,53 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Override
     public Boolean isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
-        List<BusinessIsIncomingRespDTO> businessList =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
+        if (CollectionUtils.isEmpty(dtos)) {
+            return true;
+        }
         boolean flag = true;
-        if (CollectionUtil.isEmpty(businessList) || dtos.size() != businessList.size()) {
-            flag =  false;
+        List<BusinessIsIncomingRespDTO> businessList = new ArrayList<>();
+        Map<String, BusinessIsIncomingRespDTO> incomingMap = new HashMap<>();
+        Set<String> incomingCacheKeys = new HashSet<>();
+        dtos.forEach(req -> {
+            String cacheKey = RedisConstant.INCOMING_MSG_KEY_PREFIX + IncomingAccessChannelTypeEnum.PINGAN.getCode() + ":" +
+                    req.getBusinessType() + ":" + req.getBusinessId();
+            incomingCacheKeys.add(cacheKey);
+            BusinessIsIncomingRespDTO businessIsIncomingRespDTO = BusinessIsIncomingRespDTO.builder()
+                    .businessType(req.getBusinessType().byteValue())
+                    .businessId(req.getBusinessId()).build();
+            incomingMap.put(req.getBusinessType() + "-" + req.getBusinessId(), businessIsIncomingRespDTO);
+        });
+
+        //批量查询Redis
+        List<com.alibaba.fastjson.JSONObject> incomingChannels = redisTemplate.opsForValue().multiGet(incomingCacheKeys);
+        for (com.alibaba.fastjson.JSONObject json : incomingChannels) {
+            if (ObjectUtils.isEmpty(json)) {
+                flag = false;
+                continue;
+            }
+            IncomingMessageRespDTO incomingMessageRespDTO = com.alibaba.fastjson.JSONObject.toJavaObject(json, IncomingMessageRespDTO.class);
+            if (StringUtils.isBlank(incomingMessageRespDTO.getAccountNo())) {
+                flag = false;
+                continue;
+            }
+            BusinessIsIncomingRespDTO businessIsIncomingRespDTO = BusinessIsIncomingRespDTO.builder()
+                    .businessType(incomingMessageRespDTO.getBusinessType().byteValue())
+                    .businessId(incomingMessageRespDTO.getBusinessId())
+                    .accountNo(incomingMessageRespDTO.getAccountNo()).build();
+            incomingMap.put(incomingMessageRespDTO.getBusinessType() + "-" + incomingMessageRespDTO.getBusinessId(), businessIsIncomingRespDTO);
         }
-        if (flag && businessList.stream().anyMatch(item->StringUtils.isBlank(item.getAccountNo()))){
-            flag =  false;
+        for (Map.Entry<String, BusinessIsIncomingRespDTO> entry : incomingMap.entrySet()) {
+            businessList.add(entry.getValue());
         }
+
+//        List<BusinessIsIncomingRespDTO> businessList =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
+//
+//        if (CollectionUtil.isEmpty(businessList) || dtos.size() != businessList.size()) {
+//            flag =  false;
+//        }
+//        if (flag && businessList.stream().anyMatch(item->StringUtils.isBlank(item.getAccountNo()))){
+//            flag =  false;
+//        }
         if (!flag) {
             //钉钉报警
             asyncService.dingWarning(dtos,businessList);
