@@ -12,6 +12,7 @@ import com.tfjt.pay.external.unionpay.utils.TtqfApiUtil;
 import com.tfjt.tfcommon.core.exception.TfException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
@@ -29,11 +30,12 @@ import java.util.Date;
 @Service("ttqf_common_personal")
 public class IncomingTtqfPersonalService extends AbstractIncomingService {
 
-    @Autowired
-    private TtqfApiUtil ttqfApiUtil;
 
     @Autowired
     private TfIncomingExtendInfoService incomingExtendInfoService;
+
+    @Value("${ttqf.notifyUrl}")
+    private String notifyUrl;
 
     DateFormat format1 = new SimpleDateFormat("yyyyMMdd");
 
@@ -57,7 +59,8 @@ public class IncomingTtqfPersonalService extends AbstractIncomingService {
                     .expiryStart(expiryStartStr)
                     .expiryEnd(expiryEndStr)
                     .idCardPicAFileId(frontFieldId)
-                    .idCardPicBFileId(backFieldId).build();
+                    .idCardPicBFileId(backFieldId)
+                    .notifyUrl(notifyUrl).build();
             PresignResultModel resultModel = TtqfApiUtil.presign(model);
             TfIncomingExtendInfoEntity extendInfo = new TfIncomingExtendInfoEntity();
             extendInfo.setIncomingId(incomingSubmitMessageDTO.getIncomingId());

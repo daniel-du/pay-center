@@ -97,7 +97,14 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
     public Result<QueryTtqfSignMsgRespDTO> queryTtqfSignMsg(QueryTtqfSignMsgReqDTO queryTtqfSignMsgReqDTO) {
         ValidatorUtils.validateEntity(queryTtqfSignMsgReqDTO);
         log.info("IncomingTtqfBizServiceImpl--queryTtqfSignMsg, req:{}", JSONObject.toJSONString(queryTtqfSignMsgReqDTO));
-        return Result.ok(incomingInfoService.queryTtqfSignMsg(queryTtqfSignMsgReqDTO.getBusinessId()));
+        QueryTtqfSignMsgRespDTO signMsgRespDTO = incomingInfoService.queryTtqfSignMsg(queryTtqfSignMsgReqDTO.getBusinessId());
+        if (ObjectUtils.isEmpty(signMsgRespDTO)) {
+            signMsgRespDTO = QueryTtqfSignMsgRespDTO.builder()
+                    .authStatus(NumberConstant.ZERO)
+                    .signStatus(NumberConstant.ZERO)
+                    .bindStatus(NumberConstant.ZERO).build();
+        }
+        return Result.ok(signMsgRespDTO);
     }
 
     /**

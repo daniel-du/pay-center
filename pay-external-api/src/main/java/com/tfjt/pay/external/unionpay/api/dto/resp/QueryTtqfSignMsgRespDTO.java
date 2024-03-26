@@ -1,6 +1,9 @@
 package com.tfjt.pay.external.unionpay.api.dto.resp;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -11,6 +14,9 @@ import java.io.Serializable;
  * @description
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class QueryTtqfSignMsgRespDTO implements Serializable {
 
     /**
