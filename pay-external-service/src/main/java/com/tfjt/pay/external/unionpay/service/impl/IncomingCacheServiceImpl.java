@@ -17,6 +17,8 @@ import com.tfjt.pay.external.unionpay.enums.IncomingSettleTypeEnum;
 import com.tfjt.pay.external.unionpay.service.IncomingCacheService;
 import com.tfjt.pay.external.unionpay.service.SelfSignService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
+import com.tfjt.supply.merchant.common.dto.supplierdto.resp.SupplierBasicInfoRespDTO;
+import com.tfjt.supply.merchant.supplier.api.service.ISupplierInfoApiService;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.utils.Result;
@@ -48,6 +50,9 @@ public class IncomingCacheServiceImpl implements IncomingCacheService {
 
     @DubboReference(retries = 0, timeout = 2000, check = false)
     private TfSupplierApiService tfSupplierApi;
+
+    @DubboReference(retries = 0, timeout = 2000, check = false)
+    private ISupplierInfoApiService supplierInfoApiService;
 
     @Autowired
     private TfIncomingInfoService tfIncomingInfoService;
@@ -172,12 +177,12 @@ public class IncomingCacheServiceImpl implements IncomingCacheService {
         Long businessId;
         //appId为云商时，查询supplier信息，或者云商id
         if (yunshangAppId.equals(selfSignEntity.getAppId())) {
-            Result<TfSupplierDTO> result = tfSupplierApi.getSupplierInfoBySupplierId(selfSignEntity.getAccesserAcct());
-            if (ObjectUtils.isEmpty(result) || ObjectUtils.isEmpty(result.getData())) {
+            com.tfjt.tfcommon.dto.response.Result<SupplierBasicInfoRespDTO> supplierResult =  supplierInfoApiService.getBySupplierUuid(selfSignEntity.getAccesserAcct());
+            if (ObjectUtils.isEmpty(supplierResult) || ObjectUtils.isEmpty(supplierResult.getData())) {
                 log.error("IncomingCacheServiceImpl--writeIncomingCacheBySelfSign, selfSignEntity:{}", JSONObject.toJSONString(selfSignEntity));
                 throw new TfException(ExceptionCodeEnum.SUPPLIER_IS_NULL);
             }
-            businessId = Long.valueOf(result.getData().getId());
+            businessId = Long.valueOf(supplierResult.getData().getId());
         } else {//appId为云店时，截取accesserAcct字段获取云店id
             String shopId = selfSignEntity.getAccesserAcct().substring(4, selfSignEntity.getAccesserAcct().length());
             businessId = devConfig.isPreOrProd() ? Long.valueOf(shopId) : Long.valueOf(selfSignEntity.getAccesserAcct());
