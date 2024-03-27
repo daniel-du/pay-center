@@ -510,13 +510,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             if (ObjectUtils.isEmpty(selfSignEntity)) {
                 allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
             } else {
-                if ("-1".equals(selfSignEntity.getSigningStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
-                } else if ("03".equals(selfSignEntity.getSigningStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.HAS_ACCESS_STATUS_NAME);
-                } else {
-                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.ACCESSING_STATUS_NAME);
-                }
+                //返回银联枚举值
+                allIncomingMessageRespDTO.setAccessStatusName(UnionPayStatusEnum.getDesc(selfSignEntity.getSigningStatus()));
                 allIncomingMessageRespDTO.setAccountNo(selfSignEntity.getMid());
                 allIncomingMessageRespDTO.setAccountBusinessNo(selfSignEntity.getBusinessNo());
             }
