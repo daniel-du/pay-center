@@ -7,11 +7,13 @@ import com.tfjt.api.TfSupplierApiService;
 import com.tfjt.constant.MessageStatusEnum;
 import com.tfjt.dto.TfSupplierDTO;
 import com.tfjt.entity.AsyncMessageEntity;
+import com.tfjt.pay.external.unionpay.api.dto.req.AllIncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
@@ -19,10 +21,8 @@ import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.*;
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -43,6 +43,8 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -112,17 +114,35 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private SelfSignService selfSignService;
 
-    @DubboReference
+    @Autowired
+    private AsyncService asyncService;
+
+    @Autowired
+    private IncomingCacheService incomingCacheService;
+
+    @DubboReference(retries = 0, timeout = 2000, check = false)
     private TfSupplierApiService tfSupplierApiService;
 
     @Value("${rocketmq.topic.incomingFinish}")
     private String incomingFinishTopic;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     private static final String MQ_FROM_SERVER = "tf-cloud-pay-center";
 
     private static final String MQ_TO_SERVER = "tf-cloud-shop";
 
     private final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
+
+    private static final Set<Integer> PN_OPEN_ACCOUNT_STATUS_SET = new HashSet<>();
+
+    static {
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.SIGN_SUCCESS.getCode());
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.BINK_CARD_SUCCESS.getCode());
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.ACCESS_SUCCESS.getCode());
+        PN_OPEN_ACCOUNT_STATUS_SET.add(IncomingAccessStatusEnum.SMS_VERIFICATION_SUCCESS.getCode());
+    }
 
     @Override
     public Result incomingSave(IncomingInfoReqDTO incomingInfoReqDTO) {
@@ -180,6 +200,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         //调用实现类方法
         IncomingSubmitMessageRespDTO respDTO = abstractIncomingService.incomingSubmit(incomingSubmitMessageDTO);
+        //写入缓存
+        writeIncomingCache(incomingSubmitMessageReqDTO.getIncomingId());
         return Result.ok(respDTO);
     }
 
@@ -215,7 +237,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         abstractIncomingService.checkCode(checkCodeMessageDTO);
         //异步发送mq-进件完成事件
         MQProcess(incomingSubmitMessageDTO);
-        //更新进件信息
+        //写入缓存
+        writeIncomingCache(inComingCheckCodeReqDTO.getIncomingId());
         return Result.ok();
     }
 
@@ -236,6 +259,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         if (ObjectUtils.isEmpty(incomingMessageReqDTO.getAccessChannelType())) {
             incomingMessageReqDTO.setAccessChannelType(getAccessChannelType(incomingMessageReqDTO.getAreaCode()));
         }
+
         IncomingMessageRespDTO incomingMessageRespDTO;
         String cacheKey = RedisConstant.INCOMING_MSG_KEY_PREFIX + incomingMessageReqDTO.getAccessChannelType() + ":" +
                 incomingMessageReqDTO.getBusinessType() + ":" + incomingMessageReqDTO.getBusinessId();
@@ -244,7 +268,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMsgStr:{}", incomingMsgStr);
         if (StringUtils.isNotBlank(incomingMsgStr)) {
             incomingMessageRespDTO = JSONObject.parseObject(incomingMsgStr, IncomingMessageRespDTO.class);
-            return Result.ok(incomingMessageRespDTO);
+            if (PN_OPEN_ACCOUNT_STATUS_SET.contains(incomingMessageRespDTO.getAccessStatus())) {
+                return Result.ok(incomingMessageRespDTO);
+            }
         }
         incomingMessageRespDTO = tfIncomingInfoService.queryIncomingMessageByMerchant(incomingMessageReqDTO);
         log.info("IncomingBizServiceImpl--queryIncomingMessage, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
@@ -258,7 +284,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             incomingMessageRespDTO.setMemberName(incomingMessageRespDTO.getLegalName());
         }
         //设置缓存，10分钟
-        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO), NumberConstant.TEN, TimeUnit.MINUTES);
+        redisCache.setCacheString(cacheKey, JSONObject.toJSONString(incomingMessageRespDTO));
         return Result.ok(incomingMessageRespDTO);
     }
 
@@ -273,17 +299,58 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         if (incomingMessageReqs.isEmpty()) {
             return Result.failed(ExceptionCodeEnum.ILLEGAL_ARGUMENT);
         }
-        List<IncomingMessageRespDTO>  incomingMessageRespDTOS = tfIncomingInfoService.queryIncomingMessagesByMerchantList(incomingMessageReqs);
+        Map<String, IncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
+        Set<String> incomingCacheKeys = new HashSet<>();
+        Map<String, IncomingMessageReqDTO> noCacheMap = new HashMap<>();
+        //遍历入参获取缓存key集合
+        incomingMessageReqs.forEach(incomingMessageReqDTO -> {
+            incomingCacheKeys.add(RedisConstant.INCOMING_MSG_KEY_PREFIX + incomingMessageReqDTO.getAccessChannelType() + ":" +
+                    incomingMessageReqDTO.getBusinessType() + ":" + incomingMessageReqDTO.getBusinessId());
+            noCacheMap.put(incomingMessageReqDTO.getAccessChannelType() + "-" +
+                    incomingMessageReqDTO.getBusinessType() + "-" + incomingMessageReqDTO.getBusinessId(), incomingMessageReqDTO);
+        });
+        //批量查询缓存
+        List<JSONObject> cacheJSONS =  redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            for (String key : incomingCacheKeys) {
+                connection.get(redisTemplate.getKeySerializer().serialize(key));
+            }
+            return null;
+        });
+        log.info("IncomingBizServiceImpl--queryIncomingMessages, cacheJSONS:{}", JSONObject.toJSONString(cacheJSONS));
+        //遍历缓存中查询集合
+        for (JSONObject cacheJSON : cacheJSONS) {
+            if (ObjectUtils.isEmpty(cacheJSON)) {
+                continue;
+            }
+            IncomingMessageRespDTO cacheResp = JSONObject.toJavaObject(cacheJSON, IncomingMessageRespDTO.class);
+            String key = cacheResp.getAccessChannelType() + "-" + cacheResp.getBusinessType() +"-"+ cacheResp.getBusinessId();
+            //移除数据不为空的key，最终剩余参数查询数据库
+            noCacheMap.remove(key);
+            if (PN_OPEN_ACCOUNT_STATUS_SET.contains(cacheResp.getAccessStatus())) {
+                incomingMessageMap.put(key, cacheResp);
+            }
+        }
+        //缓存中查到入参全部数据，返回结果
+        if (CollectionUtils.isEmpty(noCacheMap)) {
+            return Result.ok(incomingMessageMap);
+        }
+        List<IncomingMessageReqDTO> queryDBReqs = new ArrayList<>();
+        //遍历缓存中未查询到的key集合，组合数据库查询参数
+        for (Map.Entry<String, IncomingMessageReqDTO> entry : noCacheMap.entrySet()) {
+            queryDBReqs.add(entry.getValue());
+        }
+        List<IncomingMessageRespDTO> incomingMessageRespDTOS = tfIncomingInfoService.queryIncomingMessagesByMerchantList(queryDBReqs);
         log.info("IncomingBizServiceImpl--queryIncomingMessages, incomingMessageRespDTOS:{}", JSONObject.toJSONString(incomingMessageRespDTOS));
         if (CollectionUtils.isEmpty(incomingMessageRespDTOS)) {
-            return Result.failed(ExceptionCodeEnum.IS_NULL);
+            return Result.ok(incomingMessageMap);
         }
-        Map<String, IncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
         //将查询到的数据集合，以“入网渠道”-“商户类型”-“商户id”为key放入map
         incomingMessageRespDTOS.forEach(incomingMessage -> {
             String key = incomingMessage.getAccessChannelType() + "-" + incomingMessage.getBusinessType() +"-"+ incomingMessage.getBusinessId();
             incomingMessageMap.put(key, incomingMessage);
         });
+        //异步写入进件缓存
+        incomingCacheService.batchWriteIncomingCache(queryDBReqs);
         return Result.ok(incomingMessageMap);
     }
 
@@ -405,6 +472,62 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             batchQueryShopIncomingStatus(incomingStatusReqDTO, incomingStatusMap);
         }
         return Result.ok(incomingStatusMap);
+    }
+
+    /**
+     * 根据商户id、商户类型查询所有渠道入网信息
+     * @param reqDTO
+     * @return
+     */
+    @Override
+    public Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(AllIncomingMessageReqDTO reqDTO) {
+        List<AllIncomingMessageRespDTO> messageRespList = new ArrayList<>();
+        //查询incoming表入网信息
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(reqDTO.getBusinessId(), reqDTO.getBusinessType());
+        Map<Integer, AllIncomingMessageRespDTO> incomingMessageMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(incomingInfoEntities)) {
+            incomingInfoEntities.forEach(incomingInfo -> {
+                AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
+                allIncomingMessageRespDTO.setChannelName(IncomingAccessChannelTypeEnum.getDescFromCode(incomingInfo.getAccessChannelType().intValue()));
+                if (IncomingAccessStatusEnum.IMPORTS_CLOSURE.getCode().equals(incomingInfo.getAccessStatus())) {
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
+                } else if (PN_OPEN_ACCOUNT_STATUS_SET.contains(incomingInfo.getAccessStatus())) {
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.HAS_ACCESS_STATUS_NAME);
+                } else {
+                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.ACCESSING_STATUS_NAME);
+                }
+                allIncomingMessageRespDTO.setAccountNo(incomingInfo.getAccountNo());
+                incomingMessageMap.put(incomingInfo.getAccessChannelType().intValue(), allIncomingMessageRespDTO);
+            });
+        }
+        //查询self_signing表入网信息
+        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result =  tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
+        if (ObjectUtils.isNotEmpty(result) && ObjectUtils.isNotEmpty(result.getData())) {
+            TfSupplierDTO tfSupplier = result.getData();
+            SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(tfSupplier.getSupplierId());
+            AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
+            allIncomingMessageRespDTO.setChannelName(IncomingAccessChannelTypeEnum.UNIONPAY.getDesc());
+            if (ObjectUtils.isEmpty(selfSignEntity)) {
+                allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
+            } else {
+                //返回银联枚举值
+                allIncomingMessageRespDTO.setAccessStatusName(UnionPayStatusEnum.getDesc(selfSignEntity.getSigningStatus()));
+                allIncomingMessageRespDTO.setAccountNo(selfSignEntity.getMid());
+                allIncomingMessageRespDTO.setAccountBusinessNo(selfSignEntity.getBusinessNo());
+            }
+            incomingMessageMap.put(IncomingAccessChannelTypeEnum.UNIONPAY.getCode(), allIncomingMessageRespDTO);
+        }
+        for (IncomingAccessChannelTypeEnum accessChannelTypeEnum : IncomingAccessChannelTypeEnum.values()) {
+            if (incomingMessageMap.containsKey(accessChannelTypeEnum.getCode())) {
+                messageRespList.add(incomingMessageMap.get(accessChannelTypeEnum.getCode()));
+            } else {
+                AllIncomingMessageRespDTO allIncomingMessageRespDTO = new AllIncomingMessageRespDTO();
+                allIncomingMessageRespDTO.setChannelName(accessChannelTypeEnum.getDesc());
+                allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
+                messageRespList.add(allIncomingMessageRespDTO);
+            }
+        }
+        return Result.ok(messageRespList);
     }
 
     /**
@@ -725,6 +848,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 throw new TfException(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
             }
             abstractIncomingService.openAccount(incomingSubmitMessageDTO);
+            //写入缓存
+            writeIncomingCache(tfIncomingInfoEntity.getId());
         } catch (Exception e) {
             log.error("IncomingBizServiceImpl--incomingMessageSubmit，银联数据开户失败, incomingId:{}", tfIncomingInfoEntity.getId());
             throw e;
@@ -756,7 +881,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
         log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
         //查询平安入网数据
-        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdsAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
         log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
         Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
         Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
@@ -796,7 +921,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
         log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
         //查询平安入网数据
-        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
+        List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdsAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
         log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
         Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
         Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
@@ -828,6 +953,22 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         redisCache.expire(prefix, 24, TimeUnit.HOURS);
         String str = String.format("%05d", incr);
         return prefix + str;
+    }
+
+    /**
+     * 写入缓存
+     * @param incomingId
+     */
+    private void writeIncomingCache(Long incomingId) {
+        IncomingMessageRespDTO incomingMessage = tfIncomingInfoService.queryIncomingMessageRespById(incomingId);
+        log.info("IncomingBizServiceImpl--writeIncomingCache, incomingMessage:{}", JSONObject.toJSONString(incomingMessage));
+        if (ObjectUtils.isEmpty(incomingMessage)) {
+            return;
+        }
+        String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  incomingMessage.getAccessChannelType() + ":"
+                + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
+        log.info("IncomingBizServiceImpl--writeIncomingCache, key:{}", key);
+        redisCache.setCacheString(key, JSONObject.toJSONString(incomingMessage));
     }
 
 

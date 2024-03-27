@@ -6,7 +6,7 @@ package com.tfjt.pay.external.unionpay.constants;
  * @date 2023/12/22 15:41
  * @description
  */
-public class PnSdkConstant {
+public class IncomingConstant {
 
     /**
      * 默认币种，人民币
@@ -52,4 +52,15 @@ public class PnSdkConstant {
      * 开户返回子账户号字段
      */
     public static final String RESULT_SUB_ACCT_NO_FIELD = "SubAcctNo";
+
+    public static final String NO_ACCESS_STATUS_NAME = "未入网";
+
+    public static final String ACCESSING_STATUS_NAME = "入网中";
+
+    public static final String HAS_ACCESS_STATUS_NAME = "入网成功";
+
+    /**
+     * 平安银行编号
+     */
+    public static final String PN_BANK_NAME = "平安银行";
 }

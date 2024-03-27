@@ -5,7 +5,6 @@ import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 
 import java.util.List;
 
-
 /**
  * 入网表
  *
@@ -15,6 +14,7 @@ import java.util.List;
  */
 public interface SelfSignService extends IService<SelfSignEntity> {
 
+    SelfSignEntity selectByMid(String mid);
 
     /**
      * 根据来源账户批量查询入网信息
@@ -22,5 +22,20 @@ public interface SelfSignService extends IService<SelfSignEntity> {
      * @return
      */
     List<SelfSignEntity> querySelfSignsByAccessAccts(List<String> accessAccts);
+
+    /**
+     * 根据平台账户id查询进件信息
+     * @param accessAcct
+     * @return
+     */
+    SelfSignEntity querySelfSignByAccessAcct(String accessAcct);
+
+    /**
+     * 查询最近七天入网成功的商户
+     * @return
+     */
+
+    List<SelfSignEntity> querySelfSignsBySuccess(String accesserAcct);
+
 }
 

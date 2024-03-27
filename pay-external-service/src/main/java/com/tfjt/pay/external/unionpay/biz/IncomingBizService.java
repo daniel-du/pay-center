@@ -1,13 +1,12 @@
 package com.tfjt.pay.external.unionpay.biz;
 
+import com.tfjt.pay.external.unionpay.api.dto.req.AllIncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
-import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.*;
+import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.tfcommon.dto.response.Result;
 
@@ -80,4 +79,11 @@ public interface IncomingBizService {
      * @return
      */
     Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReqDTO);
+
+    /**
+     * 根据商户id、商户类型查询所有渠道入网信息
+     * @param reqDTO
+     * @return
+     */
+    Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(AllIncomingMessageReqDTO reqDTO);
 }

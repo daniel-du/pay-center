@@ -1,5 +1,6 @@
 package com.tfjt.pay.external.unionpay.service;
 
+import com.tfjt.pay.external.unionpay.dto.req.QueryIncomingSettleByMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -27,5 +28,12 @@ public interface TfIncomingSettleInfoService extends IService<TfIncomingSettleIn
      * @return
      */
     IncomingSettleRespDTO querySettleById(Long id);
+
+    /**
+     * 根据商户信息查询结算信息
+     * @param reqDTO
+     * @return
+     */
+    IncomingSettleRespDTO querySettleByMerchant(QueryIncomingSettleByMerchantReqDTO reqDTO);
 
 }

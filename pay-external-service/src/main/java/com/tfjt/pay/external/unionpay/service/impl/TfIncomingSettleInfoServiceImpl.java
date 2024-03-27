@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingSettleInfoDao;
+import com.tfjt.pay.external.unionpay.dto.req.QueryIncomingSettleByMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingSettleInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.DeleteStatusEnum;
@@ -41,5 +42,15 @@ public class TfIncomingSettleInfoServiceImpl extends BaseServiceImpl<TfIncomingS
     @Override
     public IncomingSettleRespDTO querySettleById(Long id) {
         return this.baseMapper.querySettleById(id);
+    }
+
+    /**
+     * 根据商户信息查询结算信息
+     * @param reqDTO
+     * @return
+     */
+    @Override
+    public IncomingSettleRespDTO querySettleByMerchant(QueryIncomingSettleByMerchantReqDTO reqDTO) {
+        return this.baseMapper.querySettleByMerchant(reqDTO);
     }
 }

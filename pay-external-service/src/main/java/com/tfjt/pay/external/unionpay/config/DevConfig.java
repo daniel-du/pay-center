@@ -20,7 +20,7 @@ public class DevConfig {
      * @return
      */
     public boolean isLocal() {
-        return active.equals("local");
+        return "local".equals(active);
     }
 
     /**
@@ -28,7 +28,7 @@ public class DevConfig {
      * @return
      */
     public boolean isProd() {
-        return active.equals("prod");
+        return "prod".equals(active);
     }
 
     /**
@@ -36,7 +36,15 @@ public class DevConfig {
      * @return
      */
     public boolean isPre() {
-        return active.equals("pre");
+        return "pre".equals(active);
+    }
+
+    /**
+     * 判断是否预发或生产环境
+     * @return
+     */
+    public boolean isPreOrProd() {
+        return "pre".equals(active) ||"prod".equals(active);
     }
 
     public String getActive() {

@@ -7,13 +7,17 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
 import com.tfjt.pay.external.unionpay.enums.CityTypeEnum;
+import com.tfjt.pay.external.unionpay.enums.IncomingAccessChannelTypeEnum;
 import com.tfjt.pay.external.unionpay.service.SalesAreaIncomingChannelService;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -61,6 +65,32 @@ public class NetworkTypeCacheUtil {
             }
         }
         return cacheString;
+    }
+
+    /**
+     * 异步写入渠道配置缓存
+     * @param areaCodes
+     */
+    @Async
+    public void writeCache(Set<String> areaCodes) {
+        List<SalesAreaIncomingChannelEntity> areaIncomingChannels = salesAreaIncomingChannelService.queryByDistrictsCodesSet(areaCodes);
+        if (!CollectionUtils.isEmpty(areaIncomingChannels)) {
+            //遍历数据库查询结果，写入缓存，移除set中元素
+            for (SalesAreaIncomingChannelEntity areaIncomingChannel : areaIncomingChannels) {
+                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaIncomingChannel.getDistrictsCode(), JSONObject.toJSONString(areaIncomingChannel));
+                areaCodes.remove(areaIncomingChannel.getDistrictsCode());
+            }
+        }
+        //剩余set中元素不为空时，剩余区域未配置渠道，默认为银联，写入缓存
+        if (!CollectionUtils.isEmpty(areaCodes)) {
+            for (String areaCode : areaCodes) {
+                SalesAreaIncomingChannelEntity salesAreaIncomingChannel = new SalesAreaIncomingChannelEntity();
+                salesAreaIncomingChannel.setChannelCode(IncomingAccessChannelTypeEnum.UNIONPAY.getCode().toString());
+                salesAreaIncomingChannel.setDistrictsCode(areaCode);
+                redisCache.setCacheString(RedisConstant.NETWORK_TYPE_BY_AREA_CODE + areaCode, JSONObject.toJSONString(salesAreaIncomingChannel));
+            }
+        }
+
     }
 
 }

@@ -3,6 +3,7 @@ package com.tfjt.pay.external.unionpay.biz.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.tfjt.pay.external.unionpay.biz.IncomingSettleBizService;
 import com.tfjt.pay.external.unionpay.dto.req.IncomingSettleReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.QueryIncomingSettleByMerchantReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingBusinessRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingMerchantRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSettleRespDTO;
@@ -56,7 +57,7 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
             log.info("IncomingSettleBizServiceImpl---getById, incomingSettleRespDTO:{}", JSONObject.toJSONString(incomingSettleRespDTO));
             return Result.ok(incomingSettleRespDTO);
         } catch (TfException e) {
-            log.error("平安进件-查询商户结算信息 发生 RenException:", e);
+            log.error("平安进件-查询商户结算信息 发生 TfException:", e);
             return Result.failed(e.getCode(), e.getMessage());
         } catch (Exception e) {
             log.error("平安进件-查询商户结算信息 发生 Exception:", e);
@@ -114,6 +115,22 @@ public class IncomingSettleBizServiceImpl implements IncomingSettleBizService {
             throw new TfException(ExceptionCodeEnum.FAIL);
         }
         return Result.ok();
+    }
+
+    @Override
+    public Result<IncomingSettleRespDTO> getByMerchant(QueryIncomingSettleByMerchantReqDTO reqDTO) {
+        log.info("IncomingSettleBizServiceImpl---getByMerchant, reqDTO:{}", JSONObject.toJSONString(reqDTO));
+        try {
+            IncomingSettleRespDTO incomingSettleRespDTO = tfIncomingSettleInfoService.querySettleByMerchant(reqDTO);
+            log.info("IncomingSettleBizServiceImpl---getByMerchant, incomingSettleRespDTO:{}", JSONObject.toJSONString(incomingSettleRespDTO));
+            return Result.ok(incomingSettleRespDTO);
+        } catch (TfException e) {
+            log.error("资金中心-查询商户结算信息 发生 TfException:", e);
+            return Result.failed(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            log.error("资金中心-查询商户结算信息 发生 Exception:", e);
+            return Result.failed(ExceptionCodeEnum.FAIL);
+        }
     }
 
     /**
