@@ -194,7 +194,7 @@ public class AsyncServiceImpl implements AsyncService {
         }
     }
 
-    @Async
+    @Async("asyncServiceExecutor")
     @Override
     public void dingWarningNew(List<BusinessBasicInfoReqDTO> dtos, Map<String, BusinessIsIncomingRespDTO> map) {
         List<BusinessBasicInfoReqDTO> warningList = new ArrayList<>();

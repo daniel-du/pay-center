@@ -15,8 +15,8 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @date 2024/3/26 20:21
  * @description
  */
-@Configuration
-@EnableAsync
+//@Configuration
+//@EnableAsync
 public class AsyncConfig implements AsyncConfigurer {
 
     @Override
