@@ -302,7 +302,7 @@
         <dependency>
             <groupId>com.tfjt</groupId>
             <artifactId>tf-cloud-supplier-interface</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>0.9.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -363,6 +363,11 @@
             <groupId>com.tfjt</groupId>
             <artifactId>tf-cloud-pay-interface</artifactId>
             <version>0.5.18-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>supply-merchant-supplier-api</artifactId>
+            <version>1.0.19-RELEASE</version>
         </dependency>
     </dependencies>
 </project>

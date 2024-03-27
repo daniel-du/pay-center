@@ -148,7 +148,8 @@ public class ConsumerClient implements ApplicationContextAware {
     }
 
     private void shopChangeBYTag(Consumer consumer) {
-        consumer.subscribe(shopChangeTopic, "*", (message, context) -> {
+        String tags = shopExaminTag+" || "+shopUpdateTag+" || "+shopchangeDistrictTag;
+        consumer.subscribe(shopChangeTopic, tags, (message, context) -> {
             log.info("MerchantChangeConsumer_Receive: " + message);
             return processShopChange(message);
         });

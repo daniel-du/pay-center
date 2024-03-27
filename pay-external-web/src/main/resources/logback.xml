@@ -129,13 +129,6 @@
     <logger name="com.tf.log.common.filter.LogFilterSpringBoot" additivity="false">
         <appender-ref ref="ASYNC_FILE_NOTICE"/>
     </logger>
-    <appender name="grpc1-log" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
-                <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{tid}] [%thread] %-5level %logger{36} -%msg%n</Pattern>
-            </layout>
-        </encoder>
-    </appender>
 
     <appender name="grpc1-log" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">

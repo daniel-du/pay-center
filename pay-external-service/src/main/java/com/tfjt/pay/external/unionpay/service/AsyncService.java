@@ -19,5 +19,7 @@ public interface AsyncService {
 
     void dingWarning(List<BusinessBasicInfoReqDTO> dtos, List<BusinessIsIncomingRespDTO> businessList);
 
+    void dingWarningNew(List<BusinessBasicInfoReqDTO> dtos, Map<String, BusinessIsIncomingRespDTO> map);
+
 
 }

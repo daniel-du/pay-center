@@ -848,6 +848,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 throw new TfException(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
             }
             abstractIncomingService.openAccount(incomingSubmitMessageDTO);
+            //写入缓存
+            writeIncomingCache(tfIncomingInfoEntity.getId());
         } catch (Exception e) {
             log.error("IncomingBizServiceImpl--incomingMessageSubmit，银联数据开户失败, incomingId:{}", tfIncomingInfoEntity.getId());
             throw e;
