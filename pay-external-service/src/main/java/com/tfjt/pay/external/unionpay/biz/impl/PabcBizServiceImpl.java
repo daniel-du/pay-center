@@ -448,7 +448,7 @@ public class PabcBizServiceImpl implements PabcBizService {
             newSalesList.add(afterDistractCode);
             if (StringUtils.isNotBlank(beforeDistractCode)) {
                 oldSalesList.add(beforeDistractCode);
-                String oldSales = getSalesByCodes(newSalesList);
+                String oldSales = getSalesByCodes(oldSalesList);
                 reqDTO.setBeforChange(oldSales);
             }
             String newSales = getSalesByCodes(newSalesList);
