@@ -58,4 +58,9 @@ public class IncomingConstant {
     public static final String ACCESSING_STATUS_NAME = "入网中";
 
     public static final String HAS_ACCESS_STATUS_NAME = "入网成功";
+
+    /**
+     * 平安银行编号
+     */
+    public static final String PN_BANK_NAME = "平安银行";
 }

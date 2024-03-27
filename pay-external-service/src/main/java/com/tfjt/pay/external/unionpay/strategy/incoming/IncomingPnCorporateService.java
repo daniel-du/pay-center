@@ -251,12 +251,12 @@ public class IncomingPnCorporateService extends AbstractIncomingService {
         //会员账号:提现的银行卡
         jsonObject.put("MemberAcctNo", incomingSubmitMessageDTO.getBankCardNo());
         //银行类型:1：本行 2：他行
-        jsonObject.put("BankType", IncomingConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankCode()) ? NumberConstant.ONE : NumberConstant.TWO);
+        jsonObject.put("BankType", IncomingConstant.PN_BANK_NAME.equals(incomingSubmitMessageDTO.getBankName()) ? NumberConstant.ONE : NumberConstant.TWO);
 //        jsonObject.put("BankType", "1");
         //开户行名称
         jsonObject.put("AcctOpenBranchName", incomingSubmitMessageDTO.getBankName());
         //大小额行号：大小额行号和超级网银行号两者二选一必填。
-        if (!IncomingConstant.PN_BANK_CODE.equals(incomingSubmitMessageDTO.getBankCode())) {
+        if (!IncomingConstant.PN_BANK_NAME.equals(incomingSubmitMessageDTO.getBankName())) {
             jsonObject.put("CnapsBranchId", incomingSubmitMessageDTO.getBankBranchCode());
         }
 //        //超级网银行号
