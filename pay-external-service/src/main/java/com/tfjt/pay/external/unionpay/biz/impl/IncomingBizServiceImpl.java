@@ -544,6 +544,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Override
     @Transactional(rollbackFor = {TfException.class, Exception.class})
     public Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO) {
+        log.info("IncomingBizServiceImpl>>ttqfSign, ttqfSignReqDTO:{}", JSONObject.toJSONString(ttqfSignReqDTO));
         ValidatorUtils.validateEntity(ttqfSignReqDTO);
         //保存进件主表信息
         TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();

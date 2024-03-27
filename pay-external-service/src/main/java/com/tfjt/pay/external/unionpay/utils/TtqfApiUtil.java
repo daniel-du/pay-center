@@ -105,6 +105,7 @@ public class TtqfApiUtil {
     }
 
     public static PresignResultModel presign(PresignModel model) {
+        log.info("TtqfApiUtil>>presign, reqModel:{}", JSONObject.toJSONString(model));
         PresignRequest request = new PresignRequest();
         request.setBizModel(model);
         request.setRequestId(String.valueOf(System.currentTimeMillis()));
