@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
-import com.tfjt.pay.external.query.api.dto.req.QueryIncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
@@ -419,6 +418,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         String operator = dto.getOperatorName();
         String operatorId = dto.getOperatorId();
         Long shopId = dto.getShopId();
+        String beforeDistractCode = dto.getBeforeDistractCode();
         if (StringUtils.isNotBlank(shopName)) {
             MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
             reqDTO.setAfterChange(shopName);
@@ -443,10 +443,16 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         if (StringUtils.isNotBlank(afterDistractCode)) {
             MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
-            List<String> salesList = new ArrayList<>();
-            salesList.add(afterDistractCode);
-            String sales = getSalesByCodes(salesList);
-            reqDTO.setAfterChange(sales);
+            List<String> newSalesList = new ArrayList<>();
+            List<String> oldSalesList = new ArrayList<>();
+            newSalesList.add(afterDistractCode);
+            if (StringUtils.isNotBlank(beforeDistractCode)) {
+                oldSalesList.add(beforeDistractCode);
+                String oldSales = getSalesByCodes(newSalesList);
+                reqDTO.setBeforChange(oldSales);
+            }
+            String newSales = getSalesByCodes(newSalesList);
+            reqDTO.setAfterChange(newSales);
             reqDTO.setChangeField("销售区域");
             reqDTO.setChangeTime(new Date());
             reqDTO.setOperator(operator);
