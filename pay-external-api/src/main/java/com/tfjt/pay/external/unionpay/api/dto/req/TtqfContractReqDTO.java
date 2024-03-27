@@ -24,7 +24,6 @@ public class TtqfContractReqDTO implements Serializable {
     /**
      * 身份证号
      */
-    @NotBlank(message = "身份证号不能为空")
     private String idCardNo;
 
     /**

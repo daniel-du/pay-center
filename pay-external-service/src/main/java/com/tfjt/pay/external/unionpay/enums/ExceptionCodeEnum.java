@@ -78,6 +78,7 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_FREQUENT_OPERATION(2000025,"请2分钟之后重新点击!"),
     INCOMING_CORPORATE_BANK_CARD_ACCOUNT_ERROR(2000026,"对公类型开户名称必须与营业名称一致!"),
     INCOMING_INFO_IS_NULL(2000027,"入网信息为空!"),
+    MERCHANT_IS_AUTH(2000028,"该用户已提交认证!"),
 
 
     PN_API_ERROR(3000010, "调用平安API失败!"),

@@ -78,9 +78,13 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
     public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
         ValidatorUtils.validateEntity(ttqfContractReqDTO);
         TtqfContractRespDTO ttqfContractRespDTO = TtqfContractRespDTO.builder().signStatus(NumberConstant.ZERO).build();
+        QueryTtqfSignMsgRespDTO signMsgRespDTO = incomingInfoService.queryTtqfSignMsg(ttqfContractReqDTO.getBusinessId());
+        if (ObjectUtils.isEmpty(signMsgRespDTO)) {
+            return Result.ok(ttqfContractRespDTO);
+        }
         try {
             //获取手签h5链接
-            String signUrl = TtqfApiUtil.contractH5(ttqfContractReqDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
+            String signUrl = TtqfApiUtil.contractH5(signMsgRespDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
             ttqfContractRespDTO.setSignUrl(signUrl);
             //查询签约状态，如果状态为“已签约”，则返回
             QueryPresignResultModel presignResult = TtqfApiUtil.queryPresign(ttqfContractReqDTO.getIdCardNo());

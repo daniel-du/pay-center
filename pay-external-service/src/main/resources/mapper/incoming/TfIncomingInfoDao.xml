@@ -135,7 +135,8 @@
         left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
         left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
         left join tf_incoming_extend_info d on a.id = d.incoming_id
-        where a.access_channel_type = 3 and a.business_type = 3 and a.business_id = #{businessId};
+        where a.access_channel_type = 3 and a.business_type = 3
+        and a.is_deleted = 0 and a.business_id = #{businessId};
     </select>
     <select id="querySignMsgStartByIncomingId" resultType="com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO">
         select d.id,d.incoming_id,d.auth_status ,d.sign_status ,d.bind_status ,d.register_time ,
@@ -162,4 +163,5 @@
                   inner join tf_incoming_extend_info d on a.id = d.incoming_id and d.is_delete = 0
         where a.access_channel_type = 3 and a.business_type = 3 and c.id_no = #{idCardNo} and h.bank_card_no = #{bankCardNo}
     </select>
+
 </mapper>

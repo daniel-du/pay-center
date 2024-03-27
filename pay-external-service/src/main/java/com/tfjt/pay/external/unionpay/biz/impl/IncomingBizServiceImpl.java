@@ -12,10 +12,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfSignReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfContractRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfSignRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
@@ -26,7 +23,6 @@ import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
 import com.tfjt.pay.external.unionpay.dto.req.*;
-import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -546,6 +542,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     public Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO) {
         log.info("IncomingBizServiceImpl>>ttqfSign, ttqfSignReqDTO:{}", JSONObject.toJSONString(ttqfSignReqDTO));
         ValidatorUtils.validateEntity(ttqfSignReqDTO);
+        QueryTtqfSignMsgRespDTO signMsgRespDTO = tfIncomingInfoService.queryTtqfSignMsg(ttqfSignReqDTO.getBusinessId());
+        if (ObjectUtils.isNotEmpty(signMsgRespDTO)) {
+            return Result.failed(ExceptionCodeEnum.MERCHANT_IS_AUTH);
+        }
         //保存进件主表信息
         TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();
         tfIncomingInfoEntity.setBusinessId(ttqfSignReqDTO.getBusinessId());
