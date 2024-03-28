@@ -194,6 +194,7 @@ public class SignBizServiceImpl implements SignBizService {
             if (Objects.nonNull(selfSignEntity)) {
                 selfSignParamDTO = new SelfSignParamDTO();
                 //将推送的入网状态写入参数
+                selfSignParamDTO.setAccesserAcct(signingReviewRespDTO.getAccesserAcct());
                 selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
                 selfSignParamDTO.setMid(signingReviewRespDTO.getMerNo());
                 selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
