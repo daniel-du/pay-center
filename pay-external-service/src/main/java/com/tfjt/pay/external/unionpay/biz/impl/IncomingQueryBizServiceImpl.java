@@ -14,10 +14,7 @@ import com.tfjt.pay.external.unionpay.constants.RedisConstant;
 import com.tfjt.pay.external.unionpay.entity.SalesAreaIncomingChannelEntity;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.enums.*;
-import com.tfjt.pay.external.unionpay.service.AsyncService;
-import com.tfjt.pay.external.unionpay.service.SalesAreaIncomingChannelService;
-import com.tfjt.pay.external.unionpay.service.SelfSignService;
-import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
+import com.tfjt.pay.external.unionpay.service.*;
 import com.tfjt.pay.external.unionpay.utils.NetworkTypeCacheUtil;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
@@ -65,7 +62,8 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
     private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
 
     @Autowired
-    private AsyncService asyncService;
+    private IncomingCacheService incomingCacheService;
+
 
     @Autowired
     private DevConfig devConfig;
@@ -135,6 +133,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     @Override
     public Result<Map<String, QueryIncomingStatusRespDTO>> batchQueryIncomingStatus(List<QueryIncomingStatusReqDTO> queryIncomingStatusReqDTOS) {
+        log.info("IncomingQueryBizServiceImpl--batchQueryIncomingStatus, reqDTO:{}", JSONObject.toJSONString(queryIncomingStatusReqDTOS));
         //判断入参集合是否为空
         if (CollectionUtils.isEmpty(queryIncomingStatusReqDTOS)) {
             return Result.failed();
@@ -195,8 +194,8 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         if (!CollectionUtils.isEmpty(pnIncomingReqMap) && !CollectionUtils.isEmpty(unIncomingReqMap)) {
             return Result.ok(incomingMessageMap);
         }
-        asyncService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.PINGAN.getCode(), pnIncomingReqMap);
-        asyncService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.UNIONPAY.getCode(), unIncomingReqMap);
+        incomingCacheService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.PINGAN.getCode(), pnIncomingReqMap);
+        incomingCacheService.batchWriteIncomingCache(IncomingAccessChannelTypeEnum.UNIONPAY.getCode(), unIncomingReqMap);
         Map<String, QueryIncomingStatusRespDTO> pnStatusMap = batchQueryPnIncomingStatus(pnIncomingReqMap);
         if (!CollectionUtils.isEmpty(pnStatusMap)) {
             incomingMessageMap.putAll(pnStatusMap);
@@ -206,6 +205,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         if (!CollectionUtils.isEmpty(unStatusMap)) {
             incomingMessageMap.putAll(unStatusMap);
         }
+        log.info("IncomingQueryBizServiceImpl--batchQueryIncomingStatus, incomingMessageMap:{}", JSONObject.toJSONString(incomingMessageMap));
         return Result.ok(incomingMessageMap);
     }
 
@@ -216,6 +216,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
      */
     @Override
     public Result<QueryIncomingStatusRespDTO> queryIncomingStatusByAreaCodes(QueryIncomingStatusReqDTO queryIncomingStatusReqDTO) {
+        log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, reqDTO:{}", JSONObject.toJSONString(queryIncomingStatusReqDTO));
         Set<String> cacheKeys = new HashSet<>();
         Set<String> cacheNullCodes = new HashSet<>();
         queryIncomingStatusReqDTO.getAreaCodes().forEach(areaCode -> {
@@ -309,7 +310,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         IncomingMessageRespDTO incomingMessageRespDTO = getIncomingMessage(channelCode, incomingMessageReqDTO);
         log.info("IncomingQueryBizServiceImpl--queryIncomingStatus, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
         if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
-            incomingMessageRespDTO.setAccessStatus(0);
+            incomingMessageRespDTO.setAccessStatus(NumberConstant.ZERO);
             incomingMessageRespDTO.setUnionpaySignStatus(NO_ACCESS_STATUS);
         }
         //设置缓存
@@ -356,7 +357,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             log.info("IncomingQueryBizServiceImpl--getIncomingMessage, incomingMessageRespDTO:{}", JSONObject.toJSONString(incomingMessageRespDTO));
             if (ObjectUtils.isEmpty(incomingMessageRespDTO)) {
                 incomingMessageRespDTO = new IncomingMessageRespDTO();
-                incomingMessageRespDTO.setAccessStatus(0);
+                incomingMessageRespDTO.setAccessStatus(NumberConstant.ZERO);
             }
             //如果结算类型为对公，会员名称返回“营业名称”，否则返回“法人姓名”
             if (IncomingSettleTypeEnum.CORPORATE.getCode().equals(incomingMessageRespDTO.getSettlementAccountType())) {
@@ -417,12 +418,12 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             if (IncomingAccessChannelTypeEnum.PINGAN.getCode().equals(channelFlag)
                     && NO_ACCESS_STATUS.equals(statusResp.getIncomingStatus())) {
                 incomingStatusResp.setNoIncomingReason(PN_NO_INCOMING_REASON);
-                incomingStatusResp.setNoIncomingFlag(1);
+                incomingStatusResp.setNoIncomingFlag(NumberConstant.ONE);
             }
             if (IncomingAccessChannelTypeEnum.UNIONPAY.getCode().equals(channelFlag)
                     && NO_ACCESS_STATUS.equals(statusResp.getIncomingStatus())) {
                 incomingStatusResp.setNoIncomingReason(UNIONPAY_NO_INCOMING_REASON);
-                incomingStatusResp.setNoIncomingFlag(2);
+                incomingStatusResp.setNoIncomingFlag(NumberConstant.TWO);
             }
             incomingStatusResp.setIncomingStatus(statusResp.getIncomingStatus());
             log.info("IncomingQueryBizServiceImpl--queryIncomingStatusByAreaCodes, statusResp:{}", JSONObject.toJSONString(statusResp));
@@ -441,15 +442,15 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         } else if (NO_ACCESS_STATUS.equals(pnResp.getIncomingStatus()) && HAS_ACCESS_STATUS.equals(unResp.getIncomingStatus())) {
             incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
             incomingStatusResp.setNoIncomingReason(PN_NO_INCOMING_REASON);
-            incomingStatusResp.setNoIncomingFlag(1);
+            incomingStatusResp.setNoIncomingFlag(NumberConstant.ONE);
         } else if (HAS_ACCESS_STATUS.equals(pnResp.getIncomingStatus()) && NO_ACCESS_STATUS.equals(unResp.getIncomingStatus())) {
             incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
             incomingStatusResp.setNoIncomingReason(UNIONPAY_NO_INCOMING_REASON);
-            incomingStatusResp.setNoIncomingFlag(2);
+            incomingStatusResp.setNoIncomingFlag(NumberConstant.TWO);
         } else {
             incomingStatusResp.setIncomingStatus(NO_ACCESS_STATUS);
             incomingStatusResp.setNoIncomingReason(ALL_NO_INCOMING_REASON);
-            incomingStatusResp.setNoIncomingFlag(0);
+            incomingStatusResp.setNoIncomingFlag(NumberConstant.ZERO);
         }
         return incomingStatusResp;
     }
@@ -623,12 +624,5 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
         });
         return incomingStatusMap;
     }
-    public static void main(String[] a) {
-        IncomingMessageRespDTO mes = new IncomingMessageRespDTO();
-        IncomingMessageRespDTO mes2 = mes;
-        mes.setAccessStatus(1);
-        mes2.setAccessStatus(2);
-        System.out.println("mes:" + JSONObject.toJSONString(mes) + "-" + JSONObject.toJSONString(mes2));
 
-    }
 }

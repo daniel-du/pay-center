@@ -117,6 +117,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     @Autowired
     private AsyncService asyncService;
 
+    @Autowired
+    private IncomingCacheService incomingCacheService;
+
     @DubboReference(retries = 0, timeout = 2000, check = false)
     private TfSupplierApiService tfSupplierApiService;
 
@@ -347,7 +350,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             incomingMessageMap.put(key, incomingMessage);
         });
         //异步写入进件缓存
-        asyncService.batchWriteIncomingCache(queryDBReqs);
+        incomingCacheService.batchWriteIncomingCache(queryDBReqs);
         return Result.ok(incomingMessageMap);
     }
 
@@ -507,13 +510,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             if (ObjectUtils.isEmpty(selfSignEntity)) {
                 allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
             } else {
-                if ("-1".equals(selfSignEntity.getSigningStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.NO_ACCESS_STATUS_NAME);
-                } else if ("03".equals(selfSignEntity.getSigningStatus())) {
-                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.HAS_ACCESS_STATUS_NAME);
-                } else {
-                    allIncomingMessageRespDTO.setAccessStatusName(IncomingConstant.ACCESSING_STATUS_NAME);
-                }
+                //返回银联枚举值
+                allIncomingMessageRespDTO.setAccessStatusName(UnionPayStatusEnum.getDesc(selfSignEntity.getSigningStatus()));
                 allIncomingMessageRespDTO.setAccountNo(selfSignEntity.getMid());
                 allIncomingMessageRespDTO.setAccountBusinessNo(selfSignEntity.getBusinessNo());
             }
@@ -909,6 +907,8 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 throw new TfException(ExceptionCodeEnum.INCOMING_STRATEGY_SERVICE_IS_NULL);
             }
             abstractIncomingService.openAccount(incomingSubmitMessageDTO);
+            //写入缓存
+            writeIncomingCache(tfIncomingInfoEntity.getId());
         } catch (Exception e) {
             log.error("IncomingBizServiceImpl--incomingMessageSubmit，银联数据开户失败, incomingId:{}", tfIncomingInfoEntity.getId());
             throw e;

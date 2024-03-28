@@ -35,11 +35,14 @@ import com.tfjt.tfcommon.core.exception.TfException;
 import com.tfjt.tfcommon.core.validator.ValidatorUtils;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +90,9 @@ public class PabcBizServiceImpl implements PabcBizService {
     private SalesAreaIncomingChannelService salesAreaIncomingChannelService;
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
     @DubboReference(retries = 0)
     private SupplierApiService supplierApiService;
 
@@ -311,17 +317,56 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Override
     public Boolean isIncomingByBusinessIdAndType(List<BusinessBasicInfoReqDTO> dtos) {
-        List<BusinessIsIncomingRespDTO> businessList =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
+        if (CollectionUtils.isEmpty(dtos)) {
+            return true;
+        }
         boolean flag = true;
-        if (CollectionUtil.isEmpty(businessList) || dtos.size() != businessList.size()) {
-            flag =  false;
+        List<BusinessIsIncomingRespDTO> businessList = new ArrayList<>();
+        Map<String, BusinessIsIncomingRespDTO> incomingMap = new HashMap<>();
+        Set<String> incomingCacheKeys = new HashSet<>();
+        dtos.forEach(req -> {
+            String cacheKey = RedisConstant.INCOMING_MSG_KEY_PREFIX + IncomingAccessChannelTypeEnum.PINGAN.getCode() + ":" +
+                    req.getBusinessType() + ":" + req.getBusinessId();
+            incomingCacheKeys.add(cacheKey);
+            BusinessIsIncomingRespDTO businessIsIncomingRespDTO = BusinessIsIncomingRespDTO.builder()
+                    .businessType(req.getBusinessType().byteValue())
+                    .businessId(req.getBusinessId()).build();
+            incomingMap.put(req.getBusinessId() + "-" + req.getBusinessType(), businessIsIncomingRespDTO);
+        });
+
+        //批量查询Redis
+        List<com.alibaba.fastjson.JSONObject> incomingChannels = redisTemplate.opsForValue().multiGet(incomingCacheKeys);
+        for (com.alibaba.fastjson.JSONObject json : incomingChannels) {
+            if (ObjectUtils.isEmpty(json)) {
+                flag = false;
+                continue;
+            }
+            IncomingMessageRespDTO incomingMessageRespDTO = com.alibaba.fastjson.JSONObject.toJavaObject(json, IncomingMessageRespDTO.class);
+            if (StringUtils.isBlank(incomingMessageRespDTO.getAccountNo())) {
+                flag = false;
+                continue;
+            }
+            BusinessIsIncomingRespDTO businessIsIncomingRespDTO = BusinessIsIncomingRespDTO.builder()
+                    .businessType(incomingMessageRespDTO.getBusinessType().byteValue())
+                    .businessId(incomingMessageRespDTO.getBusinessId())
+                    .accountNo(incomingMessageRespDTO.getAccountNo()).build();
+            incomingMap.put(incomingMessageRespDTO.getBusinessId() + "-" + incomingMessageRespDTO.getBusinessType(), businessIsIncomingRespDTO);
         }
-        if (flag && businessList.stream().anyMatch(item->StringUtils.isBlank(item.getAccountNo()))){
-            flag =  false;
-        }
+//        for (Map.Entry<String, BusinessIsIncomingRespDTO> entry : incomingMap.entrySet()) {
+//            businessList.add(entry.getValue());
+//        }
+
+//        List<BusinessIsIncomingRespDTO> businessList =  tfIncomingInfoService.isIncomingByBusinessIdAndType(dtos);
+//
+//        if (CollectionUtil.isEmpty(businessList) || dtos.size() != businessList.size()) {
+//            flag =  false;
+//        }
+//        if (flag && businessList.stream().anyMatch(item->StringUtils.isBlank(item.getAccountNo()))){
+//            flag =  false;
+//        }
         if (!flag) {
             //钉钉报警
-            asyncService.dingWarning(dtos,businessList);
+            asyncService.dingWarningNew(dtos,incomingMap);
         }
         return flag;
     }
@@ -348,8 +393,8 @@ public class PabcBizServiceImpl implements PabcBizService {
             MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
             List<String> oldSalesList = new ArrayList<>();
             List<String> newSalesList = new ArrayList<>();
-            oldSalesList.add(dto.getAfterDistractCode());
-            newSalesList.add(dto.getBeforeDistractCode());
+            oldSalesList.add(dto.getBeforeDistractCode());
+            newSalesList.add(dto.getAfterDistractCode());
             String oldSales = getSalesByCodes(oldSalesList);
             String newSales = getSalesByCodes(newSalesList);
             reqDTO.setAfterChange(newSales);
@@ -373,6 +418,7 @@ public class PabcBizServiceImpl implements PabcBizService {
         String operator = dto.getOperatorName();
         String operatorId = dto.getOperatorId();
         Long shopId = dto.getShopId();
+        String beforeDistractCode = dto.getBeforeDistractCode();
         if (StringUtils.isNotBlank(shopName)) {
             MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
             reqDTO.setAfterChange(shopName);
@@ -397,10 +443,16 @@ public class PabcBizServiceImpl implements PabcBizService {
         }
         if (StringUtils.isNotBlank(afterDistractCode)) {
             MerchantChangeReqDTO reqDTO = new MerchantChangeReqDTO();
-            List<String> salesList = new ArrayList<>();
-            salesList.add(afterDistractCode);
-            String sales = getSalesByCodes(salesList);
-            reqDTO.setAfterChange(sales);
+            List<String> newSalesList = new ArrayList<>();
+            List<String> oldSalesList = new ArrayList<>();
+            newSalesList.add(afterDistractCode);
+            if (StringUtils.isNotBlank(beforeDistractCode)) {
+                oldSalesList.add(beforeDistractCode);
+                String oldSales = getSalesByCodes(oldSalesList);
+                reqDTO.setBeforChange(oldSales);
+            }
+            String newSales = getSalesByCodes(newSalesList);
+            reqDTO.setAfterChange(newSales);
             reqDTO.setChangeField("销售区域");
             reqDTO.setChangeTime(new Date());
             reqDTO.setOperator(operator);

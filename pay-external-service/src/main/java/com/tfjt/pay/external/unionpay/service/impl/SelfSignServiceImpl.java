@@ -1,8 +1,7 @@
 package com.tfjt.pay.external.unionpay.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tfjt.pay.external.unionpay.dao.SelfSignDao;
 import com.tfjt.pay.external.unionpay.entity.SelfSignEntity;
 import com.tfjt.pay.external.unionpay.service.SelfSignService;
@@ -38,7 +37,6 @@ public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEn
     }
 
     /**
-     *
      * 如果 accesserAcct为null
      * 近7天签约成功的商户
      * 反之返回指定商户
@@ -49,8 +47,8 @@ public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEn
     public List<SelfSignEntity> querySelfSignsBySuccess(String accesserAcct) {
         LambdaQueryWrapper<SelfSignEntity> queryWrapper = Wrappers.lambdaQuery(SelfSignEntity.class)
                 .eq(SelfSignEntity::getMerMsRelation, "0")
-                .apply(Objects.isNull(accesserAcct), "TO_DAYS(NOW()-TO_DAYS(sign_success_date)<=7)")
-                .eq(Objects.nonNull(accesserAcct), SelfSignEntity::getAccesserAcct, accesserAcct);
+                .apply(Objects.isNull(accesserAcct) || accesserAcct.isEmpty(), "TO_DAYS(NOW())-TO_DAYS(sign_success_date)<=7")
+                .eq(Objects.nonNull(accesserAcct) && !accesserAcct.isEmpty(), SelfSignEntity::getAccesserAcct, accesserAcct);
         return this.baseMapper.selectList(queryWrapper);
     }
 

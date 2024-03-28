@@ -262,6 +262,10 @@
                     <groupId>com.tf</groupId>
                     <artifactId>tf-monitor-base</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -299,6 +303,12 @@
             <groupId>com.tfjt</groupId>
             <artifactId>tf-cloud-supplier-interface</artifactId>
             <version>0.9.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--平安api-->
 <!--        <dependency>-->
@@ -353,6 +363,11 @@
             <groupId>com.tfjt</groupId>
             <artifactId>tf-cloud-pay-interface</artifactId>
             <version>0.5.18-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>supply-merchant-supplier-api</artifactId>
+            <version>1.0.19-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.ipaynow</groupId>

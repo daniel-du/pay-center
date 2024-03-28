@@ -19,22 +19,7 @@ public interface AsyncService {
 
     void dingWarning(List<BusinessBasicInfoReqDTO> dtos, List<BusinessIsIncomingRespDTO> businessList);
 
-    /**
-     * 写入进件缓存
-     * @param incomingSubmitMessageDTO
-     */
-    void writeIncomingCache(IncomingSubmitMessageDTO incomingSubmitMessageDTO);
+    void dingWarningNew(List<BusinessBasicInfoReqDTO> dtos, Map<String, BusinessIsIncomingRespDTO> map);
 
-    /**
-     * 批量写入进件缓存
-     * @param accessChannel
-     * @param incomingReqMap
-     */
-    void batchWriteIncomingCache(Integer accessChannel, Map<String, QueryIncomingStatusReqDTO> incomingReqMap);
 
-    /**
-     * 批量写入进件缓存
-     * @param queryDBReqs
-     */
-    void batchWriteIncomingCache(List<IncomingMessageReqDTO> queryDBReqs);
 }
