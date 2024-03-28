@@ -16,6 +16,8 @@ public interface SelfSignService extends IService<SelfSignEntity> {
 
     SelfSignEntity selectByMid(String mid);
 
+    SelfSignEntity selectByAccessAcct(String accessAcct);
+
     /**
      * 根据来源账户批量查询入网信息
      * @param accessAccts
