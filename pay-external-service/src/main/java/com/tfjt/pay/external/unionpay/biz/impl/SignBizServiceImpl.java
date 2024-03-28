@@ -195,7 +195,7 @@ public class SignBizServiceImpl implements SignBizService {
                 selfSignParamDTO = new SelfSignParamDTO();
                 //将推送的入网状态写入参数
                 selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
-                selfSignParamDTO.setMid(selfSignEntity.getMid());
+                selfSignParamDTO.setMid(signingReviewRespDTO.getMerNo());
                 selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
                 //失败原因
                 selfSignParamDTO.setMsg(signingReviewRespDTO.getApplyStatusMsg());
@@ -226,9 +226,10 @@ public class SignBizServiceImpl implements SignBizService {
      */
     private void updateSignStatus(SelfSignParamDTO selfSignParamDTO) {
 
-        SelfSignEntity selfSignEntity = selfSignService.selectByMid(selfSignParamDTO.getMid());
+        SelfSignEntity selfSignEntity = selfSignService.selectByAccessAcct(selfSignParamDTO.getAccesserAcct());
         //设置失败原因
         selfSignEntity.setMsg(selfSignParamDTO.getMsg());
+        selfSignEntity.setMid(selfSignParamDTO.getMid());
         //设置
         selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
         //绑定关系
