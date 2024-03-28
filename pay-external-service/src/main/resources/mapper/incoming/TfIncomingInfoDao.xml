@@ -126,7 +126,7 @@
     </select>
     <select id="queryTtqfSignMsg"
             resultType="com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO">
-        select a.id,a.business_id ,d.auth_status ,d.sign_status ,d.bind_status ,d.register_time ,
+        select a.id,a.business_id ,d.auth_status ,d.sign_status ,d.bind_status ,
         b.legal_mobile mobile,c.`name` user_name ,c.id_no idCardNo,
         h.bank_card_no
         from  tf_incoming_info a
@@ -139,7 +139,7 @@
         and a.is_deleted = 0 and a.business_id = #{businessId};
     </select>
     <select id="querySignMsgStartByIncomingId" resultType="com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO">
-        select d.id,d.incoming_id,d.auth_status ,d.sign_status ,d.bind_status ,d.register_time ,
+        select d.id,d.incoming_id,d.auth_status ,d.sign_status ,d.bind_status ,
         b.legal_mobile,c.`name` ,c.id_no idCardNo,
         g.settlement_account_type, h.bank_account_name, h.bank_card_no,
         h.bank_card_mobile, h.bank_name,h.bank_code, h.bank_sub_branch_name, h.bank_branch_code,h.eicon_bank_branch

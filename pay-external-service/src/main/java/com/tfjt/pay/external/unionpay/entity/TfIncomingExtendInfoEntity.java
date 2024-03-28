@@ -67,8 +67,4 @@ public class TfIncomingExtendInfoEntity implements Serializable {
      */
     private LocalDateTime updateTime;
 
-    /**
-     * 注册时间
-     */
-    private LocalDateTime registerTime;
 }
