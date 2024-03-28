@@ -82,16 +82,17 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
         if (ObjectUtils.isEmpty(signMsgRespDTO)) {
             return Result.ok(ttqfContractRespDTO);
         }
+        String signUrl = null;
         try {
             //获取手签h5链接
-            String signUrl = TtqfApiUtil.contractH5(signMsgRespDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
+            signUrl = TtqfApiUtil.contractH5(signMsgRespDTO.getIdCardNo(), ttqfContractReqDTO.getMchReturnUrl());
             ttqfContractRespDTO.setSignUrl(signUrl);
-            //查询签约状态，如果状态为“已签约”，则返回
-            QueryPresignResultModel presignResult = TtqfApiUtil.queryPresign(ttqfContractReqDTO.getIdCardNo());
-            if (NumberConstant.ONE.equals(presignResult.getSignStatus()) || StringUtils.isBlank(signUrl)) {
-                ttqfContractRespDTO.setSignStatus(NumberConstant.TWO);
-            }
         } catch (TfException e) {
+            ttqfContractRespDTO.setSignStatus(NumberConstant.TWO);
+        }
+        //查询签约状态，如果状态为“已签约”，则返回
+        QueryPresignResultModel presignResult = TtqfApiUtil.queryPresign(signMsgRespDTO.getIdCardNo());
+        if (NumberConstant.ONE.equals(presignResult.getSignStatus()) || StringUtils.isBlank(signUrl)) {
             ttqfContractRespDTO.setSignStatus(NumberConstant.TWO);
         }
         return Result.ok(ttqfContractRespDTO);
@@ -128,10 +129,14 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
             //根据初始id批量查询
             List<TtqfSignMsgDTO> signMsgList = incomingInfoService.querySignMsgStartByIncomingId(startId);
             if (CollectionUtils.isEmpty(signMsgList)) {
+                log.info("IncomingTtqfBizServiceImpl--updateTtqfSignStatus, signMsgListIsEmpty");
                 break;
             }
             queryAndUpdatePresignStatus(signMsgList);
             startId = signMsgList.get(signMsgList.size() - 1).getIncomingId();
+            if (signMsgList.size() < 100) {
+                updateFlag = false;
+            }
         }
     }
 

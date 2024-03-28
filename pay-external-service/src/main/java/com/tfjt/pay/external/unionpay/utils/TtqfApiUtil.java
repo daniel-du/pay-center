@@ -149,6 +149,7 @@ public class TtqfApiUtil {
     }
 
     public static QueryPresignResultModel queryPresign(String idCardNo) {
+        log.info("TtqfApiUtil>>queryPresign, idCardNo:{}", idCardNo);
         QueryPresignResponse response = client.execute(QueryPresignRequest.builder().requestId(System.currentTimeMillis() + "")
                 .bizModel(new QueryPresignModel(idCardNo)).build());
         if (!response.isSuccess()) {

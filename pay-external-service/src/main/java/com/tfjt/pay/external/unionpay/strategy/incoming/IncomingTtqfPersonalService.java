@@ -44,6 +44,7 @@ public class IncomingTtqfPersonalService extends AbstractIncomingService {
     @Override
     public IncomingSubmitMessageRespDTO incomingSubmit(IncomingSubmitMessageDTO incomingSubmitMessageDTO) {
         try {
+
             Date expiryStart = format1.parse(incomingSubmitMessageDTO.getLegalIdExpiryStart());
             String expiryStartStr = format2.format(expiryStart);
             Date expiryEnd = format1.parse(incomingSubmitMessageDTO.getLegalIdExpiryEnd());
@@ -56,8 +57,8 @@ public class IncomingTtqfPersonalService extends AbstractIncomingService {
                     .idCardNo(incomingSubmitMessageDTO.getLegalIdNo())
                     .mobile(incomingSubmitMessageDTO.getLegalMobile())
                     .bankCardNo(incomingSubmitMessageDTO.getBankCardNo())
-                    .expiryStart(expiryStartStr)
-                    .expiryEnd(expiryEndStr)
+                    .expiryStart(incomingSubmitMessageDTO.getLegalIdExpiryStart())
+                    .expiryEnd(incomingSubmitMessageDTO.getLegalIdExpiryEnd())
                     .idCardPicAFileId(frontFieldId)
                     .idCardPicBFileId(backFieldId)
                     .notifyUrl(notifyUrl).build();
