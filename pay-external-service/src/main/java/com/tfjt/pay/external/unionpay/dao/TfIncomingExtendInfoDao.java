@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingExtendInfoEntity;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -13,5 +14,5 @@ import com.tfjt.pay.external.unionpay.entity.TfIncomingExtendInfoEntity;
  */
 public interface TfIncomingExtendInfoDao extends BaseMapper<TfIncomingExtendInfoEntity> {
 
-    boolean updateByIncomingId(TfIncomingExtendInfoEntity extendInfo);
+    boolean updateByIncomingId(@Param("extendInfo") TfIncomingExtendInfoEntity extendInfo);
 }

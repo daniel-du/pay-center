@@ -3,9 +3,9 @@
 <mapper namespace="com.tfjt.pay.external.unionpay.dao.TfIncomingExtendInfoDao">
     <update id="updateByIncomingId">
         update tf_incoming_extend_info
-        set auth_status = {incomingExtend.authStatus},
-            sign_status = {incomingExtend.signStatus},
-            bind_status = {incomingExtend.bindStatus}
-        where incoming_id = {incomingExtend.id}
+        set auth_status = #{extendInfo.authStatus},
+            sign_status = #{extendInfo.signStatus},
+            bind_status = #{extendInfo.bindStatus}
+        where incoming_id = #{extendInfo.incomingId}
     </update>
 </mapper>

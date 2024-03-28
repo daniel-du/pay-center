@@ -35,8 +35,6 @@ public class LoanBusinessJob {
     @Resource
     private CheckProcessor checkProcessor;
 
-    @Autowired
-    private IncomingTtqfBizService incomingTtqfBizService;
 
     /**
      * 下载昨日对账单
@@ -90,10 +88,5 @@ public class LoanBusinessJob {
         return ReturnT.SUCCESS;
     }
 
-    @XxlJob("ttqfSignStatusQuery")
-    public void ttqfSignStatusQuery(){
-        XxlJobHelper.log("开始执行更新签约状态的任务.......");
-        incomingTtqfBizService.updateTtqfSignStatus();
-        XxlJobHelper.log("结束执行更新签约状态的任务.......");
-    }
+
 }
