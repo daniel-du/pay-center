@@ -172,9 +172,9 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
         signMsgDTOS.forEach(signMsg -> {
             TfIncomingExtendInfoEntity tfIncomingExtendInfoEntity = TfIncomingExtendInfoEntity.builder()
                     .id(signMsg.getId())
-                    .authStatus(signMsg.getAuthStatus().byteValue())
-                    .signStatus(signMsg.getSignStatus().byteValue())
-                    .bindStatus(signMsg.getBindStatus().byteValue()).build();
+                    .authStatus(callbackDTO.getAuthStatus().byteValue())
+                    .signStatus(callbackDTO.getSignStatus().byteValue())
+                    .bindStatus(callbackDTO.getBindStatus().byteValue()).build();
             extendInfoEntities.add(tfIncomingExtendInfoEntity);
         });
         incomingExtendInfoService.updateBatchById(extendInfoEntities);

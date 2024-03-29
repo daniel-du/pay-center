@@ -14,10 +14,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfSignReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
-import com.tfjt.pay.external.unionpay.constants.IncomingConstant;
-import com.tfjt.pay.external.unionpay.constants.NumberConstant;
-import com.tfjt.pay.external.unionpay.constants.RedisConstant;
-import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
+import com.tfjt.pay.external.unionpay.constants.*;
 import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
@@ -53,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -134,6 +132,15 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     private static final String MQ_TO_SERVER = "tf-cloud-shop";
 
     private final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
+
+    /**
+     * 18位身份证号验证格式
+     */
+    private final Pattern ID_NEW_REGEXP = Pattern.compile(RegularConstants.ID_CARD_NEW);
+    /**
+     * 15位身份证号验证格式
+     */
+    private final Pattern ID_OLD_REGEXP = Pattern.compile(RegularConstants.ID_CARD_OLD);
 
     private static final Set<Integer> PN_OPEN_ACCOUNT_STATUS_SET = new HashSet<>();
 
@@ -540,9 +547,18 @@ public class IncomingBizServiceImpl implements IncomingBizService {
     public Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO) {
         log.info("IncomingBizServiceImpl>>ttqfSign, ttqfSignReqDTO:{}", JSONObject.toJSONString(ttqfSignReqDTO));
         ValidatorUtils.validateEntity(ttqfSignReqDTO);
+        if (!ID_NEW_REGEXP.matcher(ttqfSignReqDTO.getIdCardNo()).matches() && !ID_OLD_REGEXP.matcher(ttqfSignReqDTO.getIdCardNo()).matches()) {
+            throw new TfException(ExceptionCodeEnum.ID_CARD_NO_FORMAT_ERROR);
+        }
+        //判断该会员是否存在认证信息
         QueryTtqfSignMsgRespDTO signMsgRespDTO = tfIncomingInfoService.queryTtqfSignMsg(ttqfSignReqDTO.getBusinessId());
         if (ObjectUtils.isNotEmpty(signMsgRespDTO)) {
             return Result.failed(ExceptionCodeEnum.MERCHANT_IS_AUTH);
+        }
+        //判断该身份证号是否存在认证信息
+        QueryTtqfSignMsgRespDTO signMsgRespByIdCard = tfIncomingInfoService.queryTtqfSignMsgByIdCardNo(ttqfSignReqDTO.getIdCardNo());
+        if (ObjectUtils.isNotEmpty(signMsgRespByIdCard)) {
+            return Result.failed(ExceptionCodeEnum.ID_CARD_NO_ALREADY_EXIST);
         }
         //保存进件主表信息
         TfIncomingInfoEntity tfIncomingInfoEntity = new TfIncomingInfoEntity();

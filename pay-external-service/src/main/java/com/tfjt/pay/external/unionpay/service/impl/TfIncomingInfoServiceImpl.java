@@ -197,4 +197,9 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     public List<TtqfSignMsgDTO> querySignMsgByIdCardAndBankCard(String idCardNo, String bankCardNo) {
         return this.baseMapper.querySignMsgByIdCardAndBankCard(idCardNo, bankCardNo);
     }
+
+    @Override
+    public QueryTtqfSignMsgRespDTO queryTtqfSignMsgByIdCardNo(String idCardNo) {
+        return this.baseMapper.queryTtqfSignMsgByIdCardNo(idCardNo);
+    }
 }

@@ -163,5 +163,15 @@
                   inner join tf_incoming_extend_info d on a.id = d.incoming_id and d.is_delete = 0
         where a.access_channel_type = 3 and a.business_type = 3 and c.id_no = #{idCardNo} and h.bank_card_no = #{bankCardNo}
     </select>
+    <select id="queryTtqfSignMsgByIdCardNo"
+            resultType="com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO">
+        select a.id,a.business_id ,
+            b.legal_mobile mobile,c.`name` user_name ,c.id_no idCardNo
+        from  tf_incoming_info a
+        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+        left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
+        where a.access_channel_type = 3 and a.business_type = 3
+        and a.is_deleted = 0 and c.id_no  = #{idCardNo}
+    </select>
 
 </mapper>

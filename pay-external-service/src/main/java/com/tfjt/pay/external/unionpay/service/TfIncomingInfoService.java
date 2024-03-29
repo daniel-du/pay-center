@@ -11,6 +11,7 @@ import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -136,4 +137,11 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      * @return
      */
     List<TtqfSignMsgDTO> querySignMsgByIdCardAndBankCard(String idCardNo, String bankCardNo);
+
+    /**
+     * 根据身份证号查询天天企赋签约信息
+     * @param idCardNo
+     * @return
+     */
+    QueryTtqfSignMsgRespDTO queryTtqfSignMsgByIdCardNo(String idCardNo);
 }
