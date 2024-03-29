@@ -148,12 +148,13 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
     @Override
     public TtqfCallbackRespDTO receviceCallbackMsg(JSONObject reqJSON) {
         log.info("IncomingTtqfBizServiceImpl--receviceCallbackMsg, req:{}", JSONObject.toJSONString(reqJSON));
-        if (ObjectUtils.isEmpty(reqJSON) || StringUtils.isBlank(reqJSON.getString("type"))) {
+        JSONObject decodeJson = TtqfApiUtil.decodeReq(reqJSON);
+        if (ObjectUtils.isEmpty(decodeJson) || StringUtils.isBlank(decodeJson.getString("type"))) {
             log.error("IncomingTtqfBizServiceImpl--receviceCallbackMsgError");
             return new TtqfCallbackRespDTO(BIZ_CODE_FAIL);
         }
         //发送mq
-        MQProcess(reqJSON);
+        MQProcess(decodeJson);
         return new TtqfCallbackRespDTO(BIZ_CODE_SUCCESS);
     }
 

@@ -136,8 +136,8 @@ public class ConsumerClient implements ApplicationContextAware {
 
     private void ttqfCallbackByTag(Consumer consumer, String tag) {
 
-        consumer.subscribe(signingReviewTopic, tag, (message, context) -> {
-            log.info("MerchantChangeConsumer_Receive: " + message);
+        consumer.subscribe(ttqfCallbackTopic, tag, (message, context) -> {
+            log.info("TtqfCallbackConsumer_message:{} ", message);
             return processTtqfCallback(message);
         });
     }
