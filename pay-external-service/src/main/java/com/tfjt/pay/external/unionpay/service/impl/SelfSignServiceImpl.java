@@ -49,9 +49,10 @@ public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEn
      * @return
      */
     @Override
-    public List<SelfSignEntity> querySelfSignsBySuccess(String accesserAcct) {
+    public List<SelfSignEntity> querySelfSignBySuccess(String accesserAcct, String gysPayAppId) {
         LambdaQueryWrapper<SelfSignEntity> queryWrapper = Wrappers.lambdaQuery(SelfSignEntity.class)
                 .eq(SelfSignEntity::getMerMsRelation, "0")
+                .eq(SelfSignEntity::getAppId,gysPayAppId)
                 .apply(Objects.isNull(accesserAcct) || accesserAcct.isEmpty(), "TO_DAYS(NOW())-TO_DAYS(sign_success_date)<=7")
                 .eq(Objects.nonNull(accesserAcct) && !accesserAcct.isEmpty(), SelfSignEntity::getAccesserAcct, accesserAcct);
         return this.baseMapper.selectList(queryWrapper);
