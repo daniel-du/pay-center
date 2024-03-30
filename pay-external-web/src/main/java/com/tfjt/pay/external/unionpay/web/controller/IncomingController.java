@@ -7,6 +7,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
 import com.tfjt.pay.external.unionpay.biz.IncomingQueryBizService;
+import com.tfjt.pay.external.unionpay.biz.IncomingTtqfBizService;
 import com.tfjt.pay.external.unionpay.config.DevConfig;
 import com.tfjt.pay.external.unionpay.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
@@ -34,6 +35,9 @@ public class IncomingController {
 
     @Autowired
     private IncomingQueryBizService incomingQueryBizService;
+
+    @Autowired
+    private IncomingTtqfBizService incomingTtqfBizService;
 
     @Autowired
     private DevConfig devConfig;
@@ -140,6 +144,12 @@ public class IncomingController {
     @PostMapping("/queryIncomingMessages")
     public Result queryIncomingMessages(@RequestBody List<IncomingMessageReqDTO> incomingMessageReqDTOS) {
         return incomingBizService.queryIncomingMessages(incomingMessageReqDTOS);
+    }
+
+    @GetMapping("/updateTtqfSignStatus")
+    public Result updateTtqfSignStatus() {
+        incomingTtqfBizService.updateTtqfSignStatus();
+        return Result.ok();
     }
 
 
