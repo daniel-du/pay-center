@@ -525,6 +525,9 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             incomingMessageMap.put(IncomingAccessChannelTypeEnum.UNIONPAY.getCode(), allIncomingMessageRespDTO);
         }
         for (IncomingAccessChannelTypeEnum accessChannelTypeEnum : IncomingAccessChannelTypeEnum.values()) {
+            if (accessChannelTypeEnum.equals(IncomingAccessChannelTypeEnum.TTQF)) {
+                continue;
+            }
             if (incomingMessageMap.containsKey(accessChannelTypeEnum.getCode())) {
                 messageRespList.add(incomingMessageMap.get(accessChannelTypeEnum.getCode()));
             } else {
@@ -594,16 +597,6 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         return Result.ok();
     }
 
-    /**
-     * 天天企赋-手签H5唤起
-     * @param ttqfContractReqDTO
-     * @return
-     */
-    @Override
-    public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
-
-        return null;
-    }
 
     /**
      * 根据进行信息获取实现类name

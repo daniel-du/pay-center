@@ -102,10 +102,5 @@ public interface IncomingBizService {
      */
     Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO);
 
-    /**
-     * 天天企赋-手签H5唤起
-     * @param ttqfContractReqDTO
-     * @return
-     */
-    Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO);
+
 }
