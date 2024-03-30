@@ -57,25 +57,28 @@ public class TtqfApiUtil {
     @Value("${ttqf.mchId}")
     private String mchIdValue;
 
+    @Value("${ttqf.host}")
+    private String host;
+
     private static Decryptor decryptor;
 
-    private static Signer signer;
+//    private static Signer signer;
 
-    public static  String mchPrivateKey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDXsdBOhA3fuo8+ilcZsbxl3/FI0ISP0DraWD5+DDtZHphJum+LkDjluqekDPVMZkz9B/a9lZT3Uhk2wSQ2lBS+IVwJEQB6h3ejcpKcaYG/F0s3lx8ArxEbJD8mGy1sId7yjg13fBgIzBbAJ4AvQw4rzbNKRdNox8pzRA6swKIy8ovT3df7B5utoNHKGOZTrwNQcrjGGQuIlvJxktpxWQfHdhy5m+MDNLYJAytLTNoiclp2Erdej8BQPbfcpqqr6CCGOvBm+zZ7VN4wbKQHaONwuPOE+iaYuJbR0O74bTmPGGSKwdNf86VJp5DWxPmwlYxgBLsm/BA71kxxNgcQ9L4NAgMBAAECggEAJb/7IyK9guCV3W483ERdIr9U7VeBO+JHypsTJOBjKq/OG2lDyHtPWfWXDYEvFVX6N3bDWl7pmXeG7ixTeDHmh3gzMWsGWGuJJtQQkMtuZ9Fd2rbaODZrmgJ4AuVSx9ANwwnVlYnkcvW1LaA8MQldW5E+xcr+uyHsbswEfXuhZ6T1RFZnDBBYQbAAYTMAlS5cUqlVFF71GYMS3jpR4Dp7ddMPXcpOFZ/6t65vGrQkYgGHUHBIKzLh1BBioG/RaimmZPeRDUrED0ENuZkP6fPuAunPcdrIAHOueZde4AgTEiQCDYZjtT9KCoBpKQxwDAQpJVVjbvCZUk+CULy5i2+2QQKBgQDyojIMue3BJEZeh5Cyu9gBGGlhUegssJ/CcIQG1HvI18OY4z2T0o7LVvgNqn7sJ4nJHfn5hrfkVk2a+SwEd22WCNtXc+cU3JNnHyenX3xwbLDY8oUS6SXmv4GqQXy4O8LxKoZAtBVbteDs00ybptA/1PH2mf1BMBBsVQEcaQlumQKBgQDjk7QzHfCOYhDij4v0vQwMxnwRSg03ZTJp9chXMaKkkhRV11ApbX0QsK23EZ82vK9P58BYKz+ewZmLQq6zX6ooUQxvo9mUm4/Czc25f1nbt9aXkQYcDN+2bSbcRkvPcAMWwxiu2J4/XBofI0L0oySTWcfkdbGIw+MOCZHB/Ki3lQKBgE5F0MuWN4L1RtY7+YwPWTGRRH2mxLWWDRPW5GCnr38tS+ZIeJb1eCdU2RTfia55WtPMndXHhg9dYA+8jlyqgmnCVbAyrbtnJQ5BWLN/9E74YVy7b/6XxChaY2QfWDK+5LaUN1csQS+izvrXd4FHIStWcPBS4QZkkQfBrGgT4n0RAoGAWW1cPU4BjmHY0r6nt5dmGcsRS9X2lZMNmXe8rw7RI6xHk2fVl0HwCFP1H2AsWV0R4utluP/dsyvOg1vDvLbV7ZvTsDcJtAzhFCK9OaxiiiWWjN6vMOyaKFyCDcMN3Ujd3d7yXxq+LJWrqhq4H9vP7ps0IoFhLyYSnhyCi2EWh3UCgYEAgEmImF2I6BnQnhKz/5tdzr95ZXGiHDeO7UpFJTJrOmJIyLMgCOy2jIK8TjdE3yzWXics46/ZLicumwsjTzyByoALhuUrfFnCvdYeD+POHFFDcKCkFROQsKosQKWkREc2J2fF18E9m0D46LpeqtuWWxI4aRjgfKjQrYQaxU5lcO8=";
+    public static  String mchPrivateKey;// = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDXsdBOhA3fuo8+ilcZsbxl3/FI0ISP0DraWD5+DDtZHphJum+LkDjluqekDPVMZkz9B/a9lZT3Uhk2wSQ2lBS+IVwJEQB6h3ejcpKcaYG/F0s3lx8ArxEbJD8mGy1sId7yjg13fBgIzBbAJ4AvQw4rzbNKRdNox8pzRA6swKIy8ovT3df7B5utoNHKGOZTrwNQcrjGGQuIlvJxktpxWQfHdhy5m+MDNLYJAytLTNoiclp2Erdej8BQPbfcpqqr6CCGOvBm+zZ7VN4wbKQHaONwuPOE+iaYuJbR0O74bTmPGGSKwdNf86VJp5DWxPmwlYxgBLsm/BA71kxxNgcQ9L4NAgMBAAECggEAJb/7IyK9guCV3W483ERdIr9U7VeBO+JHypsTJOBjKq/OG2lDyHtPWfWXDYEvFVX6N3bDWl7pmXeG7ixTeDHmh3gzMWsGWGuJJtQQkMtuZ9Fd2rbaODZrmgJ4AuVSx9ANwwnVlYnkcvW1LaA8MQldW5E+xcr+uyHsbswEfXuhZ6T1RFZnDBBYQbAAYTMAlS5cUqlVFF71GYMS3jpR4Dp7ddMPXcpOFZ/6t65vGrQkYgGHUHBIKzLh1BBioG/RaimmZPeRDUrED0ENuZkP6fPuAunPcdrIAHOueZde4AgTEiQCDYZjtT9KCoBpKQxwDAQpJVVjbvCZUk+CULy5i2+2QQKBgQDyojIMue3BJEZeh5Cyu9gBGGlhUegssJ/CcIQG1HvI18OY4z2T0o7LVvgNqn7sJ4nJHfn5hrfkVk2a+SwEd22WCNtXc+cU3JNnHyenX3xwbLDY8oUS6SXmv4GqQXy4O8LxKoZAtBVbteDs00ybptA/1PH2mf1BMBBsVQEcaQlumQKBgQDjk7QzHfCOYhDij4v0vQwMxnwRSg03ZTJp9chXMaKkkhRV11ApbX0QsK23EZ82vK9P58BYKz+ewZmLQq6zX6ooUQxvo9mUm4/Czc25f1nbt9aXkQYcDN+2bSbcRkvPcAMWwxiu2J4/XBofI0L0oySTWcfkdbGIw+MOCZHB/Ki3lQKBgE5F0MuWN4L1RtY7+YwPWTGRRH2mxLWWDRPW5GCnr38tS+ZIeJb1eCdU2RTfia55WtPMndXHhg9dYA+8jlyqgmnCVbAyrbtnJQ5BWLN/9E74YVy7b/6XxChaY2QfWDK+5LaUN1csQS+izvrXd4FHIStWcPBS4QZkkQfBrGgT4n0RAoGAWW1cPU4BjmHY0r6nt5dmGcsRS9X2lZMNmXe8rw7RI6xHk2fVl0HwCFP1H2AsWV0R4utluP/dsyvOg1vDvLbV7ZvTsDcJtAzhFCK9OaxiiiWWjN6vMOyaKFyCDcMN3Ujd3d7yXxq+LJWrqhq4H9vP7ps0IoFhLyYSnhyCi2EWh3UCgYEAgEmImF2I6BnQnhKz/5tdzr95ZXGiHDeO7UpFJTJrOmJIyLMgCOy2jIK8TjdE3yzWXics46/ZLicumwsjTzyByoALhuUrfFnCvdYeD+POHFFDcKCkFROQsKosQKWkREc2J2fF18E9m0D46LpeqtuWWxI4aRjgfKjQrYQaxU5lcO8=";
     // 平台方公钥
-    public static  String platformPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo/PmfNo3v8+VIT2oSUMXtZJGtGiBfqjVQAeKjppXkZ9jgzNjVbRAnWdTXKifyQQa5QhGeFCjJ9RS5WwLyZMBdwbhJJ2YkVDDXDc284CuXf5J3TDodkexfDwyPf3SvSVemRej5muhju1DOzLAyvx4GRKbDOEQqNiFxmn7HnQ2U6HsnQKa/LkB4ydogauI81q/taOcLyZsxz+uiIxYHQ2kujDBYncH3ncBeNQ7rWh7trWvCZ2sbtmUjbU2FC/cpp1oFBQbiQAuVA+4NBjobT/Ig7hGT9NiJ0elzOX5vWKvZelu6zD8z/frqXKSeyDWdjE9TB53pvCCuCiZSyOEwLJ0uwIDAQAB";
-    public static  String mch_id = "000000100543062";
+    public static  String platformPublicKey;// = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo/PmfNo3v8+VIT2oSUMXtZJGtGiBfqjVQAeKjppXkZ9jgzNjVbRAnWdTXKifyQQa5QhGeFCjJ9RS5WwLyZMBdwbhJJ2YkVDDXDc284CuXf5J3TDodkexfDwyPf3SvSVemRej5muhju1DOzLAyvx4GRKbDOEQqNiFxmn7HnQ2U6HsnQKa/LkB4ydogauI81q/taOcLyZsxz+uiIxYHQ2kujDBYncH3ncBeNQ7rWh7trWvCZ2sbtmUjbU2FC/cpp1oFBQbiQAuVA+4NBjobT/Ig7hGT9NiJ0elzOX5vWKvZelu6zD8z/frqXKSeyDWdjE9TB53pvCCuCiZSyOEwLJ0uwIDAQAB";
+    public static  String mch_id;// = "000000100543062";
 
     static TangClient client;//new DefaultTangClient(DEV_HOST, mchPrivateKey, platformPublicKey, mch_id);
 
     @PostConstruct
     public void init() {
-        client = new DefaultTangClient(DEV_HOST, mchPrivateKey, platformPublicKey, mch_id);
         mchPrivateKey = mchPrivateKeyValue;
         platformPublicKey = platformPublicKeyValue;
         mch_id = mchIdValue;
-        this.decryptor = new DefaultDecryptor(mchPrivateKey);
-        this.signer = new DefaultSigner(mchPrivateKey);
+        client = new DefaultTangClient(host, mchPrivateKeyValue, platformPublicKeyValue, mchIdValue);
+        decryptor = new DefaultDecryptor(mchPrivateKeyValue);
+//        this.signer = new DefaultSigner(mchPrivateKey);
     }
 
     DateFormat format = new SimpleDateFormat("yyyyMMdd");
@@ -136,14 +139,13 @@ public class TtqfApiUtil {
         PictureUploadModel model = PictureUploadModel.builder().picture(Base64.encode(getFileStream(url))).build();
         request.setBizModel(model);
         request.setRequestId(System.currentTimeMillis() + "");
-        System.out.println(JSON.toJSONString(request));
+        log.info("ttqfApi--pictureUpload, request:{}", JSONObject.toJSONString(request));
         PictureUploadResponse response = client.execute(request);
         if (!response.isSuccess()) {
             log.error("ttqfApi--pictureUpload, error:{}", JSONObject.toJSONString(response));
             throw new TfException(response.getBizMsg());
         }
-        log.info("ttqfApi--pictureUpload, result:{}", JSONObject.toJSONString(response.getResultModel()));
-        System.out.println(response);
+        log.info("ttqfApi--pictureUpload, result:{}", JSONObject.toJSONString(response));
         return response.getResultModel().getFileId();
     }
 
@@ -244,6 +246,7 @@ public class TtqfApiUtil {
     }
 
     public static JSONObject decodeReq (JSONObject jsonObject) {
+        log.error("天天企赋API => decodeReq:{}", jsonObject.toJSONString());
         Map responseMap = JSON.parseObject(jsonObject.toJSONString(), Map.class);
         System.out.println("responseMap:" + JSONObject.toJSONString(responseMap));
         String decAES = null;
@@ -253,9 +256,6 @@ public class TtqfApiUtil {
             aesDecryptor = new AESDecryptor(decAES);
         } catch (Exception e) {
             log.error("天天企赋API => 秘钥错误，解密回调失败", e);
-//            rsp.setCode(SECRET_KEY_ERROR);
-//            rsp.setMsg("解密错误");
-//            return (T) rsp;
             throw e;
         }
         String bizResponse = null;
@@ -263,13 +263,9 @@ public class TtqfApiUtil {
             bizResponse = aesDecryptor.decrypt((String) responseMap.get("reqData"));
         } catch (Exception e) {
             log.error("天天企赋API => 秘钥错误，解密回调业务报文失败", e);
-//            rsp.setCode(SECRET_KEY_ERROR);
-//            rsp.setMsg("解密响应报文错误");
-//            return (T) rsp;
             throw e;
         }
         return JSONObject.parseObject(bizResponse);
-
     }
 
 }
