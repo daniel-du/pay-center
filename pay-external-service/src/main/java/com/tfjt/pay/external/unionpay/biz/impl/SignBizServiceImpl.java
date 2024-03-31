@@ -38,12 +38,6 @@ import org.springframework.web.client.RestTemplate;
 
 
 import javax.annotation.Resource;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -73,7 +67,7 @@ public class SignBizServiceImpl implements SignBizService {
 
 
     @Value("${unionPay.signgys.payAppId}")
-    private String ysPayAppId;
+    private String gysPayAppId;
 
     @Value("${spring.profiles.active}")
     private String env;
@@ -194,12 +188,13 @@ public class SignBizServiceImpl implements SignBizService {
             if (Objects.nonNull(selfSignEntity)) {
                 selfSignParamDTO = new SelfSignParamDTO();
                 //将推送的入网状态写入参数
+                selfSignParamDTO.setAccesserAcct(signingReviewRespDTO.getAccesserAcct());
                 selfSignParamDTO.setSigningStatus(signingReviewRespDTO.getApplyStatus());
-                selfSignParamDTO.setMid(selfSignEntity.getMid());
+                selfSignParamDTO.setMid(signingReviewRespDTO.getMerNo());
                 selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
                 //失败原因
                 selfSignParamDTO.setMsg(signingReviewRespDTO.getApplyStatusMsg());
-                if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
+                if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, gysPayAppId)) {
                     selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
                     //当供应商没有关联成功时，入网状态修改审核中
                     if (Objects.equals(selfSignParamDTO.getSigningStatus(), "03") && !Objects.equals(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()), "1")) {
@@ -226,60 +221,66 @@ public class SignBizServiceImpl implements SignBizService {
      */
     private void updateSignStatus(SelfSignParamDTO selfSignParamDTO) {
 
-        SelfSignEntity selfSignEntity = selfSignService.selectByMid(selfSignParamDTO.getMid());
-        //设置失败原因
-        selfSignEntity.setMsg(selfSignParamDTO.getMsg());
-        //设置
-        selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
-        //绑定关系
-        selfSignEntity.setMerMsRelation(selfSignParamDTO.getMerMsRelation());
-        //设置入网成功时间
-        if ("03".equals(selfSignParamDTO.getSigningStatus())) {
-            selfSignEntity.setSignSuccessDate(new Date());
-        }
-
-        //rpc调用业务
-        RestTemplate restTemplate = new RestTemplate();
-        //回调地址查询
-        List<PayApplicationCallbackUrlEntity> callbackUrlList = unionPayCallbackUrlService.getCallbackUrlByAppIdAndType(6);
-
-        if (CollUtil.isNotEmpty(callbackUrlList)) {
-            for (PayApplicationCallbackUrlEntity callbackUrlEntity : callbackUrlList) {
-                List<SelfSignParamDTO> selfSignParamDTOList = new ArrayList<>();
-                selfSignParamDTO.setAppId(callbackUrlEntity.getAppId());
-                selfSignParamDTO.setAccesserAcct(selfSignEntity.getAccesserAcct());
-                selfSignParamDTOList.add(selfSignParamDTO);
-                SelfSignAppDTO selfSignAppDTO = new SelfSignAppDTO();
-                selfSignAppDTO.setAppId(callbackUrlEntity.getAppId());
-                selfSignAppDTO.setSelfSignParamDTOList(selfSignParamDTOList);
-                Date r = new Date();
-                //发起请求
-                HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.set("Content-Type", "application/json");
-                HttpEntity<String> stringHttpEntity = new HttpEntity<>(JSON.toJSONString(selfSignAppDTO), httpHeaders);
-                String rest = "";
-                try {
-                    log.info("请求入网URL" + callbackUrlEntity.getUrl());
-                    log.info("请求入网回调参数" + JSON.toJSONString(selfSignAppDTO));
-                    rest = restTemplate.postForObject(callbackUrlEntity.getUrl(), stringHttpEntity, String.class);
-                    if (StringUtils.isNotBlank(rest)) {
-                        JSONObject json = JSONObject.parseObject(rest);
-                        if (Objects.equals("0", json.get("code").toString())) {
-                            //更新入网签约
-                            log.info("入网表参数：{}", JSON.toJSONString(selfSignEntity));
-                            selfSignService.updateById(selfSignEntity);
-                            //更新缓存
-                            incomingCacheService.writeIncomingCacheBySelfSign(selfSignEntity);
-                        }
-                    } else {
-                        log.error("返回接口为空---");
-                    }
-                } catch (Exception e) {
-                    log.error("远程调用业务接口失败", e);
-                }
-                payCallbackLogService.saveCallBackLog(callbackUrlEntity.getUrl(), appId, JSON.toJSONString(selfSignAppDTO), rest, 4, r, "");
+        SelfSignEntity selfSignEntity = selfSignService.selectByAccessAcct(selfSignParamDTO.getAccesserAcct());
+        if (Objects.nonNull(selfSignEntity)) {
+            //设置失败原因
+            selfSignEntity.setMsg(selfSignParamDTO.getMsg());
+            selfSignEntity.setMid(selfSignParamDTO.getMid());
+            //设置
+            selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
+            //绑定关系
+            selfSignEntity.setMerMsRelation(selfSignParamDTO.getMerMsRelation());
+            //设置入网成功时间
+            if ("03".equals(selfSignParamDTO.getSigningStatus())) {
+                selfSignEntity.setSignSuccessDate(new Date());
             }
+
+            //rpc调用业务
+            RestTemplate restTemplate = new RestTemplate();
+            //回调地址查询
+            List<PayApplicationCallbackUrlEntity> callbackUrlList = unionPayCallbackUrlService.getCallbackUrlByAppIdAndType(6);
+
+            if (CollUtil.isNotEmpty(callbackUrlList)) {
+                for (PayApplicationCallbackUrlEntity callbackUrlEntity : callbackUrlList) {
+                    List<SelfSignParamDTO> selfSignParamDTOList = new ArrayList<>();
+                    selfSignParamDTO.setAppId(callbackUrlEntity.getAppId());
+                    selfSignParamDTO.setAccesserAcct(selfSignEntity.getAccesserAcct());
+                    selfSignParamDTOList.add(selfSignParamDTO);
+                    SelfSignAppDTO selfSignAppDTO = new SelfSignAppDTO();
+                    selfSignAppDTO.setAppId(callbackUrlEntity.getAppId());
+                    selfSignAppDTO.setSelfSignParamDTOList(selfSignParamDTOList);
+                    Date r = new Date();
+                    //发起请求
+                    HttpHeaders httpHeaders = new HttpHeaders();
+                    httpHeaders.set("Content-Type", "application/json");
+                    HttpEntity<String> stringHttpEntity = new HttpEntity<>(JSON.toJSONString(selfSignAppDTO), httpHeaders);
+                    String rest = "";
+                    try {
+                        log.info("请求入网URL" + callbackUrlEntity.getUrl());
+                        log.info("请求入网回调参数" + JSON.toJSONString(selfSignAppDTO));
+                        rest = restTemplate.postForObject(callbackUrlEntity.getUrl(), stringHttpEntity, String.class);
+                        if (StringUtils.isNotBlank(rest)) {
+                            JSONObject json = JSONObject.parseObject(rest);
+                            if (Objects.equals("0", json.get("code").toString())) {
+                                //更新入网签约
+                                log.info("入网表参数：{}", JSON.toJSONString(selfSignEntity));
+                                selfSignService.updateById(selfSignEntity);
+                                //更新缓存
+                                incomingCacheService.writeIncomingCacheBySelfSign(selfSignEntity);
+                            }
+                        } else {
+                            log.error("返回接口为空---");
+                        }
+                    } catch (Exception e) {
+                        log.error("远程调用业务接口失败", e);
+                    }
+                    payCallbackLogService.saveCallBackLog(callbackUrlEntity.getUrl(), appId, JSON.toJSONString(selfSignAppDTO), rest, 4, r, "");
+                }
+            }
+        } else {
+            log.info("AccesserAcct:{},未获取到入网信息", selfSignParamDTO.getAccesserAcct());
         }
+
 
     }
 
@@ -338,8 +339,8 @@ public class SignBizServiceImpl implements SignBizService {
      */
     @Override
     public void queryMerchantBySignSuccess(String accesserAcct) {
-        //查询近7天或指定商户入网成功，没有绑定关系的商户
-        List<SelfSignEntity> selfSignList = selfSignService.querySelfSignsBySuccess(accesserAcct);
+        //查询近7天或指定商户切是供应商身份入网成功，没有绑定关系的商户
+        List<SelfSignEntity> selfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, gysPayAppId);
         if (CollUtil.isNotEmpty(selfSignList)) {
             for (SelfSignEntity selfSignEntity : selfSignList) {
                 XxlJobHelper.log("查询{}签约状态", selfSignEntity.getAccesserAcct());
@@ -348,7 +349,7 @@ public class SignBizServiceImpl implements SignBizService {
                 request.setAppId(selfSignEntity.getAppId());
                 // 主动查询签约状态
                 ApplyQueryReturnDTO applyquery = signToNetWorkService.applyquery(request);
-                if(Objects.nonNull(applyquery)){
+                if (Objects.nonNull(applyquery)) {
                     XxlJobHelper.log("主动查询签约状态，返回参数：{}", JSON.toJSONString(applyquery));
                     SelfSignParamDTO selfSignParamDTO = new SelfSignParamDTO();
                     //签约状态

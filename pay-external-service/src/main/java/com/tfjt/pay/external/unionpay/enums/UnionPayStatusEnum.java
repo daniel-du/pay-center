@@ -28,7 +28,7 @@ public enum UnionPayStatusEnum {
     //05:对公账户待验证或异常
     SIGNING_ABNORMAL("05", "对公账户待验证或异常"),
     //06:风控审核中
-    SIGNING_RISK("06", "风控审核中"),
+    SIGNING_RISK("6", "风控审核中"),
     //11:短信签生成合同成功
     SIGNING_CONTRACT("11", "短信签生成合同成功"),
     //18:资料填写中
