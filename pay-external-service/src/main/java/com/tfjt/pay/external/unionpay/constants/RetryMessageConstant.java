@@ -21,4 +21,8 @@ public class RetryMessageConstant {
     public static final String MQ_TO_SERVER = "tf-cloud-pay-external";
     public static final String SIGN_TAG = "sign";
 
+
+    public static final String SETTLE_CENTER_APPLICATION_NAME = "tf-cloud-settle-center";
+
+    public static final String TTQF_PRESIGN_TAG = "PRESIGN";
 }

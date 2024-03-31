@@ -369,5 +369,10 @@
             <artifactId>supply-merchant-supplier-api</artifactId>
             <version>1.0.19-RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>com.ipaynow</groupId>
+            <artifactId>ttqf-api-sdk</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 </project>

@@ -20,7 +20,11 @@ public enum IncomingMemberBusinessTypeEnum {
     /**
      * 云店
      */
-    YUNDIAN(2, "云店", "TFYD")
+    YUNDIAN(2, "云店", "TFYD"),
+    /**
+     * 云店
+     */
+    TASK_SYSTEM(3, "任务体系会员", "TFTS"),
     ;
 
     private Integer code;

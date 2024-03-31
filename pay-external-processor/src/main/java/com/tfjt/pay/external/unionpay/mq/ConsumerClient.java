@@ -6,6 +6,7 @@ import com.aliyun.openservices.shade.com.alibaba.fastjson.JSONObject;
 import com.tfjt.consumer.SingleConsumerRetryJob;
 import com.tfjt.dto.response.Result;
 import com.tfjt.entity.AsyncMessageEntity;
+import com.tfjt.pay.external.unionpay.biz.IncomingTtqfBizService;
 import com.tfjt.pay.external.unionpay.biz.PabcBizService;
 import com.tfjt.pay.external.unionpay.biz.SignBizService;
 import com.tfjt.pay.external.unionpay.config.ALiYunRocketMQConfig;
@@ -58,6 +59,13 @@ public class ConsumerClient implements ApplicationContextAware {
 //    @Value("${async-retry-job.product.updateMsgUrl}")
 //    private String updateMsgUrl;
 
+    @Value("${rocketmq.group.consumer.ttqfCallback}")
+    private String ttqfCallbackGroup;
+    @Value("${rocketmq.topic.ttqfCallback}")
+    private String ttqfCallbackTopic;
+
+
+
     private String shopExaminTag = "examine";
     private String shopUpdateTag = "update";
     private String shopchangeDistrictTag = "changeDistrict";
@@ -74,6 +82,9 @@ public class ConsumerClient implements ApplicationContextAware {
     @Resource
     private SignBizService signBizService;
 
+    @Autowired
+    private IncomingTtqfBizService incomingTtqfBizService;
+
 
     @PostConstruct
     void consumer() {
@@ -82,6 +93,8 @@ public class ConsumerClient implements ApplicationContextAware {
         consumeShopChange(mqConfig.getMqPropertie());
         // 入网审核
         consumeSigningReview(mqConfig.getMqPropertie());
+        // 天天企赋回调
+        consumeTtqfCallback(mqConfig.getMqPropertie());
     }
 
     /**
@@ -107,6 +120,31 @@ public class ConsumerClient implements ApplicationContextAware {
 
     private Action processSignReview(Message msg) {
         return commitMsg(msg, signBizService::signingReview, signUpdateMsgUrl);
+    }
+
+    /**
+     * 入网回调消费
+     *
+     * @param properties
+     */
+    private void consumeTtqfCallback(Properties properties) {
+        properties.put(PropertyKeyConst.GROUP_ID, ttqfCallbackGroup);
+        Consumer consumer = ONSFactory.createConsumer(properties);
+        ttqfCallbackByTag(consumer, RetryMessageConstant.TTQF_PRESIGN_TAG);
+        consumer.start();
+    }
+
+    private void ttqfCallbackByTag(Consumer consumer, String tag) {
+
+        consumer.subscribe(ttqfCallbackTopic, tag, (message, context) -> {
+            log.info("TtqfCallbackConsumer_message:{} ", message);
+            return processTtqfCallback(message);
+        });
+    }
+
+
+    private Action processTtqfCallback(Message msg) {
+        return commitMsg(msg, incomingTtqfBizService::consumerCallbackMsg, signUpdateMsgUrl);
     }
 
 

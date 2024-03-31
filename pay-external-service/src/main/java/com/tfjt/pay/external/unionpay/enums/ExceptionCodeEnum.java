@@ -79,6 +79,9 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_CORPORATE_BANK_CARD_ACCOUNT_ERROR(2000026,"对公类型开户名称必须与营业名称一致!"),
     INCOMING_INFO_IS_NULL(2000027,"入网信息为空!"),
     SUPPLIER_IS_NULL(2000028,"supplier信息为空!"),
+    MERCHANT_IS_AUTH(2000029,"该用户已提交认证!"),
+    ID_CARD_NO_FORMAT_ERROR(2000030,"身份证号码格式错误!"),
+    ID_CARD_NO_ALREADY_EXIST(2000031,"该身份证号码已认证!"),
 
 
     PN_API_ERROR(3000010, "调用平安API失败!"),
