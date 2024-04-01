@@ -37,7 +37,7 @@ public interface SelfSignService extends IService<SelfSignEntity> {
      * @return
      */
 
-    List<SelfSignEntity> querySelfSignBySuccess(String accesserAcct, String gysPayAppId);
+    List<SelfSignEntity> querySelfSignBySuccess(String accesserAcct, String gysPayAppId,boolean isGys);
 
 }
 
