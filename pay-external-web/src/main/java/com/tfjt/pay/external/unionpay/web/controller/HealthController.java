@@ -29,6 +29,7 @@ public class HealthController {
      */
     @RequestMapping("/healthCheck")
     public String healthCheck() {
+        log.info("探活请求{}","okoko");
         return "探活请求，服务健康...";
     }
 
