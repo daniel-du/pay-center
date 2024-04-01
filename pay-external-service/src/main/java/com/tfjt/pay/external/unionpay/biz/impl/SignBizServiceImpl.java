@@ -59,15 +59,18 @@ public class SignBizServiceImpl implements SignBizService {
 
 
     @Value("${unionPay.signgys.appId}")
-    private String ysAppId;
+    private String gysAppId;
 
 
     @Value("${unionPay.signgys.appKey}")
-    private String ysAppKey;
+    private String gysAppKey;
 
 
-    @Value("${unionPay.signgys.payAppId}")
+    @Value("${unionPay.appId.yunshang}")
     private String gysPayAppId;
+
+    @Value("${unionPay.appId.yundian}")
+    private String ydPayAppId;
 
     @Value("${spring.profiles.active}")
     private String env;
@@ -159,9 +162,9 @@ public class SignBizServiceImpl implements SignBizService {
         signingReviewLogService.save(signingReviewLogEntity);
         //解密jsonData
         String data = null;
-        if (Objects.equals(signingReviewReqDTO.getAccesserId(), ysAppId)) {
+        if (Objects.equals(signingReviewReqDTO.getAccesserId(), gysAppId)) {
             try {
-                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), ysAppKey);
+                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), gysAppKey);
             } catch (Exception ex) {
                 log.error("解密失败", ex);
                 return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
@@ -340,7 +343,9 @@ public class SignBizServiceImpl implements SignBizService {
     @Override
     public void queryMerchantBySignSuccess(String accesserAcct) {
         //查询近7天或指定商户切是供应商身份入网成功，没有绑定关系的商户
-        List<SelfSignEntity> selfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, gysPayAppId);
+        List<SelfSignEntity> selfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, gysPayAppId, true);
+        List<SelfSignEntity> ydSelfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, ydPayAppId, true);
+        selfSignList.addAll(ydSelfSignList);
         if (CollUtil.isNotEmpty(selfSignList)) {
             for (SelfSignEntity selfSignEntity : selfSignList) {
                 XxlJobHelper.log("查询{}签约状态", selfSignEntity.getAccesserAcct());
