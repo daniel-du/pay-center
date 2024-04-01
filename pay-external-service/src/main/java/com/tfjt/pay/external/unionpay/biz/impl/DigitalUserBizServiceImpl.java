@@ -77,12 +77,12 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             ShopDetailInfoRpcRespDto shopDetailInfoRpcRespDto = dbShopService.searchShopDetailInfoById(shopId.intValue());
             log.info("查询数币店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
             if(Objects.isNull(shopDetailInfoRpcRespDto) || StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
-                StringUtils.isBlank(shopDetailInfoRpcRespDto.getName())){
+                StringUtils.isBlank(shopDetailInfoRpcRespDto.getRealName())){
                 respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
                 return selectByAccountResult(false,respDTO);
             }
             respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
-            respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getName()));
+            respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getRealName()));
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
             exit = true;
         }catch (Exception e){
