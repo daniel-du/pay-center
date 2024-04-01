@@ -103,6 +103,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     @Override
     public Result<DigitalRespDTO> unbindWallet(DigitalUserEntity digitalUserEntity) {
         DigitalUserEntity old = digitalUserService.selectUserBySignContract(digitalUserEntity.getSignContract());
+        log.info("需要解绑的用户信息:{}",JSONObject.toJSONString(old));
         if (Objects.isNull(old)){
             return Result.ok(new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_FAILED, DigitalErrorCodeEnum.R021));
         }
@@ -115,23 +116,13 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     @Lock4j(keys = "#digitalUserEntity.signContract",expire = 3000)
     @Override
     public Result<DigitalRespDTO> bindWallet(DigitalUserEntity digitalUserEntity) {
-        String verifyType = digitalUserEntity.getVerifyType();
         //切换账号
-        boolean isUpdate = DigitalCodeEnum.VT02.getCode().equals(verifyType);
         Long id = null;
         DigitalUserEntity old = digitalUserService.selectUserBySignContract(digitalUserEntity.getSignContract());
+        boolean isUpdate = Objects.nonNull(old);
         if (isUpdate) {
             log.info("数字人民币修改之前数据:{}",JSONObject.toJSONString(old));
-            //用户不存在
-            if (Objects.isNull(old)) {
-                return Result.ok(new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_FAILED));
-            }
             id = old.getId();
-        }else if (Objects.nonNull(old)){
-            //如果之前有记录则不再更新
-            DigitalRespDTO digitalRespDTO = new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS);
-            digitalRespDTO.setSignContract(digitalUserEntity.getSignContract());
-            return Result.ok(digitalRespDTO);
         }
         digitalUserEntity.setMchntSideAccount(decryptStr(digitalUserEntity.getMchntSideAccount()));
         DigitalBankCodeEnum bank = DigitalBankCodeEnum.getByCode(digitalUserEntity.getOperatorId());
@@ -141,6 +132,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         digitalUserEntity.setUpdateTime(DateUtil.date());
         digitalUserEntity.setStatus(NumberConstant.ONE);
         digitalUserEntity.setId(id);
+        log.info("保存或者更新数币用户信息:{}",JSONObject.toJSONString(digitalUserEntity));
         boolean result = isUpdate ? digitalUserService.updateById(digitalUserEntity) : digitalUserService.save(digitalUserEntity);
         DigitalRespDTO digitalRespDTO = new DigitalRespDTO(result ? DigitalTransactionStatusEnum.DIGITAL_SUCCESS : DigitalTransactionStatusEnum.DIGITAL_FAILED);
         digitalRespDTO.setSignContract(digitalUserEntity.getSignContract());
