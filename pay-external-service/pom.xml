@@ -267,6 +267,7 @@
                     <artifactId>log4j-over-slf4j</artifactId>
                 </exclusion>
             </exclusions>
+
         </dependency>
 
         <dependency>
@@ -373,6 +374,30 @@
             <groupId>com.ipaynow</groupId>
             <artifactId>ttqf-api-sdk</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-shop-api</artifactId>
+            <version>1.4.15-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.tf.log</groupId>
+                    <artifactId>tf-log-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion></exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.tfjt</groupId>
+            <artifactId>tf-user-api</artifactId>
+            <version>1.0.4-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

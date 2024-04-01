@@ -13,9 +13,17 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum TransactionStatusEnum {
-
+    /**
+     * 贷款成功
+     */
     SUCCEEDED("succeeded","成功"),
+    /**
+     * 贷款失败
+     */
     FAILED("failed","失败"),
+    /**
+     * 贷款部分成功
+     */
     PARTIALLY_SUCCEEDED("partially_succeeded","部分成功");
 
     /**

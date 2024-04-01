@@ -9,6 +9,7 @@ import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
 import com.tfjt.pay.external.unionpay.entity.LoanUnionpayCheckBillDetailsEntity;
 import com.tfjt.pay.external.unionpay.entity.UnionpayLoanWarningEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
  * @Date: 2023/10/28/09:32
  * @Description:
  */
+@Slf4j
 @Order(1)
 @Component
 public class CheckHandler implements CheckBillHandler {
@@ -48,6 +50,7 @@ public class CheckHandler implements CheckBillHandler {
      */
     @Override
     public boolean handler(CheckLoanBillDTO checkLoanBillDTO) {
+        log.info("核对银联与本地业务数据是否一致.......");
         boolean result = false;
         //异常批次号
         String warnBatchNo = IdUtil.fastSimpleUUID();

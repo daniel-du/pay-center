@@ -11,6 +11,7 @@ import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,9 +43,11 @@ public class LoanBusinessJob {
     @XxlJob("downloadCheckBill")
     public void downloadCheckBill(){
         String jobParam = XxlJobHelper.getJobParam();
-        DateTime yesterday = DateUtil.yesterday();
-        XxlJobHelper.log("--------------------------开始执行:{}下载账单下载任务----------------------",yesterday);
         XxlJobHelper.log("--------------------------jobParam:{}----------------------",jobParam);
+        log.info("jobParam:{}",jobParam);
+        DateTime yesterday = StringUtils.isNotBlank(jobParam)?DateUtil.parseDate(jobParam): DateUtil.yesterday();
+        log.info("yesterday:{}",yesterday);
+        XxlJobHelper.log("--------------------------开始执行:{}下载账单下载任务----------------------",yesterday);
         checkProcessor.checkBill(new CheckLoanBillDTO().setDate(yesterday));
         XxlJobHelper.log("结束执行:{}下载账单下载任务........",yesterday);
     }

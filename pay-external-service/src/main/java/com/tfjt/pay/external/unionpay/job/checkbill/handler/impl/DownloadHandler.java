@@ -5,6 +5,7 @@ import com.tfjt.pay.external.unionpay.api.dto.req.UnionPayCheckBillReqDTO;
 import com.tfjt.pay.external.unionpay.biz.LoanUnionPayCheckBillBizService;
 import com.tfjt.pay.external.unionpay.job.checkbill.handler.CheckBillHandler;
 import com.tfjt.pay.external.unionpay.dto.CheckLoanBillDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import javax.annotation.Resource;
  * @Date 2023/10/28/09:26
  * @Description:
  */
+@Slf4j
 @Order(0)
 @Component
 public class DownloadHandler implements CheckBillHandler {
@@ -28,6 +30,7 @@ public class DownloadHandler implements CheckBillHandler {
      */
     @Override
     public boolean handler(CheckLoanBillDTO checkLoanBillDTO) {
+        log.info("调用银联接口下载电子对账单.......");
         UnionPayCheckBillReqDTO unionPayCheckBillReqDTO = new UnionPayCheckBillReqDTO();
         unionPayCheckBillReqDTO.setDate(DateUtil.formatDate(checkLoanBillDTO.getDate()));
         return loanUnionPayCheckBillBiz.download(unionPayCheckBillReqDTO);
