@@ -371,7 +371,7 @@ public class SignBizServiceImpl implements SignBizService {
                     //绑定关系
                     selfSignParamDTO.setMerMsRelation(getMerMsRelation(applyquery.getMerMsRelation()));
                     //企业号
-                    selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
+                    selfSignParamDTO.setBusinessNo(applyquery.getCompany_no());
                     XxlJobHelper.log("开始通知业务更新状态");
                     updateSignStatus(selfSignParamDTO);
                     XxlJobHelper.log("完成通知业务更新状态");
