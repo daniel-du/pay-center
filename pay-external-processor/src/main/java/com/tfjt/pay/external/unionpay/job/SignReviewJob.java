@@ -31,4 +31,16 @@ public class SignReviewJob {
         signBizService.queryMerchantBySignSuccess(params);
         XxlJobHelper.log("结束执行更新业务入网状态的任务.......");
     }
+
+    /**
+     * 入网状态一致性
+     * 确保redis数据和数据库数据一致
+     */
+    @XxlJob("updateSelfSignStatus")
+    public void updateSelfSignStatus() {
+        String params = XxlJobHelper.getJobParam();
+        XxlJobHelper.log("开始执行更新业务入网状态的任务.......");
+        signBizService.updateSelfSignStatus(params);
+        XxlJobHelper.log("结束执行更新业务入网状态的任务.......");
+    }
 }

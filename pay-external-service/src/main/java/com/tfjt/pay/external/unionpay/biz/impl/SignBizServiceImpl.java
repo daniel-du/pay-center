@@ -380,4 +380,18 @@ public class SignBizServiceImpl implements SignBizService {
         }
     }
 
+    @Override
+    public void updateSelfSignStatus(String params) {
+        //最近一天更新过的数据
+        XxlJobHelper.log("更新{}签约状态", params);
+        List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignByUpdateTime(params);
+        if (CollUtil.isNotEmpty(selfSignEntities)) {
+            for (int i = 0; i < selfSignEntities.size(); i++) {
+                XxlJobHelper.log("更新{}签约状态,入网状态{}", selfSignEntities.get(i).getAccesserAcct(), selfSignEntities.get(i).getSigningStatus());
+                incomingCacheService.writeIncomingCacheBySelfSign(selfSignEntities.get(i));
+            }
+        }
+
+    }
+
 }
