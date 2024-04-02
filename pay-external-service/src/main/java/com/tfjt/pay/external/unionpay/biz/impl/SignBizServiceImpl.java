@@ -229,6 +229,7 @@ public class SignBizServiceImpl implements SignBizService {
             //设置失败原因
             selfSignEntity.setMsg(selfSignParamDTO.getMsg());
             selfSignEntity.setMid(selfSignParamDTO.getMid());
+            selfSignEntity.setBusinessNo(selfSignParamDTO.getBusinessNo());
             //设置
             selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
             //绑定关系
