@@ -53,7 +53,9 @@ public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEn
         LambdaQueryWrapper<SelfSignEntity> queryWrapper = Wrappers.lambdaQuery(SelfSignEntity.class)
                 .eq(isGys, SelfSignEntity::getMerMsRelation, "0")
                 .eq(isGys, SelfSignEntity::getAppId, gysPayAppId)
-                .eq(!isGys,SelfSignEntity::getBusinessNo,null)
+                .isNull(!isGys,SelfSignEntity::getBusinessNo)
+                .or()
+                .eq(!isGys,SelfSignEntity::getBusinessNo,"")
                 .apply(Objects.isNull(accesserAcct) || accesserAcct.isEmpty(), "TO_DAYS(NOW())-TO_DAYS(sign_success_date)<=7")
                 .eq(Objects.nonNull(accesserAcct) && !accesserAcct.isEmpty(), SelfSignEntity::getAccesserAcct, accesserAcct);
         return this.baseMapper.selectList(queryWrapper);
