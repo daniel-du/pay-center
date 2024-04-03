@@ -236,7 +236,9 @@ public class SignBizServiceImpl implements SignBizService {
             selfSignEntity.setMerMsRelation(selfSignParamDTO.getMerMsRelation());
             //设置入网成功时间
             if ("03".equals(selfSignParamDTO.getSigningStatus())) {
-                selfSignEntity.setSignSuccessDate(new Date());
+                if(Objects.isNull(selfSignEntity.getSignSuccessDate())){
+                    selfSignEntity.setSignSuccessDate(new Date());
+                }
             }
 
             //rpc调用业务
