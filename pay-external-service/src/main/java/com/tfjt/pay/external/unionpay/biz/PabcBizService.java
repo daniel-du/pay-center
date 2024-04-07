@@ -1,14 +1,11 @@
 package com.tfjt.pay.external.unionpay.biz;
 
 import com.tfjt.entity.AsyncMessageEntity;
-import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.QueryAccessBankStatueRespDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ShopExamineMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.req.ShopUpdateMqReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.*;
@@ -51,4 +48,6 @@ public interface PabcBizService {
     void saveShopExamineInfo(ShopExamineMqReqDTO dto);
 
     void saveShopUpdateInfo(ShopUpdateMqReqDTO dto);
+
+    Result<String> insertArea(SaleAreaInsertReqDTO dto);
 }

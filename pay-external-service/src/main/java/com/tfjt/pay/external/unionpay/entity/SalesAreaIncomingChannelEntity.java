@@ -1,10 +1,12 @@
 package com.tfjt.pay.external.unionpay.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @Author zxy
@@ -19,7 +21,7 @@ public class SalesAreaIncomingChannelEntity implements Serializable {
     /**
      * 主键
      */
-    @TableId
+    @TableId(value = "id", type = IdType.AUTO)
     private String id;
     /**
      * 省名称
@@ -57,4 +59,29 @@ public class SalesAreaIncomingChannelEntity implements Serializable {
      * 进件通道编码
      */
     private String channelCode;
+
+    /**
+     * 创建人
+     */
+    private String createUser;
+    /**
+     * 创建人ID
+     */
+    private Long createUserId;
+    /**
+     * 修改人
+     */
+    private String updateUser;
+    /**
+     * 修改人ID
+     */
+    private Long updateUserId;
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 }

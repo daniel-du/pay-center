@@ -9,10 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.fms.business.dto.req.MerchantChangeReqDTO;
 import com.tfjt.fms.data.insight.api.service.SupplierApiService;
-import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.BusinessInfoReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.QueryAccessBankStatueReqDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.*;
 import com.tfjt.pay.external.unionpay.api.dto.resp.AllSalesAreaRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.PayChannelRespDTO;
@@ -279,12 +276,12 @@ public class PabcBizServiceImpl implements PabcBizService {
         LambdaQueryWrapper<TfIncomingInfoEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(TfIncomingInfoEntity::getBusinessId, businessInfoReqDTO.getBuisnessId())
                 .eq(TfIncomingInfoEntity::getBusinessType, businessInfoReqDTO.getBusinessType())
-                .eq(TfIncomingInfoEntity::getAccessChannelType,CityTypeEnum.NEW_CITY.getCode())
-                .eq(TfIncomingInfoEntity::getIsDeleted,DeleteStatusEnum.NO.getCode());
+                .eq(TfIncomingInfoEntity::getAccessChannelType, CityTypeEnum.NEW_CITY.getCode())
+                .eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
         TfIncomingInfoEntity one = tfIncomingInfoService.getOne(wrapper);
         IncomingMessageRespDTO respDTO = new IncomingMessageRespDTO();
         if (ObjectUtil.isNotNull(one)) {
-            BeanUtils.copyProperties(one,respDTO);
+            BeanUtils.copyProperties(one, respDTO);
         }
         return respDTO;
     }
@@ -366,7 +363,7 @@ public class PabcBizServiceImpl implements PabcBizService {
 //        }
         if (!flag) {
             //钉钉报警
-            asyncService.dingWarningNew(dtos,incomingMap);
+            asyncService.dingWarningNew(dtos, incomingMap);
         }
         return flag;
     }
@@ -385,6 +382,71 @@ public class PabcBizServiceImpl implements PabcBizService {
         if (CollectionUtil.isNotEmpty(saveList)) {
             supplierApiService.saveMerchangtChangeInfo(saveList);
         }
+    }
+
+    @Override
+    public Result<String> insertArea(SaleAreaInsertReqDTO dto) {
+        //
+        List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
+        List<AreaInfoReqDTO> areaList = dto.getAreaList();
+        if (CollectionUtil.isEmpty(areaList)) {
+            throw new TfException(ExceptionCodeEnum.AREA_CAN_NOT_NULL);
+        }
+        List<SalesAreaIncomingChannelEntity> entities = new ArrayList<>();
+        List<String> keys = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(list)) {
+            List<String> districtsCollect = list.stream().map(SalesAreaIncomingChannelEntity::getDistrictsCode).collect(Collectors.toList());
+            //判断区域是否存在
+            for (AreaInfoReqDTO areaInfoReqDTO : areaList) {
+                if (!districtsCollect.contains(areaInfoReqDTO.getDistrictsCode())) {
+                    SalesAreaIncomingChannelEntity entity = new SalesAreaIncomingChannelEntity();
+                    BeanUtils.copyProperties(areaInfoReqDTO, entity);
+                    entity.setArea(areaInfoReqDTO.getProvince() + "/" + areaInfoReqDTO.getCity() + "/" + areaInfoReqDTO.getDistricts());
+                    entity.setChannel(dto.getChannelName());
+                    entity.setChannelCode(dto.getChannelCode());
+                    entity.setCreateUser(dto.getUserName());
+                    entity.setCreateUserId(dto.getUserId());
+                    entity.setUpdateUser(dto.getUserName());
+                    entity.setUpdateUserId(dto.getUserId());
+                    entities.add(entity);
+                    keys.add(RedisConstant.NETWORK_TYPE_BY_AREA_CODE+areaInfoReqDTO.getDistrictsCode());
+                }
+            }
+        } else {
+            for (AreaInfoReqDTO areaInfoReqDTO : areaList) {
+                SalesAreaIncomingChannelEntity entity = new SalesAreaIncomingChannelEntity();
+                BeanUtils.copyProperties(areaInfoReqDTO, entity);
+                entity.setArea(areaInfoReqDTO.getProvince() + "/" + areaInfoReqDTO.getCity() + "/" + areaInfoReqDTO.getDistricts());
+                entity.setChannel(dto.getChannelName());
+                entity.setChannelCode(dto.getChannelCode());
+                entity.setCreateUser(dto.getUserName());
+                entity.setCreateUserId(dto.getUserId());
+                entity.setUpdateUser(dto.getUserName());
+                entity.setUpdateUserId(dto.getUserId());
+                entities.add(entity);
+                keys.add(RedisConstant.NETWORK_TYPE_BY_AREA_CODE+areaInfoReqDTO.getDistrictsCode());
+            }
+        }
+        String msg = "";
+
+        if (entities.size() != areaList.size()) {
+            if (entities.size() == 0) {
+                msg = "该区域已配置！";
+            } else {
+                msg = "保存成功，已配置的不重复入库";
+            }
+        } else {
+            msg = "保存成功";
+        }
+        if (entities.size() > 0) {
+            salesAreaIncomingChannelService.saveBatch(entities);
+            //清除缓存
+            redisCache.deleteObject(RedisConstant.NETWORK_TYPE_BY_AREA_CODE_All);
+            for (String key : keys) {
+                redisCache.deleteObject(key);
+            }
+        }
+        return Result.ok(msg);
     }
 
     private List<MerchantChangeReqDTO> getShopUpdateInfoList(ShopUpdateMqReqDTO dto) {
@@ -467,8 +529,8 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     private List<PayChannelRespDTO> virtualAreaCode(Integer areaLevel, String distinctName) {
         QueryWrapper<SalesAreaIncomingChannelEntity> wrapper = new QueryWrapper<>();
-        if(StringUtils.isNotBlank(distinctName)){
-            wrapper.and((w)->{
+        if (StringUtils.isNotBlank(distinctName)) {
+            wrapper.and((w) -> {
                 switch (areaLevel) {
                     case 3:
                         w.like("districts", distinctName).or();
