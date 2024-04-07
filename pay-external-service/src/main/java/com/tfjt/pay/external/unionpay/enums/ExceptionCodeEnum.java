@@ -80,7 +80,7 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INCOMING_INFO_IS_NULL(2000027,"入网信息为空!"),
     SUPPLIER_IS_NULL(2000028,"supplier信息为空!"),
     AREA_CAN_NOT_NULL(2000029,"区域不能为空!"),
-
+    CHANNEL_CODE_CAN_NOT_NULL(2000033,"进件类型不能为空" ),
 
     PN_API_ERROR(3000010, "调用平安API失败!"),
     PN_API_RESULT_IS_NULL(3000011, "平安api返回结果为空!"),

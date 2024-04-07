@@ -386,6 +386,11 @@ public class PabcBizServiceImpl implements PabcBizService {
 
     @Override
     public Result<String> insertArea(SaleAreaInsertReqDTO dto) {
+        String channelCode = dto.getChannelCode();
+        if (StringUtils.isEmpty(channelCode)) {
+            throw new TfException(ExceptionCodeEnum.CHANNEL_CODE_CAN_NOT_NULL);
+        }
+        dto.setChannelName(IncomingChannelEnum.getNameFromCode(dto.getChannelCode()));
         //
         List<SalesAreaIncomingChannelEntity> list = salesAreaIncomingChannelService.list();
         List<AreaInfoReqDTO> areaList = dto.getAreaList();
