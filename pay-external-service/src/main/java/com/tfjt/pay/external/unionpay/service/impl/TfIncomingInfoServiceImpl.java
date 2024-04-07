@@ -5,10 +5,12 @@ import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
 import com.tfjt.pay.external.unionpay.dao.TfIncomingInfoDao;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
+import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
 import com.tfjt.pay.external.unionpay.enums.DeleteStatusEnum;
 import com.tfjt.pay.external.unionpay.enums.IncomingAccessStatusEnum;
@@ -179,5 +181,25 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
         queryWrapper.eq(TfIncomingInfoEntity::getIsDeleted, DeleteStatusEnum.NO.getCode());
         queryWrapper.eq(TfIncomingInfoEntity::getBusinessId, businessId);
         return this.baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId) {
+        return this.baseMapper.queryTtqfSignMsg(businessId);
+    }
+
+    @Override
+    public List<TtqfSignMsgDTO> querySignMsgStartByIncomingId(Long id) {
+        return this.baseMapper.querySignMsgStartByIncomingId(id);
+    }
+
+    @Override
+    public List<TtqfSignMsgDTO> querySignMsgByIdCardAndBankCard(String idCardNo, String bankCardNo) {
+        return this.baseMapper.querySignMsgByIdCardAndBankCard(idCardNo, bankCardNo);
+    }
+
+    @Override
+    public List<QueryTtqfSignMsgRespDTO> queryTtqfSignMsgByIdCardNo(String idCardNo) {
+        return this.baseMapper.queryTtqfSignMsgByIdCardNo(idCardNo);
     }
 }

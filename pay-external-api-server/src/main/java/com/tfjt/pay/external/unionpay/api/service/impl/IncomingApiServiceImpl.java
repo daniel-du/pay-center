@@ -6,8 +6,11 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.*;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.api.service.IncomingApiService;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
+import com.tfjt.pay.external.unionpay.biz.IncomingTtqfBizService;
 import com.tfjt.tfcommon.dto.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -28,6 +31,10 @@ public class IncomingApiServiceImpl implements IncomingApiService {
 
     @Autowired
     private IncomingBizService incomingBizService;
+
+    @Autowired
+    private IncomingTtqfBizService incomingTtqfBizService;
+
     /**
      * 根据商户信息查询进件信息
      * @param incomingMessageReqDTO
@@ -51,5 +58,20 @@ public class IncomingApiServiceImpl implements IncomingApiService {
     @Override
     public Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(AllIncomingMessageReqDTO reqDTO) {
         return incomingBizService.queryAllIncomingMessage(reqDTO);
+    }
+
+    @Override
+    public Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO) {
+        return incomingBizService.ttqfSign(ttqfSignReqDTO);
+    }
+
+    @Override
+    public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
+        return incomingTtqfBizService.ttqfContract(ttqfContractReqDTO);
+    }
+
+    @Override
+    public Result<QueryTtqfSignMsgRespDTO> queryTtqfSignMsg(QueryTtqfSignMsgReqDTO queryTtqfSignMsgReqDTO) {
+        return incomingTtqfBizService.queryTtqfSignMsg(queryTtqfSignMsgReqDTO);
     }
 }

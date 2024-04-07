@@ -2,6 +2,7 @@ package com.tfjt.pay.external.unionpay.job;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import com.tfjt.pay.external.unionpay.biz.IncomingTtqfBizService;
 import com.tfjt.pay.external.unionpay.biz.LoanUserBizService;
 import com.tfjt.pay.external.unionpay.biz.UnionPayLoansCallbackApiBiz;
 import com.tfjt.pay.external.unionpay.job.checkbill.processor.CheckProcessor;
@@ -10,6 +11,8 @@ import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -33,15 +36,18 @@ public class LoanBusinessJob {
     @Resource
     private CheckProcessor checkProcessor;
 
+
     /**
      * 下载昨日对账单
      */
     @XxlJob("downloadCheckBill")
     public void downloadCheckBill(){
         String jobParam = XxlJobHelper.getJobParam();
-        DateTime yesterday = DateUtil.yesterday();
-        XxlJobHelper.log("--------------------------开始执行:{}下载账单下载任务----------------------",yesterday);
         XxlJobHelper.log("--------------------------jobParam:{}----------------------",jobParam);
+        log.info("jobParam:{}",jobParam);
+        DateTime yesterday = StringUtils.isNotBlank(jobParam)?DateUtil.parseDate(jobParam): DateUtil.yesterday();
+        log.info("yesterday:{}",yesterday);
+        XxlJobHelper.log("--------------------------开始执行:{}下载账单下载任务----------------------",yesterday);
         checkProcessor.checkBill(new CheckLoanBillDTO().setDate(yesterday));
         XxlJobHelper.log("结束执行:{}下载账单下载任务........",yesterday);
     }
@@ -84,4 +90,6 @@ public class LoanBusinessJob {
         XxlJobHelper.log("---------------------"+Thread.currentThread().getName()+"总计用时"+(end1 - start)/1000+"S---------------------------");
         return ReturnT.SUCCESS;
     }
+
+
 }

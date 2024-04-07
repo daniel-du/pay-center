@@ -6,6 +6,8 @@ import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.AllIncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingStatusRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.req.*;
+import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.tfcommon.dto.response.Result;
 
 import java.util.List;
@@ -46,4 +48,26 @@ public interface IncomingApiService {
      * @return
      */
     Result<List<AllIncomingMessageRespDTO>> queryAllIncomingMessage(AllIncomingMessageReqDTO reqDTO);
+    /**
+     * 天天企赋-商户签约
+     * @param ttqfSignReqDTO
+     * @return
+     */
+    Result<TtqfSignRespDTO> ttqfSign(TtqfSignReqDTO ttqfSignReqDTO);
+
+    /**
+     * 天天企赋-手签H5唤起
+     * @param ttqfContractReqDTO
+     * @return
+     */
+    Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO);
+
+    /**
+     * 天天企赋-查询签约信息
+     * @param queryTtqfSignMsgReqDTO
+     * @return
+     */
+    Result<QueryTtqfSignMsgRespDTO> queryTtqfSignMsg(QueryTtqfSignMsgReqDTO queryTtqfSignMsgReqDTO);
+
+
 }

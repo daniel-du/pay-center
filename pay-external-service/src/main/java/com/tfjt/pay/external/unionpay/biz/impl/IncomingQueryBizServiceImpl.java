@@ -390,6 +390,7 @@ public class IncomingQueryBizServiceImpl implements IncomingQueryBizService {
             } else {
                 incomingMessageRespDTO.setUnionpaySignStatus(selfSignEntity.getSigningStatus());
                 incomingMessageRespDTO.setAccountNo(selfSignEntity.getMid());
+                incomingMessageRespDTO.setAccountNo2(selfSignEntity.getBusinessNo());
             }
 
         }

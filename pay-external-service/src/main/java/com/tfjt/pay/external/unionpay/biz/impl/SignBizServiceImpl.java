@@ -38,12 +38,6 @@ import org.springframework.web.client.RestTemplate;
 
 
 import javax.annotation.Resource;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -65,15 +59,18 @@ public class SignBizServiceImpl implements SignBizService {
 
 
     @Value("${unionPay.signgys.appId}")
-    private String ysAppId;
+    private String gysAppId;
 
 
     @Value("${unionPay.signgys.appKey}")
-    private String ysAppKey;
+    private String gysAppKey;
 
 
-    @Value("${unionPay.signgys.payAppId}")
-    private String ysPayAppId;
+    @Value("${unionPay.appId.yunshang}")
+    private String gysPayAppId;
+
+    @Value("${unionPay.appId.yundian}")
+    private String ydPayAppId;
 
     @Value("${spring.profiles.active}")
     private String env;
@@ -165,9 +162,9 @@ public class SignBizServiceImpl implements SignBizService {
         signingReviewLogService.save(signingReviewLogEntity);
         //解密jsonData
         String data = null;
-        if (Objects.equals(signingReviewReqDTO.getAccesserId(), ysAppId)) {
+        if (Objects.equals(signingReviewReqDTO.getAccesserId(), gysAppId)) {
             try {
-                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), ysAppKey);
+                data = DESUtil.decrypt(signingReviewReqDTO.getJsonData(), gysAppKey);
             } catch (Exception ex) {
                 log.error("解密失败", ex);
                 return Result.failed(ExceptionCodeEnum.SIGN_DECRYPT_ERROR.getMsg());
@@ -200,7 +197,7 @@ public class SignBizServiceImpl implements SignBizService {
                 selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
                 //失败原因
                 selfSignParamDTO.setMsg(signingReviewRespDTO.getApplyStatusMsg());
-                if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, ysPayAppId)) {
+                if (StringUtils.isNotBlank(signingReviewRespDTO.getMerMsRelation()) && Objects.equals(appId, gysPayAppId)) {
                     selfSignParamDTO.setMerMsRelation(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()));
                     //当供应商没有关联成功时，入网状态修改审核中
                     if (Objects.equals(selfSignParamDTO.getSigningStatus(), "03") && !Objects.equals(getMerMsRelation(signingReviewRespDTO.getMerMsRelation()), "1")) {
@@ -228,7 +225,7 @@ public class SignBizServiceImpl implements SignBizService {
     private void updateSignStatus(SelfSignParamDTO selfSignParamDTO) {
 
         SelfSignEntity selfSignEntity = selfSignService.selectByAccessAcct(selfSignParamDTO.getAccesserAcct());
-        if(Objects.nonNull(selfSignEntity)){
+        if (Objects.nonNull(selfSignEntity)) {
             //设置失败原因
             selfSignEntity.setMsg(selfSignParamDTO.getMsg());
             selfSignEntity.setMid(selfSignParamDTO.getMid());
@@ -283,8 +280,8 @@ public class SignBizServiceImpl implements SignBizService {
                     payCallbackLogService.saveCallBackLog(callbackUrlEntity.getUrl(), appId, JSON.toJSONString(selfSignAppDTO), rest, 4, r, "");
                 }
             }
-        }else{
-            log.info("AccesserAcct:{},未获取到入网信息",selfSignParamDTO.getAccesserAcct());
+        } else {
+            log.info("AccesserAcct:{},未获取到入网信息", selfSignParamDTO.getAccesserAcct());
         }
 
 
@@ -345,8 +342,10 @@ public class SignBizServiceImpl implements SignBizService {
      */
     @Override
     public void queryMerchantBySignSuccess(String accesserAcct) {
-        //查询近7天或指定商户入网成功，没有绑定关系的商户
-        List<SelfSignEntity> selfSignList = selfSignService.querySelfSignsBySuccess(accesserAcct);
+        //查询近7天或指定商户切是供应商身份入网成功，没有绑定关系的商户
+        List<SelfSignEntity> selfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, gysPayAppId, true);
+        List<SelfSignEntity> ydSelfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, ydPayAppId, true);
+        selfSignList.addAll(ydSelfSignList);
         if (CollUtil.isNotEmpty(selfSignList)) {
             for (SelfSignEntity selfSignEntity : selfSignList) {
                 XxlJobHelper.log("查询{}签约状态", selfSignEntity.getAccesserAcct());
@@ -355,7 +354,7 @@ public class SignBizServiceImpl implements SignBizService {
                 request.setAppId(selfSignEntity.getAppId());
                 // 主动查询签约状态
                 ApplyQueryReturnDTO applyquery = signToNetWorkService.applyquery(request);
-                if(Objects.nonNull(applyquery)){
+                if (Objects.nonNull(applyquery)) {
                     XxlJobHelper.log("主动查询签约状态，返回参数：{}", JSON.toJSONString(applyquery));
                     SelfSignParamDTO selfSignParamDTO = new SelfSignParamDTO();
                     //签约状态

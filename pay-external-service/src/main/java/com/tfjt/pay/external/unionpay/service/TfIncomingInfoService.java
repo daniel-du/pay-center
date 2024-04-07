@@ -5,10 +5,13 @@ import com.tfjt.pay.external.unionpay.api.dto.req.BusinessBasicInfoReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingModuleStatusReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.IncomingMessageRespDTO;
+import com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO;
 import com.tfjt.pay.external.unionpay.dto.BusinessIsIncomingRespDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
+import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingInfoEntity;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -112,4 +115,33 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      * @return
      */
     List<TfIncomingInfoEntity> queryListByBusinessIdAndType(Long businessId, Integer businessType);
+
+    /**
+     * 根据会员id查询天天企赋签约信息
+     * @param businessId
+     * @return
+     */
+    QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId);
+
+    /**
+     * 根据起始id批量查询“天天企赋”未签约、未绑卡状态数据
+     * @param id
+     * @return
+     */
+    List<TtqfSignMsgDTO> querySignMsgStartByIncomingId(Long id);
+
+    /**
+     * 根据身份证号码、银行卡号码查询“天天企赋”签约数据
+     * @param idCardNo
+     * @param bankCardNo
+     * @return
+     */
+    List<TtqfSignMsgDTO> querySignMsgByIdCardAndBankCard(String idCardNo, String bankCardNo);
+
+    /**
+     * 根据身份证号查询天天企赋签约信息
+     * @param idCardNo
+     * @return
+     */
+    List<QueryTtqfSignMsgRespDTO> queryTtqfSignMsgByIdCardNo(String idCardNo);
 }

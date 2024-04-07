@@ -1,6 +1,9 @@
 package com.tfjt.pay.external.unionpay.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -11,6 +14,9 @@ import java.io.Serializable;
  * @description 进件-提交银行基础信息
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class IncomingSubmitMessageDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -156,4 +162,12 @@ public class IncomingSubmitMessageDTO implements Serializable {
     private String eiconBankBranch;
 
     private Byte signChannel;
+
+    private String legalIdExpiryStart;
+
+    private String legalIdExpiryEnd;
+
+    private String legalIdFrontUrl;
+
+    private String legalIdBackUrl;
 }
