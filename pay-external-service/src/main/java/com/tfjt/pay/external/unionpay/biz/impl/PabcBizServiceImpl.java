@@ -447,11 +447,12 @@ public class PabcBizServiceImpl implements PabcBizService {
             salesAreaIncomingChannelService.saveBatch(entities);
             //清除缓存
             redisCache.deleteObject(RedisConstant.NETWORK_TYPE_BY_AREA_CODE_All);
+            networkTypeCacheUtil.getAllNetworkTypeCacheList();
             for (String key : keys) {
                 redisCache.deleteObject(key);
             }
         }
-        return Result.ok(msg);
+        return new Result(0,msg,null);
     }
 
     private List<MerchantChangeReqDTO> getShopUpdateInfoList(ShopUpdateMqReqDTO dto) {
