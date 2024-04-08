@@ -66,21 +66,28 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         respDTO.setKeySn(digitalSelectReqDTO.getKeySn());
         //供应商没有注册,查询是否商家是否注册,如果有有一个注册就返回银联成功状态
         try {
-            com.tfjt.tfcommon.core.util.Result<Boolean> result = checkUserPhoneRpcService.checkUserPhone(account);
-            log.info("调用接口查询数字人民币账户信息返回:{}",JSONObject.toJSONString(result));
-            //接口调用失败 或者接口返回false,返回失败状态
-            if(result.getCode()!=NumberConstant.ZERO || !result.getData()){
-                return selectByAccountResult(false,respDTO);
-            }
             Long shopId = dbShopService.getShopIdByMobile(account);
-            log.info("查询数币店铺id信息:{}",shopId);
-            ShopDetailInfoRpcRespDto shopDetailInfoRpcRespDto = dbShopService.searchShopDetailInfoById(shopId.intValue());
-            log.info("查询数币店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
-            if(Objects.isNull(shopDetailInfoRpcRespDto) || StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
-                StringUtils.isBlank(shopDetailInfoRpcRespDto.getRealName())){
+            if (Objects.isNull(shopId)){
                 respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
                 return selectByAccountResult(false,respDTO);
             }
+            log.info("数字人民币店铺id信息:{}",shopId);
+            ShopDetailInfoRpcRespDto shopDetailInfoRpcRespDto = dbShopService.searchShopDetailInfoById(shopId.intValue());
+            log.info("数字人民币店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
+            if(Objects.isNull(shopDetailInfoRpcRespDto)){
+                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
+                return selectByAccountResult(false,respDTO);
+            }
+            if(StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
+                    StringUtils.isBlank(shopDetailInfoRpcRespDto.getRealName())){
+                //返回假数据,只需要提示实名认证不相符即可
+                respDTO.setCertId(encryptBase64(account));
+                respDTO.setCustomerName(encryptBase64(account));
+            }else{
+                respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
+                respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getRealName()));
+            }
+
             respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
             respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getRealName()));
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
