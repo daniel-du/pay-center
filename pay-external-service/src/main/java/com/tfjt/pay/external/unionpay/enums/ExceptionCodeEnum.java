@@ -85,11 +85,12 @@ public enum ExceptionCodeEnum implements ExceptionCode {
 
     AREA_CAN_NOT_NULL(2000032,"区域不能为空!"),
     CHANNEL_CODE_CAN_NOT_NULL(2000033,"进件类型不能为空" ),
+    AREA_REPEAT(2000034,"该区域已配置" ),
 
     PN_API_ERROR(3000010, "调用平安API失败!"),
     PN_API_RESULT_IS_NULL(3000011, "平安api返回结果为空!"),
     //解密失败
-    SIGN_DECRYPT_ERROR(4000001, "解密失败!"),
+    SIGN_DECRYPT_ERROR(4000001, "解密失败!")
     ;
     private int code;
     private String msg;

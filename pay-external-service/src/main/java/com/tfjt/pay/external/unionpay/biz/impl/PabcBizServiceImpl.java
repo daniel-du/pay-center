@@ -436,7 +436,7 @@ public class PabcBizServiceImpl implements PabcBizService {
 
         if (entities.size() != areaList.size()) {
             if (entities.size() == 0) {
-                msg = "该区域已配置！";
+               throw new TfException(ExceptionCodeEnum.AREA_REPEAT);
             } else {
                 msg = "保存成功，已配置的不重复入库";
             }
@@ -452,7 +452,7 @@ public class PabcBizServiceImpl implements PabcBizService {
                 redisCache.deleteObject(key);
             }
         }
-        return new Result(0,msg,null);
+        return Result.ok(msg);
     }
 
     private List<MerchantChangeReqDTO> getShopUpdateInfoList(ShopUpdateMqReqDTO dto) {
