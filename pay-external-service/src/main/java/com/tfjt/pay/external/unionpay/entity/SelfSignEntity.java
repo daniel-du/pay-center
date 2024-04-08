@@ -88,4 +88,8 @@ public class SelfSignEntity implements Serializable {
 	 * 入网成功时间
 	 */
 	private Date signSuccessDate;
+	/**
+	 * 更新时间
+	 */
+	private Date updateTime;
 }

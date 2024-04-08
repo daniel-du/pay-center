@@ -229,13 +229,16 @@ public class SignBizServiceImpl implements SignBizService {
             //设置失败原因
             selfSignEntity.setMsg(selfSignParamDTO.getMsg());
             selfSignEntity.setMid(selfSignParamDTO.getMid());
+            selfSignEntity.setBusinessNo(selfSignParamDTO.getBusinessNo());
             //设置
             selfSignEntity.setSigningStatus(selfSignParamDTO.getSigningStatus());
             //绑定关系
             selfSignEntity.setMerMsRelation(selfSignParamDTO.getMerMsRelation());
             //设置入网成功时间
             if ("03".equals(selfSignParamDTO.getSigningStatus())) {
-                selfSignEntity.setSignSuccessDate(new Date());
+                if(Objects.isNull(selfSignEntity.getSignSuccessDate())){
+                    selfSignEntity.setSignSuccessDate(new Date());
+                }
             }
 
             //rpc调用业务
@@ -370,13 +373,27 @@ public class SignBizServiceImpl implements SignBizService {
                     //绑定关系
                     selfSignParamDTO.setMerMsRelation(getMerMsRelation(applyquery.getMerMsRelation()));
                     //企业号
-                    selfSignParamDTO.setBusinessNo(selfSignEntity.getBusinessNo());
+                    selfSignParamDTO.setBusinessNo(applyquery.getCompany_no());
                     XxlJobHelper.log("开始通知业务更新状态");
                     updateSignStatus(selfSignParamDTO);
                     XxlJobHelper.log("完成通知业务更新状态");
                 }
             }
         }
+    }
+
+    @Override
+    public void updateSelfSignStatus(String params) {
+        //最近一天更新过的数据
+        XxlJobHelper.log("更新{}签约状态", params);
+        List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignByUpdateTime(params);
+        if (CollUtil.isNotEmpty(selfSignEntities)) {
+            for (int i = 0; i < selfSignEntities.size(); i++) {
+                XxlJobHelper.log("更新{}签约状态,入网状态{}", selfSignEntities.get(i).getAccesserAcct(), selfSignEntities.get(i).getSigningStatus());
+                incomingCacheService.writeIncomingCacheBySelfSign(selfSignEntities.get(i));
+            }
+        }
+
     }
 
 }

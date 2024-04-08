@@ -38,6 +38,18 @@ public class SignReviewJob {
     }
 
     /**
+     * 入网状态一致性
+     * 确保redis数据和数据库数据一致
+     */
+    @XxlJob("updateSelfSignStatus")
+    public void updateSelfSignStatus() {
+        String params = XxlJobHelper.getJobParam();
+        XxlJobHelper.log("开始执行更新业务入网状态的任务.......");
+        signBizService.updateSelfSignStatus(params);
+        XxlJobHelper.log("结束执行更新业务入网状态的任务.......");
+    }
+
+    /**
      * 天天企赋-签约、绑卡状态定时更新
      */
     @XxlJob("ttqfSignStatusQuery")
