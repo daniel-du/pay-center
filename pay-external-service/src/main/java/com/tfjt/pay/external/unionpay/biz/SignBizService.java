@@ -21,4 +21,6 @@ public interface SignBizService {
      */
 
     void queryMerchantBySignSuccess(String accesserAcct);
+
+    void updateSelfSignStatus(String params);
 }
