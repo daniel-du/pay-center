@@ -16,7 +16,7 @@ public enum DigitalTransactionStatusEnum {
     /**
      * 账户不存在
      */
-    ACCOUNT_NOT_EXIST("R021 ","账户不存在"),
+    ACCOUNT_NOT_EXIST("R021","账户不存在"),
 
     /**
      * 数字人民币响应失败
