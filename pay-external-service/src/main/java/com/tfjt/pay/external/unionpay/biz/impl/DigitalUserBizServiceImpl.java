@@ -67,16 +67,19 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         try {
             Long shopId = dbShopService.getShopIdByMobile(account);
             if (Objects.isNull(shopId)){
+                respDTO.setMchntSideRegisterFlag(DigitalCodeEnum.EF00.getCode());
                 respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
-                return selectByAccountResult(false,respDTO);
+                return Result.ok(respDTO);
             }
             log.info("数字人民币店铺id信息:{}",shopId);
             ShopDetailInfoRpcRespDto shopDetailInfoRpcRespDto = dbShopService.searchShopDetailInfoById(shopId.intValue());
             log.info("数字人民币店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
             if(Objects.isNull(shopDetailInfoRpcRespDto)){
+                respDTO.setMchntSideRegisterFlag(DigitalCodeEnum.EF00.getCode());
                 respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
-                return selectByAccountResult(false,respDTO);
+                return Result.ok(respDTO);
             }
+            respDTO.setMchntSideRegisterFlag(DigitalCodeEnum.EF01.getCode());
             if(StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
                     StringUtils.isBlank(shopDetailInfoRpcRespDto.getRealName())){
                 //返回假数据,只需要提示实名认证不相符即可
@@ -92,15 +95,8 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             return Result.ok(respDTO);
         }
 
-        return selectByAccountResult(true,respDTO);
-    }
-
-    private Result<DigitalRespDTO> selectByAccountResult(Boolean data, DigitalRespDTO respDTO) {
-        respDTO.setMchntSideRegisterFlag(data ? DigitalCodeEnum.EF01.getCode()
-                : DigitalCodeEnum.EF00.getCode());
         return Result.ok(respDTO);
     }
-
     @Override
     public Result<DigitalRespDTO> unbindWallet(DigitalUserEntity digitalUserEntity) {
         DigitalUserEntity old = digitalUserService.selectUserBySignContract(digitalUserEntity.getSignContract());
