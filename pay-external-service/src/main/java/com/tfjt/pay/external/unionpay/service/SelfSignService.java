@@ -39,6 +39,12 @@ public interface SelfSignService extends IService<SelfSignEntity> {
 
     List<SelfSignEntity> querySelfSignBySuccess(String accesserAcct, String gysPayAppId,boolean isGys);
 
+    /**
+     * 获取35 DM冻结的所有数据
+     * @return
+     */
+    List<SelfSignEntity> querySelfSignByFreeze();
+
     List<SelfSignEntity>  querySelfSignByUpdateTime(String accesserAcct);
 }
 

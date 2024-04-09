@@ -59,6 +59,17 @@ public class SelfSignServiceImpl extends BaseServiceImpl<SelfSignDao, SelfSignEn
         return this.baseMapper.selectList(queryWrapper);
     }
 
+    /**
+     * 获取35 DM冻结的所有数据
+     * @return
+     */
+    @Override
+    public List<SelfSignEntity> querySelfSignByFreeze() {
+        LambdaQueryWrapper<SelfSignEntity> queryWrapper = Wrappers.lambdaQuery(SelfSignEntity.class)
+                .eq(SelfSignEntity::getSigningStatus,"35");
+        return this.baseMapper.selectList(queryWrapper);
+    }
+
     @Override
     public List<SelfSignEntity> querySelfSignByUpdateTime(String accesserAcct) {
         LambdaQueryWrapper<SelfSignEntity> queryWrapper = Wrappers.lambdaQuery(SelfSignEntity.class)
