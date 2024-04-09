@@ -78,13 +78,13 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
                 return selectByAccountResult(false,respDTO);
             }
             if(StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
-                    StringUtils.isBlank(shopDetailInfoRpcRespDto.getRealName())){
+                    StringUtils.isBlank(shopDetailInfoRpcRespDto.getName())){
                 //返回假数据,只需要提示实名认证不相符即可
                 respDTO.setCertId(encryptBase64(account));
                 respDTO.setCustomerName(encryptBase64(account));
             }else{
                 respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
-                respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getRealName()));
+                respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getName()));
             }
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
         }catch (Exception e){
