@@ -21,6 +21,10 @@ public class DigitalRespDTO implements Serializable {
 
     private String bussReceiptCode;
     /**
+     * 拒绝吗
+     */
+    private String bussRejectCode;
+    /**
      * 错误码
      */
     private String bussReceiptDesc;

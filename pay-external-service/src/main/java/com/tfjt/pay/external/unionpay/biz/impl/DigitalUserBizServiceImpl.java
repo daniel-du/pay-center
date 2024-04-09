@@ -68,7 +68,8 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             Long shopId = dbShopService.getShopIdByMobile(account);
             if (Objects.isNull(shopId)){
                 respDTO.setMchntSideRegisterFlag(DigitalCodeEnum.EF00.getCode());
-                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
+                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_SUCCESS.getCode());
+                respDTO.setBussRejectCode(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
                 return Result.ok(respDTO);
             }
             log.info("数字人民币店铺id信息:{}",shopId);
@@ -76,14 +77,16 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
             log.info("数字人民币店铺信息:{}",JSONObject.toJSONString(shopDetailInfoRpcRespDto));
             if(Objects.isNull(shopDetailInfoRpcRespDto)){
                 respDTO.setMchntSideRegisterFlag(DigitalCodeEnum.EF00.getCode());
-                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
+                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_SUCCESS.getCode());
+                respDTO.setBussRejectCode(DigitalTransactionStatusEnum.ACCOUNT_NOT_EXIST.getCode());
                 return Result.ok(respDTO);
             }
             respDTO.setMchntSideRegisterFlag(DigitalCodeEnum.EF01.getCode());
             if(StringUtils.isBlank(shopDetailInfoRpcRespDto.getCard()) ||
                     StringUtils.isBlank(shopDetailInfoRpcRespDto.getRealName())){
                 //返回假数据,只需要提示实名认证不相符即可
-                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_NOT_REAL_NAME.getCode());
+                respDTO.setBussRejectCode(DigitalTransactionStatusEnum.DIGITAL_NOT_REAL_NAME.getCode());
+                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_SUCCESS.getCode());
                 return Result.ok(respDTO);
             }
             respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
