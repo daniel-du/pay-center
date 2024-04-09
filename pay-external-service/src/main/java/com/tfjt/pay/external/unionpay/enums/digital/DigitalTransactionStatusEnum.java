@@ -29,7 +29,7 @@ public enum DigitalTransactionStatusEnum {
     /**
      * 未实名认证
      */
-    DIGITAL_NOT_REAL_NAME("R098","未实名认证");
+    DIGITAL_NOT_REAL_NAME("R183","未实名认证");
 
     private String code;
 
