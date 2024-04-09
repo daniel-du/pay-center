@@ -60,7 +60,6 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
     public Result<DigitalRespDTO> selectByAccount(DigitalSelectReqDTO digitalSelectReqDTO) {
         String account = decryptStr(digitalSelectReqDTO.getMchntSideAccount());
         log.info("数字人民币查询账户参数,mchntSideAccount:{}", account);
-        boolean exit = false;
         DigitalRespDTO respDTO = new DigitalRespDTO(DigitalTransactionStatusEnum.DIGITAL_SUCCESS);
         respDTO.setQueryType(digitalSelectReqDTO.getQueryType());
         respDTO.setKeySn(digitalSelectReqDTO.getKeySn());
@@ -87,18 +86,14 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
                 respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
                 respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getRealName()));
             }
-
-            respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
-            respDTO.setCustomerName(encryptBase64(shopDetailInfoRpcRespDto.getRealName()));
             respDTO.setCertType(DigitalCertTypeEnum.IT01.getCode());
-            exit = true;
         }catch (Exception e){
             log.error("查询手机是否注册dubbo异常:",e);
             respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_FAILED.getCode());
             return Result.ok(respDTO);
         }
 
-        return selectByAccountResult(exit,respDTO);
+        return selectByAccountResult(true,respDTO);
     }
 
     private Result<DigitalRespDTO> selectByAccountResult(Boolean data, DigitalRespDTO respDTO) {
