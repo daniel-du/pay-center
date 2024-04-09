@@ -17,6 +17,7 @@ public enum DigitalTransactionStatusEnum {
      * 账户不存在
      */
     ACCOUNT_NOT_EXIST("R021 ","账户不存在"),
+
     /**
      * 数字人民币响应失败
      */
@@ -24,7 +25,11 @@ public enum DigitalTransactionStatusEnum {
     /**
      * 数字人民币响应处理中
      */
-    DIGITAL_PROCESSING("PR01","处理中");
+    DIGITAL_PROCESSING("PR01","处理中"),
+    /**
+     * 未实名认证
+     */
+    DIGITAL_NOT_REAL_NAME("R098","未实名认证");
 
     private String code;
 
