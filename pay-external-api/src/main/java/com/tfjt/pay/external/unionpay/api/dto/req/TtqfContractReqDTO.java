@@ -21,6 +21,11 @@ public class TtqfContractReqDTO implements Serializable {
     @NotNull(message = "会员id不能为空")
     private Long businessId;
 
+    /**
+     * 业务类型-3：会员体系
+     * 业务类型-4：会员体系 经销商
+     * {@link com.tfjt.pay.external.unionpay.enums.BusinessTypeEnum}
+     */
     private Integer businessType;
 
     /**
