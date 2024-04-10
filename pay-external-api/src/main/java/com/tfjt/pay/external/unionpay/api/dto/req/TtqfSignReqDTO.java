@@ -24,6 +24,8 @@ public class TtqfSignReqDTO implements Serializable {
 
     /**
      * 业务类型-3：会员体系
+     * 业务类型-4: 会员体系-经销商
+     * {@link com.tfjt.pay.external.unionpay.enums.BusinessTypeEnum}
      */
     @NotNull(message = "业务类型不能为空")
     private Integer businessType;

@@ -29,6 +29,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据id查询进件提交所需信息
+     *
      * @param id
      * @return
      */
@@ -36,6 +37,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据商户信息查询进件完成信息
+     *
      * @param incomingMessageReqDTO
      * @return
      */
@@ -43,6 +45,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据多个商户信息批量查询进件完成信息
+     *
      * @param incomingMessageReqs
      * @return
      */
@@ -50,6 +53,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据进件id查询进件相关信息表id
+     *
      * @param id
      * @return
      */
@@ -57,6 +61,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据商户类型、商户id、进件渠道查询进件主表信息
+     *
      * @param incomingModuleStatusReqDTO
      * @return
      */
@@ -64,6 +69,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据商户类型、商户id、进件渠道查询进件主表是否存在
+     *
      * @param businessId
      * @param businessType
      * @param accessChannelType
@@ -73,12 +79,14 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 查询已导入状态最小数据
+     *
      * @return
      */
     TfIncomingInfoEntity queryNotSubmitMinIdData();
 
     /**
      * 根据起始id查询100条已导入状态进件数据
+     *
      * @param id
      * @return
      */
@@ -86,6 +94,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 更新时间字段
+     *
      * @param id
      * @return
      */
@@ -93,6 +102,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据商户id、商户类型批量查询进件信息
+     *
      * @param businessIds
      * @param businessType
      * @return
@@ -103,6 +113,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据入网id查询
+     *
      * @param incomingId
      * @return
      */
@@ -110,6 +121,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据商户id、商户类型查询进件信息
+     *
      * @param businessId
      * @param businessType
      * @return
@@ -118,13 +130,15 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据会员id查询天天企赋签约信息
+     *
      * @param businessId
      * @return
      */
-    QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId);
+    QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId, Integer businessType);
 
     /**
      * 根据起始id批量查询“天天企赋”未签约、未绑卡状态数据
+     *
      * @param id
      * @return
      */
@@ -132,6 +146,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据身份证号码、银行卡号码查询“天天企赋”签约数据
+     *
      * @param idCardNo
      * @param bankCardNo
      * @return
@@ -140,6 +155,7 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
 
     /**
      * 根据身份证号查询天天企赋签约信息
+     *
      * @param idCardNo
      * @return
      */

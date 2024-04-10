@@ -183,6 +183,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 提交基本信息、获取验证码
+     *
      * @return
      */
     @Override
@@ -214,6 +215,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 回填校验验证码、打款金额，验证协议
+     *
      * @return
      */
     @Override
@@ -251,6 +253,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 根据商户信息查询进件信息
+     *
      * @param incomingMessageReqDTO
      * @return
      */
@@ -297,6 +300,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 根据多个商户信息批量查询进件信息
+     *
      * @param incomingMessageReqs
      * @return
      */
@@ -317,7 +321,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                     incomingMessageReqDTO.getBusinessType() + "-" + incomingMessageReqDTO.getBusinessId(), incomingMessageReqDTO);
         });
         //批量查询缓存
-        List<JSONObject> cacheJSONS =  redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+        List<JSONObject> cacheJSONS = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
             for (String key : incomingCacheKeys) {
                 connection.get(redisTemplate.getKeySerializer().serialize(key));
             }
@@ -330,7 +334,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
                 continue;
             }
             IncomingMessageRespDTO cacheResp = JSONObject.toJavaObject(cacheJSON, IncomingMessageRespDTO.class);
-            String key = cacheResp.getAccessChannelType() + "-" + cacheResp.getBusinessType() +"-"+ cacheResp.getBusinessId();
+            String key = cacheResp.getAccessChannelType() + "-" + cacheResp.getBusinessType() + "-" + cacheResp.getBusinessId();
             //移除数据不为空的key，最终剩余参数查询数据库
             noCacheMap.remove(key);
             if (PN_OPEN_ACCOUNT_STATUS_SET.contains(cacheResp.getAccessStatus())) {
@@ -353,7 +357,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         //将查询到的数据集合，以“入网渠道”-“商户类型”-“商户id”为key放入map
         incomingMessageRespDTOS.forEach(incomingMessage -> {
-            String key = incomingMessage.getAccessChannelType() + "-" + incomingMessage.getBusinessType() +"-"+ incomingMessage.getBusinessId();
+            String key = incomingMessage.getAccessChannelType() + "-" + incomingMessage.getBusinessType() + "-" + incomingMessage.getBusinessId();
             incomingMessageMap.put(key, incomingMessage);
         });
         //异步写入进件缓存
@@ -363,6 +367,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 变更进件主体类型
+     *
      * @param changeAccessMainTypeReqDTO
      * @return
      */
@@ -400,6 +405,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 银联入网数据抽取
+     *
      * @return
      */
     @Override
@@ -413,7 +419,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         boolean extractFlag = true;
         long startId = tfIncomingImportStart.getId();
-        while(extractFlag) {
+        while (extractFlag) {
             List<TfIncomingImportEntity> importEntityList = tfIncomingImportService.queryListByStartId(startId);
             importEntityList.forEach(importEntity -> {
                 incomingMessageWrite(importEntity);
@@ -430,6 +436,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 银联老数据批量入网平安
+     *
      * @return
      */
     @Override
@@ -443,7 +450,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         }
         boolean extractFlag = true;
         long startId = tfIncomingInfostart.getId();
-        while(extractFlag) {
+        while (extractFlag) {
             List<TfIncomingInfoEntity> incomingList = tfIncomingInfoService.queryListByStartId(startId);
             incomingList.forEach(incomingEntity -> {
                 try {
@@ -465,12 +472,13 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 根据多个商户信息批量查询入网状态（一个渠道入网成功即算入网成功），key为“商户类型”-“商户id”
+     *
      * @param incomingStatusReqDTO
      * @return
      */
     @Override
     public Result<Map<String, IncomingStatusRespDTO>> queryIncomingStatus(IncomingStatusReqDTO incomingStatusReqDTO) {
-        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingStatusReqDTO:{}",JSONObject.toJSONString(incomingStatusReqDTO));
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingStatusReqDTO:{}", JSONObject.toJSONString(incomingStatusReqDTO));
         ValidatorUtils.validateEntity(incomingStatusReqDTO);
         Map<String, IncomingStatusRespDTO> incomingStatusMap = new HashMap<>();
         if (IncomingMemberBusinessTypeEnum.YUNSHANG.getCode().equals(incomingStatusReqDTO.getBusinessType())) {
@@ -483,6 +491,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 根据商户id、商户类型查询所有渠道入网信息
+     *
      * @param reqDTO
      * @return
      */
@@ -508,7 +517,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             });
         }
         //查询self_signing表入网信息
-        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result =  tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
+        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result = tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
         if (ObjectUtils.isNotEmpty(result) && ObjectUtils.isNotEmpty(result.getData())) {
             TfSupplierDTO tfSupplier = result.getData();
             SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(tfSupplier.getSupplierId());
@@ -542,6 +551,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 天天企赋-商户签约
+     *
      * @param ttqfSignReqDTO
      * @return
      */
@@ -554,7 +564,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             throw new TfException(ExceptionCodeEnum.ID_CARD_NO_FORMAT_ERROR);
         }
         //判断该会员是否存在认证信息
-        QueryTtqfSignMsgRespDTO signMsgRespDTO = tfIncomingInfoService.queryTtqfSignMsg(ttqfSignReqDTO.getBusinessId());
+        if (Objects.isNull(ttqfSignReqDTO.getBusinessType())) {
+            ttqfSignReqDTO.setBusinessType(BusinessTypeEnum.SIGN_USER.getCode());
+        }
+        QueryTtqfSignMsgRespDTO signMsgRespDTO = tfIncomingInfoService.queryTtqfSignMsg(ttqfSignReqDTO.getBusinessId(), ttqfSignReqDTO.getBusinessType());
         if (ObjectUtils.isNotEmpty(signMsgRespDTO)) {
             return Result.failed(ExceptionCodeEnum.MERCHANT_IS_AUTH);
         }
@@ -583,7 +596,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         saveTtqfSettleInfo(ttqfSignReqDTO, tfIncomingInfoEntity);
         //调用签约策略
         AbstractIncomingService abstractIncomingService = abstractIncomingServiceMap.get("ttqf_common_personal");
-        IncomingSubmitMessageDTO incomingSubmitMessageDTO =  IncomingSubmitMessageDTO.builder()
+        IncomingSubmitMessageDTO incomingSubmitMessageDTO = IncomingSubmitMessageDTO.builder()
                 .incomingId(tfIncomingInfoEntity.getId())
                 .legalName(ttqfSignReqDTO.getUserName())
                 .legalMobile(ttqfSignReqDTO.getMobile())
@@ -600,6 +613,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 根据进行信息获取实现类name
+     *
      * @param incomingSubmitMessageDTO
      * @return
      */
@@ -611,7 +625,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         return bindServiceName;
     }
 
-    private AsyncMessageEntity createMessage(String messageType,String messageBody,String uniqueNo){
+    private AsyncMessageEntity createMessage(String messageType, String messageBody, String uniqueNo) {
         AsyncMessageEntity message = new AsyncMessageEntity();
         // 生产者application name
         message.setFromServerName(MQ_FROM_SERVER);
@@ -632,9 +646,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 异步发送消息
+     *
      * @param incomingMessage
      */
-    public void MQProcess(IncomingSubmitMessageDTO incomingMessage){
+    public void MQProcess(IncomingSubmitMessageDTO incomingMessage) {
         log.info("IncomingBizServiceImpl--MQProcess, start incomingMessage:{}", JSONObject.toJSONString(incomingMessage));
         IncomingFinishDTO incomingFinishDTO = IncomingFinishDTO.builder()
                 .id(incomingMessage.getId())
@@ -650,7 +665,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         // 调用jar包中保存消息到数据库的方法
         asyncMessageService.saveMessage(messageEntity);
         // rocketMQ发送消息自行实现
-        boolean result = producerMessageApi.sendMessage(messageEntity.getTopic(), JSONUtil.toJsonStr(messageEntity),messageEntity.getUniqueNo(),
+        boolean result = producerMessageApi.sendMessage(messageEntity.getTopic(), JSONUtil.toJsonStr(messageEntity), messageEntity.getUniqueNo(),
                 messageEntity.getMsgTag());
         //更新状态为成功
         messageEntity.setStatus(result ? MessageStatusEnum.SUCCESS.getCode() : MessageStatusEnum.FAILED.getCode());
@@ -660,6 +675,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 清除身份信息
+     *
      * @param incomingDataIdDTO
      */
     private void clearMerchantInfo(IncomingDataIdDTO incomingDataIdDTO) {
@@ -697,6 +713,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 清除营业信息
+     *
      * @param incomingDataIdDTO
      */
     private void clearBusinessInfo(IncomingDataIdDTO incomingDataIdDTO) {
@@ -723,6 +740,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 清除结算信息
+     *
      * @param incomingDataIdDTO
      */
     private void clearSettleInfo(IncomingDataIdDTO incomingDataIdDTO) {
@@ -749,6 +767,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 根据商户所属区域获取进件渠道
+     *
      * @param areaCode
      * @return
      */
@@ -791,6 +810,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 保存身份信息
+     *
      * @param tfIncomingImportEntity
      * @param incomingId
      */
@@ -814,6 +834,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 保存法人身份信息
+     *
      * @param tfIncomingImportEntity
      * @return
      */
@@ -835,6 +856,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 保存经办人身份信息
+     *
      * @param tfIncomingImportEntity
      * @return
      */
@@ -853,6 +875,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 保存营业信息
+     *
      * @param tfIncomingImportEntity
      * @param incomingId
      */
@@ -878,6 +901,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 保存结算信息
+     *
      * @param tfIncomingImportEntity
      * @param incomingId
      */
@@ -926,6 +950,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 批量查询供应商是入网状态
+     *
      * @param incomingStatusReqDTO
      * @param incomingStatusMap
      */
@@ -937,20 +962,20 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         List<String> accessAccts = new ArrayList<>();
         //查询供应商信息，获取supplierId
         List<TfSupplierDTO> tfSuppliers = tfSupplierApiService.getTfSupplierList(ids);
-        log.info("IncomingBizServiceImpl--queryIncomingStatus, tfSuppliers:{}",JSONObject.toJSONString(tfSuppliers));
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, tfSuppliers:{}", JSONObject.toJSONString(tfSuppliers));
         if (CollectionUtils.isEmpty(tfSuppliers)) {
             throw new TfException(ExceptionCodeEnum.IS_NULL);
         }
         tfSuppliers.forEach(tfSupplier -> {
             accessAccts.add(tfSupplier.getSupplierId());
         });
-        log.info("IncomingBizServiceImpl--queryIncomingStatus, accessAccts:{}",accessAccts.toString());
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, accessAccts:{}", accessAccts.toString());
         //查询银联入网数据
         List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
-        log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}", JSONObject.toJSONString(selfSignEntities));
         //查询平安入网数据
         List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdsAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
-        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}", JSONObject.toJSONString(incomingInfoEntities));
         Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
         Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
         tfSuppliers.forEach(tfSupplier -> {
@@ -977,6 +1002,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 批量查询云店入网状态
+     *
      * @param incomingStatusReqDTO
      * @param incomingStatusMap
      */
@@ -987,10 +1013,10 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         });
         //查询银联入网数据
         List<SelfSignEntity> selfSignEntities = selfSignService.querySelfSignsByAccessAccts(accessAccts);
-        log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}",JSONObject.toJSONString(selfSignEntities));
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, selfSignEntities:{}", JSONObject.toJSONString(selfSignEntities));
         //查询平安入网数据
         List<TfIncomingInfoEntity> incomingInfoEntities = tfIncomingInfoService.queryListByBusinessIdsAndType(incomingStatusReqDTO.getBusinessIds(), incomingStatusReqDTO.getBusinessType());
-        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}",JSONObject.toJSONString(incomingInfoEntities));
+        log.info("IncomingBizServiceImpl--queryIncomingStatus, incomingInfoEntities:{}", JSONObject.toJSONString(incomingInfoEntities));
         Map<String, SelfSignEntity> selfMap = selfSignEntities.stream().collect(Collectors.toMap(SelfSignEntity::getAccesserAcct, Function.identity()));
         Map<Long, TfIncomingInfoEntity> incomingMap = incomingInfoEntities.stream().collect(Collectors.toMap(TfIncomingInfoEntity::getBusinessId, Function.identity()));
         incomingStatusReqDTO.getBusinessIds().forEach(id -> {
@@ -1025,6 +1051,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
 
     /**
      * 写入缓存
+     *
      * @param incomingId
      */
     private void writeIncomingCache(Long incomingId) {
@@ -1033,7 +1060,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         if (ObjectUtils.isEmpty(incomingMessage)) {
             return;
         }
-        String key = RedisConstant.INCOMING_MSG_KEY_PREFIX +  incomingMessage.getAccessChannelType() + ":"
+        String key = RedisConstant.INCOMING_MSG_KEY_PREFIX + incomingMessage.getAccessChannelType() + ":"
                 + incomingMessage.getBusinessType() + ":" + incomingMessage.getBusinessId();
         log.info("IncomingBizServiceImpl--writeIncomingCache, key:{}", key);
         redisCache.setCacheString(key, JSONObject.toJSONString(incomingMessage));

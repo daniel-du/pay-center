@@ -36,7 +36,7 @@ public interface TfIncomingInfoDao extends BaseMapper<TfIncomingInfoEntity> {
 
     IncomingMessageRespDTO queryIncomingMessageRespById(@Param("id") Long id);
 
-    QueryTtqfSignMsgRespDTO queryTtqfSignMsg(@Param("businessId") Long businessId);
+    QueryTtqfSignMsgRespDTO queryTtqfSignMsg(@Param("businessId") Long businessId,@Param("businessType")Integer businessType);
 
     List<TtqfSignMsgDTO> querySignMsgStartByIncomingId(@Param("id") Long id);
 

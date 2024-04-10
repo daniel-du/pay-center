@@ -21,6 +21,8 @@ public class TtqfContractReqDTO implements Serializable {
     @NotNull(message = "会员id不能为空")
     private Long businessId;
 
+    private Integer businessType;
+
     /**
      * 身份证号
      */
