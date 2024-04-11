@@ -519,7 +519,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             });
         }
         //查询self_signing表入网信息
-        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> supplierInfoById = tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
+        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result = tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
         if (ObjectUtils.isNotEmpty(result) && ObjectUtils.isNotEmpty(result.getData())) {
             TfSupplierDTO tfSupplier = result.getData();
             SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(tfSupplier.getSupplierId());
