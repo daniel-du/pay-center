@@ -31,6 +31,12 @@ public class TtqfSignReqDTO implements Serializable {
     private Integer businessType;
 
     /**
+     * 来源
+     * {@link com.tfjt.pay.external.unionpay.enums.AppSourceEnum}
+     */
+    private Integer source;
+
+    /**
      * 会员注册时间
      */
     private LocalDateTime registerTime;

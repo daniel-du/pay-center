@@ -10,7 +10,6 @@ import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.api.dto.req.AllIncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingMessageReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.IncomingStatusReqDTO;
-import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfSignReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.resp.*;
 import com.tfjt.pay.external.unionpay.biz.IncomingBizService;
@@ -19,7 +18,10 @@ import com.tfjt.pay.external.unionpay.dto.CheckCodeMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingDataIdDTO;
 import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
-import com.tfjt.pay.external.unionpay.dto.req.*;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingChangeAccessMainTypeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingCheckCodeReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingInfoReqDTO;
+import com.tfjt.pay.external.unionpay.dto.req.IncomingSubmitMessageReqDTO;
 import com.tfjt.pay.external.unionpay.dto.resp.IncomingSubmitMessageRespDTO;
 import com.tfjt.pay.external.unionpay.entity.*;
 import com.tfjt.pay.external.unionpay.enums.*;
@@ -517,7 +519,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             });
         }
         //查询self_signing表入网信息
-        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> result = tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
+        com.tfjt.tfcommon.utils.Result<TfSupplierDTO> supplierInfoById = tfSupplierApiService.getSupplierInfoById(reqDTO.getBusinessId());
         if (ObjectUtils.isNotEmpty(result) && ObjectUtils.isNotEmpty(result.getData())) {
             TfSupplierDTO tfSupplier = result.getData();
             SelfSignEntity selfSignEntity = selfSignService.querySelfSignByAccessAcct(tfSupplier.getSupplierId());
@@ -585,6 +587,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
         tfIncomingInfoEntity.setAccessMainType(IncomingAccessMainTypeEnum.SMALL.getCode().byteValue());
         tfIncomingInfoEntity.setBusinessType(ttqfSignReqDTO.getBusinessType().byteValue());
         tfIncomingInfoEntity.setMemberId(memberId);
+        tfIncomingInfoEntity.setSource(ttqfSignReqDTO.getSource());
         tfIncomingInfoEntity.setAccessStatus(IncomingAccessStatusEnum.MESSAGE_FILL_IN.getCode());
         if (!tfIncomingInfoService.save(tfIncomingInfoEntity)) {
             log.error("IncomingBizServiceImpl---ttqfSign, 保存进件主表信息失败:{}", JSONObject.toJSONString(tfIncomingInfoEntity));
