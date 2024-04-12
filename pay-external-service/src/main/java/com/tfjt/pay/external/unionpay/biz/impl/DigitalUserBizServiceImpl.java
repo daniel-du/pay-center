@@ -86,7 +86,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
                     StringUtils.isBlank(shopDetailInfoRpcRespDto.getRealName())){
                 //返回假数据,只需要提示实名认证不相符即可
                 respDTO.setBussRejectCode(DigitalTransactionStatusEnum.DIGITAL_NOT_REAL_NAME.getCode());
-                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_SUCCESS.getCode());
+                respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_FAILED.getCode());
                 return Result.ok(respDTO);
             }
             respDTO.setCertId(encryptBase64(shopDetailInfoRpcRespDto.getCard()));
@@ -95,6 +95,7 @@ public class DigitalUserBizServiceImpl implements DigitalUserBizService {
         }catch (Exception e){
             log.error("查询手机是否注册dubbo异常:",e);
             respDTO.setBussReceiptStat(DigitalTransactionStatusEnum.DIGITAL_FAILED.getCode());
+            respDTO.setBussRejectCode(DigitalTransactionStatusEnum.DIGITAL_NOT_REAL_NAME.getCode());
             return Result.ok(respDTO);
         }
 
