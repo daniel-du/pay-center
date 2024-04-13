@@ -25,7 +25,7 @@ public enum IncomingMemberBusinessTypeEnum {
      * 云店
      */
     TASK_SYSTEM(3, "任务体系会员", "TFTS"),
-    ;
+    SIGN_BUSINESS(4,"任务体系经销商","TFJX");
 
     private Integer code;
     private String name;
