@@ -159,5 +159,5 @@ public interface TfIncomingInfoService extends IService<TfIncomingInfoEntity> {
      * @param idCardNo
      * @return
      */
-    List<QueryTtqfSignMsgRespDTO> queryTtqfSignMsgByIdCardNo(String idCardNo);
+    List<QueryTtqfSignMsgRespDTO> queryTtqfSignMsgByIdCardNo(String idCardNo,Integer businessType );
 }

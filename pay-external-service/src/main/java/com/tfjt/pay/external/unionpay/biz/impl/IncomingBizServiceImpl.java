@@ -574,7 +574,7 @@ public class IncomingBizServiceImpl implements IncomingBizService {
             return Result.failed(ExceptionCodeEnum.MERCHANT_IS_AUTH);
         }
         //判断该身份证号是否存在认证信息
-        List<QueryTtqfSignMsgRespDTO> signMsgRespByIdCard = tfIncomingInfoService.queryTtqfSignMsgByIdCardNo(ttqfSignReqDTO.getIdCardNo());
+        List<QueryTtqfSignMsgRespDTO> signMsgRespByIdCard = tfIncomingInfoService.queryTtqfSignMsgByIdCardNo(ttqfSignReqDTO.getIdCardNo(), ttqfSignReqDTO.getBusinessType());
         if (!CollectionUtils.isEmpty(signMsgRespByIdCard)) {
             return Result.failed(ExceptionCodeEnum.ID_CARD_NO_ALREADY_EXIST);
         }
