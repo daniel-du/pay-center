@@ -87,4 +87,11 @@ public class OcrController {
         }
     }
 
+
+    @GetMapping("/test")
+    public Result<String> test(){
+        String msg = "accessKeyId:"+accessKeyId+";accessKeySecret:"+accessKeySecret;
+        return Result.ok(msg);
+    }
+
 }
