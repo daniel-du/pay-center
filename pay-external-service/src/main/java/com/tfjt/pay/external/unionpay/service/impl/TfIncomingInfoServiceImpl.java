@@ -184,8 +184,8 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     }
 
     @Override
-    public QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId) {
-        return this.baseMapper.queryTtqfSignMsg(businessId);
+    public QueryTtqfSignMsgRespDTO queryTtqfSignMsg(Long businessId,Integer businessType) {
+        return this.baseMapper.queryTtqfSignMsg(businessId,businessType);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class TfIncomingInfoServiceImpl extends BaseServiceImpl<TfIncomingInfoDao
     }
 
     @Override
-    public List<QueryTtqfSignMsgRespDTO> queryTtqfSignMsgByIdCardNo(String idCardNo) {
-        return this.baseMapper.queryTtqfSignMsgByIdCardNo(idCardNo);
+    public List<QueryTtqfSignMsgRespDTO> queryTtqfSignMsgByIdCardNo(String idCardNo,Integer businessType) {
+        return this.baseMapper.queryTtqfSignMsgByIdCardNo(idCardNo,businessType);
     }
 }

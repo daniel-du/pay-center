@@ -49,6 +49,12 @@ public class TfIncomingInfoEntity implements Serializable {
     private Byte businessType;
 
     /**
+     * 来源
+     * {@link com.tfjt.pay.external.unionpay.enums.AppSourceEnum}
+     */
+    private Integer source;
+
+    /**
      * 入网渠道类型（1：平安，2：银联）
      */
     private Byte accessChannelType;

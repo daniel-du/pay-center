@@ -21,7 +21,6 @@ import com.tfjt.supply.merchant.common.dto.supplierdto.resp.SupplierBasicInfoRes
 import com.tfjt.supply.merchant.supplier.api.service.ISupplierInfoApiService;
 import com.tfjt.tfcommon.core.cache.RedisCache;
 import com.tfjt.tfcommon.core.exception.TfException;
-import com.tfjt.tfcommon.utils.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;

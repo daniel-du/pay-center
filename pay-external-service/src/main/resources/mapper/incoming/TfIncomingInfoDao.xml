@@ -135,7 +135,7 @@
         left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
         left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
         left join tf_incoming_extend_info d on a.id = d.incoming_id
-        where a.access_channel_type = 3 and a.business_type = 3
+        where a.access_channel_type = 3 and a.business_type = #{businessType}
         and a.is_deleted = 0 and a.business_id = #{businessId};
     </select>
     <select id="querySignMsgStartByIncomingId" resultType="com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO">
@@ -149,7 +149,7 @@
         left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
         left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
         inner join tf_incoming_extend_info d on a.id = d.incoming_id
-        where a.access_channel_type = 3 and a.business_type = 3 and (d.sign_status != 1 or d.bind_status != 1)
+        where a.access_channel_type = 3 and a.business_type  in(3,4)  and (d.sign_status != 1 or d.bind_status != 1)
         and a.is_deleted = 0 and a.id >= #{id} order by a.id limit 100
     </select>
     <select id="querySignMsgByIdCardAndBankCard"
@@ -161,17 +161,22 @@
                   left join tf_incoming_settle_info g on g.incoming_id = a.id and g.is_deleted = 0
                   left join tf_bank_card_info h on g.bank_card_id = h.id and h.is_deleted = 0
                   inner join tf_incoming_extend_info d on a.id = d.incoming_id and d.is_delete = 0
-        where a.access_channel_type = 3 and a.business_type = 3 and c.id_no = #{idCardNo} and h.bank_card_no = #{bankCardNo}
+        where a.access_channel_type = 3 and a.business_type in(3,4) and c.id_no = #{idCardNo} and h.bank_card_no = #{bankCardNo}
     </select>
     <select id="queryTtqfSignMsgByIdCardNo"
             resultType="com.tfjt.pay.external.unionpay.api.dto.resp.QueryTtqfSignMsgRespDTO">
-        select a.id,a.business_id ,
-            b.legal_mobile mobile,c.`name` user_name ,c.id_no idCardNo
-        from  tf_incoming_info a
-        left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
-        left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
-        where a.access_channel_type = 3 and a.business_type = 3
-        and a.is_deleted = 0 and c.id_no  = #{idCardNo}
+        select a.id,
+               a.business_id,
+               b.legal_mobile mobile,
+               c.`name`       user_name,
+               c.id_no        idCardNo
+        from tf_incoming_info a
+                 left join tf_incoming_merchant_info b on b.incoming_id = a.id and b.is_deleted = 0
+                 left join tf_idcard_info c on b.legal_id_card = c.id and c.is_deleted = 0
+        where a.access_channel_type = 3
+          and a.business_type = #{businessType}
+          and a.is_deleted = 0
+          and c.id_no = #{idCardNo}
     </select>
 
 </mapper>

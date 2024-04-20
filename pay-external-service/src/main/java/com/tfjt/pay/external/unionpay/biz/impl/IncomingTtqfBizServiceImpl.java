@@ -4,7 +4,6 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.ipaynow.jiaxin.domain.QueryPresignResultModel;
-import com.tfjt.constant.MessageStatusEnum;
 import com.tfjt.entity.AsyncMessageEntity;
 import com.tfjt.pay.external.unionpay.api.dto.req.QueryTtqfSignMsgReqDTO;
 import com.tfjt.pay.external.unionpay.api.dto.req.TtqfContractReqDTO;
@@ -14,12 +13,10 @@ import com.tfjt.pay.external.unionpay.api.dto.resp.TtqfContractRespDTO;
 import com.tfjt.pay.external.unionpay.biz.IncomingTtqfBizService;
 import com.tfjt.pay.external.unionpay.constants.NumberConstant;
 import com.tfjt.pay.external.unionpay.constants.RetryMessageConstant;
-import com.tfjt.pay.external.unionpay.dto.IncomingSubmitMessageDTO;
 import com.tfjt.pay.external.unionpay.dto.TtqfSignMsgDTO;
-import com.tfjt.pay.external.unionpay.dto.message.IncomingFinishDTO;
 import com.tfjt.pay.external.unionpay.dto.message.PresignCallbackDTO;
 import com.tfjt.pay.external.unionpay.entity.TfIncomingExtendInfoEntity;
-import com.tfjt.pay.external.unionpay.enums.ExceptionCodeEnum;
+import com.tfjt.pay.external.unionpay.enums.BusinessTypeEnum;
 import com.tfjt.pay.external.unionpay.service.TfIncomingExtendInfoService;
 import com.tfjt.pay.external.unionpay.service.TfIncomingInfoService;
 import com.tfjt.pay.external.unionpay.utils.TtqfApiUtil;
@@ -38,6 +35,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Du Penglun
@@ -78,7 +76,10 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
     public Result<TtqfContractRespDTO> ttqfContract(TtqfContractReqDTO ttqfContractReqDTO) {
         ValidatorUtils.validateEntity(ttqfContractReqDTO);
         TtqfContractRespDTO ttqfContractRespDTO = TtqfContractRespDTO.builder().signStatus(NumberConstant.ZERO).build();
-        QueryTtqfSignMsgRespDTO signMsgRespDTO = incomingInfoService.queryTtqfSignMsg(ttqfContractReqDTO.getBusinessId());
+        if(Objects.isNull(ttqfContractReqDTO.getBusinessType())){
+            ttqfContractReqDTO.setBusinessType(BusinessTypeEnum.SIGN_USER.getCode());
+        }
+        QueryTtqfSignMsgRespDTO signMsgRespDTO = incomingInfoService.queryTtqfSignMsg(ttqfContractReqDTO.getBusinessId(),ttqfContractReqDTO.getBusinessType());
         if (ObjectUtils.isEmpty(signMsgRespDTO)) {
             return Result.ok(ttqfContractRespDTO);
         }
@@ -102,7 +103,10 @@ public class IncomingTtqfBizServiceImpl implements IncomingTtqfBizService {
     public Result<QueryTtqfSignMsgRespDTO> queryTtqfSignMsg(QueryTtqfSignMsgReqDTO queryTtqfSignMsgReqDTO) {
         ValidatorUtils.validateEntity(queryTtqfSignMsgReqDTO);
         log.info("IncomingTtqfBizServiceImpl--queryTtqfSignMsg, req:{}", JSONObject.toJSONString(queryTtqfSignMsgReqDTO));
-        QueryTtqfSignMsgRespDTO signMsgRespDTO = incomingInfoService.queryTtqfSignMsg(queryTtqfSignMsgReqDTO.getBusinessId());
+        if(Objects.isNull(queryTtqfSignMsgReqDTO.getBusinessType())){
+            queryTtqfSignMsgReqDTO.setBusinessType(BusinessTypeEnum.SIGN_USER.getCode());
+        }
+        QueryTtqfSignMsgRespDTO signMsgRespDTO = incomingInfoService.queryTtqfSignMsg(queryTtqfSignMsgReqDTO.getBusinessId(),queryTtqfSignMsgReqDTO.getBusinessType());
         if (ObjectUtils.isEmpty(signMsgRespDTO)) {
             signMsgRespDTO = QueryTtqfSignMsgRespDTO.builder()
                     .authStatus(NumberConstant.ZERO)
