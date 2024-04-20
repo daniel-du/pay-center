@@ -12,6 +12,7 @@ import com.tfjt.tfcommon.dto.response.Result;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -26,6 +27,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("ocr")
 @Slf4j
+@RefreshScope
 public class OcrController {
 
     @Resource
@@ -84,4 +86,12 @@ public class OcrController {
             return Result.failed("识别营业执照异常");
         }
     }
+
+
+    @GetMapping("/test")
+    public Result<String> test(){
+        String msg = "accessKeyId:"+accessKeyId+";accessKeySecret:"+accessKeySecret;
+        return Result.ok(msg);
+    }
+
 }

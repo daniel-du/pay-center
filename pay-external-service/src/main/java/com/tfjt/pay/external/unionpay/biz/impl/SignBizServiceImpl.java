@@ -348,7 +348,10 @@ public class SignBizServiceImpl implements SignBizService {
         //查询近7天或指定商户切是供应商身份入网成功，没有绑定关系的商户
         List<SelfSignEntity> selfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, gysPayAppId, true);
         List<SelfSignEntity> ydSelfSignList = selfSignService.querySelfSignBySuccess(accesserAcct, ydPayAppId, true);
+        //添加35 冻结状态的数据
+        List<SelfSignEntity> freezeSelfSign= selfSignService.querySelfSignByFreeze();
         selfSignList.addAll(ydSelfSignList);
+        selfSignList.addAll(freezeSelfSign);
         if (CollUtil.isNotEmpty(selfSignList)) {
             for (SelfSignEntity selfSignEntity : selfSignList) {
                 XxlJobHelper.log("查询{}签约状态", selfSignEntity.getAccesserAcct());
